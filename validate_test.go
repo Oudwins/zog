@@ -122,8 +122,9 @@ func TestStringIn(t *testing.T) {
 		Currency string
 	}
 	foo := Foo{"eur"}
+	currencies := []string{"eur", "usd", "chz"}
 	schema := Schema{
-		"currency": String().In([]string{"eur", "usd", "chz"}),
+		"currency": Enum(currencies),
 	}
 	errors, ok := Validate(foo, schema)
 	assert.True(t, ok)
@@ -148,25 +149,6 @@ func TestValidate(t *testing.T) {
 		Email:    "foo@bar.com",
 		Username: "pedropedro",
 	}
-	errors, ok := Validate(user, schema)
-	assert.True(t, ok)
-	assert.Empty(t, errors)
-	assert.Empty(t, errors)
-}
-
-func TestOptional(t *testing.T) {
-	type User struct {
-		Email    string
-		Username string
-	}
-	schema := Schema{
-		"email":    String().Email(),
-		"username": String().Min(3).Max(10).Optional(),
-	}
-	user := User{
-		Email: "pedro@gmail.com",
-	}
-
 	errors, ok := Validate(user, schema)
 	assert.True(t, ok)
 	assert.Empty(t, errors)

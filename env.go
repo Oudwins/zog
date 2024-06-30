@@ -1,69 +1,62 @@
 package zog
 
-import (
-	"fmt"
-	"os"
-	"strconv"
-
-	p "github.com/Oudwins/zog/primitives"
-)
-
 // takes a key and a validator and  returns the validated and converted environment variable
-func Env[T supportedEnvTypes](key string, v fieldValidator, defailtValue ...T) T {
-	str := os.Getenv(key)
 
-	val, err := coerceString[T](str)
+// func Env[T supportedEnvTypes](key string, v fieldParser, defailtValue ...T) T {
+// 	str := os.Getenv(key)
 
-	if err != nil || p.IsZeroValue(val) {
-		if len(defailtValue) > 0 {
-			return defailtValue[0]
-		} else {
-			panic(fmt.Errorf("failed to parse env %s: %v", key, err))
-		}
-	}
+// 	val, err := coerceString[T](str)
 
-	errs, ok := v.Validate(val)
-	if !ok {
-		panic(fmt.Errorf("failed to validate env %s: %v", key, errs))
-	}
+// 	if err != nil || p.IsZeroValue(val) {
+// 		if len(defailtValue) > 0 {
+// 			return defailtValue[0]
+// 		} else {
+// 			panic(fmt.Errorf("failed to parse env %s: %v", key, err))
+// 		}
+// 	}
 
-	return val
-}
+// 	errs, ok := v.Validate(val)
+// 	if !ok {
+// 		panic(fmt.Errorf("failed to validate env %s: %v", key, errs))
+// 	}
 
-type supportedEnvTypes interface {
-	~int | ~float64 | ~bool | ~string
-}
+// 	return val
+// }
 
-func coerceString[T supportedEnvTypes](val string) (T, error) {
-	var result T
+// type supportedEnvTypes interface {
+// 	~int | ~float64 | ~bool | ~string
+// }
 
-	switch any(result).(type) {
-	case int:
-		var tmp int
-		tmp, err := strconv.Atoi(val)
-		if err != nil {
-			return result, err
-		}
+// func coerceString[T supportedEnvTypes](val string) (T, error) {
+// 	var result T
 
-		result = any(tmp).(T)
-	case float64:
-		tmp, err := strconv.ParseFloat(val, 64)
-		if err != nil {
-			return result, err
-		}
-		result = any(tmp).(T)
+// 	switch any(result).(type) {
+// 	case int:
+// 		var tmp int
+// 		tmp, err := strconv.Atoi(val)
+// 		if err != nil {
+// 			return result, err
+// 		}
 
-	case bool:
-		tmp, err := strconv.ParseBool(val)
-		if err != nil {
-			return result, err
-		}
-		result = any(tmp).(T)
-	case string:
-		result = any(val).(T)
-	default:
-		return result, fmt.Errorf("unsupported type: %T", result)
-	}
+// 		result = any(tmp).(T)
+// 	case float64:
+// 		tmp, err := strconv.ParseFloat(val, 64)
+// 		if err != nil {
+// 			return result, err
+// 		}
+// 		result = any(tmp).(T)
 
-	return result, nil
-}
+// 	case bool:
+// 		tmp, err := strconv.ParseBool(val)
+// 		if err != nil {
+// 			return result, err
+// 		}
+// 		result = any(tmp).(T)
+// 	case string:
+// 		result = any(val).(T)
+// 	default:
+// 		return result, fmt.Errorf("unsupported type: %T", result)
+// 	}
+
+// 	return result, nil
+// }

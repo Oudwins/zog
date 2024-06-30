@@ -5,8 +5,7 @@ import (
 )
 
 type boolValidator struct {
-	Rules      []primitives.Rule
-	IsOptional bool
+	Rules []primitives.Rule
 }
 
 func Bool() *boolValidator {
@@ -17,14 +16,30 @@ func Bool() *boolValidator {
 	}
 }
 
-func (v *boolValidator) Validate(fieldValue any) ([]string, bool) {
-	return primitives.GenericValidator(fieldValue, v.Rules, v.IsOptional)
+func (v *boolValidator) Parse(val any) (any, []string, bool) {
+	err, ok := primitives.GenericRulesValidator(val, v.Rules)
+	return val, err, ok
 }
 
-func (v *boolValidator) Optional() *boolValidator {
-	v.IsOptional = true
-	return v
+// GLOBAL METHODS
+
+func (v *boolValidator) Optional() *optional {
+	return Optional(v)
 }
+
+func (v *boolValidator) Default(val any) *defaulter {
+	return Default(val, v)
+}
+
+func (v *boolValidator) Catch(val any) *catcher {
+	return Catch(val, v)
+}
+
+func (v *boolValidator) Transform(transform func(val any) (any, bool)) *transformer {
+	return Transform(v, transform)
+}
+
+// UNIQUE METHODS
 
 func (v *boolValidator) True() *boolValidator {
 	v.Rules = append(v.Rules, primitives.EQ[bool](true, "should be true"))

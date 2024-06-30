@@ -32,36 +32,48 @@ func (e Errors) Get(field string) []string {
 }
 
 // the interface of any set of rules for a field. Eg: String().Min(5) -> this is a fieldValidator
-type fieldValidator interface {
-	Validate(val any) (errors []string, ok bool)
+type fieldParser interface {
+	Parse(val any) (newVal any, errors []string, ok bool)
 }
 
 // Schema represents a validation schema.
-type Schema map[string]fieldValidator
+type Schema map[string]fieldParser
 
 // Validate validates data based on the given Schema.
 func (s Schema) Validate(data any) (Errors, bool) {
-	errors := Errors{}
-	return validateSchema(data, s, errors)
+	return s.Parse(data)
 }
-func Validate(data any, fields Schema) (Errors, bool) {
+func (s Schema) Parse(data any) (Errors, bool) {
 	errors := Errors{}
-	return validateSchema(data, fields, errors)
+	return parseSchema(data, s, errors)
 }
 
-func validateSchema(data any, schema Schema, errors Errors) (Errors, bool) {
+func Validate(data any, fields Schema) (Errors, bool) {
+	return Parse(data, fields)
+}
+
+func Parse(data any, fields Schema) (Errors, bool) {
+	errors := Errors{}
+	return parseSchema(data, fields, errors)
+}
+
+// data = *struct, schema = Schema, errors = Errors
+func parseSchema(data any, schema Schema, errors Errors) (Errors, bool) {
 	globalOk := true
 	ok := true
 	var fieldErrs []string
 
-	for fieldName, validator := range schema {
-		fieldName = string(unicode.ToUpper(rune(fieldName[0]))) + fieldName[1:]
-		fieldValue := getFieldValueByName(data, fieldName)
-		fieldName = string(unicode.ToLower([]rune(fieldName)[0])) + fieldName[1:]
-		fieldErrs, ok = validator.Validate(fieldValue)
+	for fieldName, parser := range schema {
+		publicFieldName := string(unicode.ToUpper(rune(fieldName[0]))) + fieldName[1:]
+		fieldValue := getFieldValueByName(data, publicFieldName)
+		var val any
+		val, fieldErrs, ok = parser.Parse(fieldValue)
 		if !ok {
 			errors[fieldName] = fieldErrs
 			globalOk = false
+		} else if val != nil && val != fieldValue {
+			// is ok & value changed
+			setPrimitiveValue(data, val, publicFieldName)
 		}
 
 	}
@@ -90,7 +102,7 @@ func Request(r *http.Request, data any, schema Schema) (Errors, bool) {
 	if err := parseRequest(r, data); err != nil {
 		errors["_error"] = []string{err.Error()}
 	}
-	return validateSchema(data, schema, errors)
+	return parseSchema(data, schema, errors)
 }
 
 // TODO -> Parse requestQueryParams
@@ -99,7 +111,7 @@ func RequestParams(r *http.Request, data any, schema Schema) (Errors, bool) {
 	if err := parseRequestParams(r, data); err != nil {
 		errors["_error"] = []string{err.Error()}
 	}
-	return validateSchema(data, schema, errors)
+	return parseSchema(data, schema, errors)
 }
 
 func parseRequestParams(r *http.Request, v any) error {
@@ -201,6 +213,17 @@ func parsePrimitive(typ *reflect.Kind, refObj *reflect.Value, value string) erro
 	}
 
 	return nil
+}
+
+func setPrimitiveValue(obj any, newVal any, fieldName string) {
+
+	val := reflect.ValueOf(obj).Elem()
+	fieldVal := val.FieldByName(fieldName)
+	fmt.Println(fieldVal)
+	if !fieldVal.IsValid() {
+		return
+	}
+	fieldVal.Set(reflect.ValueOf(newVal))
 }
 
 func getFieldValueByName(v any, name string) any {

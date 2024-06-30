@@ -15,8 +15,7 @@ var (
 )
 
 type StringValidator struct {
-	Rules      []p.Rule
-	IsOptional bool
+	Rules []p.Rule
 }
 
 func String() *StringValidator {
@@ -27,21 +26,25 @@ func String() *StringValidator {
 	}
 }
 
-// GLOBAL METHODS
-
-// is equal to one of the values
-func (v *StringValidator) In(values []string) *StringValidator {
-	v.Rules = append(v.Rules, p.In(values, fmt.Sprintf("should be in %v", values)))
-	return v
+func (v *StringValidator) Parse(val any) (any, []string, bool) {
+	errs, ok := p.GenericRulesValidator(val, v.Rules)
+	return val, errs, ok
 }
 
-func (v *StringValidator) Validate(fieldValue any) ([]string, bool) {
-	return p.GenericValidator(fieldValue, v.Rules, v.IsOptional)
+func (v *StringValidator) Optional() *optional {
+	return Optional(v)
 }
 
-func (v *StringValidator) Optional() *StringValidator {
-	v.IsOptional = true
-	return v
+func (v *StringValidator) Default(val any) *defaulter {
+	return Default(val, v)
+}
+
+func (v *StringValidator) Catch(val any) *catcher {
+	return Catch(val, v)
+}
+
+func (v *StringValidator) Transform(transform func(val any) (any, bool)) *transformer {
+	return Transform(v, transform)
 }
 
 func (v *StringValidator) Refine(ruleName string, errorMsg string, validateFunc p.RuleValidateFunc) *StringValidator {

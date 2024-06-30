@@ -11,8 +11,7 @@ type Numeric interface {
 }
 
 type numberValidator[T Numeric] struct {
-	Rules      []p.Rule
-	IsOptional bool
+	Rules []p.Rule
 }
 
 func Float() *numberValidator[float64] {
@@ -31,7 +30,26 @@ func Int() *numberValidator[int] {
 	}
 }
 
+func (v *numberValidator[Numeric]) Parse(fieldValue any) (any, []string, bool) {
+	errs, ok := p.GenericRulesValidator(fieldValue, v.Rules)
+	return fieldValue, errs, ok
+}
+
 // GLOBAL METHODS
+
+func (v *numberValidator[Numeric]) Optional() *optional {
+	return Optional(v)
+}
+
+func (v *numberValidator[Numeric]) Default(val any) *defaulter {
+	return Default(val, v)
+}
+func (v *numberValidator[Numeric]) Catch(val any) *catcher {
+	return Catch(val, v)
+}
+func (v *numberValidator[Numeric]) Transform(transform func(val any) (any, bool)) *transformer {
+	return Transform(v, transform)
+}
 
 func (v *numberValidator[T]) Refine(ruleName string, errorMsg string, validateFunc p.RuleValidateFunc) *numberValidator[T] {
 	v.Rules = append(v.Rules,
@@ -41,23 +59,7 @@ func (v *numberValidator[T]) Refine(ruleName string, errorMsg string, validateFu
 			ValidateFunc: validateFunc,
 		},
 	)
-
 	return v
-}
-
-// is equal to one of the values
-func (v *numberValidator[T]) In(values []T) *numberValidator[T] {
-	v.Rules = append(v.Rules, p.In(values, fmt.Sprintf("should be in %v", values)))
-	return v
-}
-
-func (v *numberValidator[Numeric]) Optional() *numberValidator[Numeric] {
-	v.IsOptional = true
-	return v
-}
-
-func (v *numberValidator[Numeric]) Validate(fieldValue any) ([]string, bool) {
-	return p.GenericValidator(fieldValue, v.Rules, v.IsOptional)
 }
 
 // UNIQUE METHODS

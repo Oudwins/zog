@@ -33,12 +33,12 @@ func TestSliceNotEmpty(t *testing.T) {
 		Items: []any{},
 	}
 
-	errs, ok := Validate(s, Schema{"items": Slice(String()).NotEmpty()})
+	errs, ok := Validate(s, Schema{"items": Slice(String()).Min(1)})
 	assert.False(t, ok)
 	assert.NotEmpty(t, errs)
 
 	s.Items = []any{"a", "b", "c"}
-	errs, ok = Validate(s, Schema{"items": Slice(String()).NotEmpty()})
+	errs, ok = Validate(s, Schema{"items": Slice(String()).Min(1)})
 	assert.True(t, ok)
 	assert.Empty(t, errs)
 }

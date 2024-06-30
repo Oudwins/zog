@@ -8,11 +8,10 @@ import (
 )
 
 type sliceValidator struct {
-	Rules      []p.Rule
-	IsOptional bool
+	Rules []p.Rule
 }
 
-func Slice(schema fieldValidator) *sliceValidator {
+func Slice(schema fieldParser) *sliceValidator {
 	return &sliceValidator{
 		Rules: []p.Rule{
 			{
@@ -24,15 +23,18 @@ func Slice(schema fieldValidator) *sliceValidator {
 					if rv.Kind() != reflect.Slice {
 						return false
 					}
-					s, ok := set.RuleValue.(fieldValidator)
+					s, ok := set.RuleValue.(fieldParser)
 					if !ok {
 						return false
 					}
 					for idx := 0; idx < rv.Len(); idx++ {
 						v := rv.Index(idx).Interface()
-						_, ok := s.Validate(v)
+						newVal, _, ok := s.Parse(v)
 						if !ok {
 							return false
+						}
+						if !reflect.DeepEqual(v, newVal) {
+							rv.Index(idx).Set(reflect.ValueOf(newVal))
 						}
 					}
 					return true
@@ -56,26 +58,15 @@ func (v *sliceValidator) Refine(ruleName string, errorMsg string, validateFunc p
 	return v
 }
 
-func (v *sliceValidator) Optional() *sliceValidator {
-	v.IsOptional = true
-	return v
-}
-
-func (v *sliceValidator) Validate(fieldValue any) ([]string, bool) {
-	return p.GenericValidator(fieldValue, v.Rules, v.IsOptional)
+func (v *sliceValidator) Parse(fieldValue any) (any, []string, bool) {
+	errs, ok := p.GenericRulesValidator(fieldValue, v.Rules)
+	return nil, errs, ok
 }
 
 // UNIQUE METHODS
 
 // TODO
 // some & every -> pass a validator
-
-func (v *sliceValidator) NotEmpty() *sliceValidator {
-	v.Rules = append(v.Rules,
-		sliceMin(1, "should not be empty"),
-	)
-	return v
-}
 
 // Minimum number of items
 func (v *sliceValidator) Min(n int) *sliceValidator {

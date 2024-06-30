@@ -20,6 +20,11 @@ func Time() *timeValidator {
 	}
 }
 
+func (v *timeValidator) Parse(val any) (any, []string, bool) {
+	errs, ok := p.GenericRulesValidator(val, v.Rules)
+	return val, errs, ok
+}
+
 // GLOBAL METHODS
 
 func (v *timeValidator) Refine(ruleName string, errorMsg string, validateFunc p.RuleValidateFunc) *timeValidator {
@@ -32,20 +37,6 @@ func (v *timeValidator) Refine(ruleName string, errorMsg string, validateFunc p.
 	)
 
 	return v
-}
-
-func (v *timeValidator) In(values []time.Time) *timeValidator {
-	v.Rules = append(v.Rules, p.In(values, fmt.Sprintf("should be in %v", values)))
-	return v
-}
-
-func (v *timeValidator) Optional() *timeValidator {
-	v.IsOptional = true
-	return v
-}
-
-func (v *timeValidator) Validate(fieldValue any) ([]string, bool) {
-	return p.GenericValidator(fieldValue, v.Rules, v.IsOptional)
 }
 
 // UNIQUE METHODS

@@ -42,3 +42,24 @@ func GenericValidator(fieldValue any, rules []Rule, isOptional bool) ([]string, 
 
 	return errors, ok
 }
+
+func GenericRulesValidator(fieldValue any, rules []Rule) ([]string, bool) {
+
+	var errors []string = nil
+	ok := true
+
+	for _, set := range rules {
+
+		set.FieldValue = fieldValue
+		if !set.ValidateFunc(set) {
+			ok = false
+			msg := set.ErrorMessage
+			if errors == nil {
+				errors = []string{}
+			}
+			errors = append(errors, msg)
+		}
+	}
+
+	return errors, ok
+}
