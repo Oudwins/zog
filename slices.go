@@ -15,21 +15,18 @@ func Slice(schema fieldParser) *sliceValidator {
 	return &sliceValidator{
 		Rules: []p.Rule{
 			{
-				Name:         "sliceItemsMatchSchema",
-				RuleValue:    schema,
+				Name:      "sliceItemsMatchSchema",
+				RuleValue: schema,
+				// TODO this should really be improved. Maybe grab the error message from the schema?
 				ErrorMessage: "all items should match the schema",
 				ValidateFunc: func(set p.Rule) bool {
 					rv := reflect.ValueOf(set.FieldValue)
 					if rv.Kind() != reflect.Slice {
 						return false
 					}
-					s, ok := set.RuleValue.(fieldParser)
-					if !ok {
-						return false
-					}
 					for idx := 0; idx < rv.Len(); idx++ {
 						v := rv.Index(idx).Interface()
-						newVal, _, ok := s.Parse(v)
+						newVal, _, ok := schema.Parse(v)
 						if !ok {
 							return false
 						}
@@ -57,6 +54,21 @@ func (v *sliceValidator) Refine(ruleName string, errorMsg string, validateFunc p
 
 	return v
 }
+
+func (v *sliceValidator) Optional() *optional {
+	return Optional(v)
+}
+
+// Current implementation is not working. Need to fix.
+// func (v *sliceValidator) Default(val any) *defaulter {
+// 	return Default(val, v)
+// }
+// func (v *sliceValidator) Catch(val any) *catcher {
+// 	return Catch(val, v)
+// }
+// func (v *sliceValidator) Transform(transform func(val any) (any, bool)) *transformer {
+// 	return Transform(v, transform)
+// }
 
 func (v *sliceValidator) Parse(fieldValue any) (any, []string, bool) {
 	errs, ok := p.GenericRulesValidator(fieldValue, v.Rules)
