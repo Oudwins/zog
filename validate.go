@@ -219,7 +219,6 @@ func setPrimitiveValue(obj any, newVal any, fieldName string) {
 
 	val := reflect.ValueOf(obj).Elem()
 	fieldVal := val.FieldByName(fieldName)
-	fmt.Println(fieldVal)
 	if !fieldVal.IsValid() {
 		return
 	}
