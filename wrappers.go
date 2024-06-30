@@ -15,12 +15,12 @@ func Optional(value fieldParser) *optional {
 }
 
 func (o *optional) Parse(val any) (any, []string, bool) {
-	val, errs, ok := o.validator.Parse(val)
+	newVal, errs, ok := o.validator.Parse(val)
 	if p.IsZeroValue(val) {
-		return val, nil, true
+		return newVal, nil, true
 	}
 
-	return val, errs, ok
+	return newVal, errs, ok
 }
 
 //
