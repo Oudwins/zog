@@ -25,6 +25,20 @@ func (v *timeValidator) Parse(val any) (any, []string, bool) {
 	return val, errs, ok
 }
 
+func (v *timeValidator) Optional() *optional {
+	return Optional(v)
+}
+
+func (v *timeValidator) Default(val any) *defaulter {
+	return Default(val, v)
+}
+func (v *timeValidator) Catch(val any) *catcher {
+	return Catch(val, v)
+}
+func (v *timeValidator) Transform(transform func(val any) (any, bool)) *transformer {
+	return Transform(v, transform)
+}
+
 // GLOBAL METHODS
 
 func (v *timeValidator) Refine(ruleName string, errorMsg string, validateFunc p.RuleValidateFunc) *timeValidator {
