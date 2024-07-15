@@ -260,10 +260,3 @@ func (v *StringValidator) ContainsSpecial() *StringValidator {
 	)
 	return v
 }
-
-// TODO
-// IP
-// date
-// datetime
-// time
-// emoji

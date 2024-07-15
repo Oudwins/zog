@@ -23,6 +23,10 @@ func (o *optional) Parse(val any) (any, []string, bool) {
 	return newVal, errs, ok
 }
 
+func (o *optional) Catch(val any) *catcher {
+	return Catch(val, o)
+}
+
 //
 
 type defaulter struct {
@@ -45,6 +49,10 @@ func (d *defaulter) Parse(val any) (any, []string, bool) {
 
 	return newVal, errs, ok
 
+}
+
+func (d *defaulter) Catch(val any) *catcher {
+	return Catch(val, d)
 }
 
 type catcher struct {

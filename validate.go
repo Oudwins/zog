@@ -69,7 +69,12 @@ func parseSchema(data any, schema Schema, errors Errors) (Errors, bool) {
 		var val any
 		val, fieldErrs, ok = parser.Parse(fieldValue)
 		if !ok {
-			errors[fieldName] = fieldErrs
+			if errors[fieldName] == nil {
+				errors[fieldName] = fieldErrs
+			} else {
+				errors[fieldName] = append(errors[fieldName], fieldErrs...)
+			}
+
 			globalOk = false
 		} else if val != nil && val != fieldValue {
 			// is ok & value changed
@@ -123,7 +128,7 @@ func parseRequestParams(r *http.Request, v any) error {
 		paramTag := field.Tag.Get("param")
 		param := params[paramTag]
 
-		if len(param) == 0 {
+		if len(param) == 0 || param[0] == "" {
 			continue
 		}
 
@@ -237,5 +242,6 @@ func getFieldValueByName(v any, name string) any {
 	if !fieldVal.IsValid() {
 		return nil
 	}
+
 	return fieldVal.Interface()
 }

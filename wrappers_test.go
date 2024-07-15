@@ -39,3 +39,27 @@ func TestTransform(t *testing.T) {
 	assert.True(t, ok)
 	assert.Equal(t, "barfoo", val)
 }
+
+func TestDefaultCatch(t *testing.T) {
+	field := String().Email().Default("foo@bar.com").Catch("bar@baz.com")
+	val, errs, ok := field.Parse("")
+	assert.Empty(t, errs)
+	assert.True(t, ok)
+	assert.Equal(t, "foo@bar.com", val)
+	val, errs, ok = field.Parse("bar")
+	assert.Empty(t, errs)
+	assert.True(t, ok)
+	assert.Equal(t, "bar@baz.com", val)
+}
+
+func TestOptionalCatch(t *testing.T) {
+	field := String().Email().Optional().Catch("bar@baz.com")
+	val, errs, ok := field.Parse("")
+	assert.Empty(t, errs)
+	assert.True(t, ok)
+	assert.Equal(t, "", val)
+	val, errs, ok = field.Parse("bar")
+	assert.Empty(t, errs)
+	assert.True(t, ok)
+	assert.Equal(t, "bar@baz.com", val)
+}
