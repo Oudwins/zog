@@ -9,9 +9,8 @@ import (
 )
 
 var (
-	emailRegex = regexp.MustCompile(`^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,4}$`)
-	// TODO improve this regex?
-	urlRegex = regexp.MustCompile(`^(http(s)?://)?([\da-z\.-]+)\.([a-z\.]{2,6})([/\w \.-]*)*/?$`)
+	emailRegex = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
+	urlRegex   = regexp.MustCompile(`^(http(s)?://)?([\da-z\.-]+)\.([a-z\.]{2,6})([/\w \.-]*)*/?$`)
 )
 
 type StringValidator struct {
@@ -39,7 +38,7 @@ func (v *StringValidator) Default(val any) *defaulter {
 	return Default(val, v)
 }
 
-func (v *StringValidator) Catch(val any) *catcher {
+func (v *StringValidator) Catch(val string) *catcher {
 	return Catch(val, v)
 }
 
