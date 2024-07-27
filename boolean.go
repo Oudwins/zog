@@ -27,11 +27,11 @@ func (v *boolValidator) Optional() *optional {
 	return Optional(v)
 }
 
-func (v *boolValidator) Default(val any) *defaulter {
+func (v *boolValidator) Default(val bool) *defaulter {
 	return Default(val, v)
 }
 
-func (v *boolValidator) Catch(val any) *catcher {
+func (v *boolValidator) Catch(val bool) *catcher {
 	return Catch(val, v)
 }
 
