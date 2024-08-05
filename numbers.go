@@ -42,7 +42,7 @@ func (v *numberProcessor[T]) Parse(val any, dest *T) p.ZogErrorList {
 	return errs.List
 }
 
-func (v *numberProcessor[T]) process(val any, dest *T, errs p.ZogErrors, path p.Pather, ctx *p.ParseCtx) {
+func (v *numberProcessor[T]) process(val any, dest any, errs p.ZogErrors, path p.Pather, ctx *p.ParseCtx) {
 
 	var coercer p.CoercerFunc
 	switch any(dest).(type) {
@@ -57,7 +57,7 @@ func (v *numberProcessor[T]) process(val any, dest *T, errs p.ZogErrors, path p.
 
 // GLOBAL METHODS
 
-func (v numberProcessor[T]) PreTransform(transform p.PreTransform) numberProcessor[T] {
+func (v *numberProcessor[T]) PreTransform(transform p.PreTransform) *numberProcessor[T] {
 	if v.preTransforms == nil {
 		v.preTransforms = []p.PreTransform{}
 	}
@@ -66,7 +66,7 @@ func (v numberProcessor[T]) PreTransform(transform p.PreTransform) numberProcess
 }
 
 // Adds posttransform function to schema
-func (v numberProcessor[T]) PostTransform(transform p.PostTransform) numberProcessor[T] {
+func (v *numberProcessor[T]) PostTransform(transform p.PostTransform) *numberProcessor[T] {
 	if v.postTransforms == nil {
 		v.postTransforms = []p.PostTransform{}
 	}
@@ -77,7 +77,7 @@ func (v numberProcessor[T]) PostTransform(transform p.PostTransform) numberProce
 // ! MODIFIERS
 
 // marks field as required
-func (v numberProcessor[T]) Required(options ...TestOption) numberProcessor[T] {
+func (v *numberProcessor[T]) Required(options ...TestOption) *numberProcessor[T] {
 	r := p.Required(p.DErrorFunc("is a required field"))
 	for _, opt := range options {
 		opt(&r)
@@ -87,19 +87,19 @@ func (v numberProcessor[T]) Required(options ...TestOption) numberProcessor[T] {
 }
 
 // marks field as optional
-func (v numberProcessor[T]) Optional() numberProcessor[T] {
+func (v *numberProcessor[T]) Optional() *numberProcessor[T] {
 	v.required = nil
 	return v
 }
 
 // sets the default value
-func (v numberProcessor[T]) Default(val T) numberProcessor[T] {
+func (v *numberProcessor[T]) Default(val T) *numberProcessor[T] {
 	v.defaultVal = &val
 	return v
 }
 
 // sets the catch value (i.e the value to use if the validation fails)
-func (v numberProcessor[T]) Catch(val T) numberProcessor[T] {
+func (v *numberProcessor[T]) Catch(val T) *numberProcessor[T] {
 	v.catch = &val
 	return v
 }
