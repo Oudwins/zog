@@ -7,102 +7,155 @@ import (
 	p "github.com/Oudwins/zog/primitives"
 )
 
-type timeValidator struct {
-	Rules      []p.Rule
-	IsOptional bool
+type timeProcessor struct {
+	preTransforms  []p.PreTransform
+	tests          []p.Test
+	postTransforms []p.PostTransform
+	defaultVal     *time.Time
+	required       *p.Test
+	catch          *time.Time
 }
 
-func Time() *timeValidator {
-	return &timeValidator{
-		Rules: []p.Rule{
-			p.IsType[time.Time]("is not a a valid time"),
-		},
+func Time() *timeProcessor {
+	return &timeProcessor{}
+}
+
+func (v *timeProcessor) Parse(val any, dest *time.Time) p.ZogErrorList {
+	var ctx = p.NewParseCtx()
+	errs := p.NewErrsList()
+	path := p.Pather("")
+
+	v.process(val, dest, errs, path, ctx)
+
+	return errs.List
+}
+
+func (v *timeProcessor) process(val any, dest any, errs p.ZogErrors, path p.Pather, ctx *p.ParseCtx) {
+	primitiveProcess(val, dest, errs, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, p.Coercers["time"])
+}
+
+// Adds pretransform function to schema
+func (v *timeProcessor) PreTransform(transform p.PreTransform) *timeProcessor {
+	if v.preTransforms == nil {
+		v.preTransforms = []p.PreTransform{}
 	}
+	v.preTransforms = append(v.preTransforms, transform)
+	return v
 }
 
-func (v *timeValidator) Parse(val any) (any, []string, bool) {
-	errs, ok := p.GenericRulesValidator(val, v.Rules)
-	return val, errs, ok
+// Adds posttransform function to schema
+func (v *timeProcessor) PostTransform(transform p.PostTransform) *timeProcessor {
+	if v.postTransforms == nil {
+		v.postTransforms = []p.PostTransform{}
+	}
+	v.postTransforms = append(v.postTransforms, transform)
+	return v
 }
 
-func (v *timeValidator) Optional() *optional {
-	return Optional(v)
+// ! MODIFIERS
+
+// marks field as required
+func (v *timeProcessor) Required(options ...TestOption) *timeProcessor {
+	r := p.Required(p.DErrorFunc("is a required field"))
+	for _, opt := range options {
+		opt(&r)
+	}
+	v.required = &r
+	return v
 }
 
-func (v *timeValidator) Default(val any) *defaulter {
-	return Default(val, v)
+// marks field as optional
+func (v *timeProcessor) Optional() *timeProcessor {
+	v.required = nil
+	return v
 }
-func (v *timeValidator) Catch(val any) *catcher {
-	return Catch(val, v)
+
+// sets the default value
+func (v *timeProcessor) Default(val time.Time) *timeProcessor {
+	v.defaultVal = &val
+	return v
 }
-func (v *timeValidator) Transform(transform func(val any) (any, bool)) *transformer {
-	return Transform(v, transform)
+
+// sets the catch value (i.e the value to use if the validation fails)
+func (v *timeProcessor) Catch(val time.Time) *timeProcessor {
+	v.catch = &val
+	return v
 }
 
 // GLOBAL METHODS
 
-func (v *timeValidator) Refine(ruleName string, errorMsg string, validateFunc p.RuleValidateFunc) *timeValidator {
-	v.Rules = append(v.Rules,
-		p.Rule{
-			Name:         ruleName,
-			ErrorMessage: errorMsg,
-			ValidateFunc: validateFunc,
-		},
-	)
+// custom test function call it -> schema.Test("test_name", z.Message(""), func(val any, ctx *p.ParseCtx) bool {return true})
+func (v *timeProcessor) Test(ruleName string, errorMsg TestOption, validateFunc p.TestFunc) *timeProcessor {
+	t := p.Test{
+		Name:         ruleName,
+		ErrorFunc:    nil,
+		ValidateFunc: validateFunc,
+	}
+	errorMsg(&t)
+	v.tests = append(v.tests, t)
 
 	return v
 }
 
 // UNIQUE METHODS
 
-func (v *timeValidator) After(t time.Time) *timeValidator {
-	v.Rules = append(v.Rules,
-		p.Rule{
-			Name:         "timeAfter",
-			ErrorMessage: fmt.Sprintf("is not after %v", t),
-			ValidateFunc: func(set p.Rule) bool {
-				val, ok := set.FieldValue.(time.Time)
-				if !ok {
-					return false
-				}
-				return val.After(t)
-			},
+func (v *timeProcessor) After(t time.Time) *timeProcessor {
+	r := p.Test{
+		Name:      "timeAfter",
+		ErrorFunc: p.DErrorFunc(fmt.Sprintf("is not after %v", t)),
+		ValidateFunc: func(v any, ctx *p.ParseCtx) bool {
+			val, ok := v.(time.Time)
+			if !ok {
+				return false
+			}
+			return val.After(t)
 		},
-	)
+	}
+	for _, opt := range v.tests {
+		r.ErrorFunc = opt.ErrorFunc
+	}
+	v.tests = append(v.tests, r)
 	return v
 }
 
-func (v *timeValidator) Before(t time.Time) *timeValidator {
-	v.Rules = append(v.Rules,
-		p.Rule{
-			Name:         "timeBefore",
-			ErrorMessage: fmt.Sprintf("is not before %v", t),
-			ValidateFunc: func(set p.Rule) bool {
-				val, ok := set.FieldValue.(time.Time)
+func (v *timeProcessor) Before(t time.Time) *timeProcessor {
+	r :=
+		p.Test{
+			Name:      "timeBefore",
+			ErrorFunc: p.DErrorFunc(fmt.Sprintf("is not before %v", t)),
+			ValidateFunc: func(v any, ctx *p.ParseCtx) bool {
+				val, ok := v.(time.Time)
 				if !ok {
 					return false
 				}
 				return val.Before(t)
 			},
-		},
-	)
+		}
+	for _, opt := range v.tests {
+		r.ErrorFunc = opt.ErrorFunc
+	}
+	v.tests = append(v.tests, r)
+
 	return v
 }
 
-func (v *timeValidator) Is(t time.Time) *timeValidator {
-	v.Rules = append(v.Rules,
-		p.Rule{
-			Name:         "timeIs",
-			ErrorMessage: fmt.Sprintf("is not %v", t),
-			ValidateFunc: func(set p.Rule) bool {
-				val, ok := set.FieldValue.(time.Time)
-				if !ok {
-					return false
-				}
-				return val.Equal(t)
-			},
+func (v *timeProcessor) Is(t time.Time) *timeProcessor {
+	r := p.Test{
+		Name:      "timeIs",
+		ErrorFunc: p.DErrorFunc(fmt.Sprintf("is not %v", t)),
+		ValidateFunc: func(v any, ctx *p.ParseCtx) bool {
+			val, ok := v.(time.Time)
+			if !ok {
+				return false
+			}
+			return val.Equal(t)
 		},
-	)
+	}
+
+	for _, opt := range v.tests {
+		r.ErrorFunc = opt.ErrorFunc
+	}
+	v.tests = append(v.tests, r)
 
 	return v
 }

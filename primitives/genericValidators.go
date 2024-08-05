@@ -1,159 +1,166 @@
 package primitives
 
 import (
+	"fmt"
 	"reflect"
 
 	"golang.org/x/exp/constraints"
 )
 
+// Default error func that takes the value as param. Expect msg = "%s is a required field"
+func DErrorFuncWithVal(msg string) ErrorFunc {
+	return func(val any, ctx *ParseCtx) string {
+		return fmt.Sprintf(msg, val)
+	}
+}
+
+// Default error func, doesn't take any params
+func DErrorFunc(msg string) ErrorFunc {
+	return func(val any, ctx *ParseCtx) string {
+		return msg
+	}
+}
+
+func Required(fn ErrorFunc) Test {
+	t := Test{
+		Name:      "required",
+		ErrorFunc: fn,
+		ValidateFunc: func(val any, ctx *ParseCtx) bool {
+			return !IsZeroValue(val)
+		},
+	}
+	return t
+}
+
 type LengthCapable[K any] interface {
 	~[]any | ~[]K | string | map[any]any | ~chan any
 }
 
-func IsType[T any](msg string) Rule {
-	return Rule{
-		Name:         "isType",
-		ErrorMessage: msg,
-		ValidateFunc: func(set Rule) bool {
-			_, ok := set.FieldValue.(T)
-			return ok
-		},
-	}
-}
-
-func LenMin[T LengthCapable[any]](n int, msg string) Rule {
-	return Rule{
+func LenMin[T LengthCapable[any]](n int, errFn ErrorFunc) Test {
+	return Test{
 		Name:      "min",
-		RuleValue: n,
-		ValidateFunc: func(set Rule) bool {
-			val, ok := set.FieldValue.(T)
-			if !ok {
-				return false
-			}
-			return len(val) >= n
+		ErrorFunc: errFn,
+		ValidateFunc: func(val any, ctx *ParseCtx) bool {
+			x := val.(T)
+			return len(x) >= n
 		},
-		ErrorMessage: msg,
 	}
 }
 
-func LenMax[T LengthCapable[any]](n int, msg string) Rule {
-	return Rule{
-		Name:      "max",
-		RuleValue: n,
-		ValidateFunc: func(set Rule) bool {
-			val, ok := set.FieldValue.(T)
+func LenMax[T LengthCapable[any]](n int, errFn ErrorFunc) Test {
+	return Test{
+		Name: "max",
+		ValidateFunc: func(v any, ctx *ParseCtx) bool {
+			val, ok := v.(T)
 			if !ok {
 				return false
 			}
 			return len(val) <= n
 		},
-		ErrorMessage: msg,
+		ErrorFunc: errFn,
 	}
 }
 
-func Length[T LengthCapable[any]](n int, msg string) Rule {
-	return Rule{
-		Name:      "length",
-		RuleValue: n,
-		ValidateFunc: func(set Rule) bool {
-			val, ok := set.FieldValue.(T)
+func Len[T LengthCapable[any]](n int, errFn ErrorFunc) Test {
+	return Test{
+		Name: "length",
+		ValidateFunc: func(v any, ctx *ParseCtx) bool {
+			val, ok := v.(T)
 			if !ok {
 				return false
 			}
 			return len(val) == n
 		},
-		ErrorMessage: msg,
+		ErrorFunc: errFn,
 	}
 }
 
-func In[T any](values []T, msg string) Rule {
-	return Rule{
-		Name:      "in",
-		RuleValue: values,
-		ValidateFunc: func(set Rule) bool {
+func In[T any](values []T, msg string) Test {
+	return Test{
+		Name: "oneof",
+		ValidateFunc: func(val any, ctx *ParseCtx) bool {
 			for _, value := range values {
-				v := set.FieldValue.(T)
+				v := val.(T)
 				if reflect.DeepEqual(v, value) {
 					return true
 				}
 			}
 			return false
 		},
-		ErrorMessage: msg,
+		ErrorFunc: DErrorFunc(msg),
 	}
 }
 
-func EQ[T comparable](n T, msg string) Rule {
-	return Rule{
-		Name:      "eq",
-		RuleValue: n,
-		ValidateFunc: func(set Rule) bool {
-			v, ok := set.FieldValue.(T)
+func EQ[T comparable](n T, msg string) Test {
+	return Test{
+		Name: "eq",
+		ValidateFunc: func(val any, ctx *ParseCtx) bool {
+			v, ok := val.(T)
 			if !ok {
 				return false
 			}
 			return v == n
 		},
-		ErrorMessage: msg,
+		ErrorFunc: DErrorFunc(msg),
 	}
 }
 
-func LTE[T constraints.Ordered](n T, msg string) Rule {
-	return Rule{
-		Name:      "lte",
-		RuleValue: n,
-		ValidateFunc: func(set Rule) bool {
-			v, ok := set.FieldValue.(T)
+func LTE[T constraints.Ordered](n T, msg string) Test {
+	return Test{
+		Name: "lte",
+
+		ValidateFunc: func(val any, ctx *ParseCtx) bool {
+			v, ok := val.(T)
 			if !ok {
 				return false
 			}
 			return v <= n
 		},
-		ErrorMessage: msg,
+		ErrorFunc: DErrorFunc(msg),
 	}
 }
 
-func GTE[T constraints.Ordered](n T, msg string) Rule {
-	return Rule{
-		Name:      "gte",
-		RuleValue: n,
-		ValidateFunc: func(set Rule) bool {
-			v, ok := set.FieldValue.(T)
+func GTE[T constraints.Ordered](n T, msg string) Test {
+	return Test{
+		Name: "gte",
+
+		ValidateFunc: func(val any, ctx *ParseCtx) bool {
+			v, ok := val.(T)
 			if !ok {
 				return false
 			}
 			return v >= n
 		},
-		ErrorMessage: msg,
+		ErrorFunc: DErrorFunc(msg),
 	}
 }
 
-func LT[T constraints.Ordered](n T, msg string) Rule {
-	return Rule{
-		Name:      "lt",
-		RuleValue: n,
-		ValidateFunc: func(set Rule) bool {
-			v, ok := set.FieldValue.(T)
+func LT[T constraints.Ordered](n T, msg string) Test {
+	return Test{
+		Name: "lt",
+
+		ValidateFunc: func(val any, ctx *ParseCtx) bool {
+			v, ok := val.(T)
 			if !ok {
 				return false
 			}
 			return v < n
 		},
-		ErrorMessage: msg,
+		ErrorFunc: DErrorFunc(msg),
 	}
 }
 
-func GT[T constraints.Ordered](n T, msg string) Rule {
-	return Rule{
-		Name:      "gt",
-		RuleValue: n,
-		ValidateFunc: func(set Rule) bool {
-			v, ok := set.FieldValue.(T)
+func GT[T constraints.Ordered](n T, msg string) Test {
+	return Test{
+		Name: "gt",
+
+		ValidateFunc: func(val any, ctx *ParseCtx) bool {
+			v, ok := val.(T)
 			if !ok {
 				return false
 			}
 			return v > n
 		},
-		ErrorMessage: msg,
+		ErrorFunc: DErrorFunc(msg),
 	}
 }

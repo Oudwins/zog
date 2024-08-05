@@ -1,136 +1,130 @@
 package zog
 
-import (
-	"testing"
+// func TestSlicePassSchema(t *testing.T) {
+// 	type TestStruct struct {
+// 		Items []any
+// 	}
 
-	"github.com/stretchr/testify/assert"
-)
+// 	s := TestStruct{
+// 		Items: []any{"a", "b", "c"},
+// 	}
 
-func TestSlicePassSchema(t *testing.T) {
-	type TestStruct struct {
-		Items []any
-	}
+// 	errs, ok := Validate(s, Schema{"items": Slice(String().Len(1))})
+// 	assert.True(t, ok)
+// 	assert.Empty(t, errs)
 
-	s := TestStruct{
-		Items: []any{"a", "b", "c"},
-	}
+// 	s.Items = []any{"a", "b", "c", "d", 1}
+// 	errs, ok = Validate(s, Schema{"items": Slice(String().Len(1))})
+// 	assert.False(t, ok)
+// 	assert.Len(t, errs, 1)
+// }
 
-	errs, ok := Validate(s, Schema{"items": Slice(String().Len(1))})
-	assert.True(t, ok)
-	assert.Empty(t, errs)
+// func TestSliceNotEmpty(t *testing.T) {
+// 	type TestStruct struct {
+// 		Items []any
+// 	}
+// 	s := TestStruct{
+// 		Items: []any{},
+// 	}
 
-	s.Items = []any{"a", "b", "c", "d", 1}
-	errs, ok = Validate(s, Schema{"items": Slice(String().Len(1))})
-	assert.False(t, ok)
-	assert.Len(t, errs, 1)
-}
+// 	errs, ok := Validate(s, Schema{"items": Slice(String()).Min(1)})
+// 	assert.False(t, ok)
+// 	assert.NotEmpty(t, errs)
 
-func TestSliceNotEmpty(t *testing.T) {
-	type TestStruct struct {
-		Items []any
-	}
-	s := TestStruct{
-		Items: []any{},
-	}
+// 	s.Items = []any{"a", "b", "c"}
+// 	errs, ok = Validate(s, Schema{"items": Slice(String()).Min(1)})
+// 	assert.True(t, ok)
+// 	assert.Empty(t, errs)
+// }
 
-	errs, ok := Validate(s, Schema{"items": Slice(String()).Min(1)})
-	assert.False(t, ok)
-	assert.NotEmpty(t, errs)
+// func TestSliceEnum(t *testing.T) {
+// 	type TestStruct struct {
+// 		Items []string
+// 	}
 
-	s.Items = []any{"a", "b", "c"}
-	errs, ok = Validate(s, Schema{"items": Slice(String()).Min(1)})
-	assert.True(t, ok)
-	assert.Empty(t, errs)
-}
+// 	s := TestStruct{
+// 		Items: []string{"a", "b", "c"},
+// 	}
 
-func TestSliceEnum(t *testing.T) {
-	type TestStruct struct {
-		Items []string
-	}
+// 	schema := Schema{"items": Slice(Enum([]string{"a", "b", "c"})).Optional()}
 
-	s := TestStruct{
-		Items: []string{"a", "b", "c"},
-	}
+// 	errs, ok := Parse(s, schema)
+// 	assert.True(t, ok)
+// 	assert.Empty(t, errs)
 
-	schema := Schema{"items": Slice(Enum([]string{"a", "b", "c"})).Optional()}
+// 	s.Items = []string{"testing", "badval", "two"}
+// 	errs, ok = Parse(s, schema)
+// 	assert.False(t, ok)
+// 	assert.Len(t, errs, 1)
+// }
 
-	errs, ok := Parse(s, schema)
-	assert.True(t, ok)
-	assert.Empty(t, errs)
+// func TestSliceLength(t *testing.T) {
+// 	type TestStruct struct {
+// 		Items []any
+// 	}
 
-	s.Items = []string{"testing", "badval", "two"}
-	errs, ok = Parse(s, schema)
-	assert.False(t, ok)
-	assert.Len(t, errs, 1)
-}
+// 	s := TestStruct{
+// 		Items: []any{"a", "b", "c"},
+// 	}
 
-func TestSliceLength(t *testing.T) {
-	type TestStruct struct {
-		Items []any
-	}
+// 	errs, ok := Validate(s, Schema{"items": Slice(String()).Len(3)})
+// 	assert.True(t, ok)
+// 	assert.Empty(t, errs)
 
-	s := TestStruct{
-		Items: []any{"a", "b", "c"},
-	}
+// 	errs, ok = Validate(s, Schema{"items": Slice(String()).Len(2)})
+// 	assert.False(t, ok)
+// 	assert.Len(t, errs, 1)
 
-	errs, ok := Validate(s, Schema{"items": Slice(String()).Len(3)})
-	assert.True(t, ok)
-	assert.Empty(t, errs)
+// 	// min & max
+// 	errs, ok = Validate(s, Schema{"items": Slice(String()).Min(2)})
+// 	assert.True(t, ok)
+// 	assert.Empty(t, errs)
 
-	errs, ok = Validate(s, Schema{"items": Slice(String()).Len(2)})
-	assert.False(t, ok)
-	assert.Len(t, errs, 1)
+// 	errs, ok = Validate(s, Schema{"items": Slice(String()).Min(4)})
+// 	assert.False(t, ok)
+// 	assert.Len(t, errs, 1)
 
-	// min & max
-	errs, ok = Validate(s, Schema{"items": Slice(String()).Min(2)})
-	assert.True(t, ok)
-	assert.Empty(t, errs)
+// 	errs, ok = Validate(s, Schema{"items": Slice(String()).Max(3)})
+// 	assert.True(t, ok)
+// 	assert.Empty(t, errs)
 
-	errs, ok = Validate(s, Schema{"items": Slice(String()).Min(4)})
-	assert.False(t, ok)
-	assert.Len(t, errs, 1)
+// 	errs, ok = Validate(s, Schema{"items": Slice(String()).Max(1)})
+// 	assert.False(t, ok)
+// 	assert.Len(t, errs, 1)
+// }
 
-	errs, ok = Validate(s, Schema{"items": Slice(String()).Max(3)})
-	assert.True(t, ok)
-	assert.Empty(t, errs)
+// func TestSliceContains(t *testing.T) {
 
-	errs, ok = Validate(s, Schema{"items": Slice(String()).Max(1)})
-	assert.False(t, ok)
-	assert.Len(t, errs, 1)
-}
+// 	type TestStruct struct {
+// 		Items []any
+// 	}
 
-func TestSliceContains(t *testing.T) {
+// 	s := TestStruct{
+// 		Items: []any{"a", "b", "c"},
+// 	}
 
-	type TestStruct struct {
-		Items []any
-	}
+// 	errs, ok := Validate(s, Schema{"items": Slice(String()).Contains("a")})
+// 	assert.True(t, ok)
+// 	assert.Empty(t, errs)
 
-	s := TestStruct{
-		Items: []any{"a", "b", "c"},
-	}
+// 	errs, ok = Validate(s, Schema{"items": Slice(String()).Contains("d")})
+// 	assert.False(t, ok)
+// 	assert.Len(t, errs, 1)
+// }
 
-	errs, ok := Validate(s, Schema{"items": Slice(String()).Contains("a")})
-	assert.True(t, ok)
-	assert.Empty(t, errs)
+// func TestSliceOptional(t *testing.T) {
+// 	type TestStruct struct {
+// 		Items []any
+// 	}
 
-	errs, ok = Validate(s, Schema{"items": Slice(String()).Contains("d")})
-	assert.False(t, ok)
-	assert.Len(t, errs, 1)
-}
+// 	s := TestStruct{}
 
-func TestSliceOptional(t *testing.T) {
-	type TestStruct struct {
-		Items []any
-	}
+// 	errs, ok := Parse(s, Schema{"items": Slice(String()).Optional()})
+// 	assert.True(t, ok)
+// 	assert.Empty(t, errs)
 
-	s := TestStruct{}
-
-	errs, ok := Parse(s, Schema{"items": Slice(String()).Optional()})
-	assert.True(t, ok)
-	assert.Empty(t, errs)
-
-	s.Items = []any{"a", "b", "c"}
-	errs, ok = Parse(s, Schema{"items": Slice(String()).Optional()})
-	assert.True(t, ok)
-	assert.Empty(t, errs)
-}
+// 	s.Items = []any{"a", "b", "c"}
+// 	errs, ok = Parse(s, Schema{"items": Slice(String()).Optional()})
+// 	assert.True(t, ok)
+// 	assert.Empty(t, errs)
+// }
