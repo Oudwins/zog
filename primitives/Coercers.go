@@ -3,12 +3,13 @@ package primitives
 import (
 	"fmt"
 	"strconv"
+	"time"
 )
 
 // takes in a data and a pointer to a destination. Attempts to coerce the data into the destination. Returns an error if the coercion fails.
 type CoercerFunc = func(data any, destPtr any) error
 
-// a map of coercer functions. The key is the type of the destination and the value is the coercer function.
+// a map of coercer functions. The key is the type of the destination and the value is the coercer function. You may override this map to add your own coercer functions and they will affect the behaviour of all zog schemas.
 var Coercers = map[string]CoercerFunc{
 	"bool": func(data any, destPtr any) error {
 		dest := destPtr.(*bool)
@@ -44,33 +45,76 @@ var Coercers = map[string]CoercerFunc{
 			*dest = b
 			return nil
 		}
-
 		*dest = fmt.Sprintf("%v", data)
-
 		return nil
 	},
 	"int": func(data any, destPtr any) error {
 		dest := destPtr.(*int)
-		if v, ok := data.(int); ok {
+
+		switch v := data.(type) {
+		case int:
 			*dest = v
 			return nil
+		case string:
+			convVal, err := strconv.Atoi(v)
+			if err != nil {
+				return fmt.Errorf("failed to parse int: %v", err)
+			}
+			*dest = convVal
+			return nil
+		case float64:
+			*dest = int(v)
+		case bool:
+			if v {
+				*dest = 1
+			} else {
+				*dest = 0
+			}
+			return nil
 		}
-
-		// TODO handle other types
-
 		return fmt.Errorf("cannot coerce %v to int", data)
 	},
 	"float64": func(data any, destPtr any) error {
 		dest := destPtr.(*float64)
-		if v, ok := data.(float64); ok {
+		switch v := data.(type) {
+		case int:
+			*dest = float64(v)
+			return nil
+		case string:
+			convVal, err := strconv.ParseFloat(v, 64)
+			if err != nil {
+				return fmt.Errorf("failed to parse int: %v", err)
+			}
+			*dest = convVal
+			return nil
+		case float64:
 			*dest = v
+		case bool:
+			if v {
+				*dest = 1.0
+			} else {
+				*dest = 0.0
+			}
 			return nil
 		}
-		// TODO handle other types
 		return nil
 	},
 	"time": func(data any, destPtr any) error {
-		// TODO
-		return nil
+		dest := destPtr.(*time.Time)
+
+		switch v := data.(type) {
+		case time.Time:
+			*dest = v
+			return nil
+		case string:
+			tim, err := time.Parse(time.RFC3339, v)
+			if err != nil {
+				return fmt.Errorf("failed to parse time: %v", err)
+			}
+			*dest = tim
+			return nil
+		}
+
+		return fmt.Errorf("cannot coerce %v to time.Time", data)
 	},
 }
