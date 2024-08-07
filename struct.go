@@ -8,8 +8,14 @@ import (
 	p "github.com/Oudwins/zog/primitives"
 )
 
+type StructParser interface {
+	Parse(val any, destPtr any) p.ZogSchemaErrors
+}
+
+// A map of field names to zog schemas
 type Schema map[string]Processor
 
+// Returns a new structProcessor which can be used to parse input data into a struct
 func Struct(schema Schema) *structProcessor {
 	return &structProcessor{
 		schema: schema,
@@ -20,22 +26,19 @@ type structProcessor struct {
 	preTransforms  []p.PreTransform
 	schema         Schema
 	postTransforms []p.PostTransform
-	defaultVal     *string
-	required       *p.Test
-	catch          *string
+	tests          []p.Test
+	// defaultVal     any
+	required *p.Test
+	// catch          any
 }
 
-// only supports val = map[string]any & dest = &struct
-func (v *structProcessor) Parse(val any, dest any) p.ZogSchemaErrors {
-	// create context
-	// handle options
-	// empty path
-	// TODO create context -> but for single field
+// Parses val into destPtr and validates each field based on the schema. Only supports val = map[string]any & dest = &struct
+func (v *structProcessor) Parse(val any, destPtr any) p.ZogSchemaErrors {
 	var ctx = p.NewParseCtx()
 	errs := p.NewErrsMap()
 	path := p.Pather("")
 
-	v.process(val, dest, errs, path, ctx)
+	v.process(val, destPtr, errs, path, ctx)
 
 	if errs.IsEmpty() {
 		return nil
@@ -56,56 +59,131 @@ func (v *structProcessor) process(val any, dest any, errs p.ZogErrors, path p.Pa
 			val = nVal
 		}
 	}
-	// 2. cast data as map[string]any
-	m := val.(map[string]any)
-
-	// for each field in the struct we process it
-	for fieldName, fieldProcessor := range v.schema {
-		publicFieldName := string(unicode.ToUpper(rune(fieldName[0]))) + fieldName[1:]
-		// TODO HERE I NEED TO CHECK IF FIELD IS NIL & CREATE IT IF IT DOESN'T EXIST
-		destPtr, err := getStructFieldPointerByName(dest, publicFieldName)
-		if err != nil {
-			panic(err)
-		}
-		fieldVal := m[fieldName]
-		p := path.Push(fieldName)
-		fieldProcessor.process(fieldVal, destPtr, errs, p, ctx)
-	}
-	// TODO custom tests
 
 	// 4. postTransforms
-	if v.postTransforms != nil {
-		for _, fn := range v.postTransforms {
-			err := fn(dest, ctx)
-			if err != nil {
-				errs.Add(path, Errors.WrapUnknown(err))
-				return
+	defer func() {
+		// only run posttransforms on success
+		if errs.IsEmpty() {
+			for _, fn := range v.postTransforms {
+				err := fn(dest, ctx)
+				if err != nil {
+					errs.Add(path, Errors.WrapUnknown(err))
+					return
+				}
 			}
 		}
+	}()
+
+	isZeroVal := p.IsZeroValue(val)
+
+	if isZeroVal && v.required == nil {
+		return
 	}
+
+	// 2. cast data as map[string]any
+	m, ok := val.(map[string]any)
+	if !ok {
+		errs.Add(path, Errors.Wrap(fmt.Errorf("expected map[string]any at path %s", path), "failed to validate field"))
+		return
+	}
+
+	// required
+	if v.required != nil && isZeroVal {
+		errs.Add(path, Errors.New(v.required.ErrorFunc(dest, ctx)))
+		return
+	}
+
+	// 3. Process / validate struct fields
+	structVal := reflect.ValueOf(dest).Elem()
+	for i := 0; i < structVal.NumField(); i++ {
+		fieldMeta := structVal.Type().Field(i)
+
+		// skip private fields
+		if !fieldMeta.IsExported() {
+			continue
+		}
+
+		fieldKey := string(unicode.ToLower(rune(fieldMeta.Name[0]))) + fieldMeta.Name[1:]
+		processor, ok := v.schema[fieldKey]
+		if !ok {
+			continue
+		}
+		fieldTag, ok := fieldMeta.Tag.Lookup(p.ZogTag)
+		if ok {
+			fieldKey = fieldTag
+		}
+		input := m[fieldKey]
+		destPtr := structVal.Field(i).Addr().Interface()
+		processor.process(input, destPtr, errs, path.Push(fieldKey), ctx)
+	}
+
+	// 3. Tests for struct
+	for _, test := range v.tests {
+		if !test.ValidateFunc(dest, ctx) {
+			errs.Add(path, Errors.New(test.ErrorFunc(dest, ctx)))
+		}
+	}
+
 }
 
-func getStructFieldPointerByName(v any, name string) (any, error) {
-	val := reflect.ValueOf(v)
-	if val.Kind() != reflect.Ptr {
-		return nil, fmt.Errorf("expected dest to be a pointer, got %s", val.Kind())
+// Add a pretransform step to the schema
+func (v *structProcessor) PreTransform(transform p.PreTransform) *structProcessor {
+	if v.preTransforms == nil {
+		v.preTransforms = []p.PreTransform{}
 	}
-	val = val.Elem()
-	if val.Kind() != reflect.Struct {
-		return nil, fmt.Errorf("expected dest to point to a struct, got %s", val.Kind())
+	v.preTransforms = append(v.preTransforms, transform)
+	return v
+}
+
+// Adds posttransform function to schema
+func (v *structProcessor) PostTransform(transform p.PostTransform) *structProcessor {
+	if v.postTransforms == nil {
+		v.postTransforms = []p.PostTransform{}
 	}
+	v.postTransforms = append(v.postTransforms, transform)
+	return v
+}
 
-	fieldVal := val.FieldByName(name)
-	if !fieldVal.IsValid() {
-		return nil, fmt.Errorf("field %s not found", name)
+// ! MODIFIERS
+
+// marks field as required
+func (v *structProcessor) Required(options ...TestOption) *structProcessor {
+	r := p.Required(p.DErrorFunc("is a required field"))
+	for _, opt := range options {
+		opt(&r)
 	}
-	// TODO HERE WE PROBABLY NEED TO CREATE structs, maps, slices, etc if they don't exist and that is the kind of field
-	// if its an optional value
-	fmt.Println("Field vals")
-	fmt.Println(fieldVal.Kind(), fieldVal.Type())
+	v.required = &r
+	return v
+}
 
-	// HERE WE NEED TO CHECK IF THE VALUE IS A POINTER. If it is, we should check the underlying value for nil
-	// if its nil we need to create it based on the type
+// marks field as optional
+func (v *structProcessor) Optional() *structProcessor {
+	v.required = nil
+	return v
+}
 
-	return fieldVal.Addr().Interface(), nil
+// // sets the default value
+// func (v *structProcessor) Default(val any) *structProcessor {
+// 	v.defaultVal = val
+// 	return v
+// }
+
+// // sets the catch value (i.e the value to use if the validation fails)
+// func (v *structProcessor) Catch(val any) *structProcessor {
+// 	v.catch = val
+// 	return v
+// }
+
+// ! VALIDATORS
+// custom test function call it -> schema.Test("test_name", z.Message(""), func(val any, ctx *p.ParseCtx) bool {return true})
+func (v *structProcessor) Test(ruleName string, errorMsg TestOption, validateFunc p.TestFunc) *structProcessor {
+	t := p.Test{
+		Name:         ruleName,
+		ErrorFunc:    nil,
+		ValidateFunc: validateFunc,
+	}
+	errorMsg(&t)
+	v.tests = append(v.tests, t)
+
+	return v
 }
