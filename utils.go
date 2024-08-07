@@ -125,7 +125,7 @@ func primitiveProcess[T ZodPrimitive](val any, dest any, errs p.ZogErrors, path 
 			if catch != nil {
 				*destPtr = *catch
 			} else {
-				errs.Add(path, Errors.Wrap(err, "failed to validate string"))
+				errs.Add(path, Errors.Wrap(err, "failed to validate field"))
 				return
 			}
 		}
