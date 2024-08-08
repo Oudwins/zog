@@ -1,13 +1,11 @@
 package zog
 
 import (
-	"time"
-
 	p "github.com/Oudwins/zog/primitives"
 )
 
 type Processor interface {
-	process(val any, dest any, errs p.ZogErrors, path p.Pather, ctx *p.ParseCtx)
+	process(val any, dest any, errs p.ZogErrors, path p.PathBuilder, ctx *p.ParseCtx)
 }
 
 // ! ERRORS
@@ -43,6 +41,14 @@ func (e *errHelpers) WrapUnknown(err error) p.ZogError {
 
 var Errors = errHelpers{}
 
+// ! Data Providers
+
+func NewMapDataProvider[T any](m map[string]T) *p.MapDataProvider[T] {
+	return &p.MapDataProvider[T]{
+		M: m,
+	}
+}
+
 // ! Tagger
 
 // type tagger[T any] struct {
@@ -76,11 +82,8 @@ var Errors = errHelpers{}
 // }
 
 // ! PRIMITIVE PROCESSING
-type ZodPrimitive interface {
-	~string | ~int | ~float64 | ~bool | time.Time
-}
 
-func primitiveProcess[T ZodPrimitive](val any, dest any, errs p.ZogErrors, path p.Pather, ctx *p.ParseCtx, preTransforms []p.PreTransform, tests []p.Test, postTransforms []p.PostTransform, defaultVal *T, required *p.Test, catch *T, coercer p.CoercerFunc) {
+func primitiveProcess[T p.ZogPrimitive](val any, dest any, errs p.ZogErrors, path p.PathBuilder, ctx *p.ParseCtx, preTransforms []p.PreTransform, tests []p.Test, postTransforms []p.PostTransform, defaultVal *T, required *p.Test, catch *T, coercer p.CoercerFunc) {
 
 	destPtr := dest.(*T)
 	// 1. preTransforms

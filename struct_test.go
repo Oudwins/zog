@@ -9,33 +9,32 @@ import (
 )
 
 // structs with pointers
-// maps with additional values
+//maps with additional values
 // errors are correct
 // panics are correct
 
-var objSchema = Struct(Schema{
-	"str":  String().Required(),
-	"in":   Int().Required(),
-	"fl":   Float().Required(),
-	"bol":  Bool().Required(),
-	"slic": Slice(String().Required()),
-})
-
 type obj struct {
-	Str  string
-	In   int
-	Fl   float64
-	Bol  bool
-	Slic []string
+	Str string
+	In  int
+	Fl  float64
+	Bol bool
+	Tim time.Time
 }
 
+var objSchema = Struct(Schema{
+	"str": String().Required(),
+	"in":  Int().Required(),
+	"fl":  Float().Required(),
+	"bol": Bool().Required(),
+	"tim": Time().Required(),
+})
+
 type objTagged struct {
-	Str  string   `zog:"s"`
-	In   int      `zog:"i"`
-	Fl   float64  `zog:"f"`
-	Bol  bool     `zog:"b"`
-	Slic []string `zog:"sl"`
-	Tim  time.Time
+	Str string  `zog:"s"`
+	In  int     `zog:"i"`
+	Fl  float64 `zog:"f"`
+	Bol bool    `zog:"b"`
+	Tim time.Time
 }
 
 func TestExampleStruct(t *testing.T) {
@@ -46,10 +45,11 @@ func TestExampleStruct(t *testing.T) {
 		"in":  10,
 		"fl":  10.5,
 		"bol": true,
+		"tim": "2024-08-06T00:00:00Z",
 	}
 
 	// parse the data
-	errs := objSchema.Parse(data, &o)
+	errs := objSchema.Parse(NewMapDataProvider(data), &o)
 	assert.Nil(t, errs)
 	assert.Equal(t, o.Str, "hello")
 }
@@ -66,21 +66,11 @@ func TestTaggedStruct(t *testing.T) {
 		"tim": "2024-08-06T00:00:00Z",
 	}
 
-	errs := objSchema.Parse(data, &o)
+	errs := objSchema.Parse(NewMapDataProvider(data), &o)
 	assert.Nil(t, errs)
 	assert.Equal(t, o.Str, "hello")
 	assert.Equal(t, o.In, 10)
 	assert.Equal(t, o.Fl, 10.5)
 	assert.Equal(t, o.Bol, true)
-	// fmt.Println(o.Tim.Format(time.RFC3339))
-
-	// assert.Equal(t, o.Tim.Format(time.RFC3339), "2024-08-06T00:00:00Z")
-	v, _ := time.Parse(time.RFC3339, "2024-08-06T00:00:00Z")
-
-	tschema := Time().Required()
-
-	var tim time.Time
-	tschema.Parse("2024-08-06T00:00:00Z", &tim)
-
-	fmt.Println(v, tim)
+	assert.Equal(t, o.Tim, time.Date(2024, 8, 6, 0, 0, 0, 0, time.UTC))
 }
