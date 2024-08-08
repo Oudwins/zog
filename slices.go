@@ -28,13 +28,13 @@ func Slice(schema Processor) *sliceProcessor {
 func (v *sliceProcessor) Parse(val any, dest any) p.ZogSchemaErrors {
 	var ctx = p.NewParseCtx()
 	errs := p.NewErrsMap()
-	path := p.Pather("")
+	path := p.PathBuilder("")
 	v.process(val, dest, errs, path, ctx)
 
 	return errs.M
 }
 
-func (v *sliceProcessor) process(val any, dest any, errs p.ZogErrors, path p.Pather, ctx *p.ParseCtx) {
+func (v *sliceProcessor) process(val any, dest any, errs p.ZogErrors, path p.PathBuilder, ctx *p.ParseCtx) {
 	// 1. preTransforms
 	if v.preTransforms != nil {
 		for _, fn := range v.preTransforms {

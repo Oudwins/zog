@@ -9,7 +9,7 @@ import (
 )
 
 type StructParser interface {
-	Parse(val any, destPtr any) p.ZogSchemaErrors
+	Parse(val p.DataProvider, destPtr any) p.ZogSchemaErrors
 }
 
 // A map of field names to zog schemas
@@ -33,10 +33,10 @@ type structProcessor struct {
 }
 
 // Parses val into destPtr and validates each field based on the schema. Only supports val = map[string]any & dest = &struct
-func (v *structProcessor) Parse(val any, destPtr any) p.ZogSchemaErrors {
+func (v *structProcessor) Parse(val p.DataProvider, destPtr any) p.ZogSchemaErrors {
 	var ctx = p.NewParseCtx()
 	errs := p.NewErrsMap()
-	path := p.Pather("")
+	path := p.PathBuilder("")
 
 	v.process(val, destPtr, errs, path, ctx)
 
@@ -46,7 +46,7 @@ func (v *structProcessor) Parse(val any, destPtr any) p.ZogSchemaErrors {
 	return errs.M
 }
 
-func (v *structProcessor) process(val any, dest any, errs p.ZogErrors, path p.Pather, ctx *p.ParseCtx) {
+func (v *structProcessor) process(val any, dest any, errs p.ZogErrors, path p.PathBuilder, ctx *p.ParseCtx) {
 	// 1. preTransforms
 	if v.preTransforms != nil {
 		for _, fn := range v.preTransforms {
@@ -80,10 +80,10 @@ func (v *structProcessor) process(val any, dest any, errs p.ZogErrors, path p.Pa
 		return
 	}
 
-	// 2. cast data as map[string]any
-	m, ok := val.(map[string]any)
+	// 2. cast data as DataProvider
+	m, ok := val.(p.DataProvider)
 	if !ok {
-		errs.Add(path, Errors.Wrap(fmt.Errorf("expected map[string]any at path %s", path), "failed to validate field"))
+		errs.Add(path, Errors.Wrap(fmt.Errorf("expected a DataProvider at path %s", path), "failed to validate field"))
 		return
 	}
 
@@ -102,7 +102,7 @@ func (v *structProcessor) process(val any, dest any, errs p.ZogErrors, path p.Pa
 		if !fieldMeta.IsExported() {
 			continue
 		}
-
+		// TODO handle both upper & lowerCase first letter
 		fieldKey := string(unicode.ToLower(rune(fieldMeta.Name[0]))) + fieldMeta.Name[1:]
 		processor, ok := v.schema[fieldKey]
 		if !ok {
@@ -112,7 +112,8 @@ func (v *structProcessor) process(val any, dest any, errs p.ZogErrors, path p.Pa
 		if ok {
 			fieldKey = fieldTag
 		}
-		input := m[fieldKey]
+
+		input := m.Get(fieldKey)
 		destPtr := structVal.Field(i).Addr().Interface()
 		processor.process(input, destPtr, errs, path.Push(fieldKey), ctx)
 	}

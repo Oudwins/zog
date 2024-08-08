@@ -32,7 +32,7 @@ func (v *stringProcessor) Parse(val any, dest *string) p.ZogErrorList {
 	// TODO create context -> but for single field
 	var ctx = p.NewParseCtx()
 	errs := p.NewErrsList()
-	path := p.Pather("")
+	path := p.PathBuilder("")
 	// TODO handle options
 
 	v.process(val, dest, errs, path, ctx)
@@ -40,7 +40,7 @@ func (v *stringProcessor) Parse(val any, dest *string) p.ZogErrorList {
 	return errs.List
 }
 
-func (v *stringProcessor) process(val any, dest any, errs p.ZogErrors, path p.Pather, ctx *p.ParseCtx) {
+func (v *stringProcessor) process(val any, dest any, errs p.ZogErrors, path p.PathBuilder, ctx *p.ParseCtx) {
 	primitiveProcess(val, dest, errs, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, p.Coercers["string"])
 }
 

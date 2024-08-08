@@ -20,7 +20,7 @@ type ZogSchemaErrors = map[string][]ZogError
 
 // Interface used to add errors during parsing & validation
 type ZogErrors interface {
-	Add(path Pather, err ZogError)
+	Add(path PathBuilder, err ZogError)
 	IsEmpty() bool
 }
 
@@ -32,7 +32,7 @@ func NewErrsList() *ErrsList {
 	return &ErrsList{}
 }
 
-func (e *ErrsList) Add(path Pather, err ZogError) {
+func (e *ErrsList) Add(path PathBuilder, err ZogError) {
 	if e.List == nil {
 		e.List = make(ZogErrorList, 0, 3)
 	}
@@ -49,7 +49,8 @@ type ErrsMap struct {
 }
 
 const (
-	FIRST_ERROR_KEY = "$first"
+	ERROR_KEY_FIRST = "$first"
+	ERROR_KEY_ROOT  = "$root"
 )
 
 // Factory for errsMap
@@ -57,14 +58,17 @@ func NewErrsMap() *ErrsMap {
 	return &ErrsMap{}
 }
 
-func (s *ErrsMap) Add(p Pather, err ZogError) {
+func (s *ErrsMap) Add(p PathBuilder, err ZogError) {
 	// checking if its the first error
 	if s.M == nil {
 		s.M = ZogSchemaErrors{}
-		s.M[FIRST_ERROR_KEY] = []ZogError{err}
+		s.M[ERROR_KEY_FIRST] = []ZogError{err}
 	}
 
 	path := p.String()
+	if path == "" {
+		path = ERROR_KEY_ROOT
+	}
 	if _, ok := s.M[path]; !ok {
 		s.M[path] = []ZogError{}
 	}
@@ -79,5 +83,5 @@ func (s ErrsMap) First() error {
 	if s.IsEmpty() {
 		return nil
 	}
-	return s.M[FIRST_ERROR_KEY][0]
+	return s.M[ERROR_KEY_FIRST][0]
 }

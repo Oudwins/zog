@@ -22,14 +22,14 @@ func Bool() *boolProcessor {
 func (v *boolProcessor) Parse(data any, dest *bool) p.ZogErrorList {
 	var ctx = p.NewParseCtx()
 	errs := p.NewErrsList()
-	path := p.Pather("")
+	path := p.PathBuilder("")
 
 	v.process(data, dest, errs, path, ctx)
 
 	return errs.List
 }
 
-func (v *boolProcessor) process(val any, dest any, errs p.ZogErrors, path p.Pather, ctx *p.ParseCtx) {
+func (v *boolProcessor) process(val any, dest any, errs p.ZogErrors, path p.PathBuilder, ctx *p.ParseCtx) {
 	primitiveProcess(val, dest, errs, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, p.Coercers["bool"])
 }
 
