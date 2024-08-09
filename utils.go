@@ -8,6 +8,10 @@ type Processor interface {
 	process(val any, dest any, errs p.ZogErrors, path p.PathBuilder, ctx *p.ParseCtx)
 }
 
+// ! Parse Context
+
+type ParseCtx = p.ParseCtx
+
 // ! ERRORS
 type errHelpers struct {
 }
@@ -43,10 +47,9 @@ var Errors = errHelpers{}
 
 // ! Data Providers
 
-func NewMapDataProvider[T any](m map[string]T) *p.MapDataProvider[T] {
-	return &p.MapDataProvider[T]{
-		M: m,
-	}
+// Creates a new map data provider
+func NewMapDataProvider[T any](m map[string]T) p.DataProvider {
+	return p.NewMapDataProvider(m)
 }
 
 // ! Tagger
@@ -83,7 +86,9 @@ func NewMapDataProvider[T any](m map[string]T) *p.MapDataProvider[T] {
 
 // ! PRIMITIVE PROCESSING
 
-func primitiveProcess[T p.ZogPrimitive](val any, dest any, errs p.ZogErrors, path p.PathBuilder, ctx *p.ParseCtx, preTransforms []p.PreTransform, tests []p.Test, postTransforms []p.PostTransform, defaultVal *T, required *p.Test, catch *T, coercer p.CoercerFunc) {
+func primitiveProcessor[T p.ZogPrimitive](val any, dest any, errs p.ZogErrors, path p.PathBuilder, ctx *p.ParseCtx, preTransforms []p.PreTransform, tests []p.Test, postTransforms []p.PostTransform, defaultVal *T, required *p.Test, catch *T, coercer p.CoercerFunc) {
+	canCatch := catch != nil
+	hasCatched := false
 
 	destPtr := dest.(*T)
 	// 1. preTransforms
@@ -91,8 +96,9 @@ func primitiveProcess[T p.ZogPrimitive](val any, dest any, errs p.ZogErrors, pat
 		nVal, err := fn(val, ctx)
 		// bail if error in preTransform
 		if err != nil {
-			if catch != nil {
+			if canCatch {
 				*destPtr = *catch
+				hasCatched = true
 				break
 			}
 			errs.Add(path, Errors.WrapUnknown(err))
@@ -113,47 +119,57 @@ func primitiveProcess[T p.ZogPrimitive](val any, dest any, errs p.ZogErrors, pat
 			}
 		}
 	}()
-	// 2. cast data to string & handle default/required
-	isZeroVal := p.IsZeroValue(val)
 
-	if isZeroVal {
-		if defaultVal != nil {
-			*destPtr = *defaultVal
-		} else if required == nil {
-			// This handles optional case
-			return
+	if !hasCatched {
+		// 2. cast data to string & handle default/required
+		isZeroVal := p.IsZeroValue(val)
+
+		if isZeroVal {
+			if defaultVal != nil {
+				*destPtr = *defaultVal
+			} else if required == nil {
+				// This handles optional case
+				return
+			}
+		} else {
+			if err := coercer(val, destPtr); err != nil {
+				if canCatch {
+					*destPtr = *catch
+					hasCatched = true
+				} else {
+					errs.Add(path, Errors.Wrap(err, "failed to validate field"))
+					return
+				}
+			}
 		}
-	} else {
-		if err := coercer(val, destPtr); err != nil {
+	}
+
+	if !hasCatched {
+		// required
+		if required != nil && !required.ValidateFunc(*destPtr, ctx) {
 			if catch != nil {
 				*destPtr = *catch
+				hasCatched = true
 			} else {
-				errs.Add(path, Errors.Wrap(err, "failed to validate field"))
+				errs.Add(path, Errors.New(required.ErrorFunc(*destPtr, ctx)))
 				return
 			}
 		}
 	}
 
-	// required
-	if required != nil && !required.ValidateFunc(*destPtr, ctx) {
-		if catch != nil {
-			*destPtr = *catch
-		} else {
-			errs.Add(path, Errors.New(required.ErrorFunc(*destPtr, ctx)))
-			return
-		}
-	}
-
-	// 3. tests
-	for _, test := range tests {
-		if !test.ValidateFunc(*destPtr, ctx) {
-			// catching the first error if catch is set
-			if catch != nil {
-				*destPtr = *catch
-				break
+	if !hasCatched {
+		// 3. tests
+		for _, test := range tests {
+			if !test.ValidateFunc(*destPtr, ctx) {
+				// catching the first error if catch is set
+				if catch != nil {
+					*destPtr = *catch
+					hasCatched = true
+					break
+				}
+				//
+				errs.Add(path, Errors.New(test.ErrorFunc(*destPtr, ctx)))
 			}
-			//
-			errs.Add(path, Errors.New(test.ErrorFunc(*destPtr, ctx)))
 		}
 	}
 
