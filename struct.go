@@ -74,14 +74,14 @@ func (v *structProcessor) process(val any, dest any, errs p.ZogErrors, path p.Pa
 		}
 	}()
 
-	isZeroVal := p.IsZeroValue(val)
+	_, isZeroVal := val.(*p.EmptyDataProvider)
 
 	if isZeroVal && v.required == nil {
 		return
 	}
 
 	// 2. cast data as DataProvider
-	m, ok := val.(p.DataProvider)
+	dataProv, ok := val.(p.DataProvider)
 	if !ok {
 		errs.Add(path, Errors.Wrap(fmt.Errorf("expected a DataProvider at path %s", path), "failed to validate field"))
 		return
@@ -113,9 +113,14 @@ func (v *structProcessor) process(val any, dest any, errs p.ZogErrors, path p.Pa
 			fieldKey = fieldTag
 		}
 
-		input := m.Get(fieldKey)
 		destPtr := structVal.Field(i).Addr().Interface()
-		processor.process(input, destPtr, errs, path.Push(fieldKey), ctx)
+		switch schema := processor.(type) {
+		case *structProcessor:
+			schema.process(dataProv.GetNestedProvider(fieldKey), destPtr, errs, path.Push(fieldKey), ctx)
+
+		default:
+			schema.process(dataProv.Get(fieldKey), destPtr, errs, path.Push(fieldKey), ctx)
+		}
 	}
 
 	// 3. Tests for struct
