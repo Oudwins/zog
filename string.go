@@ -9,239 +9,296 @@ import (
 )
 
 var (
-	emailRegex = regexp.MustCompile(`^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,4}$`)
-	// TODO improve this regex?
-	urlRegex = regexp.MustCompile(`^(http(s)?://)?([\da-z\.-]+)\.([a-z\.]{2,6})([/\w \.-]*)*/?$`)
+	emailRegex = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
+	urlRegex   = regexp.MustCompile(`^(http(s)?://)?([\da-z\.-]+)\.([a-z\.]{2,6})([/\w \.-]*)*/?$`)
 )
 
-type StringValidator struct {
-	Rules []p.Rule
+type stringProcessor struct {
+	preTransforms  []p.PreTransform
+	tests          []p.Test
+	postTransforms []p.PostTransform
+	defaultVal     *string
+	required       *p.Test
+	catch          *string
 }
 
-func String() *StringValidator {
-	return &StringValidator{
-		Rules: []p.Rule{
-			p.IsType[string]("should be a string"),
-		},
+func String() *stringProcessor {
+	return &stringProcessor{
+		tests: []p.Test{},
 	}
 }
 
-func (v *StringValidator) Parse(val any) (any, []string, bool) {
-	errs, ok := p.GenericRulesValidator(val, v.Rules)
-	return val, errs, ok
+func (v *stringProcessor) Parse(val any, dest *string) p.ZogErrorList {
+	// TODO create context -> but for single field
+	var ctx = p.NewParseCtx()
+	errs := p.NewErrsList()
+	path := p.PathBuilder("")
+	// TODO handle options
+
+	v.process(val, dest, errs, path, ctx)
+
+	return errs.List
 }
 
-func (v *StringValidator) Optional() *optional {
-	return Optional(v)
+func (v *stringProcessor) process(val any, dest any, errs p.ZogErrors, path p.PathBuilder, ctx *p.ParseCtx) {
+	primitiveProcessor(val, dest, errs, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, p.Coercers["string"])
 }
 
-func (v *StringValidator) Default(val any) *defaulter {
-	return Default(val, v)
-}
-
-func (v *StringValidator) Catch(val any) *catcher {
-	return Catch(val, v)
-}
-
-func (v *StringValidator) Transform(transform func(val any) (any, bool)) *transformer {
-	return Transform(v, transform)
-}
-
-func (v *StringValidator) Refine(ruleName string, errorMsg string, validateFunc p.RuleValidateFunc) *StringValidator {
-	v.Rules = append(v.Rules,
-		p.Rule{
-			Name:         ruleName,
-			ErrorMessage: errorMsg,
-			ValidateFunc: validateFunc,
-		},
-	)
-
-	return v
-}
-
-// METHODS
-
-func (v *StringValidator) Min(n int, msg ...string) *StringValidator {
-	defaultMsg := fmt.Sprintf("should be at least %d characters long", n)
-	if len(msg) > 0 {
-		defaultMsg = msg[0]
+// Adds pretransform function to schema
+func (v *stringProcessor) PreTransform(transform p.PreTransform) *stringProcessor {
+	if v.preTransforms == nil {
+		v.preTransforms = []p.PreTransform{}
 	}
-	v.Rules = append(v.Rules,
-		p.LenMin[string](n, defaultMsg))
+	v.preTransforms = append(v.preTransforms, transform)
 	return v
 }
 
-func (v *StringValidator) Max(n int) *StringValidator {
-	v.Rules = append(v.Rules,
-		p.LenMax[string](n, fmt.Sprintf("should be at most %d characters long", n)))
-	return v
-}
-func (v *StringValidator) Len(n int) *StringValidator {
-	v.Rules = append(v.Rules,
-		p.Length[string](n, fmt.Sprintf("should be exactly %d characters long", n)),
-	)
+// Adds posttransform function to schema
+func (v *stringProcessor) PostTransform(transform p.PostTransform) *stringProcessor {
+	if v.postTransforms == nil {
+		v.postTransforms = []p.PostTransform{}
+	}
+	v.postTransforms = append(v.postTransforms, transform)
 	return v
 }
 
-// THIS IS ONLY HERE FOR CREATING ERROR MSGS FOR FORMS. DOESN'T ACTUALLY PROVIDE ANY VALUE
-func (v *StringValidator) Required() *StringValidator {
-	v.Rules = append(v.Rules,
-		p.Rule{
-			Name: "required",
-			ValidateFunc: func(rule p.Rule) bool {
-				str, ok := rule.FieldValue.(string)
-				if !ok {
-					return false
-				}
-				return str != ""
-			},
-			ErrorMessage: "is a required field",
-		},
-	)
+// ! MODIFIERS
+
+// marks field as required
+func (v *stringProcessor) Required(options ...TestOption) *stringProcessor {
+	r := p.Required(p.DErrorFunc("is a required field"))
+	for _, opt := range options {
+		opt(&r)
+	}
+	v.required = &r
 	return v
 }
 
-func (v *StringValidator) Email() *StringValidator {
-	v.Rules = append(v.Rules,
-		p.Rule{
-			Name:         "email",
-			ErrorMessage: "is not a valid email address",
-			ValidateFunc: func(set p.Rule) bool {
-				email, ok := set.FieldValue.(string)
-				if !ok {
-					return false
-				}
-				return emailRegex.MatchString(email)
-			},
-		},
-	)
+// marks field as optional
+func (v *stringProcessor) Optional() *stringProcessor {
+	v.required = nil
 	return v
 }
 
-func (v *StringValidator) URL() *StringValidator {
-	v.Rules = append(v.Rules,
-		p.Rule{
-			Name:         "url",
-			ErrorMessage: "is not a valid url",
-			ValidateFunc: func(set p.Rule) bool {
-				u, ok := set.FieldValue.(string)
-				if !ok {
-					return false
-				}
-				isOk := urlRegex.MatchString(u)
-				return isOk
-			},
-		},
-	)
+// sets the default value
+func (v *stringProcessor) Default(val string) *stringProcessor {
+	v.defaultVal = &val
 	return v
 }
 
-// Should use the go method name for this? HasPrefix & HasSuffix???
-// TODO ???
-func (v *StringValidator) StartsWith(s string) *StringValidator {
-	v.Rules = append(v.Rules,
-		p.Rule{
-			Name:      "startsWith",
-			RuleValue: s,
-			ValidateFunc: func(set p.Rule) bool {
-				val, ok := set.FieldValue.(string)
-				if !ok {
-					return false
-				}
-				return strings.HasPrefix(val, s)
-			},
-			ErrorMessage: fmt.Sprintf("should start with %s", s),
-		},
-	)
+// sets the catch value (i.e the value to use if the validation fails)
+func (v *stringProcessor) Catch(val string) *stringProcessor {
+	v.catch = &val
 	return v
 }
 
-func (v *StringValidator) EndsWith(s string) *StringValidator {
-	v.Rules = append(v.Rules,
-		p.Rule{
-			Name:      "startsWith",
-			RuleValue: s,
-			ValidateFunc: func(set p.Rule) bool {
-				val, ok := set.FieldValue.(string)
-				if !ok {
-					return false
-				}
-				return strings.HasSuffix(val, s)
-			},
-			ErrorMessage: fmt.Sprintf("should end with %s", s),
-		},
-	)
+// ! VALIDATORS
+// custom test function call it -> schema.Test("test_name", z.Message(""), func(val any, ctx *p.ParseCtx) bool {return true})
+func (v *stringProcessor) Test(ruleName string, errorMsg TestOption, validateFunc p.TestFunc) *stringProcessor {
+	t := p.Test{
+		Name:         ruleName,
+		ErrorFunc:    nil,
+		ValidateFunc: validateFunc,
+	}
+	errorMsg(&t)
+	v.tests = append(v.tests, t)
+
 	return v
 }
 
-func (v *StringValidator) Contains(sub string) *StringValidator {
-	v.Rules = append(v.Rules,
-		p.Rule{
-			Name:      "contains",
-			RuleValue: sub,
-			ValidateFunc: func(set p.Rule) bool {
-				val, ok := set.FieldValue.(string)
-				if !ok {
-					return false
-				}
-				return strings.Contains(val, sub)
-			},
-			ErrorMessage: fmt.Sprintf("should contain %s", sub),
-		},
-	)
+// checks that the value is one of the enum values
+func (v *stringProcessor) OneOf(enum []string, options ...TestOption) *stringProcessor {
+	t := p.In(enum, fmt.Sprintf("should be one of %v", enum))
+	for _, opt := range options {
+		opt(&t)
+	}
+	v.tests = append(v.tests, t)
 	return v
 }
 
-func (v *StringValidator) ContainsUpper() *StringValidator {
-	v.Rules = append(v.Rules,
-		p.Rule{
-			Name: "containsUpper",
-			ValidateFunc: func(set p.Rule) bool {
-				val, ok := set.FieldValue.(string)
-				if !ok {
-					return false
-				}
-				for _, r := range val {
-					if r >= 'A' && r <= 'Z' {
-						return true
-					}
-				}
+// checks that the value is at least n characters long
+func (v *stringProcessor) Min(n int, options ...TestOption) *stringProcessor {
+	t := p.LenMin[string](n, p.DErrorFunc(fmt.Sprintf("should be at least %d characters long", n)))
+	for _, opt := range options {
+		opt(&t)
+	}
+	v.tests = append(v.tests, t)
+	return v
+}
+
+// checks that the value is at most n characters long
+func (v *stringProcessor) Max(n int, options ...TestOption) *stringProcessor {
+	t := p.LenMax[string](n, p.DErrorFunc(fmt.Sprintf("should be at most %d characters long", n)))
+	for _, opt := range options {
+		opt(&t)
+	}
+	v.tests = append(v.tests, t)
+	return v
+}
+
+// checks that the value is exactly n characters long
+func (v *stringProcessor) Len(n int, options ...TestOption) *stringProcessor {
+	t := p.Len[string](n, p.DErrorFunc(fmt.Sprintf("should be exactly %d characters long", n)))
+	for _, opt := range options {
+		opt(&t)
+	}
+	v.tests = append(v.tests, t)
+	return v
+}
+
+// checks that the value is a valid email address
+func (v *stringProcessor) Email(options ...TestOption) *stringProcessor {
+	t := p.Test{
+		Name:      "email",
+		ErrorFunc: p.DErrorFunc("is not a valid email address"),
+		ValidateFunc: func(v any, ctx *p.ParseCtx) bool {
+			email, ok := v.(string)
+			if !ok {
 				return false
-			},
-			ErrorMessage: "should contain at least one uppercase letter",
+			}
+			return emailRegex.MatchString(email)
 		},
-	)
+	}
+	for _, opt := range options {
+		opt(&t)
+	}
+	v.tests = append(v.tests, t)
 	return v
 }
 
-func (v *StringValidator) ContainsDigit() *StringValidator {
-	v.Rules = append(v.Rules,
-		p.Rule{
-			Name: "containsDigit",
-			ValidateFunc: func(set p.Rule) bool {
-				val, ok := set.FieldValue.(string)
-				if !ok {
-					return false
-				}
-				for _, r := range val {
-					if r >= '0' && r <= '9' {
-						return true
-					}
-				}
+func (v *stringProcessor) URL(options ...TestOption) *stringProcessor {
+	t := p.Test{
+		Name:      "url",
+		ErrorFunc: p.DErrorFunc("is not a valid url"),
+		ValidateFunc: func(v any, ctx *p.ParseCtx) bool {
+			u, ok := v.(string)
+			if !ok {
 				return false
-			},
-			ErrorMessage: "should contain at least one digit",
+			}
+			isOk := urlRegex.MatchString(u)
+			return isOk
 		},
-	)
+	}
+	for _, opt := range options {
+		opt(&t)
+	}
+	v.tests = append(v.tests, t)
 	return v
 }
 
-func (v *StringValidator) ContainsSpecial() *StringValidator {
-	v.Rules = append(v.Rules,
-		p.Rule{
+func (v *stringProcessor) HasPrefix(s string, options ...TestOption) *stringProcessor {
+	t := p.Test{
+		Name:      "startsWith",
+		ErrorFunc: p.DErrorFunc(fmt.Sprintf("should start with %s", s)),
+		ValidateFunc: func(v any, ctx *p.ParseCtx) bool {
+			val, ok := v.(string)
+			if !ok {
+				return false
+			}
+			return strings.HasPrefix(val, s)
+		},
+	}
+	for _, opt := range options {
+		opt(&t)
+	}
+	v.tests = append(v.tests, t)
+	return v
+}
+
+func (v *stringProcessor) HasSuffix(s string, options ...TestOption) *stringProcessor {
+	t := p.Test{
+		Name:      "endsWith",
+		ErrorFunc: p.DErrorFunc(fmt.Sprintf("should end with %s", s)),
+		ValidateFunc: func(v any, ctx *p.ParseCtx) bool {
+			val, ok := v.(string)
+			if !ok {
+				return false
+			}
+			return strings.HasSuffix(val, s)
+		},
+	}
+	for _, opt := range options {
+		opt(&t)
+	}
+	v.tests = append(v.tests, t)
+	return v
+}
+
+func (v *stringProcessor) Contains(sub string, options ...TestOption) *stringProcessor {
+	t := p.Test{
+		Name:      "contains",
+		ErrorFunc: p.DErrorFunc(fmt.Sprintf("should contain %s", sub)),
+		ValidateFunc: func(v any, ctx *p.ParseCtx) bool {
+			val, ok := v.(string)
+			if !ok {
+				return false
+			}
+			return strings.Contains(val, sub)
+		},
+	}
+	for _, opt := range options {
+		opt(&t)
+	}
+	v.tests = append(v.tests, t)
+	return v
+}
+
+func (v *stringProcessor) ContainsUpper(options ...TestOption) *stringProcessor {
+	t := p.Test{
+		Name:      "containsUpper",
+		ErrorFunc: p.DErrorFunc("should contain at least one uppercase letter"),
+		ValidateFunc: func(v any, ctx *p.ParseCtx) bool {
+			val, ok := v.(string)
+			if !ok {
+				return false
+			}
+			for _, r := range val {
+				if r >= 'A' && r <= 'Z' {
+					return true
+				}
+			}
+			return false
+		},
+	}
+	for _, opt := range options {
+		opt(&t)
+	}
+	v.tests = append(v.tests, t)
+	return v
+}
+
+func (v *stringProcessor) ContainsDigit(options ...TestOption) *stringProcessor {
+	t := p.Test{
+		Name: "containsDigit",
+		ValidateFunc: func(v any, ctx *p.ParseCtx) bool {
+			val, ok := v.(string)
+			if !ok {
+				return false
+			}
+			for _, r := range val {
+				if r >= '0' && r <= '9' {
+					return true
+				}
+			}
+			return false
+		},
+		ErrorFunc: p.DErrorFunc("should contain at least one digit"),
+	}
+
+	for _, opt := range options {
+		opt(&t)
+	}
+
+	v.tests = append(v.tests, t)
+	return v
+}
+
+func (v *stringProcessor) ContainsSpecial(options ...TestOption) *stringProcessor {
+	t :=
+		p.Test{
 			Name: "containsSpecial",
-			ValidateFunc: func(set p.Rule) bool {
-				val, ok := set.FieldValue.(string)
+			ValidateFunc: func(v any, ctx *p.ParseCtx) bool {
+				val, ok := v.(string)
 				if !ok {
 					return false
 				}
@@ -255,8 +312,11 @@ func (v *StringValidator) ContainsSpecial() *StringValidator {
 				}
 				return false
 			},
-			ErrorMessage: "should contain at least one special character",
-		},
-	)
+			ErrorFunc: p.DErrorFunc("should contain at least one special character"),
+		}
+	for _, opt := range options {
+		opt(&t)
+	}
+	v.tests = append(v.tests, t)
 	return v
 }

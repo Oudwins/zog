@@ -1,136 +1,85 @@
 package zog
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
+// !STRUCTS
+// NOT YET SUPPORTED. Should be simple. Just need to check if its a struct processor in which case we need to build an any data provider
+//
+//	func TestSliceStruct(t *testing.T) {
+//		type TestStruct struct {
+//			T string
+//		}
+//		schema := Slice(Struct(Schema{"t": String().Required()}))
+//		sl := []TestStruct{}
+//		errs := schema.Parse([]any{map[string]any{"t": "a"}, map[string]any{"t": "b"}}, &sl)
+//	}
 func TestSlicePassSchema(t *testing.T) {
-	type TestStruct struct {
-		Items []any
-	}
 
-	s := TestStruct{
-		Items: []any{"a", "b", "c"},
-	}
+	s := []string{}
+	schema := Slice(String().Required())
 
-	errs, ok := Validate(s, Schema{"items": Slice(String().Len(1))})
-	assert.True(t, ok)
-	assert.Empty(t, errs)
-
-	s.Items = []any{"a", "b", "c", "d", 1}
-	errs, ok = Validate(s, Schema{"items": Slice(String().Len(1))})
-	assert.False(t, ok)
-	assert.Len(t, errs, 1)
+	errs := schema.Parse([]any{"a", "b", "c"}, &s)
+	assert.Nil(t, errs)
+	fmt.Println(s)
+	assert.Len(t, s, 3)
+	assert.Equal(t, s[0], "a")
+	assert.Equal(t, s[1], "b")
+	assert.Equal(t, s[2], "c")
 }
 
-func TestSliceNotEmpty(t *testing.T) {
-	type TestStruct struct {
-		Items []any
-	}
-	s := TestStruct{
-		Items: []any{},
-	}
+func TestSliceErrors(t *testing.T) {
+	s := []string{}
+	schema := Slice(String().Required().Min(2))
 
-	errs, ok := Validate(s, Schema{"items": Slice(String()).Min(1)})
-	assert.False(t, ok)
+	errs := schema.Parse([]any{"a", "b"}, &s)
+	assert.Len(t, errs, 3)
+	assert.NotEmpty(t, errs["0"])
+	assert.NotEmpty(t, errs["1"])
+	assert.Empty(t, errs["2"])
+}
+
+func TestSliceLen(t *testing.T) {
+	s := []string{}
+
+	els := []string{"a", "b", "c", "d", "e"}
+	schema := Slice(String().Required()).Len(2)
+	errs := schema.Parse(els[:2], &s)
+	assert.Len(t, s, 2)
+	assert.Nil(t, errs)
+	errs = schema.Parse(els[:1], &s)
 	assert.NotEmpty(t, errs)
 
-	s.Items = []any{"a", "b", "c"}
-	errs, ok = Validate(s, Schema{"items": Slice(String()).Min(1)})
-	assert.True(t, ok)
-	assert.Empty(t, errs)
-}
+	// min
+	schema = Slice(String().Required()).Min(2)
+	errs = schema.Parse(els[:4], &s)
+	assert.Nil(t, errs)
+	errs = schema.Parse(els[:1], &s)
+	assert.NotEmpty(t, errs)
+	// max
+	schema = Slice(String().Required()).Max(3)
+	errs = schema.Parse(els[:1], &s)
+	assert.Nil(t, errs)
+	errs = schema.Parse(els[:4], &s)
+	assert.NotNil(t, errs)
 
-func TestSliceEnum(t *testing.T) {
-	type TestStruct struct {
-		Items []string
-	}
-
-	s := TestStruct{
-		Items: []string{"a", "b", "c"},
-	}
-
-	schema := Schema{"items": Slice(Enum([]string{"a", "b", "c"})).Optional()}
-
-	errs, ok := Parse(s, schema)
-	assert.True(t, ok)
-	assert.Empty(t, errs)
-
-	s.Items = []string{"testing", "badval", "two"}
-	errs, ok = Parse(s, schema)
-	assert.False(t, ok)
-	assert.Len(t, errs, 1)
-}
-
-func TestSliceLength(t *testing.T) {
-	type TestStruct struct {
-		Items []any
-	}
-
-	s := TestStruct{
-		Items: []any{"a", "b", "c"},
-	}
-
-	errs, ok := Validate(s, Schema{"items": Slice(String()).Len(3)})
-	assert.True(t, ok)
-	assert.Empty(t, errs)
-
-	errs, ok = Validate(s, Schema{"items": Slice(String()).Len(2)})
-	assert.False(t, ok)
-	assert.Len(t, errs, 1)
-
-	// min & max
-	errs, ok = Validate(s, Schema{"items": Slice(String()).Min(2)})
-	assert.True(t, ok)
-	assert.Empty(t, errs)
-
-	errs, ok = Validate(s, Schema{"items": Slice(String()).Min(4)})
-	assert.False(t, ok)
-	assert.Len(t, errs, 1)
-
-	errs, ok = Validate(s, Schema{"items": Slice(String()).Max(3)})
-	assert.True(t, ok)
-	assert.Empty(t, errs)
-
-	errs, ok = Validate(s, Schema{"items": Slice(String()).Max(1)})
-	assert.False(t, ok)
-	assert.Len(t, errs, 1)
 }
 
 func TestSliceContains(t *testing.T) {
 
-	type TestStruct struct {
-		Items []any
-	}
+	s := []string{}
+	items := []string{"a", "b", "c"}
 
-	s := TestStruct{
-		Items: []any{"a", "b", "c"},
-	}
+	schema := Slice(String()).Contains("a")
+	errs := schema.Parse(items, &s)
+	assert.Nil(t, errs)
+	assert.Len(t, s, 3)
 
-	errs, ok := Validate(s, Schema{"items": Slice(String()).Contains("a")})
-	assert.True(t, ok)
-	assert.Empty(t, errs)
-
-	errs, ok = Validate(s, Schema{"items": Slice(String()).Contains("d")})
-	assert.False(t, ok)
-	assert.Len(t, errs, 1)
-}
-
-func TestSliceOptional(t *testing.T) {
-	type TestStruct struct {
-		Items []any
-	}
-
-	s := TestStruct{}
-
-	errs, ok := Parse(s, Schema{"items": Slice(String()).Optional()})
-	assert.True(t, ok)
-	assert.Empty(t, errs)
-
-	s.Items = []any{"a", "b", "c"}
-	errs, ok = Parse(s, Schema{"items": Slice(String()).Optional()})
-	assert.True(t, ok)
-	assert.Empty(t, errs)
+	schema = Slice(String()).Contains("d")
+	errs = schema.Parse(items, &s)
+	assert.NotEmpty(t, errs)
 }
