@@ -23,6 +23,17 @@ func TestSchemaOptionalByDefault(t *testing.T) {
 
 }
 
+func TestPreTransform(t *testing.T) {
+	field := String().Required().Len(3).PreTransform(func(val any, ctx *ParseCtx) (any, error) {
+		return "foo", nil
+	})
+	var dest string
+
+	errs := field.Parse("", &dest)
+	assert.Empty(t, errs)
+	assert.Equal(t, "foo", dest)
+}
+
 func TestRequiredAborts(t *testing.T) {
 	field := String().Required().Len(3)
 	var dest string
