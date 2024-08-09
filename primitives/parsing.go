@@ -4,13 +4,10 @@ import "context"
 
 type ParseCtx struct {
 	context.Context
-	path string
 }
 
 func NewParseCtx() *ParseCtx {
-	return &ParseCtx{
-		path: "",
-	}
+	return &ParseCtx{}
 }
 
 type ErrorFunc = func(val any, ctx *ParseCtx) string
