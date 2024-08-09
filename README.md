@@ -1,6 +1,15 @@
-![logo](assets/logo-v1.jpg)
+<div align="center">
+    <br />
+    <a href="https://github.com/Oudwins/zog">
+     <img src="https://raw.githubusercontent.com/Oudwins/zog/master/assets/logo-v1.jpg" alt="Zog, a Zod-like schema parser & validator" />
+    </a>
+</div>
 
 # ZOG - A Zod & Yup like Schema Parser & Validator for GO
+
+<a href="https://pkg.go.dev/github.com/Oudwins/zog"><img src="https://pkg.go.dev/badge/github.com//github.com/Oudwins/tailwind-merge-go.svg" alt="Go Reference" /></a>
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![Go Report Card](https://goreportcard.com/badge/Oudwins/zog)](https://goreportcard.com/report/github.com/Oudwins/zog)
 
 Zog is a schema builder for runtime value parsing and validation. Define a schema, transform a value to match, assert the shape of an existing value, or both. Zog schemas are extremely expressive and allow modeling complex, interdependent validations, or value transformation.
 
