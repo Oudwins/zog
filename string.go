@@ -41,7 +41,7 @@ func (v *stringProcessor) Parse(val any, dest *string) p.ZogErrorList {
 }
 
 func (v *stringProcessor) process(val any, dest any, errs p.ZogErrors, path p.PathBuilder, ctx *p.ParseCtx) {
-	primitiveProcess(val, dest, errs, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, p.Coercers["string"])
+	primitiveProcessor(val, dest, errs, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, p.Coercers["string"])
 }
 
 // Adds pretransform function to schema
@@ -106,6 +106,7 @@ func (v *stringProcessor) Test(ruleName string, errorMsg TestOption, validateFun
 	return v
 }
 
+// checks that the value is one of the enum values
 func (v *stringProcessor) OneOf(enum []string, options ...TestOption) *stringProcessor {
 	t := p.In(enum, fmt.Sprintf("should be one of %v", enum))
 	for _, opt := range options {
@@ -115,6 +116,7 @@ func (v *stringProcessor) OneOf(enum []string, options ...TestOption) *stringPro
 	return v
 }
 
+// checks that the value is at least n characters long
 func (v *stringProcessor) Min(n int, options ...TestOption) *stringProcessor {
 	t := p.LenMin[string](n, p.DErrorFunc(fmt.Sprintf("should be at least %d characters long", n)))
 	for _, opt := range options {
@@ -124,6 +126,7 @@ func (v *stringProcessor) Min(n int, options ...TestOption) *stringProcessor {
 	return v
 }
 
+// checks that the value is at most n characters long
 func (v *stringProcessor) Max(n int, options ...TestOption) *stringProcessor {
 	t := p.LenMax[string](n, p.DErrorFunc(fmt.Sprintf("should be at most %d characters long", n)))
 	for _, opt := range options {
@@ -133,6 +136,7 @@ func (v *stringProcessor) Max(n int, options ...TestOption) *stringProcessor {
 	return v
 }
 
+// checks that the value is exactly n characters long
 func (v *stringProcessor) Len(n int, options ...TestOption) *stringProcessor {
 	t := p.Len[string](n, p.DErrorFunc(fmt.Sprintf("should be exactly %d characters long", n)))
 	for _, opt := range options {
@@ -142,6 +146,7 @@ func (v *stringProcessor) Len(n int, options ...TestOption) *stringProcessor {
 	return v
 }
 
+// checks that the value is a valid email address
 func (v *stringProcessor) Email(options ...TestOption) *stringProcessor {
 	t := p.Test{
 		Name:      "email",

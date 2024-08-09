@@ -52,7 +52,7 @@ func (v *numberProcessor[T]) process(val any, dest any, errs p.ZogErrors, path p
 		coercer = p.Coercers["int"]
 	}
 
-	primitiveProcess(val, dest, errs, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, coercer)
+	primitiveProcessor(val, dest, errs, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, coercer)
 }
 
 // GLOBAL METHODS
