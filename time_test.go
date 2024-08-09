@@ -1,61 +1,20 @@
 package zog
 
-// func TestTimeAfter(t *testing.T) {
-// 	type Foo struct {
-// 		CreatedAt time.Time
-// 	}
-// 	now := time.Now()
-// 	foo := Foo{
-// 		CreatedAt: now,
-// 	}
-// 	schema := Schema{
-// 		"createdAt": Time().After(now),
-// 	}
-// 	errors, ok := Validate(foo, schema)
-// 	assert.False(t, ok)
-// 	assert.Len(t, errors["createdAt"], 1)
+import (
+	"testing"
+	"time"
 
-// 	foo.CreatedAt = now.Add(time.Second * 10000)
-// 	_, ok = Validate(foo, schema)
-// 	assert.True(t, ok)
-// }
+	"github.com/stretchr/testify/assert"
+)
 
-// func TestTimeBefore(t *testing.T) {
-// 	type Foo struct {
-// 		CreatedAt time.Time
-// 	}
-// 	now := time.Now()
-// 	foo := Foo{
-// 		CreatedAt: now,
-// 	}
-// 	schema := Schema{
-// 		"createdAt": Time().Before(now),
-// 	}
-// 	errors, ok := Validate(foo, schema)
-// 	assert.False(t, ok)
-// 	assert.Len(t, errors["createdAt"], 1)
+func TestTimeAfter(t *testing.T) {
+	now := time.Now()
 
-// 	foo.CreatedAt = now.Add(time.Second * -10000)
-// 	_, ok = Validate(foo, schema)
-// 	assert.True(t, ok)
-// }
+	schema := Time().After(time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC))
+	errs := schema.Parse(now, &now)
+	assert.Nil(t, errs)
 
-// func TestTimeIs(t *testing.T) {
-// 	type Foo struct {
-// 		CreatedAt time.Time
-// 	}
-// 	now := time.Now()
-// 	foo := Foo{
-// 		CreatedAt: now.Add(time.Second * 10000),
-// 	}
-// 	schema := Schema{
-// 		"createdAt": Time().Is(now),
-// 	}
-// 	errors, ok := Validate(foo, schema)
-// 	assert.False(t, ok)
-// 	assert.Len(t, errors["createdAt"], 1)
-
-// 	foo.CreatedAt = now
-// 	_, ok = Validate(foo, schema)
-// 	assert.True(t, ok)
-// }
+	now = time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)
+	errs = schema.Parse(now, &now)
+	assert.Len(t, errs, 1)
+}
