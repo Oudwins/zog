@@ -16,10 +16,16 @@ Zog is a schema builder for runtime value parsing and validation. Define a schem
 Killer Features:
 
 - Concise yet expressive schema interface, equipped to model simple to complex data models
-- Support for parsing and validating Query Params and Form inputs directing from the request object with `z.Params()` & `z.Form()`
-- Extensible: add your own validators and schemas
+- Support for parsing and validating Query Params and Form inputs directing from the request object with `schema.Parse(zhttp.NewRequestDataProvider(r), &dest)`
+- Extensible: add your own validators, schemas and data providers
 - Rich error details, make debugging a breeze
 - Almost no reflection when using primitive types
+- Built-in coercion support for most types
+
+API Stability:
+
+- I will consider the API stable when we reach v1.0.0
+- However, I believe very little API changes will happen from the current implementation. The API that is most likely to change is the everything related to error messages. However, if you use z.Message() that API will most likely not change and you won't be affected.
 
 ## Introduction
 
@@ -90,14 +96,31 @@ Slice(String().Email().Required()).PreTransform(func(val any, ctx *z.ParseCtx) (
 
 ## Core Design Decisions
 
-> **A WORD OF CAUTION. ZOG & PANICS**
-> Zog will never panic due to invalid input but will always panic if invalid destination is passed to the `Parse` function (i.e if there are discrepancies between the schema and the destination).
-
 - The struct validator always expects a `DataProvider`, which is an interface that wraps around an input like a map. This is less efficient than doing it directly but allows us to reuse the same code for all kinds of data sources (i.e json, query params, forms, etc).
 - All fields optinal by default. Same as graphql
 - Errors returned by you can be an instance of ZogError or an error. If you return an error, it will be wrapped in a ZogError using the error.Error() value as the message. ZogError is just a struct that wraps around an error and adds a message field which is is text that can be shown to the user.
 - You should not depend on test execution order. They might run in parallel in the future
 - When parsing into structs, private fields are ignored (same as stdlib json.Unmarshal)
+
+> **A WORD OF CAUTION. ZOG & PANICS**
+> Zog will never panic due to invalid input but will always panic if invalid destination is passed to the `Parse` function (i.e if the destination does not match the schema).
+
+```go
+var schema = z.Struct(z.Schema{
+  "name": z.String().Required(),
+})
+// This struct is a valid destionation for the schema
+type User struct {
+  Name string `zog:"name"`
+  Age int // age will be ignored since it is not a field in the schema
+}
+// this struct is not a valid destionation for the schema. It is missing the name field
+type User2 struct {
+  Email string,
+  Age int
+}
+
+```
 
 **Changes from zog**:
 
@@ -321,3 +344,15 @@ These are the things I want to add to zog before v1.0.0
 - support for catch & default for structs & slices
 - implement errors.SanitizeMap/Slice -> Will leave only the safe error messages. No internal stuff. Optionally this could be a parsing option in the style of `schema.Parse(m, &dest, z.WithSanitizeErrors())`
 - Add additional tests
+
+## Acknowledgments
+
+- Big thank you to @AlexanderArvidsson for being there to talk about architecture and design decisions. It helped a lot to have someone to bounce ideas off of
+- Credit for all the inspiration goes to /colinhacks/zod & /jquense/yup
+- Credit for the initial idea goes to anthony -> /anthdm/superkit he made a hacky version of this idea that I used as a starting point, I was never happy with it so I inspired me to rewrite it from scratch
+- Credit for the logo goes to /colinhacks/zod
+
+## License
+
+This project is licensed under the MIT License -
+see the [LICENSE](LICENSE) file for details.
