@@ -14,6 +14,11 @@ type urlDataProvider struct {
 var _ p.DataProvider = urlDataProvider{}
 
 func (u urlDataProvider) Get(key string) any {
+	// if query param ends with [] its always a slice
+	if key[len(key)-2:] == "[]" {
+		return u.Data[key]
+	}
+
 	if len(u.Data[key]) > 1 {
 		return u.Data[key]
 	} else {
