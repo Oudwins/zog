@@ -5,6 +5,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/Oudwins/zog/conf"
 	p "github.com/Oudwins/zog/primitives"
 )
 
@@ -41,7 +42,7 @@ func (v *stringProcessor) Parse(val any, dest *string) p.ZogErrorList {
 }
 
 func (v *stringProcessor) process(val any, dest any, errs p.ZogErrors, path p.PathBuilder, ctx *p.ParseCtx) {
-	primitiveProcessor(val, dest, errs, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, p.Coercers["string"])
+	primitiveProcessor(val, dest, errs, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, conf.Coercers["string"])
 }
 
 // Adds pretransform function to schema

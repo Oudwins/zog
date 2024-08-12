@@ -1,6 +1,7 @@
 package zog
 
 import (
+	"github.com/Oudwins/zog/conf"
 	p "github.com/Oudwins/zog/primitives"
 )
 
@@ -52,41 +53,9 @@ func NewMapDataProvider[T any](m map[string]T) p.DataProvider {
 	return p.NewMapDataProvider(m)
 }
 
-// ! Tagger
-
-// type tagger[T any] struct {
-// 	Def     *T
-// 	Req       *p.Test
-// 	Catched          *T
-// }
-
-// func (v tagger[T]) Required() numberProcessor[T] {
-// 	r := p.Required(p.DErrorFunc("is a required field"))
-// 	v.Req = &r
-// 	return v
-// }
-
-// // marks field as optional
-// func (v numberProcessor[T]) Optional() numberProcessor[T] {
-// 	v.required = nil
-// 	return v
-// }
-
-// // sets the default value
-// func (v numberProcessor[T]) Default(val T) numberProcessor[T] {
-// 	v.defaultVal = &val
-// 	return v
-// }
-
-// // sets the catch value (i.e the value to use if the validation fails)
-// func (v numberProcessor[T]) Catch(val T) numberProcessor[T] {
-// 	v.catch = &val
-// 	return v
-// }
-
 // ! PRIMITIVE PROCESSING
 
-func primitiveProcessor[T p.ZogPrimitive](val any, dest any, errs p.ZogErrors, path p.PathBuilder, ctx *p.ParseCtx, preTransforms []p.PreTransform, tests []p.Test, postTransforms []p.PostTransform, defaultVal *T, required *p.Test, catch *T, coercer p.CoercerFunc) {
+func primitiveProcessor[T p.ZogPrimitive](val any, dest any, errs p.ZogErrors, path p.PathBuilder, ctx *p.ParseCtx, preTransforms []p.PreTransform, tests []p.Test, postTransforms []p.PostTransform, defaultVal *T, required *p.Test, catch *T, coercer conf.CoercerFunc) {
 	canCatch := catch != nil
 	hasCatched := false
 
@@ -132,7 +101,10 @@ func primitiveProcessor[T p.ZogPrimitive](val any, dest any, errs p.ZogErrors, p
 				return
 			}
 		} else {
-			if err := coercer(val, destPtr); err != nil {
+			newVal, err := coercer(val)
+			if err == nil {
+				*destPtr = newVal.(T)
+			} else {
 				if canCatch {
 					*destPtr = *catch
 					hasCatched = true

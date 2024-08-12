@@ -1,6 +1,7 @@
 package zog
 
 import (
+	"github.com/Oudwins/zog/conf"
 	p "github.com/Oudwins/zog/primitives"
 )
 
@@ -30,7 +31,7 @@ func (v *boolProcessor) Parse(data any, dest *bool) p.ZogErrorList {
 }
 
 func (v *boolProcessor) process(val any, dest any, errs p.ZogErrors, path p.PathBuilder, ctx *p.ParseCtx) {
-	primitiveProcessor(val, dest, errs, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, p.Coercers["bool"])
+	primitiveProcessor(val, dest, errs, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, conf.Coercers["bool"])
 }
 
 // GLOBAL METHODS

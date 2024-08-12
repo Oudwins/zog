@@ -3,8 +3,8 @@ package zog
 import (
 	"fmt"
 	"reflect"
-	"strings"
 
+	"github.com/Oudwins/zog/conf"
 	p "github.com/Oudwins/zog/primitives"
 )
 
@@ -66,27 +66,22 @@ func (v *sliceProcessor) process(val any, dest any, errs p.ZogErrors, path p.Pat
 	// 2. cast data to string & handle default/required
 	isZeroVal := p.IsZeroValue(val)
 	destVal := reflect.ValueOf(dest).Elem()
-	refVal := reflect.ValueOf(val)
+	// WHAT IF THIS IS NOT A SLICE???? TODO ! FUCK in default we set an invalid type
+	var refVal reflect.Value
 
 	if isZeroVal {
 		if v.defaultVal != nil {
-			refVal.Set(reflect.ValueOf(v.defaultVal))
+			refVal = reflect.ValueOf(v.defaultVal)
 		} else if v.required == nil {
 			return
 		}
 	} else {
 		// make sure val is a slice if not try to make it one
-		valTp := reflect.TypeOf(val)
-		switch valTp.Kind() {
-		case reflect.Slice:
-			// do nothing
-		case reflect.String:
-			s := val.(string)
-			refVal = reflect.ValueOf(strings.Split(s, ","))
-		default:
-			errs.Add(path, Errors.Wrap(fmt.Errorf("failed to coerce input value into a valid slice"), "failed to validate field"))
-			return
+		v, err := conf.Coercers["slice"](val)
+		if err != nil {
+			errs.Add(path, Errors.Wrap(err, "failed to validate field"))
 		}
+		refVal = reflect.ValueOf(v)
 	}
 
 	destVal.Set(reflect.MakeSlice(destVal.Type(), refVal.Len(), refVal.Len()))

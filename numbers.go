@@ -3,6 +3,7 @@ package zog
 import (
 	"fmt"
 
+	"github.com/Oudwins/zog/conf"
 	p "github.com/Oudwins/zog/primitives"
 )
 
@@ -44,12 +45,12 @@ func (v *numberProcessor[T]) Parse(val any, dest *T) p.ZogErrorList {
 
 func (v *numberProcessor[T]) process(val any, dest any, errs p.ZogErrors, path p.PathBuilder, ctx *p.ParseCtx) {
 
-	var coercer p.CoercerFunc
+	var coercer conf.CoercerFunc
 	switch any(dest).(type) {
 	case *float64:
-		coercer = p.Coercers["float64"]
+		coercer = conf.Coercers["float64"]
 	case *int:
-		coercer = p.Coercers["int"]
+		coercer = conf.Coercers["int"]
 	}
 
 	primitiveProcessor(val, dest, errs, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, coercer)

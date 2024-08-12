@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/Oudwins/zog/conf"
 	p "github.com/Oudwins/zog/primitives"
 )
 
@@ -31,7 +32,7 @@ func (v *timeProcessor) Parse(val any, dest *time.Time) p.ZogErrorList {
 }
 
 func (v *timeProcessor) process(val any, dest any, errs p.ZogErrors, path p.PathBuilder, ctx *p.ParseCtx) {
-	primitiveProcessor(val, dest, errs, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, p.Coercers["time"])
+	primitiveProcessor(val, dest, errs, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, conf.Coercers["time"])
 }
 
 // Adds pretransform function to schema
