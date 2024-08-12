@@ -42,10 +42,16 @@ import (
   z "github.com/Oudwins/zog"
    )
 
-var schema = z.Struct(z.Schema{
+var nameSchema = z.Struct(z.Schema{
   "name": z.String().Min(3, z.Message("Override default message")).Max(10),
+})
+
+var ageSchema = z.Struct(z.Schema{
   "age": z.Int().GT(18).Required(z.Message("is required")),
 })
+
+// Merge the schemas creating a new schema
+var schema = nameSchema.Merge(ageSchema)
 
 type User struct {
   Name string `zog:"name"` // optional zog will use field name by default
@@ -376,7 +382,7 @@ conf.Coercers["float64"] = func(data any) (any, error) {
 These are the things I want to add to zog before v1.0.0
 
 - For structs & slices: support pointers
-- Support for schema.Merge(schema2) && schema.Clone()
+- Support for schema.Clone()
 - Better support for custom error messages (including failed coercion error messages) & i18n
 - support for catch & default for structs & slices
 - implement errors.SanitizeMap/Slice -> Will leave only the safe error messages. No internal stuff. Optionally this could be a parsing option in the style of `schema.Parse(m, &dest, z.WithSanitizeErrors())`

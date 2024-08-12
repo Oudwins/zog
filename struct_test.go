@@ -120,3 +120,24 @@ func TestOptionalStructs(t *testing.T) {
 	errs := objSchema.Parse(&p.EmptyDataProvider{}, &o)
 	assert.Nil(t, errs)
 }
+
+func TestMergeSchema(t *testing.T) {
+	var nameSchema = Struct(Schema{
+		"name": String().Min(3, Message("Override default message")).Max(10),
+	})
+	var ageSchema = Struct(Schema{
+		"age": Int().GT(18).Required(Message("is required")),
+	})
+	var schema = nameSchema.Merge(ageSchema)
+
+	type User struct {
+		Name string
+		Age  int
+	}
+
+	var o User
+	errs := schema.Parse(NewMapDataProvider(map[string]any{"name": "hello", "age": 20}), &o)
+	assert.Nil(t, errs)
+	assert.Equal(t, o.Name, "hello")
+	assert.Equal(t, o.Age, 20)
+}
