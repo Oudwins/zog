@@ -18,7 +18,7 @@ func TestEnvParsing(t *testing.T) {
 	})
 
 	os.Setenv("TEST_STR", "hello")
-	err := Parse(schema, &env, false)
+	err := schema.Parse(NewDataProvider(), &env)
 	assert.Nil(t, err)
 	assert.Equal(t, env.Str, "hello")
 	os.Setenv("TEST_STR", "")
