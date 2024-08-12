@@ -135,7 +135,7 @@ Most of these things are issues we would like to address in future versions.
 - Structs do not support pointers at the moment
 - slices do not support pointers or structs
 - maps are not a supported schema type
-- structs and slices don't support catch or default values
+- structs and slices don't support catch, and structs don't suppoort default values
 - You can provide custom error messages, but cannot customize coercion error messages or set global defaults
 - Validations and parsing cannot be run separately
 - It is not recommended to use very deeply nested schemas since that requires a lot of reflection and can have a negative impact on performance
@@ -168,8 +168,14 @@ var Env = struct {
 		Pass string `zog:"DB_PASS"`
 	}
 }{}
-// Parse will log.Fatal if there are errors because we have set panicOnError to true otherwise it will return the errors
-var _ = zenv.Parse(envSchema, &Env, true)
+
+// Init our typesafe env vars, panic if any envs are missing
+func Init() {
+  errs := envSchema.Parse(zenv.NewDataProvider(), &Env)
+  if errs != nil {
+    log.Fatal(errs)
+  }
+}
 ```
 
 **zhttp: helps parse http requests forms & query params**
@@ -312,6 +318,37 @@ Slice(Bool()).Length(5)
 Slice(String()).Contains("foo")
 ```
 
+## Overriding Defaults
+
+Zog uses internal functions to handle many aspects of validation & parsing. We aim to provide a simple way for you to customize the default behaviour of Zog through simple declarative code inside your project. You can find the options you can tweak & override in the conf package (`github.com/Oudwins/zog/conf`).
+
+Currently the only default behaviour that can be overridden are the coerce functions, in the future we will add more.
+
+### Overriding the default coercer functions
+
+Lets go through an example of overriding the `float64` coercer function, because we want to support floats that use a comma as the decimal separator.
+
+```go
+import (
+  // import the conf package
+	"github.com/Oudwins/zog/conf"
+)
+
+// we save the original to use later
+var zogFloat64Coercer =  conf.Coercers["float64"];
+
+// we override the coercer function for float64
+conf.Coercers["float64"] = func(data any) (any, error) {
+  str, ok := data.(string)
+  // identify the case we want to override
+  if !ok && strings.Contains(str, ",") {
+    return MyCustomFloatCoercer(str)
+  }
+  // fallback to the original function
+  return zogFloat64Coercer(data)
+}
+```
+
 ## Zog Schema Parsign Execution Structure
 
 ![Zog Schema Parsign Execution Structure](/assets/parsing-workflow.png)
@@ -344,6 +381,7 @@ These are the things I want to add to zog before v1.0.0
 - support for catch & default for structs & slices
 - implement errors.SanitizeMap/Slice -> Will leave only the safe error messages. No internal stuff. Optionally this could be a parsing option in the style of `schema.Parse(m, &dest, z.WithSanitizeErrors())`
 - Add additional tests
+- Better docs
 
 ## Acknowledgments
 
