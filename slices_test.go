@@ -18,6 +18,7 @@ import (
 //		sl := []TestStruct{}
 //		errs := schema.Parse([]any{map[string]any{"t": "a"}, map[string]any{"t": "b"}}, &sl)
 //	}
+
 func TestSlicePassSchema(t *testing.T) {
 
 	s := []string{}
@@ -82,4 +83,25 @@ func TestSliceContains(t *testing.T) {
 	schema = Slice(String()).Contains("d")
 	errs = schema.Parse(items, &s)
 	assert.NotEmpty(t, errs)
+}
+
+func TestSliceDefaultCoercing(t *testing.T) {
+	s := []string{}
+	schema := Slice(String())
+	errs := schema.Parse("a", &s)
+	assert.Nil(t, errs)
+	assert.Len(t, s, 1)
+	assert.Equal(t, s[0], "a")
+}
+
+func TestSliceDefault(t *testing.T) {
+	schema := Slice(String()).Default([]string{"a", "b", "c"})
+	s := []string{}
+	err := schema.Parse(nil, &s)
+	assert.Nil(t, err)
+	assert.Len(t, s, 3)
+	assert.Equal(t, s[0], "a")
+	assert.Equal(t, s[1], "b")
+	assert.Equal(t, s[2], "c")
+	fmt.Println(s)
 }
