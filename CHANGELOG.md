@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.1](https://github.com/Oudwins/zog/compare/v0.6.0...v0.6.1) (2024-08-16)
+
+
+### Bug Fixes
+
+* more realistic min go version ([#6](https://github.com/Oudwins/zog/issues/6)) ([658f060](https://github.com/Oudwins/zog/commit/658f060a66189ec0f0172cef507ab5e628442ed4))
+
 ## [0.6.0](https://github.com/Oudwins/zog/compare/v0.5.0...v0.6.0) (2024-08-16)
 
 
