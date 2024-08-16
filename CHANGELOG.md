@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.0](https://github.com/Oudwins/zog/compare/v0.5.0...v0.6.0) (2024-08-16)
+
+
+### Features
+
+* quality of life improvements for working with errors ([#3](https://github.com/Oudwins/zog/issues/3)) ([1f3c3d0](https://github.com/Oudwins/zog/commit/1f3c3d003934fc4c9af81e9adabc20bce4e0fc8a))
+
 ## 0.5.0 (2024-08-12)
 
 
