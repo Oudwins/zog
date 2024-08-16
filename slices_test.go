@@ -136,6 +136,8 @@ func TestSliceOfStructs(t *testing.T) {
 	var team Team
 
 	errsMap := teamSchema.Parse(NewMapDataProvider(data), &team)
-	fmt.Printf("%+v", errsMap)
-	fmt.Printf("%+v", team)
+	assert.Nil(t, errsMap)
+	assert.Len(t, team.Users, 2)
+	assert.Equal(t, team.Users[0].Name, "Jane")
+	assert.Equal(t, team.Users[1].Name, "John")
 }
