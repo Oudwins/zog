@@ -39,9 +39,9 @@ func TestSliceErrors(t *testing.T) {
 
 	errs := schema.Parse([]any{"a", "b"}, &s)
 	assert.Len(t, errs, 3)
-	assert.NotEmpty(t, errs["0"])
-	assert.NotEmpty(t, errs["1"])
-	assert.Empty(t, errs["2"])
+	assert.NotEmpty(t, errs["[0]"])
+	assert.NotEmpty(t, errs["[1]"])
+	assert.Empty(t, errs["[2]"])
 }
 
 func TestSliceLen(t *testing.T) {
@@ -103,4 +103,52 @@ func TestSliceDefault(t *testing.T) {
 	assert.Equal(t, s[0], "a")
 	assert.Equal(t, s[1], "b")
 	assert.Equal(t, s[2], "c")
+}
+
+type User struct {
+	Name string
+}
+
+type Team struct {
+	Users []User
+}
+
+func TestSliceOfStructs(t *testing.T) {
+
+	var userSchema = Struct(Schema{
+		"name": String().Required(),
+	})
+
+	var teamSchema = Struct(Schema{
+		"users": Slice(userSchema),
+	})
+
+	var data = map[string]interface{}{
+		"users": []interface{}{
+			map[string]interface{}{
+				"name": "Jane",
+			},
+			map[string]interface{}{
+				"name": "John",
+			},
+		},
+	}
+	var team Team
+
+	errsMap := teamSchema.Parse(NewMapDataProvider(data), &team)
+	assert.Nil(t, errsMap)
+	assert.Len(t, team.Users, 2)
+	assert.Equal(t, team.Users[0].Name, "Jane")
+	assert.Equal(t, team.Users[1].Name, "John")
+
+	data = map[string]interface{}{
+		"users": []interface{}{
+			map[string]interface{}{},
+			map[string]interface{}{},
+		},
+	}
+	errsMap = teamSchema.Parse(NewMapDataProvider(data), &team)
+
+	assert.Len(t, errsMap["users[0].name"], 1)
+	assert.Len(t, errsMap["users[1].name"], 1)
 }

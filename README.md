@@ -140,7 +140,7 @@ type User2 struct {
 Most of these things are issues we would like to address in future versions.
 
 - Structs do not support pointers at the moment
-- slices do not support pointers or structs
+- slices do not support pointers
 - maps are not a supported schema type
 - structs and slices don't support catch, and structs don't suppoort default values
 - You can provide custom error messages, but cannot customize coercion error messages or set global defaults
@@ -237,21 +237,23 @@ errList := z.String().Min(5).Parse("foo", &dest) // can return []z.ZogError{z.Zo
 errMap := z.Struct(z.Schema{"name": z.String().Min(5)}).Parse(data, &dest) // can return map[string][]z.ZogError{"name": []z.ZogError{{Message: "min length is 5"}}} or nil
 
 // Slice of 2 strings with min length of 5
-errsMap2 := z.Slice(z.String().Min(5)).Len(2).Parse(data, &dest) // can return map[string][]z.ZogError{"$root": []z.ZogError{{Message: "slice length is not 2"}, "indexOfElementThatFailed": []z.ZogError{{Message: "min length is 5"}}}} or nil
+errsMap2 := z.Slice(z.String().Min(5)).Len(2).Parse(data, &dest) // can return map[string][]z.ZogError{"$root": []z.ZogError{{Message: "slice length is not 2"}, "[0]": []z.ZogError{{Message: "min length is 5"}}}} or nil
 ```
 
 Additionally, `z.ZogErrMap` will use the field path as the key. Meaning
 
 ```go
-errsMap := z.Struct(z.Schema{"inner": z.Struct(z.Schema{"name": z.String().Min(5)})}).Parse(data, &dest)
+errsMap := z.Struct(z.Schema{"inner": z.Struct(z.Schema{"name": z.String().Min(5)}), "slice": z.Slice(z.String().Min(5))}).Parse(data, &dest)
 errsMap["inner.name"] // will return []z.ZogError{{Message: "min length is 5"}}
+errsMap["slice[0]"] // will return []z.ZogError{{Message: "min length is 5"}}
 ```
 
-`$root` is a reserved key that will be used for the root level errors. For example:
+`$root` & `$first` are reserved keys for both Struct & Slice validation, they are used for root level errors and for the first error found in a schema, for xample:
 
 ```go
 errsMap := z.Slice(z.String()).Min(2).Parse(data, &dest)
 errsMap["$root"] // will return []z.ZogError{{Message: "slice length is not 2"}}
+errsMap["$first"] // will return the same in this case []z.ZogError{{Message: "slice length is not 2"}}
 ```
 
 ### Example ways of delivering errors to users

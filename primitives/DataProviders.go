@@ -44,6 +44,11 @@ func NewMapDataProvider[T any](m map[string]T) DataProvider {
 
 // Tries to create a map data provider from any value if it cannot it will return an empty data provider (which will always return nil)
 func NewAnyDataProvider(val any) DataProvider {
+	dataProvider, _ := TryNewAnyDataProvider(val)
+	return dataProvider
+}
+
+func TryNewAnyDataProvider(val any) (DataProvider, bool) {
 	x := reflect.ValueOf(val)
 
 	switch x.Kind() {
@@ -51,33 +56,33 @@ func NewAnyDataProvider(val any) DataProvider {
 		keyTyp := x.Type().Key()
 
 		if keyTyp.Kind() != reflect.String {
-			return &EmptyDataProvider{}
+			return &EmptyDataProvider{}, false
 		}
 
 		valTyp := x.Type().Elem()
 
 		switch valTyp.Kind() { // TODO: add more types
 		case reflect.String:
-			return NewMapDataProvider(x.Interface().(map[string]string))
+			return NewMapDataProvider(x.Interface().(map[string]string)), true
 		case reflect.Int:
-			return NewMapDataProvider(x.Interface().(map[string]int))
+			return NewMapDataProvider(x.Interface().(map[string]int)), true
 		case reflect.Float64:
-			return NewMapDataProvider(x.Interface().(map[string]float64))
+			return NewMapDataProvider(x.Interface().(map[string]float64)), true
 		case reflect.Bool:
-			return NewMapDataProvider(x.Interface().(map[string]bool))
+			return NewMapDataProvider(x.Interface().(map[string]bool)), true
 		case reflect.Interface:
-			return NewMapDataProvider(x.Interface().(map[string]any))
+			return NewMapDataProvider(x.Interface().(map[string]any)), true
 		default:
-			return &EmptyDataProvider{}
+			return &EmptyDataProvider{}, false
 		}
 
 	case reflect.Pointer:
 		if x.IsNil() {
-			return &EmptyDataProvider{}
+			return &EmptyDataProvider{}, false
 		}
-		return NewAnyDataProvider(x.Elem().Interface())
+		return TryNewAnyDataProvider(x.Elem().Interface())
 
 	default:
-		return &EmptyDataProvider{}
+		return &EmptyDataProvider{}, false
 	}
 }

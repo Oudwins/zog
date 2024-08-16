@@ -117,8 +117,10 @@ func (v *structProcessor) process(val any, dest any, errs p.ZogErrors, path p.Pa
 	// 2. cast data as DataProvider
 	dataProv, ok := val.(p.DataProvider)
 	if !ok {
-		errs.Add(path, Errors.Wrap(fmt.Errorf("expected a DataProvider at path %s", path), "failed to validate field"))
-		return
+		if dataProv, ok = p.TryNewAnyDataProvider(val); !ok {
+			errs.Add(path, Errors.Wrap(fmt.Errorf("expected a DataProvider at path %s", path), "failed to validate field"))
+			return
+		}
 	}
 
 	// required
