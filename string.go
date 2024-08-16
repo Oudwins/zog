@@ -29,7 +29,7 @@ func String() *stringProcessor {
 	}
 }
 
-func (v *stringProcessor) Parse(val any, dest *string) p.ZogErrorList {
+func (v *stringProcessor) Parse(val any, dest *string) p.ZogErrList {
 	// TODO create context -> but for single field
 	var ctx = p.NewParseCtx()
 	errs := p.NewErrsList()

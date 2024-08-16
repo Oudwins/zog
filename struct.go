@@ -10,7 +10,7 @@ import (
 )
 
 type StructParser interface {
-	Parse(val p.DataProvider, destPtr any) p.ZogSchemaErrors
+	Parse(val p.DataProvider, destPtr any) p.ZogErrMap
 }
 
 // A map of field names to zog schemas
@@ -67,7 +67,7 @@ func (v *structProcessor) Merge(other *structProcessor) *structProcessor {
 }
 
 // Parses val into destPtr and validates each field based on the schema. Only supports val = map[string]any & dest = &struct
-func (v *structProcessor) Parse(val p.DataProvider, destPtr any) p.ZogSchemaErrors {
+func (v *structProcessor) Parse(val p.DataProvider, destPtr any) p.ZogErrMap {
 	var ctx = p.NewParseCtx()
 	errs := p.NewErrsMap()
 	path := p.PathBuilder("")
