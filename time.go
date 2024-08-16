@@ -21,7 +21,7 @@ func Time() *timeProcessor {
 	return &timeProcessor{}
 }
 
-func (v *timeProcessor) Parse(val any, dest *time.Time) p.ZogErrorList {
+func (v *timeProcessor) Parse(val any, dest *time.Time) p.ZogErrList {
 	var ctx = p.NewParseCtx()
 	errs := p.NewErrsList()
 	path := p.PathBuilder("")

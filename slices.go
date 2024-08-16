@@ -26,7 +26,7 @@ func Slice(schema Processor) *sliceProcessor {
 }
 
 // only supports val = slice[any] & dest = &slice[]
-func (v *sliceProcessor) Parse(val any, dest any) p.ZogSchemaErrors {
+func (v *sliceProcessor) Parse(val any, dest any) p.ZogErrMap {
 	var ctx = p.NewParseCtx()
 	errs := p.NewErrsMap()
 	path := p.PathBuilder("")

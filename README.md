@@ -42,10 +42,16 @@ import (
   z "github.com/Oudwins/zog"
    )
 
-var schema = z.Struct(z.Schema{
+var nameSchema = z.Struct(z.Schema{
   "name": z.String().Min(3, z.Message("Override default message")).Max(10),
+})
+
+var ageSchema = z.Struct(z.Schema{
   "age": z.Int().GT(18).Required(z.Message("is required")),
 })
+
+// Merge the schemas creating a new schema
+var schema = nameSchema.Merge(ageSchema)
 
 type User struct {
   Name string `zog:"name"` // optional zog will use field name by default
@@ -64,7 +70,7 @@ func main() {
   }
   errsMap := schema.Parse(z.NewMapDataProvider(m), &u)
   if errsMap != nil {
-    // handle errors
+    // handle errors -> see Errors section
   }
   u.Name // ""
   u.Age // 30
@@ -201,6 +207,92 @@ func handlePostRequest(w http.ResponseWriter, r *http.Request) {
   }
   user.Name // defined
   user.Age // defined
+}
+
+```
+
+## Errors
+
+> **WARNING**: The errors API is probably what is most likely to change in the future. I will try to keep it backwards compatible but I can't guarantee it.
+
+Zog creates its own error type called `ZogError` that implements the error interface.
+
+```go
+type ZogError struct {
+  Message string
+  Err     error
+}
+```
+
+This is what will be returned by the `Parse` function. To be precise:
+
+- Primitive types will return a list of `ZogError` instances.
+- Complex types will return a map of `ZogError` instances. Which uses the field path as the key & the list of errors as the value.
+
+For example:
+
+```go
+errList := z.String().Min(5).Parse("foo", &dest) // can return []z.ZogError{z.ZogError{Message: "min length is 5"}} or nil
+errMap := z.Struct(z.Schema{"name": z.String().Min(5)}).Parse(data, &dest) // can return map[string][]z.ZogError{"name": []z.ZogError{{Message: "min length is 5"}}} or nil
+
+// Slice of 2 strings with min length of 5
+errsMap2 := z.Slice(z.String().Min(5)).Len(2).Parse(data, &dest) // can return map[string][]z.ZogError{"$root": []z.ZogError{{Message: "slice length is not 2"}, "indexOfElementThatFailed": []z.ZogError{{Message: "min length is 5"}}}} or nil
+```
+
+Additionally, `z.ZogErrMap` will use the field path as the key. Meaning
+
+```go
+errsMap := z.Struct(z.Schema{"inner": z.Struct(z.Schema{"name": z.String().Min(5)})}).Parse(data, &dest)
+errsMap["inner.name"] // will return []z.ZogError{{Message: "min length is 5"}}
+```
+
+`$root` is a reserved key that will be used for the root level errors. For example:
+
+```go
+errsMap := z.Slice(z.String()).Min(2).Parse(data, &dest)
+errsMap["$root"] // will return []z.ZogError{{Message: "slice length is not 2"}}
+```
+
+### Example ways of delivering errors to users
+
+#### Using go templ templates
+
+Imagine our handler looks like this:
+
+```go
+errs := schema.Parse(zhttp.NewRequestDataProvider(r), &userFormData)
+
+if errs != nil {
+   www.Render(templates.Form(errs))
+}
+```
+
+Now inside our form template we can do something like this:
+
+```go
+
+templ Form(errs z.ZogErrMap) {
+  <input type="text" name="name" value="">
+  // display only the first error
+  if e, ok := errs["name"]; ok {
+    <p class="error">{e[0].Message}</p>
+  }
+}
+```
+
+#### REST API Responses
+
+Zog providers a helper function called `z.Errors.SanitizeMap(errsMap)` that will return a map of strings of the error messages (stripping out the internal error). So, if you do not mind sending errors to your users in the same form zog returns them, you can do something like this:
+
+```go
+errs := schema.Parse(data, &userFormData)
+
+if errs != nil {
+  sanitized := z.Errors.SanitizeMap(errs)
+  // sanitize will be map[string][]string
+  // for example:
+  // {"name": []string{"min length is 5", "max length is 10"}, "email": []string{"is not a valid email"}}
+  // send this to the user somehow
 }
 
 ```
@@ -376,7 +468,7 @@ conf.Coercers["float64"] = func(data any) (any, error) {
 These are the things I want to add to zog before v1.0.0
 
 - For structs & slices: support pointers
-- Support for schema.Merge(schema2) && schema.Clone()
+- Support for schema.Clone()
 - Better support for custom error messages (including failed coercion error messages) & i18n
 - support for catch & default for structs & slices
 - implement errors.SanitizeMap/Slice -> Will leave only the safe error messages. No internal stuff. Optionally this could be a parsing option in the style of `schema.Parse(m, &dest, z.WithSanitizeErrors())`

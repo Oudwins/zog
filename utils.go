@@ -44,7 +44,27 @@ func (e *errHelpers) WrapUnknown(err error) p.ZogError {
 	return zerr
 }
 
+func (e *errHelpers) SanitizeMap(m p.ZogErrMap) map[string][]string {
+	errs := make(map[string][]string, len(m))
+	for k, v := range m {
+		errs[k] = e.SanitizeList(v)
+	}
+	return errs
+}
+
+func (e *errHelpers) SanitizeList(l p.ZogErrList) []string {
+	errs := make([]string, len(l))
+	for i, err := range l {
+		errs[i] = err.Message
+	}
+	return errs
+}
+
 var Errors = errHelpers{}
+
+type ZogError = p.ZogError
+type ZogErrMap = p.ZogErrMap
+type ZogErrList = p.ZogErrList
 
 // ! Data Providers
 

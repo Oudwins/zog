@@ -20,7 +20,7 @@ func Bool() *boolProcessor {
 	}
 }
 
-func (v *boolProcessor) Parse(data any, dest *bool) p.ZogErrorList {
+func (v *boolProcessor) Parse(data any, dest *bool) p.ZogErrList {
 	var ctx = p.NewParseCtx()
 	errs := p.NewErrsList()
 	path := p.PathBuilder("")

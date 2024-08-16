@@ -2,6 +2,7 @@ package zog
 
 import (
 	"fmt"
+	"maps"
 	"reflect"
 	"unicode"
 
@@ -9,7 +10,7 @@ import (
 )
 
 type StructParser interface {
-	Parse(val p.DataProvider, destPtr any) p.ZogSchemaErrors
+	Parse(val p.DataProvider, destPtr any) p.ZogErrMap
 }
 
 // A map of field names to zog schemas
@@ -32,8 +33,41 @@ type structProcessor struct {
 	// catch          any
 }
 
+func (v *structProcessor) Merge(other *structProcessor) *structProcessor {
+	new := &structProcessor{
+		preTransforms:  make([]p.PreTransform, len(v.preTransforms)+len(other.preTransforms)),
+		postTransforms: make([]p.PostTransform, len(v.postTransforms)+len(other.postTransforms)),
+		tests:          make([]p.Test, len(v.tests)+len(other.tests)),
+	}
+	if v.preTransforms != nil {
+		new.preTransforms = append(new.preTransforms, v.preTransforms...)
+	}
+	if other.preTransforms != nil {
+		new.preTransforms = append(new.preTransforms, other.preTransforms...)
+	}
+
+	if v.postTransforms != nil {
+		new.postTransforms = append(new.postTransforms, v.postTransforms...)
+	}
+	if other.postTransforms != nil {
+		new.postTransforms = append(new.postTransforms, other.postTransforms...)
+	}
+
+	if v.tests != nil {
+		new.tests = append(new.tests, v.tests...)
+	}
+	if other.tests != nil {
+		new.tests = append(new.tests, other.tests...)
+	}
+	new.required = v.required
+	new.schema = Schema{}
+	maps.Copy(new.schema, v.schema)
+	maps.Copy(new.schema, other.schema)
+	return new
+}
+
 // Parses val into destPtr and validates each field based on the schema. Only supports val = map[string]any & dest = &struct
-func (v *structProcessor) Parse(val p.DataProvider, destPtr any) p.ZogSchemaErrors {
+func (v *structProcessor) Parse(val p.DataProvider, destPtr any) p.ZogErrMap {
 	var ctx = p.NewParseCtx()
 	errs := p.NewErrsMap()
 	path := p.PathBuilder("")

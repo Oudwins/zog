@@ -103,5 +103,4 @@ func TestSliceDefault(t *testing.T) {
 	assert.Equal(t, s[0], "a")
 	assert.Equal(t, s[1], "b")
 	assert.Equal(t, s[2], "c")
-	fmt.Println(s)
 }

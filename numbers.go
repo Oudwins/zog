@@ -31,7 +31,7 @@ func Int() *numberProcessor[int] {
 }
 
 // parses the value and stores it in the destination
-func (v *numberProcessor[T]) Parse(val any, dest *T) p.ZogErrorList {
+func (v *numberProcessor[T]) Parse(val any, dest *T) p.ZogErrList {
 	// TODO create context -> but for single field
 	var ctx = p.NewParseCtx()
 	errs := p.NewErrsList()

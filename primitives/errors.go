@@ -15,8 +15,8 @@ func (e ZogError) Unwrap() error {
 }
 
 // list of errors. This is returned for each specific processor
-type ZogErrorList = []ZogError
-type ZogSchemaErrors = map[string][]ZogError
+type ZogErrList = []ZogError
+type ZogErrMap = map[string][]ZogError
 
 // Interface used to add errors during parsing & validation
 type ZogErrors interface {
@@ -25,7 +25,7 @@ type ZogErrors interface {
 }
 
 type ErrsList struct {
-	List ZogErrorList
+	List ZogErrList
 }
 
 func NewErrsList() *ErrsList {
@@ -34,7 +34,7 @@ func NewErrsList() *ErrsList {
 
 func (e *ErrsList) Add(path PathBuilder, err ZogError) {
 	if e.List == nil {
-		e.List = make(ZogErrorList, 0, 3)
+		e.List = make(ZogErrList, 0, 3)
 	}
 	e.List = append(e.List, err)
 }
@@ -45,7 +45,7 @@ func (e *ErrsList) IsEmpty() bool {
 
 // map implementation of Errs
 type ErrsMap struct {
-	M ZogSchemaErrors
+	M ZogErrMap
 }
 
 const (
@@ -61,7 +61,7 @@ func NewErrsMap() *ErrsMap {
 func (s *ErrsMap) Add(p PathBuilder, err ZogError) {
 	// checking if its the first error
 	if s.M == nil {
-		s.M = ZogSchemaErrors{}
+		s.M = ZogErrMap{}
 		s.M[ERROR_KEY_FIRST] = []ZogError{err}
 	}
 
