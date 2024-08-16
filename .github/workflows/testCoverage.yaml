@@ -1,4 +1,4 @@
-name: Tests Coverage
+name: Coverage
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  test:
+  coverage:
     strategy:
       matrix:
         go-version: [1.21.x, 1.22.x]
