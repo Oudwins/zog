@@ -140,7 +140,7 @@ type User2 struct {
 Most of these things are issues we would like to address in future versions.
 
 - Structs do not support pointers at the moment
-- slices do not support pointers or structs
+- slices do not support pointers
 - maps are not a supported schema type
 - structs and slices don't support catch, and structs don't suppoort default values
 - You can provide custom error messages, but cannot customize coercion error messages or set global defaults
