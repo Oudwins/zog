@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.6.2](https://github.com/Oudwins/zog/compare/v0.6.1...v0.6.2) (2024-08-16)
+
+
+### ⚠ BREAKING CHANGES
+
+* slice errMap will now access validation errors for the first element through `[0]` key rather than `0` key
+
+### Features
+
+* slices now support structs ([#10](https://github.com/Oudwins/zog/issues/10)) ([52009ec](https://github.com/Oudwins/zog/commit/52009ec080aeff39c4904d7550d43d7fc84e33cd))
+
+
+### Miscellaneous Chores
+
+* release 0.6.2 ([b4c90c4](https://github.com/Oudwins/zog/commit/b4c90c4f98f91dc0602932adf364263319af9358))
+
 ## [0.6.1](https://github.com/Oudwins/zog/compare/v0.6.0...v0.6.1) (2024-08-16)
 
 
