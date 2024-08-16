@@ -96,8 +96,13 @@ func (v *sliceProcessor) process(val any, dest any, errs p.ZogErrors, path p.Pat
 		for idx := 0; idx < refVal.Len(); idx++ {
 			item := refVal.Index(idx).Interface()
 			ptr := destVal.Index(idx).Addr().Interface()
-			p := path.Push(fmt.Sprint(idx))
-			v.schema.process(item, ptr, errs, p, ctx)
+			path := path.Push(fmt.Sprint(idx))
+			if procesor, ok := v.schema.(*structProcessor); ok {
+				dp := p.NewAnyDataProvider(item)
+				procesor.process(dp, ptr, errs, path, ctx)
+			} else {
+				v.schema.process(item, ptr, errs, path, ctx)
+			}
 		}
 	}
 

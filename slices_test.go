@@ -104,3 +104,38 @@ func TestSliceDefault(t *testing.T) {
 	assert.Equal(t, s[1], "b")
 	assert.Equal(t, s[2], "c")
 }
+
+type User struct {
+	Name string
+}
+
+type Team struct {
+	Users []User
+}
+
+func TestSliceOfStructs(t *testing.T) {
+
+	var userSchema = Struct(Schema{
+		"name": String().Required(),
+	})
+
+	var teamSchema = Struct(Schema{
+		"users": Slice(userSchema),
+	})
+
+	var data = map[string]interface{}{
+		"users": []interface{}{
+			map[string]interface{}{
+				"name": "Jane",
+			},
+			map[string]interface{}{
+				"name": "John",
+			},
+		},
+	}
+	var team Team
+
+	errsMap := teamSchema.Parse(NewMapDataProvider(data), &team)
+	fmt.Printf("%+v", errsMap)
+	fmt.Printf("%+v", team)
+}
