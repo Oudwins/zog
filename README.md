@@ -21,11 +21,12 @@ Killer Features:
 - Rich error details, make debugging a breeze
 - Almost no reflection when using primitive types
 - Built-in coercion support for most types
+- Zero dependencies!
 
 API Stability:
 
 - I will consider the API stable when we reach v1.0.0
-- However, I believe very little API changes will happen from the current implementation. The API that is most likely to change is the everything related to error messages. However, if you use z.Message() that API will most likely not change and you won't be affected.
+- However, I believe very little API changes will happen from the current implementation. The API that is most likely to change is the everything related to customizing error messages. However, if you use z.Message() that API will most likely not change and you won't be affected.
 
 ## Introduction
 
