@@ -156,7 +156,7 @@ func primitiveProcessor[T p.ZogPrimitive](val any, dest any, errs p.ZogErrors, p
 				// catching the first error if catch is set
 				if catch != nil {
 					*destPtr = *catch
-					hasCatched = true
+					hasCatched = true //nolint
 					break
 				}
 				//
