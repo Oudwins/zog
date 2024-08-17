@@ -11,22 +11,25 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Go Report Card](https://goreportcard.com/badge/Oudwins/zog)](https://goreportcard.com/report/github.com/Oudwins/zog) [![Coverage Status](https://coveralls.io/repos/github/Oudwins/zog/badge.svg?branch=master)](https://coveralls.io/github/Oudwins/zog?branch=master)
 
-Zog is a schema builder for runtime value parsing and validation. Define a schema, transform a value to match, assert the shape of an existing value, or both. Zog schemas are extremely expressive and allow modeling complex, interdependent validations, or value transformation.
+Zog is a schema builder for runtime value parsing and validation. Define a schema, transform a value to match, assert the shape of an existing value, or both. Zog schemas are extremely expressive and allow modeling complex, interdependent validations, or value transformations.
 
 Killer Features:
 
 - Concise yet expressive schema interface, equipped to model simple to complex data models
-- Support for parsing and validating Query Params and Form inputs directing from the request object with `schema.Parse(zhttp.NewRequestDataProvider(r), &dest)`
-- Extensible: add your own validators, schemas and data providers
+- **Zod-like API**, use method chaining to build schemas in a typesafe manner
+- **Extensible**: add your own validators, schemas and data providers
 - Rich error details, make debugging a breeze
 - Almost no reflection when using primitive types
-- Built-in coercion support for most types
+- **Built-in coercion** support for most types
 - Zero dependencies!
+- **Two Helper Packages**
+  - **zenv**: parse environment variables
+  - **zhttp**: parse http forms & query params
 
-API Stability:
+**API Stability:**
 
 - I will consider the API stable when we reach v1.0.0
-- However, I believe very little API changes will happen from the current implementation. The API that is most likely to change is the everything related to customizing error messages. However, if you use z.Message() that API will most likely not change and you won't be affected.
+- However, I believe very little API changes will happen from the current implementation. The API that is most likely to change is the everything related to customizing error messages & data providers. However, if you use the provided wrappers (i.e `z.Message()` & `z.NewMapDataProvider()`) those APIs will most likely not change and you won't be affected.
 
 ## Introduction
 
@@ -118,10 +121,10 @@ var schema = z.Struct(z.Schema{
 })
 // This struct is a valid destionation for the schema
 type User struct {
-  Name string `zog:"firstname"` // name will be parsed from the firstname field of the input data (i.e form, json, query params)
+  Name string
   Age int // age will be ignored since it is not a field in the schema
 }
-// this struct is not a valid destionation for the schema. It is missing the name field
+// this struct is not a valid destionation for the schema. It is missing the name field. This will cause a panic
 type User2 struct {
   Email string,
   Age int
@@ -147,7 +150,7 @@ Most of these things are issues we would like to address in future versions.
 - Validations and parsing cannot be run separately
 - It is not recommended to use very deeply nested schemas since that requires a lot of reflection and can have a negative impact on performance
 
-## Zenv & ZHTTP
+## Helper Packages (zenv & zhttp)
 
 For convenience zog provides two helper packages:
 
@@ -253,12 +256,18 @@ errsMap["slice[0]"] // will return []z.ZogError{{Message: "min length is 5"}}
 ```go
 errsMap := z.Slice(z.String()).Min(2).Parse(data, &dest)
 errsMap["$root"] // will return []z.ZogError{{Message: "slice length is not 2"}}
-errsMap["$first"] // will return the same in this case []z.ZogError{{Message: "slice length is not 2"}}
+errsMap["$first"] || errsMap.First() // (equivalent) will return the same in this case []z.ZogError{{Message: "slice length is not 2"}}
+
 ```
+
+**Sanitizing Errors**
+If you want to return errors to the user without the possibility of exposing internal errors, you can use the Zog sanitizer functions `z.Errors.SanitizeMap(errsMap)` or `z.Errors.SanitizeSlice(errsSlice)`. These functions will return a map or slice of strings of the error messages (stripping out the internal error).
 
 ### Example ways of delivering errors to users
 
-#### Using go templ templates
+#### Using HTML templates
+
+(In this example I'll use go templ, but you can use any template engine)
 
 **Example use case: simplified Signup form validation**
 Imagine our handler looks like this:
@@ -297,6 +306,8 @@ templ signupFormTempl(data *SignupFormData, errs z.ZogErrMap) {
   }
 }
 ```
+
+**PS:** If you are using go html templates & tailwindcss you might be interesting in my port of [tailwind-merge to go.](https://github.com/Oudwins/tailwind-merge-go)
 
 #### REST API Responses
 
