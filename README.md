@@ -296,21 +296,6 @@ templ Form(data *SignupFormData, errs z.ZogErrMap) {
     <p class="error">{e[0].Message}</p>
   }
 }
-
-//
-```
-
-Now inside our form template we can do something like this:
-
-```go
-
-templ Form(errs z.ZogErrMap) {
-  <input type="text" name="name" value="">
-  // display only the first error
-  if e, ok := errs["name"]; ok {
-    <p class="error">{e[0].Message}</p>
-  }
-}
 ```
 
 #### REST API Responses
