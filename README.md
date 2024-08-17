@@ -55,7 +55,7 @@ var ageSchema = z.Struct(z.Schema{
 var schema = nameSchema.Merge(ageSchema)
 
 type User struct {
-  Name string `zog:"name"` // optional zog will use field name by default
+  Name string `zog:"firstname"` // tag is optional. If not set zog will check for "name" field in the input data
   Age int
 }
 ```
@@ -66,7 +66,7 @@ type User struct {
 func main() {
   u := User{}
   m := map[string]string{
-    "name": "", // won't return an error because fields are optional by default
+    "firstname": "", // won't return an error because fields are optional by default
     "age": "30", // will get casted to int
   }
   errsMap := schema.Parse(z.NewMapDataProvider(m), &u)
@@ -118,7 +118,7 @@ var schema = z.Struct(z.Schema{
 })
 // This struct is a valid destionation for the schema
 type User struct {
-  Name string `zog:"name"`
+  Name string `zog:"firstname"` // name will be parsed from the firstname field of the input data (i.e form, json, query params)
   Age int // age will be ignored since it is not a field in the schema
 }
 // this struct is not a valid destionation for the schema. It is missing the name field
@@ -295,7 +295,8 @@ if errs != nil {
   // sanitize will be map[string][]string
   // for example:
   // {"name": []string{"min length is 5", "max length is 10"}, "email": []string{"is not a valid email"}}
-  // send this to the user somehow
+
+  // ... marshal sanitized to json and send to the user
 }
 
 ```
