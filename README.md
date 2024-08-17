@@ -279,12 +279,12 @@ func handleSignup(w http.ResponseWriter, r *http.Request) {
   errs := schema.Parse(zhttp.NewRequestDataProvider(r), &signupFormData)
 
   if errs != nil {
-    www.Render(signupFormTempl(errs))
+    www.Render(signupFormTempl(&signupFormData, errs))
   }
   // handle successful signup
 }
 
-templ Form(data *SignupFormData, errs z.ZogErrMap) {
+templ signupFormTempl(data *SignupFormData, errs z.ZogErrMap) {
   <input type="text" name="email" value={data.Email}>
   // display only the first error
   if e, ok := errs["email"]; ok {
