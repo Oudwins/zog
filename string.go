@@ -42,7 +42,7 @@ func (v *stringProcessor) Parse(val any, dest *string) p.ZogErrList {
 }
 
 func (v *stringProcessor) process(val any, dest any, errs p.ZogErrors, path p.PathBuilder, ctx *p.ParseCtx) {
-	primitiveProcessor(val, dest, errs, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, conf.Coercers["string"])
+	primitiveProcessor(val, dest, errs, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, conf.Coercers.String)
 }
 
 // Adds pretransform function to schema

@@ -31,7 +31,7 @@ func (v *boolProcessor) Parse(data any, dest *bool) p.ZogErrList {
 }
 
 func (v *boolProcessor) process(val any, dest any, errs p.ZogErrors, path p.PathBuilder, ctx *p.ParseCtx) {
-	primitiveProcessor(val, dest, errs, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, conf.Coercers["bool"])
+	primitiveProcessor(val, dest, errs, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, conf.Coercers.Bool)
 }
 
 // GLOBAL METHODS

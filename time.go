@@ -32,7 +32,7 @@ func (v *timeProcessor) Parse(val any, dest *time.Time) p.ZogErrList {
 }
 
 func (v *timeProcessor) process(val any, dest any, errs p.ZogErrors, path p.PathBuilder, ctx *p.ParseCtx) {
-	primitiveProcessor(val, dest, errs, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, conf.Coercers["time"])
+	primitiveProcessor(val, dest, errs, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, conf.Coercers.Time)
 }
 
 // Adds pretransform function to schema

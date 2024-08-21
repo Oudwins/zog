@@ -30,6 +30,7 @@ Killer Features:
 
 - I will consider the API stable when we reach v1.0.0
 - However, I believe very little API changes will happen from the current implementation. The API that is most likely to change is the everything related to customizing error messages & data providers. However, if you use the provided wrappers (i.e `z.Message()` & `z.NewMapDataProvider()`) those APIs will most likely not change and you won't be affected.
+- Zog will not respect semver until v1.0.0 is released. Expect breaking changes (mainly in non basic apis) until then.
 
 ## Introduction
 
