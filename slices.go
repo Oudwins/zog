@@ -77,7 +77,7 @@ func (v *sliceProcessor) process(val any, dest any, errs p.ZogErrors, path p.Pat
 		}
 	} else {
 		// make sure val is a slice if not try to make it one
-		v, err := conf.Coercers["slice"](val)
+		v, err := conf.Coercers.Slice(val)
 		if err != nil {
 			errs.Add(path, Errors.Wrap(err, "failed to validate field"))
 		}

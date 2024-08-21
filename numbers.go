@@ -48,9 +48,9 @@ func (v *numberProcessor[T]) process(val any, dest any, errs p.ZogErrors, path p
 	var coercer conf.CoercerFunc
 	switch any(dest).(type) {
 	case *float64:
-		coercer = conf.Coercers["float64"]
+		coercer = conf.Coercers.Float64
 	case *int:
-		coercer = conf.Coercers["int"]
+		coercer = conf.Coercers.Int
 	}
 
 	primitiveProcessor(val, dest, errs, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, coercer)

@@ -11,8 +11,15 @@ import (
 type CoercerFunc = func(original any) (value any, err error)
 
 // a map of coercer functions. The key is the type of the destination and the value is the coercer function. You may override this map to add your own coercer functions and they will affect the behaviour of all zog schemas.
-var Coercers = map[string]CoercerFunc{
-	"bool": func(data any) (any, error) {
+var Coercers = struct {
+	Bool    CoercerFunc
+	String  CoercerFunc
+	Int     CoercerFunc
+	Float64 CoercerFunc
+	Time    CoercerFunc
+	Slice   CoercerFunc
+}{
+	Bool: func(data any) (any, error) {
 		if b, ok := data.(bool); ok {
 			return b, nil
 		}
@@ -36,7 +43,7 @@ var Coercers = map[string]CoercerFunc{
 			return nil, fmt.Errorf("input data is an unsupported type to coerce to bool: %v", data)
 		}
 	},
-	"string": func(data any) (any, error) {
+	String: func(data any) (any, error) {
 		switch v := data.(type) {
 		case string:
 			return v, nil
@@ -45,7 +52,7 @@ var Coercers = map[string]CoercerFunc{
 		}
 
 	},
-	"int": func(data any) (any, error) {
+	Int: func(data any) (any, error) {
 
 		switch v := data.(type) {
 		case int:
@@ -68,7 +75,7 @@ var Coercers = map[string]CoercerFunc{
 			return nil, fmt.Errorf("input data is an unsupported type to coerce to int: %v", data)
 		}
 	},
-	"float64": func(data any) (any, error) {
+	Float64: func(data any) (any, error) {
 		switch v := data.(type) {
 		case int:
 			return float64(v), nil
@@ -84,7 +91,7 @@ var Coercers = map[string]CoercerFunc{
 			return nil, fmt.Errorf("input data is an unsupported type to coerce to float64: %v", data)
 		}
 	},
-	"time": func(data any) (any, error) {
+	Time: func(data any) (any, error) {
 		switch v := data.(type) {
 		case time.Time:
 			return v, nil
@@ -98,7 +105,7 @@ var Coercers = map[string]CoercerFunc{
 			return nil, fmt.Errorf("input data is an unsupported type to coerce to time.Time: %v", data)
 		}
 	},
-	"slice": func(data any) (any, error) {
+	Slice: func(data any) (any, error) {
 		refVal := reflect.TypeOf(data)
 		switch refVal.Kind() {
 		case reflect.Slice:
