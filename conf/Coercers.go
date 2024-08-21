@@ -20,11 +20,9 @@ var Coercers = struct {
 	Slice   CoercerFunc
 }{
 	Bool: func(data any) (any, error) {
-		if b, ok := data.(bool); ok {
-			return b, nil
-		}
-
 		switch v := data.(type) {
+		case bool:
+			return v, nil
 		case string:
 			// There are cases where frontend libraries use "on" as the bool data
 			// think about toggles. Hence, let's try this first.
@@ -39,9 +37,17 @@ var Coercers = struct {
 				}
 				return boolVal, nil
 			}
+		case int:
+			if v == 0 {
+				return false, nil
+			} else if v == 1 {
+				return true, nil
+			}
 		default:
 			return nil, fmt.Errorf("input data is an unsupported type to coerce to bool: %v", data)
 		}
+
+		return nil, fmt.Errorf("input data is an unsupported type to coerce to bool: %v", data)
 	},
 	String: func(data any) (any, error) {
 		switch v := data.(type) {
