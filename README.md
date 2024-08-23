@@ -458,10 +458,10 @@ import (
 )
 
 // we save the original to use later
-var zogFloat64Coercer =  conf.Coercers["float64"];
+var zogFloat64Coercer =  conf.Coercers.Float64;
 
 // we override the coercer function for float64
-conf.Coercers["float64"] = func(data any) (any, error) {
+conf.Coercers.Float64 = func(data any) (any, error) {
   str, ok := data.(string)
   // identify the case we want to override
   if !ok && strings.Contains(str, ",") {
