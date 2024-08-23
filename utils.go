@@ -6,7 +6,7 @@ import (
 )
 
 type Processor interface {
-	process(val any, dest any, errs p.ZogErrors, path p.PathBuilder, ctx *p.ParseCtx)
+	process(val any, dest any, errs p.ZogErrors, path p.PathBuilder, ctx p.ParseCtx)
 }
 
 // ! Parse Context
@@ -75,7 +75,7 @@ func NewMapDataProvider[T any](m map[string]T) p.DataProvider {
 
 // ! PRIMITIVE PROCESSING
 
-func primitiveProcessor[T p.ZogPrimitive](val any, dest any, errs p.ZogErrors, path p.PathBuilder, ctx *p.ParseCtx, preTransforms []p.PreTransform, tests []p.Test, postTransforms []p.PostTransform, defaultVal *T, required *p.Test, catch *T, coercer conf.CoercerFunc) {
+func primitiveProcessor[T p.ZogPrimitive](val any, dest any, errs p.ZogErrors, path p.PathBuilder, ctx p.ParseCtx, preTransforms []p.PreTransform, tests []p.Test, postTransforms []p.PostTransform, defaultVal *T, required *p.Test, catch *T, coercer conf.CoercerFunc) {
 	canCatch := catch != nil
 	hasCatched := false
 

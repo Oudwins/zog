@@ -43,7 +43,7 @@ func (v *numberProcessor[T]) Parse(val any, dest *T) p.ZogErrList {
 	return errs.List
 }
 
-func (v *numberProcessor[T]) process(val any, dest any, errs p.ZogErrors, path p.PathBuilder, ctx *p.ParseCtx) {
+func (v *numberProcessor[T]) process(val any, dest any, errs p.ZogErrors, path p.PathBuilder, ctx p.ParseCtx) {
 
 	var coercer conf.CoercerFunc
 	switch any(dest).(type) {

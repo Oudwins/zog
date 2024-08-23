@@ -93,10 +93,10 @@ errsList := Time().Required().Parse("2020-01-01T00:00:00Z", &t)
 
 ```go
 var dest []string
-Slice(String().Email().Required()).PreTransform(func(val any, ctx *z.ParseCtx) (any, error) {
+Slice(String().Email().Required()).PreTransform(func(val any, ctx z.ParseCtx) (any, error) {
   s := val.(string)
   return strings.Split(s, ","), nil
-}).PostTransform(func(val any, ctx *z.ParseCtx) error {
+}).PostTransform(func(val any, ctx z.ParseCtx) error {
   s := val.(*[]string)
   for i, v := range s {
     s[i] = strings.TrimSpace(v)
@@ -336,7 +336,7 @@ These are methods that can be used on most types of schemas
 
 ```go
 // gets passed the destionation valiue and the context and returns a boolean. Please note for complex types you will be passed a pointer to the destination value
-schema.Test("rule name", z.Message("message or function"), func(val any, ctx *z.ParseCtx) bool {})
+schema.Test("rule name", z.Message("message or function"), func(val any, ctx z.ParseCtx) bool {})
 
 // marks the schema as required. Remember fields are optional by default
 schema.Required(z.Message("message or function"))
@@ -347,9 +347,9 @@ schema.Required().Optional() // marks the schema as optional
 schema.Default(val) // sets the default value. See Zog execution flow
 schema.Catch(val) // sets the catch value. A value to use if the validation fails. See Zog execution flow
 
-schema.PreTransform(func(val any, ctx *z.ParseCtx) (any, error) {}) // transforms the value before validation. returned value will override the input value. See Zog execution flow
+schema.PreTransform(func(val any, ctx z.ParseCtx) (any, error) {}) // transforms the value before validation. returned value will override the input value. See Zog execution flow
 
-schema.PostTransform(func(destPtr any, ctx *z.ParseCtx) error {}) // transforms the value after validation. Receives a pointer to the destination value.
+schema.PostTransform(func(destPtr any, ctx z.ParseCtx) error {}) // transforms the value after validation. Receives a pointer to the destination value.
 ```
 
 ### Types

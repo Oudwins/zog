@@ -24,7 +24,7 @@ func TestSchemaOptionalByDefault(t *testing.T) {
 }
 
 func TestPreTransform(t *testing.T) {
-	field := String().Required().Len(3).PreTransform(func(val any, ctx *ParseCtx) (any, error) {
+	field := String().Required().Len(3).PreTransform(func(val any, ctx ParseCtx) (any, error) {
 		return "foo", nil
 	})
 	var dest string
@@ -45,7 +45,7 @@ func TestRequiredAborts(t *testing.T) {
 
 func TestUserTests(t *testing.T) {
 
-	field := String().Test("test", Message("Invalid"), func(val any, ctx *p.ParseCtx) bool {
+	field := String().Test("test", Message("Invalid"), func(val any, ctx p.ParseCtx) bool {
 		return val == "test"
 	})
 

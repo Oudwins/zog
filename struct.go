@@ -80,7 +80,7 @@ func (v *structProcessor) Parse(val p.DataProvider, destPtr any) p.ZogErrMap {
 	return errs.M
 }
 
-func (v *structProcessor) process(val any, dest any, errs p.ZogErrors, path p.PathBuilder, ctx *p.ParseCtx) {
+func (v *structProcessor) process(val any, dest any, errs p.ZogErrors, path p.PathBuilder, ctx p.ParseCtx) {
 	// 1. preTransforms
 	if v.preTransforms != nil {
 		for _, fn := range v.preTransforms {
@@ -217,7 +217,7 @@ func (v *structProcessor) Optional() *structProcessor {
 // }
 
 // ! VALIDATORS
-// custom test function call it -> schema.Test("test_name", z.Message(""), func(val any, ctx *p.ParseCtx) bool {return true})
+// custom test function call it -> schema.Test("test_name", z.Message(""), func(val any, ctx p.ParseCtx) bool {return true})
 func (v *structProcessor) Test(ruleName string, errorMsg TestOption, validateFunc p.TestFunc) *structProcessor {
 	t := p.Test{
 		Name:         ruleName,

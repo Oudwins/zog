@@ -9,14 +9,14 @@ import (
 
 // Default error func that takes the value as param. Expect msg = "%s is a required field"
 func DErrorFuncWithVal(msg string) ErrorFunc {
-	return func(val any, ctx *ParseCtx) string {
+	return func(val any, ctx ParseCtx) string {
 		return fmt.Sprintf(msg, val)
 	}
 }
 
 // Default error func, doesn't take any params
 func DErrorFunc(msg string) ErrorFunc {
-	return func(val any, ctx *ParseCtx) string {
+	return func(val any, ctx ParseCtx) string {
 		return msg
 	}
 }
@@ -25,7 +25,7 @@ func Required(fn ErrorFunc) Test {
 	t := Test{
 		Name:      "required",
 		ErrorFunc: fn,
-		ValidateFunc: func(val any, ctx *ParseCtx) bool {
+		ValidateFunc: func(val any, ctx ParseCtx) bool {
 			return !IsZeroValue(val)
 		},
 	}
@@ -40,7 +40,7 @@ func LenMin[T LengthCapable[any]](n int, errFn ErrorFunc) Test {
 	return Test{
 		Name:      "min",
 		ErrorFunc: errFn,
-		ValidateFunc: func(val any, ctx *ParseCtx) bool {
+		ValidateFunc: func(val any, ctx ParseCtx) bool {
 			x := val.(T)
 			return len(x) >= n
 		},
@@ -50,7 +50,7 @@ func LenMin[T LengthCapable[any]](n int, errFn ErrorFunc) Test {
 func LenMax[T LengthCapable[any]](n int, errFn ErrorFunc) Test {
 	return Test{
 		Name: "max",
-		ValidateFunc: func(v any, ctx *ParseCtx) bool {
+		ValidateFunc: func(v any, ctx ParseCtx) bool {
 			val, ok := v.(T)
 			if !ok {
 				return false
@@ -64,7 +64,7 @@ func LenMax[T LengthCapable[any]](n int, errFn ErrorFunc) Test {
 func Len[T LengthCapable[any]](n int, errFn ErrorFunc) Test {
 	return Test{
 		Name: "length",
-		ValidateFunc: func(v any, ctx *ParseCtx) bool {
+		ValidateFunc: func(v any, ctx ParseCtx) bool {
 			val, ok := v.(T)
 			if !ok {
 				return false
@@ -78,7 +78,7 @@ func Len[T LengthCapable[any]](n int, errFn ErrorFunc) Test {
 func In[T any](values []T, msg string) Test {
 	return Test{
 		Name: "oneof",
-		ValidateFunc: func(val any, ctx *ParseCtx) bool {
+		ValidateFunc: func(val any, ctx ParseCtx) bool {
 			for _, value := range values {
 				v := val.(T)
 				if reflect.DeepEqual(v, value) {
@@ -94,7 +94,7 @@ func In[T any](values []T, msg string) Test {
 func EQ[T comparable](n T, msg string) Test {
 	return Test{
 		Name: "eq",
-		ValidateFunc: func(val any, ctx *ParseCtx) bool {
+		ValidateFunc: func(val any, ctx ParseCtx) bool {
 			v, ok := val.(T)
 			if !ok {
 				return false
@@ -109,7 +109,7 @@ func LTE[T constraints.Ordered](n T, msg string) Test {
 	return Test{
 		Name: "lte",
 
-		ValidateFunc: func(val any, ctx *ParseCtx) bool {
+		ValidateFunc: func(val any, ctx ParseCtx) bool {
 			v, ok := val.(T)
 			if !ok {
 				return false
@@ -124,7 +124,7 @@ func GTE[T constraints.Ordered](n T, msg string) Test {
 	return Test{
 		Name: "gte",
 
-		ValidateFunc: func(val any, ctx *ParseCtx) bool {
+		ValidateFunc: func(val any, ctx ParseCtx) bool {
 			v, ok := val.(T)
 			if !ok {
 				return false
@@ -139,7 +139,7 @@ func LT[T constraints.Ordered](n T, msg string) Test {
 	return Test{
 		Name: "lt",
 
-		ValidateFunc: func(val any, ctx *ParseCtx) bool {
+		ValidateFunc: func(val any, ctx ParseCtx) bool {
 			v, ok := val.(T)
 			if !ok {
 				return false
@@ -154,7 +154,7 @@ func GT[T constraints.Ordered](n T, msg string) Test {
 	return Test{
 		Name: "gt",
 
-		ValidateFunc: func(val any, ctx *ParseCtx) bool {
+		ValidateFunc: func(val any, ctx ParseCtx) bool {
 			v, ok := val.(T)
 			if !ok {
 				return false

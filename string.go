@@ -41,7 +41,7 @@ func (v *stringProcessor) Parse(val any, dest *string) p.ZogErrList {
 	return errs.List
 }
 
-func (v *stringProcessor) process(val any, dest any, errs p.ZogErrors, path p.PathBuilder, ctx *p.ParseCtx) {
+func (v *stringProcessor) process(val any, dest any, errs p.ZogErrors, path p.PathBuilder, ctx p.ParseCtx) {
 	primitiveProcessor(val, dest, errs, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, conf.Coercers.String)
 }
 
@@ -94,7 +94,7 @@ func (v *stringProcessor) Catch(val string) *stringProcessor {
 }
 
 // ! VALIDATORS
-// custom test function call it -> schema.Test("test_name", z.Message(""), func(val any, ctx *p.ParseCtx) bool {return true})
+// custom test function call it -> schema.Test("test_name", z.Message(""), func(val any, ctx p.ParseCtx) bool {return true})
 func (v *stringProcessor) Test(ruleName string, errorMsg TestOption, validateFunc p.TestFunc) *stringProcessor {
 	t := p.Test{
 		Name:         ruleName,
@@ -152,7 +152,7 @@ func (v *stringProcessor) Email(options ...TestOption) *stringProcessor {
 	t := p.Test{
 		Name:      "email",
 		ErrorFunc: p.DErrorFunc("is not a valid email address"),
-		ValidateFunc: func(v any, ctx *p.ParseCtx) bool {
+		ValidateFunc: func(v any, ctx p.ParseCtx) bool {
 			email, ok := v.(string)
 			if !ok {
 				return false
@@ -171,7 +171,7 @@ func (v *stringProcessor) URL(options ...TestOption) *stringProcessor {
 	t := p.Test{
 		Name:      "url",
 		ErrorFunc: p.DErrorFunc("is not a valid url"),
-		ValidateFunc: func(v any, ctx *p.ParseCtx) bool {
+		ValidateFunc: func(v any, ctx p.ParseCtx) bool {
 			u, ok := v.(string)
 			if !ok {
 				return false
@@ -191,7 +191,7 @@ func (v *stringProcessor) HasPrefix(s string, options ...TestOption) *stringProc
 	t := p.Test{
 		Name:      "startsWith",
 		ErrorFunc: p.DErrorFunc(fmt.Sprintf("should start with %s", s)),
-		ValidateFunc: func(v any, ctx *p.ParseCtx) bool {
+		ValidateFunc: func(v any, ctx p.ParseCtx) bool {
 			val, ok := v.(string)
 			if !ok {
 				return false
@@ -210,7 +210,7 @@ func (v *stringProcessor) HasSuffix(s string, options ...TestOption) *stringProc
 	t := p.Test{
 		Name:      "endsWith",
 		ErrorFunc: p.DErrorFunc(fmt.Sprintf("should end with %s", s)),
-		ValidateFunc: func(v any, ctx *p.ParseCtx) bool {
+		ValidateFunc: func(v any, ctx p.ParseCtx) bool {
 			val, ok := v.(string)
 			if !ok {
 				return false
@@ -229,7 +229,7 @@ func (v *stringProcessor) Contains(sub string, options ...TestOption) *stringPro
 	t := p.Test{
 		Name:      "contains",
 		ErrorFunc: p.DErrorFunc(fmt.Sprintf("should contain %s", sub)),
-		ValidateFunc: func(v any, ctx *p.ParseCtx) bool {
+		ValidateFunc: func(v any, ctx p.ParseCtx) bool {
 			val, ok := v.(string)
 			if !ok {
 				return false
@@ -248,7 +248,7 @@ func (v *stringProcessor) ContainsUpper(options ...TestOption) *stringProcessor 
 	t := p.Test{
 		Name:      "containsUpper",
 		ErrorFunc: p.DErrorFunc("should contain at least one uppercase letter"),
-		ValidateFunc: func(v any, ctx *p.ParseCtx) bool {
+		ValidateFunc: func(v any, ctx p.ParseCtx) bool {
 			val, ok := v.(string)
 			if !ok {
 				return false
@@ -271,7 +271,7 @@ func (v *stringProcessor) ContainsUpper(options ...TestOption) *stringProcessor 
 func (v *stringProcessor) ContainsDigit(options ...TestOption) *stringProcessor {
 	t := p.Test{
 		Name: "containsDigit",
-		ValidateFunc: func(v any, ctx *p.ParseCtx) bool {
+		ValidateFunc: func(v any, ctx p.ParseCtx) bool {
 			val, ok := v.(string)
 			if !ok {
 				return false
@@ -298,7 +298,7 @@ func (v *stringProcessor) ContainsSpecial(options ...TestOption) *stringProcesso
 	t :=
 		p.Test{
 			Name: "containsSpecial",
-			ValidateFunc: func(v any, ctx *p.ParseCtx) bool {
+			ValidateFunc: func(v any, ctx p.ParseCtx) bool {
 				val, ok := v.(string)
 				if !ok {
 					return false

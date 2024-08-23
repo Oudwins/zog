@@ -35,7 +35,7 @@ func (v *sliceProcessor) Parse(val any, dest any) p.ZogErrMap {
 	return errs.M
 }
 
-func (v *sliceProcessor) process(val any, dest any, errs p.ZogErrors, path p.PathBuilder, ctx *p.ParseCtx) {
+func (v *sliceProcessor) process(val any, dest any, errs p.ZogErrors, path p.PathBuilder, ctx p.ParseCtx) {
 	// 1. preTransforms
 	if v.preTransforms != nil {
 		for _, fn := range v.preTransforms {
@@ -149,7 +149,7 @@ func (v *sliceProcessor) Default(val any) *sliceProcessor {
 
 // !TESTS
 
-// custom test function call it -> schema.Test("test_name", z.Message(""), func(val any, ctx *p.ParseCtx) bool {return true})
+// custom test function call it -> schema.Test("test_name", z.Message(""), func(val any, ctx p.ParseCtx) bool {return true})
 func (v *sliceProcessor) Test(ruleName string, errorMsg TestOption, validateFunc p.TestFunc) *sliceProcessor {
 	v.tests = append(v.tests, p.Test{
 		Name:         ruleName,
@@ -200,7 +200,7 @@ func (v *sliceProcessor) Contains(value any, options ...TestOption) *sliceProces
 		p.Test{
 			Name:      "contains",
 			ErrorFunc: p.DErrorFunc(fmt.Sprintf("should contain %v", value)),
-			ValidateFunc: func(val any, ctx *p.ParseCtx) bool {
+			ValidateFunc: func(val any, ctx p.ParseCtx) bool {
 				rv := reflect.ValueOf(val).Elem()
 				if rv.Kind() != reflect.Slice {
 					return false
@@ -228,7 +228,7 @@ func sliceMin(n int, errMsg string) p.Test {
 	return p.Test{
 		Name:      "sliceMin",
 		ErrorFunc: p.DErrorFunc(errMsg),
-		ValidateFunc: func(val any, ctx *p.ParseCtx) bool {
+		ValidateFunc: func(val any, ctx p.ParseCtx) bool {
 			rv := reflect.ValueOf(val).Elem()
 			if rv.Kind() != reflect.Slice {
 				return false
@@ -241,7 +241,7 @@ func sliceMax(n int, errMsg string) p.Test {
 	return p.Test{
 		Name:      "sliceMax",
 		ErrorFunc: p.DErrorFunc(errMsg),
-		ValidateFunc: func(val any, ctx *p.ParseCtx) bool {
+		ValidateFunc: func(val any, ctx p.ParseCtx) bool {
 			rv := reflect.ValueOf(val).Elem()
 			if rv.Kind() != reflect.Slice {
 				return false
@@ -254,7 +254,7 @@ func sliceLength(n int, errMsg string) p.Test {
 	return p.Test{
 		Name:      "sliceLength",
 		ErrorFunc: p.DErrorFunc(errMsg),
-		ValidateFunc: func(val any, ctx *p.ParseCtx) bool {
+		ValidateFunc: func(val any, ctx p.ParseCtx) bool {
 			rv := reflect.ValueOf(val).Elem()
 			if rv.Kind() != reflect.Slice {
 				return false
