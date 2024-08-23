@@ -31,7 +31,7 @@ func (v *timeProcessor) Parse(val any, dest *time.Time) p.ZogErrList {
 	return errs.List
 }
 
-func (v *timeProcessor) process(val any, dest any, errs p.ZogErrors, path p.PathBuilder, ctx *p.ParseCtx) {
+func (v *timeProcessor) process(val any, dest any, errs p.ZogErrors, path p.PathBuilder, ctx p.ParseCtx) {
 	primitiveProcessor(val, dest, errs, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, conf.Coercers.Time)
 }
 
@@ -85,7 +85,7 @@ func (v *timeProcessor) Catch(val time.Time) *timeProcessor {
 
 // GLOBAL METHODS
 
-// custom test function call it -> schema.Test("test_name", z.Message(""), func(val any, ctx *p.ParseCtx) bool {return true})
+// custom test function call it -> schema.Test("test_name", z.Message(""), func(val any, ctx p.ParseCtx) bool {return true})
 func (v *timeProcessor) Test(ruleName string, errorMsg TestOption, validateFunc p.TestFunc) *timeProcessor {
 	t := p.Test{
 		Name:         ruleName,
@@ -104,7 +104,7 @@ func (v *timeProcessor) After(t time.Time) *timeProcessor {
 	r := p.Test{
 		Name:      "timeAfter",
 		ErrorFunc: p.DErrorFunc(fmt.Sprintf("is not after %v", t)),
-		ValidateFunc: func(v any, ctx *p.ParseCtx) bool {
+		ValidateFunc: func(v any, ctx p.ParseCtx) bool {
 			val, ok := v.(time.Time)
 			if !ok {
 				return false
@@ -124,7 +124,7 @@ func (v *timeProcessor) Before(t time.Time) *timeProcessor {
 		p.Test{
 			Name:      "timeBefore",
 			ErrorFunc: p.DErrorFunc(fmt.Sprintf("is not before %v", t)),
-			ValidateFunc: func(v any, ctx *p.ParseCtx) bool {
+			ValidateFunc: func(v any, ctx p.ParseCtx) bool {
 				val, ok := v.(time.Time)
 				if !ok {
 					return false
@@ -144,7 +144,7 @@ func (v *timeProcessor) Is(t time.Time) *timeProcessor {
 	r := p.Test{
 		Name:      "timeIs",
 		ErrorFunc: p.DErrorFunc(fmt.Sprintf("is not %v", t)),
-		ValidateFunc: func(v any, ctx *p.ParseCtx) bool {
+		ValidateFunc: func(v any, ctx p.ParseCtx) bool {
 			val, ok := v.(time.Time)
 			if !ok {
 				return false

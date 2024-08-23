@@ -2,17 +2,25 @@ package primitives
 
 import "context"
 
-type ParseCtx struct {
+type ZogParseCtx struct {
 	context.Context
 }
 
-func NewParseCtx() *ParseCtx {
-	return &ParseCtx{}
+func (p *ZogParseCtx) Value() any {
+	return nil
 }
 
-type ErrorFunc = func(val any, ctx *ParseCtx) string
+type ParseCtx interface {
+	Value() any
+}
 
-type TestFunc = func(val any, ctx *ParseCtx) bool
+func NewParseCtx() ParseCtx {
+	return &ZogParseCtx{}
+}
+
+type ErrorFunc = func(val any, ctx ParseCtx) string
+
+type TestFunc = func(val any, ctx ParseCtx) bool
 
 type Test struct {
 	Name         string
