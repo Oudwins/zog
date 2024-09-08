@@ -20,18 +20,21 @@ func Bool() *boolProcessor {
 	}
 }
 
-func (v *boolProcessor) Parse(data any, dest *bool) p.ZogErrList {
-	var ctx = p.NewParseCtx()
+func (v *boolProcessor) Parse(data any, dest *bool, options ...ParsingOption) p.ZogErrList {
 	errs := p.NewErrsList()
+	ctx := p.NewParseCtx(errs, conf.ErrorFormatter)
+	for _, opt := range options {
+		opt(ctx)
+	}
 	path := p.PathBuilder("")
 
-	v.process(data, dest, errs, path, ctx)
+	v.process(data, dest, path, ctx)
 
 	return errs.List
 }
 
-func (v *boolProcessor) process(val any, dest any, errs p.ZogErrors, path p.PathBuilder, ctx p.ParseCtx) {
-	primitiveProcessor(val, dest, errs, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, conf.Coercers.Bool)
+func (v *boolProcessor) process(val any, dest any, path p.PathBuilder, ctx p.ParseCtx) {
+	primitiveProcessor(val, dest, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, conf.Coercers.Bool)
 }
 
 // GLOBAL METHODS
@@ -58,7 +61,7 @@ func (v *boolProcessor) PostTransform(transform p.PostTransform) *boolProcessor 
 
 // marks field as required
 func (v *boolProcessor) Required() *boolProcessor {
-	r := p.Required(p.DErrorFunc("is a required field"))
+	r := p.Required()
 	v.required = &r
 	return v
 }
@@ -84,11 +87,11 @@ func (v *boolProcessor) Catch(val bool) *boolProcessor {
 // UNIQUE METHODS
 
 func (v *boolProcessor) True() *boolProcessor {
-	v.tests = append(v.tests, p.EQ[bool](true, "should be true"))
+	v.tests = append(v.tests, p.EQ[bool](true))
 	return v
 }
 
 func (v *boolProcessor) False() *boolProcessor {
-	v.tests = append(v.tests, p.EQ[bool](false, "should be false"))
+	v.tests = append(v.tests, p.EQ[bool](false))
 	return v
 }

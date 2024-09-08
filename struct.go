@@ -1,11 +1,12 @@
 package zog
 
 import (
-	"fmt"
+	"errors"
 	"maps"
 	"reflect"
 	"unicode"
 
+	"github.com/Oudwins/zog/conf"
 	p "github.com/Oudwins/zog/primitives"
 )
 
@@ -67,65 +68,66 @@ func (v *structProcessor) Merge(other *structProcessor) *structProcessor {
 }
 
 // Parses val into destPtr and validates each field based on the schema. Only supports val = map[string]any & dest = &struct
-func (v *structProcessor) Parse(val p.DataProvider, destPtr any) p.ZogErrMap {
-	var ctx = p.NewParseCtx()
+func (v *structProcessor) Parse(data any, destPtr any, options ...ParsingOption) p.ZogErrMap {
 	errs := p.NewErrsMap()
+	ctx := p.NewParseCtx(errs, conf.ErrorFormatter)
+	for _, opt := range options {
+		opt(ctx)
+	}
 	path := p.PathBuilder("")
 
-	v.process(val, destPtr, errs, path, ctx)
+	v.process(data, destPtr, path, ctx)
 
-	if errs.IsEmpty() {
-		return nil
-	}
 	return errs.M
 }
 
-func (v *structProcessor) process(val any, dest any, errs p.ZogErrors, path p.PathBuilder, ctx p.ParseCtx) {
+func (v *structProcessor) process(data any, dest any, path p.PathBuilder, ctx p.ParseCtx) {
+	destType := p.TypeStruct
 	// 1. preTransforms
 	if v.preTransforms != nil {
 		for _, fn := range v.preTransforms {
-			nVal, err := fn(val, ctx)
+			nVal, err := fn(data, ctx)
 			// bail if error in preTransform
 			if err != nil {
-				errs.Add(path, Errors.WrapUnknown(err))
+				ctx.NewError(path, Errors.WrapUnknown(data, destType, err))
 				return
 			}
-			val = nVal
+			data = nVal
 		}
 	}
 
 	// 4. postTransforms
 	defer func() {
 		// only run posttransforms on success
-		if errs.IsEmpty() {
+		if !ctx.HasErrored() {
 			for _, fn := range v.postTransforms {
 				err := fn(dest, ctx)
 				if err != nil {
-					errs.Add(path, Errors.WrapUnknown(err))
+					ctx.NewError(path, Errors.WrapUnknown(data, destType, err))
 					return
 				}
 			}
 		}
 	}()
 
-	_, isZeroVal := val.(*p.EmptyDataProvider)
+	_, isZeroVal := data.(*p.EmptyDataProvider)
 
 	if isZeroVal && v.required == nil {
 		return
 	}
 
 	// 2. cast data as DataProvider
-	dataProv, ok := val.(p.DataProvider)
+	dataProv, ok := data.(p.DataProvider)
 	if !ok {
-		if dataProv, ok = p.TryNewAnyDataProvider(val); !ok {
-			errs.Add(path, Errors.Wrap(fmt.Errorf("expected a DataProvider at path %s", path), "failed to validate field"))
+		if dataProv, ok = p.TryNewAnyDataProvider(data); !ok {
+			ctx.NewError(path, Errors.New(p.ErrCodeCoerce, data, destType, nil, "", errors.New("could not convert data to a data provider")))
 			return
 		}
 	}
 
 	// required
 	if v.required != nil && isZeroVal {
-		errs.Add(path, Errors.New(v.required.ErrorFunc(dest, ctx)))
+		ctx.NewError(path, Errors.Required(data, destType))
 		return
 	}
 
@@ -152,17 +154,17 @@ func (v *structProcessor) process(val any, dest any, errs p.ZogErrors, path p.Pa
 		destPtr := structVal.Field(i).Addr().Interface()
 		switch schema := processor.(type) {
 		case *structProcessor:
-			schema.process(dataProv.GetNestedProvider(fieldKey), destPtr, errs, path.Push(fieldKey), ctx)
+			schema.process(dataProv.GetNestedProvider(fieldKey), destPtr, path.Push(fieldKey), ctx)
 
 		default:
-			schema.process(dataProv.Get(fieldKey), destPtr, errs, path.Push(fieldKey), ctx)
+			schema.process(dataProv.Get(fieldKey), destPtr, path.Push(fieldKey), ctx)
 		}
 	}
 
 	// 3. Tests for struct
 	for _, test := range v.tests {
 		if !test.ValidateFunc(dest, ctx) {
-			errs.Add(path, Errors.New(test.ErrorFunc(dest, ctx)))
+			ctx.NewError(path, Errors.FromTest(data, destType, &test, ctx))
 		}
 	}
 
@@ -190,7 +192,7 @@ func (v *structProcessor) PostTransform(transform p.PostTransform) *structProces
 
 // marks field as required
 func (v *structProcessor) Required(options ...TestOption) *structProcessor {
-	r := p.Required(p.DErrorFunc("is a required field"))
+	r := p.Required()
 	for _, opt := range options {
 		opt(&r)
 	}
@@ -220,8 +222,8 @@ func (v *structProcessor) Optional() *structProcessor {
 // custom test function call it -> schema.Test("test_name", z.Message(""), func(val any, ctx p.ParseCtx) bool {return true})
 func (v *structProcessor) Test(ruleName string, errorMsg TestOption, validateFunc p.TestFunc) *structProcessor {
 	t := p.Test{
-		Name:         ruleName,
-		ErrorFunc:    nil,
+		ErrCode:      ruleName,
+		ErrFmt:       nil,
 		ValidateFunc: validateFunc,
 	}
 	errorMsg(&t)

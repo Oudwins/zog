@@ -1,8 +1,6 @@
 package zog
 
 import (
-	"fmt"
-
 	"github.com/Oudwins/zog/conf"
 	p "github.com/Oudwins/zog/primitives"
 )
@@ -31,19 +29,21 @@ func Int() *numberProcessor[int] {
 }
 
 // parses the value and stores it in the destination
-func (v *numberProcessor[T]) Parse(val any, dest *T) p.ZogErrList {
-	// TODO create context -> but for single field
-	var ctx = p.NewParseCtx()
+func (v *numberProcessor[T]) Parse(val any, dest *T, options ...ParsingOption) p.ZogErrList {
 	errs := p.NewErrsList()
-	path := p.PathBuilder("")
-	// TODO handle options
+	ctx := p.NewParseCtx(errs, conf.ErrorFormatter)
+	for _, opt := range options {
+		opt(ctx)
+	}
 
-	v.process(val, dest, errs, path, ctx)
+	path := p.PathBuilder("")
+
+	v.process(val, dest, path, ctx)
 
 	return errs.List
 }
 
-func (v *numberProcessor[T]) process(val any, dest any, errs p.ZogErrors, path p.PathBuilder, ctx p.ParseCtx) {
+func (v *numberProcessor[T]) process(val any, dest any, path p.PathBuilder, ctx p.ParseCtx) {
 
 	var coercer conf.CoercerFunc
 	switch any(dest).(type) {
@@ -53,7 +53,7 @@ func (v *numberProcessor[T]) process(val any, dest any, errs p.ZogErrors, path p
 		coercer = conf.Coercers.Int
 	}
 
-	primitiveProcessor(val, dest, errs, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, coercer)
+	primitiveProcessor(val, dest, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, coercer)
 }
 
 // GLOBAL METHODS
@@ -79,7 +79,7 @@ func (v *numberProcessor[T]) PostTransform(transform p.PostTransform) *numberPro
 
 // marks field as required
 func (v *numberProcessor[T]) Required(options ...TestOption) *numberProcessor[T] {
-	r := p.Required(p.DErrorFunc("is a required field"))
+	r := p.Required()
 	for _, opt := range options {
 		opt(&r)
 	}
@@ -107,8 +107,8 @@ func (v *numberProcessor[T]) Catch(val T) *numberProcessor[T] {
 
 func (v *numberProcessor[T]) Test(ruleName string, errorMsg TestOption, validateFunc p.TestFunc) *numberProcessor[T] {
 	t := p.Test{
-		Name:         ruleName,
-		ErrorFunc:    nil,
+		ErrCode:      ruleName,
+		ErrFmt:       nil,
 		ValidateFunc: validateFunc,
 	}
 	errorMsg(&t)
@@ -120,7 +120,7 @@ func (v *numberProcessor[T]) Test(ruleName string, errorMsg TestOption, validate
 // UNIQUE METHODS
 
 func (v *numberProcessor[T]) OneOf(enum []T, options ...TestOption) *numberProcessor[T] {
-	t := p.In(enum, fmt.Sprintf("should be one of %v", enum))
+	t := p.In(enum)
 	for _, opt := range options {
 		opt(&t)
 	}
@@ -130,7 +130,7 @@ func (v *numberProcessor[T]) OneOf(enum []T, options ...TestOption) *numberProce
 
 // checks for equality
 func (v *numberProcessor[T]) EQ(n T, options ...TestOption) *numberProcessor[T] {
-	t := p.EQ(n, fmt.Sprintf("should be equal to %v", n))
+	t := p.EQ(n)
 	for _, opt := range options {
 		opt(&t)
 	}
@@ -140,7 +140,7 @@ func (v *numberProcessor[T]) EQ(n T, options ...TestOption) *numberProcessor[T] 
 
 // checks for lesser or equal
 func (v *numberProcessor[T]) LTE(n T, options ...TestOption) *numberProcessor[T] {
-	t := p.LTE(n, fmt.Sprintf("should be lesser or equal than %v", n))
+	t := p.LTE(n)
 	for _, opt := range options {
 		opt(&t)
 	}
@@ -150,7 +150,7 @@ func (v *numberProcessor[T]) LTE(n T, options ...TestOption) *numberProcessor[T]
 
 // checks for greater or equal
 func (v *numberProcessor[T]) GTE(n T, options ...TestOption) *numberProcessor[T] {
-	t := p.GTE(n, fmt.Sprintf("should be greater or equal to %v", n))
+	t := p.GTE(n)
 	for _, opt := range options {
 		opt(&t)
 	}
@@ -160,7 +160,7 @@ func (v *numberProcessor[T]) GTE(n T, options ...TestOption) *numberProcessor[T]
 
 // checks for lesser
 func (v *numberProcessor[T]) LT(n T, options ...TestOption) *numberProcessor[T] {
-	t := p.LT(n, fmt.Sprintf("should be less than %v", n))
+	t := p.LT(n)
 	for _, opt := range options {
 		opt(&t)
 	}
@@ -170,7 +170,7 @@ func (v *numberProcessor[T]) LT(n T, options ...TestOption) *numberProcessor[T] 
 
 // checks for greater
 func (v *numberProcessor[T]) GT(n T, options ...TestOption) *numberProcessor[T] {
-	t := p.GT(n, fmt.Sprintf("should be greater than %v", n))
+	t := p.GT(n)
 	for _, opt := range options {
 		opt(&t)
 	}

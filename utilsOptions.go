@@ -1,28 +1,35 @@
 package zog
 
 import (
-	"fmt"
-
 	p "github.com/Oudwins/zog/primitives"
 )
 
-type TestOption func(test *p.Test)
+type TestOption = func(test *p.Test)
 
-type msgParam interface {
-	string | p.ErrorFunc
+func Message(msg string) TestOption {
+	return func(test *p.Test) {
+		test.ErrFmt = func(e p.ZogError, p p.ParseCtx) {
+			e.SetMessage(msg)
+		}
+	}
 }
 
-func Message[T msgParam](msg T) TestOption {
-	switch v := any(msg).(type) {
-	case string:
-		return func(test *p.Test) {
-			test.ErrorFunc = p.DErrorFunc(v)
-		}
-	case p.ErrorFunc:
-		return func(test *p.Test) {
-			test.ErrorFunc = v
-		}
-	default:
-		panic(fmt.Errorf("invalid message type %T", v))
+func MessageFunc(fn p.ErrFmtFunc) TestOption {
+	return func(test *p.Test) {
+		test.ErrFmt = fn
+	}
+}
+
+type ParsingOption = func(p *p.ZogParseCtx)
+
+func WithErrFormatter(fmter p.ErrFmtFunc) ParsingOption {
+	return func(p *p.ZogParseCtx) {
+		p.SetErrFormatter(fmter)
+	}
+}
+
+func WithCtxValue(key string, val any) ParsingOption {
+	return func(p *p.ZogParseCtx) {
+		p.Set(key, val)
 	}
 }

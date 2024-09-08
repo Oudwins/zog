@@ -1,12 +1,16 @@
 package zog
 
 import (
+	"log"
+	"reflect"
+	"time"
+
 	"github.com/Oudwins/zog/conf"
 	p "github.com/Oudwins/zog/primitives"
 )
 
 type Processor interface {
-	process(val any, dest any, errs p.ZogErrors, path p.PathBuilder, ctx p.ParseCtx)
+	process(val any, dest any, path p.PathBuilder, ctx p.ParseCtx)
 }
 
 // ! Parse Context
@@ -17,31 +21,44 @@ type ParseCtx = p.ParseCtx
 type errHelpers struct {
 }
 
-// Creates a new error with a message. Assuming you only care about the message
-func (e *errHelpers) New(msg string) p.ZogError {
-	return p.ZogError{
-		Message: msg,
+// Beware this API may change
+var Errors = errHelpers{}
+
+// Create error from (originValue any, destinationValue any, test *p.Test)
+func (e *errHelpers) FromTest(o any, destType p.ZogType, t *p.Test, p p.ParseCtx) p.ZogError {
+	er := e.New(t.ErrCode, o, destType, t.Params, "", nil)
+	if t.ErrFmt != nil {
+		t.ErrFmt(er, p)
 	}
+	return er
 }
 
-// Wraps an error with a message
-func (e *errHelpers) Wrap(err error, msg string) p.ZogError {
-	return p.ZogError{
-		Message: msg,
-		Err:     err,
-	}
+// Create error from
+func (e *errHelpers) FromErr(o any, destType p.ZogType, err error) p.ZogError {
+	return e.New(p.ErrCodeCustom, o, destType, nil, "", err)
 }
 
-// Wraps an error but first checks if it is a zog error. Sets the message to equal the error message if it is not a zog error
-func (e *errHelpers) WrapUnknown(err error) p.ZogError {
+func (e *errHelpers) WrapUnknown(o any, destType p.ZogType, err error) p.ZogError {
 	zerr, ok := err.(p.ZogError)
 	if !ok {
-		return p.ZogError{
-			Message: err.Error(),
-			Err:     err,
-		}
+		return e.FromErr(o, destType, err)
 	}
 	return zerr
+}
+
+func (e *errHelpers) Required(o any, destType p.ZogType) p.ZogError {
+	return e.New(p.ErrCodeRequired, o, destType, nil, "", nil)
+}
+
+func (e *errHelpers) New(code p.ZogErrCode, o any, destType p.ZogType, params map[string]any, msg string, err error) p.ZogError {
+	return &p.ZogErr{
+		C:       code,
+		ParamsM: params,
+		Val:     o,
+		Typ:     destType,
+		Msg:     msg,
+		Err:     err,
+	}
 }
 
 func (e *errHelpers) SanitizeMap(m p.ZogErrMap) map[string][]string {
@@ -55,12 +72,10 @@ func (e *errHelpers) SanitizeMap(m p.ZogErrMap) map[string][]string {
 func (e *errHelpers) SanitizeList(l p.ZogErrList) []string {
 	errs := make([]string, len(l))
 	for i, err := range l {
-		errs[i] = err.Message
+		errs[i] = err.Message()
 	}
 	return errs
 }
-
-var Errors = errHelpers{}
 
 type ZogError = p.ZogError
 type ZogErrMap = p.ZogErrMap
@@ -75,11 +90,35 @@ func NewMapDataProvider[T any](m map[string]T) p.DataProvider {
 
 // ! PRIMITIVE PROCESSING
 
-func primitiveProcessor[T p.ZogPrimitive](val any, dest any, errs p.ZogErrors, path p.PathBuilder, ctx p.ParseCtx, preTransforms []p.PreTransform, tests []p.Test, postTransforms []p.PostTransform, defaultVal *T, required *p.Test, catch *T, coercer conf.CoercerFunc) {
+func getDestType(dest any) p.ZogType {
+	switch reflect.TypeOf(dest).Kind() {
+	case reflect.Slice:
+		return p.TypeSlice
+	case reflect.Struct:
+		if reflect.TypeOf(dest) == reflect.TypeOf(time.Time{}) {
+			return p.TypeTime
+		}
+		return p.TypeStruct
+	case reflect.Float64:
+	case reflect.Int:
+		return p.TypeNumber
+	case reflect.Bool:
+		return p.TypeBool
+	case reflect.String:
+		return p.TypeString
+	default:
+		log.Fatal("Unsupported destination type")
+	}
+	// should never get here
+	return p.TypeString
+}
+
+func primitiveProcessor[T p.ZogPrimitive](val any, dest any, path p.PathBuilder, ctx p.ParseCtx, preTransforms []p.PreTransform, tests []p.Test, postTransforms []p.PostTransform, defaultVal *T, required *p.Test, catch *T, coercer conf.CoercerFunc) {
 	canCatch := catch != nil
 	hasCatched := false
 
 	destPtr := dest.(*T)
+	destType := getDestType(*destPtr)
 	// 1. preTransforms
 	for _, fn := range preTransforms {
 		nVal, err := fn(val, ctx)
@@ -90,7 +129,7 @@ func primitiveProcessor[T p.ZogPrimitive](val any, dest any, errs p.ZogErrors, p
 				hasCatched = true
 				break
 			}
-			errs.Add(path, Errors.WrapUnknown(err))
+			ctx.NewError(path, Errors.WrapUnknown(val, destType, err))
 			return
 		}
 		val = nVal
@@ -98,70 +137,72 @@ func primitiveProcessor[T p.ZogPrimitive](val any, dest any, errs p.ZogErrors, p
 	// 4. postTransforms
 	defer func() {
 		// only run posttransforms on success
-		if errs.IsEmpty() {
+		if !ctx.HasErrored() {
 			for _, fn := range postTransforms {
 				err := fn(destPtr, ctx)
 				if err != nil {
-					errs.Add(path, Errors.WrapUnknown(err))
+					ctx.NewError(path, Errors.WrapUnknown(val, destType, err))
 					return
 				}
 			}
 		}
 	}()
 
-	if !hasCatched {
-		// 2. cast data to string & handle default/required
-		isZeroVal := p.IsZeroValue(val)
-
-		if isZeroVal {
-			if defaultVal != nil {
-				*destPtr = *defaultVal
-			} else if required == nil {
-				// This handles optional case
-				return
-			}
-		} else {
-			newVal, err := coercer(val)
-			if err == nil {
-				*destPtr = newVal.(T)
-			} else {
-				if canCatch {
-					*destPtr = *catch
-					hasCatched = true
-				} else {
-					errs.Add(path, Errors.Wrap(err, "failed to validate field"))
-					return
-				}
-			}
-		}
+	if hasCatched {
+		return
 	}
 
-	if !hasCatched {
-		// required
-		if required != nil && !required.ValidateFunc(*destPtr, ctx) {
-			if catch != nil {
+	// 2. cast data to string & handle default/required
+	isZeroVal := p.IsZeroValue(val)
+
+	if isZeroVal {
+		if defaultVal != nil {
+			*destPtr = *defaultVal
+		} else if required == nil {
+			// This handles optional case
+			return
+		}
+	} else {
+		newVal, err := coercer(val)
+		if err == nil {
+			*destPtr = newVal.(T)
+		} else {
+			if canCatch {
 				*destPtr = *catch
 				hasCatched = true
 			} else {
-				errs.Add(path, Errors.New(required.ErrorFunc(*destPtr, ctx)))
+				ctx.NewError(path, Errors.New(p.ErrCodeCoerce, val, destType, nil, "", err))
 				return
 			}
 		}
 	}
+	if hasCatched {
+		return
+	}
+	// required
+	if required != nil && !required.ValidateFunc(*destPtr, ctx) {
+		if catch != nil {
+			*destPtr = *catch
+			hasCatched = true
+		} else {
+			ctx.NewError(path, Errors.Required(val, destType))
+			return
+		}
+	}
 
-	if !hasCatched {
-		// 3. tests
-		for _, test := range tests {
-			if !test.ValidateFunc(*destPtr, ctx) {
-				// catching the first error if catch is set
-				if catch != nil {
-					*destPtr = *catch
-					hasCatched = true //nolint
-					break
-				}
-				//
-				errs.Add(path, Errors.New(test.ErrorFunc(*destPtr, ctx)))
+	if hasCatched {
+		return
+	}
+	// 3. tests
+	for _, test := range tests {
+		if !test.ValidateFunc(*destPtr, ctx) {
+			// catching the first error if catch is set
+			if catch != nil {
+				*destPtr = *catch
+				hasCatched = true //nolint
+				break
 			}
+			ctx.NewError(path, Errors.FromTest(val, destType, &test, ctx))
 		}
 	}
 

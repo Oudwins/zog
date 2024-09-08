@@ -1,16 +1,60 @@
 package primitives
 
-// ZogError hides the error and only exposes the message
-type ZogError struct {
-	Message string
-	Err     error
+// Error interface returned from all processors
+type ZogError interface {
+	Code() ZogErrCode
+	Value() any    // the error value
+	Dtype() string // destination type
+	Params() map[string]any
+	Message() string
+	SetMessage(string)
+	// returns the string of the wrapped error
+	Error() string
+	// returns the wrapped error
+	Unwrap() error
 }
 
-func (e ZogError) Error() string {
-	return e.Message
+// this is the function that formats the error message given a zog error
+type ErrFmtFunc = func(e ZogError, p ParseCtx)
+
+// Error implementation
+type ZogErr struct {
+	C       ZogErrCode     // error code
+	ParamsM map[string]any // params for the error (e.g. min, max, len, etc)
+	Typ     string         // destination type
+	Val     any            // value that caused the error
+	Msg     string
+	Err     error // the underlying error
 }
 
-func (e ZogError) Unwrap() error {
+// error code, err uuid
+func (e *ZogErr) Code() ZogErrCode {
+	return e.C
+}
+
+// value that caused the error
+func (e *ZogErr) Value() any {
+	return e.Value
+}
+
+// destination type TODO
+func (e *ZogErr) Dtype() string {
+	return e.Typ
+}
+
+func (e *ZogErr) Params() map[string]any {
+	return e.ParamsM
+}
+func (e *ZogErr) Message() string {
+	return e.Msg
+}
+func (e *ZogErr) SetMessage(msg string) {
+	e.Msg = msg
+}
+func (e *ZogErr) Error() string {
+	return e.Err.Error()
+}
+func (e *ZogErr) Unwrap() error {
 	return e.Err
 }
 
@@ -18,23 +62,25 @@ func (e ZogError) Unwrap() error {
 type ZogErrList = []ZogError
 type ZogErrMap = map[string][]ZogError
 
-// Interface used to add errors during parsing & validation
+// INTERNAL ONLY: Interface used to add errors during parsing & validation. It represents a group of errors (map or slice)
 type ZogErrors interface {
 	Add(path PathBuilder, err ZogError)
 	IsEmpty() bool
 }
 
+// internal only
 type ErrsList struct {
 	List ZogErrList
 }
 
+// internal only
 func NewErrsList() *ErrsList {
 	return &ErrsList{}
 }
 
 func (e *ErrsList) Add(path PathBuilder, err ZogError) {
 	if e.List == nil {
-		e.List = make(ZogErrList, 0, 3)
+		e.List = make(ZogErrList, 0, 2)
 	}
 	e.List = append(e.List, err)
 }
@@ -79,7 +125,7 @@ func (s ErrsMap) IsEmpty() bool {
 	return s.M == nil
 }
 
-func (s ErrsMap) First() error {
+func (s ErrsMap) First() ZogError {
 	if s.IsEmpty() {
 		return nil
 	}

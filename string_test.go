@@ -58,7 +58,7 @@ func TestUserTests(t *testing.T) {
 
 	errs = field.Parse("not test", &dest)
 	assert.NotEmpty(t, errs)
-	assert.Equal(t, "Invalid", errs[0].Message)
+	assert.Equal(t, "Invalid", errs[0].Message())
 
 }
 
@@ -67,8 +67,8 @@ func TestMessage(t *testing.T) {
 	var dest string
 	errs := field.Parse("x", &dest)
 	assert.NotEmpty(t, errs)
-	assert.Equal(t, "min", errs[0].Message)
-	assert.Equal(t, "email", errs[1].Message)
+	assert.Equal(t, "min", errs[0].Message())
+	assert.Equal(t, "email", errs[1].Message())
 }
 
 func TestLength(t *testing.T) {
