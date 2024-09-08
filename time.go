@@ -1,7 +1,6 @@
 package zog
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/Oudwins/zog/conf"
@@ -21,18 +20,23 @@ func Time() *timeProcessor {
 	return &timeProcessor{}
 }
 
-func (v *timeProcessor) Parse(val any, dest *time.Time) p.ZogErrList {
-	var ctx = p.NewParseCtx()
+func (v *timeProcessor) Parse(val any, dest *time.Time, options ...ParsingOption) p.ZogErrList {
 	errs := p.NewErrsList()
+	ctx := p.NewParseCtx(errs, conf.ErrorFormatter)
+
+	for _, opt := range options {
+		opt(ctx)
+	}
+
 	path := p.PathBuilder("")
 
-	v.process(val, dest, errs, path, ctx)
+	v.process(val, dest, path, ctx)
 
 	return errs.List
 }
 
-func (v *timeProcessor) process(val any, dest any, errs p.ZogErrors, path p.PathBuilder, ctx p.ParseCtx) {
-	primitiveProcessor(val, dest, errs, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, conf.Coercers.Time)
+func (v *timeProcessor) process(val any, dest any, path p.PathBuilder, ctx p.ParseCtx) {
+	primitiveProcessor(val, dest, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, conf.Coercers.Time)
 }
 
 // Adds pretransform function to schema
@@ -57,7 +61,7 @@ func (v *timeProcessor) PostTransform(transform p.PostTransform) *timeProcessor 
 
 // marks field as required
 func (v *timeProcessor) Required(options ...TestOption) *timeProcessor {
-	r := p.Required(p.DErrorFunc("is a required field"))
+	r := p.Required()
 	for _, opt := range options {
 		opt(&r)
 	}
@@ -88,8 +92,8 @@ func (v *timeProcessor) Catch(val time.Time) *timeProcessor {
 // custom test function call it -> schema.Test("test_name", z.Message(""), func(val any, ctx p.ParseCtx) bool {return true})
 func (v *timeProcessor) Test(ruleName string, errorMsg TestOption, validateFunc p.TestFunc) *timeProcessor {
 	t := p.Test{
-		Name:         ruleName,
-		ErrorFunc:    nil,
+		ErrCode:      ruleName,
+		ErrFmt:       nil,
 		ValidateFunc: validateFunc,
 	}
 	errorMsg(&t)
@@ -100,10 +104,11 @@ func (v *timeProcessor) Test(ruleName string, errorMsg TestOption, validateFunc 
 
 // UNIQUE METHODS
 
+// Checks that the value is after the given time
 func (v *timeProcessor) After(t time.Time) *timeProcessor {
 	r := p.Test{
-		Name:      "timeAfter",
-		ErrorFunc: p.DErrorFunc(fmt.Sprintf("is not after %v", t)),
+		ErrCode: p.ErrCodeAfter,
+		Params:  make(map[string]any, 1),
 		ValidateFunc: func(v any, ctx p.ParseCtx) bool {
 			val, ok := v.(time.Time)
 			if !ok {
@@ -112,18 +117,20 @@ func (v *timeProcessor) After(t time.Time) *timeProcessor {
 			return val.After(t)
 		},
 	}
+	r.Params[p.ErrCodeAfter] = t
 	for _, opt := range v.tests {
-		r.ErrorFunc = opt.ErrorFunc
+		r.ErrFmt = opt.ErrFmt
 	}
 	v.tests = append(v.tests, r)
 	return v
 }
 
+// Checks that the value is before the given time
 func (v *timeProcessor) Before(t time.Time) *timeProcessor {
 	r :=
 		p.Test{
-			Name:      "timeBefore",
-			ErrorFunc: p.DErrorFunc(fmt.Sprintf("is not before %v", t)),
+			ErrCode: p.ErrCodeBefore,
+			Params:  make(map[string]any, 1),
 			ValidateFunc: func(v any, ctx p.ParseCtx) bool {
 				val, ok := v.(time.Time)
 				if !ok {
@@ -132,18 +139,19 @@ func (v *timeProcessor) Before(t time.Time) *timeProcessor {
 				return val.Before(t)
 			},
 		}
+	r.Params[p.ErrCodeBefore] = t
 	for _, opt := range v.tests {
-		r.ErrorFunc = opt.ErrorFunc
+		r.ErrFmt = opt.ErrFmt
 	}
 	v.tests = append(v.tests, r)
 
 	return v
 }
 
-func (v *timeProcessor) Is(t time.Time) *timeProcessor {
+// Checks that the value is equal to the given time
+func (v *timeProcessor) EQ(t time.Time) *timeProcessor {
 	r := p.Test{
-		Name:      "timeIs",
-		ErrorFunc: p.DErrorFunc(fmt.Sprintf("is not %v", t)),
+		ErrCode: p.ErrCodeEQ,
 		ValidateFunc: func(v any, ctx p.ParseCtx) bool {
 			val, ok := v.(time.Time)
 			if !ok {
@@ -152,9 +160,9 @@ func (v *timeProcessor) Is(t time.Time) *timeProcessor {
 			return val.Equal(t)
 		},
 	}
-
+	r.Params[p.ErrCodeEQ] = t
 	for _, opt := range v.tests {
-		r.ErrorFunc = opt.ErrorFunc
+		r.ErrFmt = opt.ErrFmt
 	}
 	v.tests = append(v.tests, r)
 

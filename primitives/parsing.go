@@ -1,29 +1,56 @@
 package primitives
 
-import "context"
-
 type ZogParseCtx struct {
-	context.Context
+	Fmter  ErrFmtFunc
+	Errors ZogErrors
+	m      map[string]any
 }
 
-func (p *ZogParseCtx) Value() any {
-	return nil
+func (c *ZogParseCtx) NewError(p PathBuilder, e ZogError) {
+	c.Fmter(e, c)
+	c.Errors.Add(p, e)
+}
+
+func (c *ZogParseCtx) HasErrored() bool {
+	return !c.Errors.IsEmpty()
+}
+
+func (c *ZogParseCtx) SetErrFormatter(fmter ErrFmtFunc) {
+	c.Fmter = fmter
+}
+
+func (c *ZogParseCtx) Set(key string, val any) {
+	if c.m == nil {
+		c.m = make(map[string]any)
+	}
+	c.m[key] = val
+}
+
+func (c *ZogParseCtx) Get(key string) any {
+	return c.m[key]
 }
 
 type ParseCtx interface {
-	Value() any
+	// Get a value from the context
+	Get(key string) any
+	// Please don't depend on this interface it may change
+	NewError(p PathBuilder, e ZogError)
+	// Please don't depend on this interface it may change
+	HasErrored() bool
 }
 
-func NewParseCtx() ParseCtx {
-	return &ZogParseCtx{}
+func NewParseCtx(errs ZogErrors, fmter ErrFmtFunc) *ZogParseCtx {
+	return &ZogParseCtx{
+		Fmter:  fmter,
+		Errors: errs,
+	}
 }
-
-type ErrorFunc = func(val any, ctx ParseCtx) string
 
 type TestFunc = func(val any, ctx ParseCtx) bool
 
 type Test struct {
-	Name         string
-	ErrorFunc    ErrorFunc
+	ErrCode      ZogErrCode
+	Params       map[string]any
+	ErrFmt       ErrFmtFunc
 	ValidateFunc TestFunc
 }

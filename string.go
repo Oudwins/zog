@@ -1,7 +1,6 @@
 package zog
 
 import (
-	"fmt"
 	"regexp"
 	"strings"
 
@@ -29,20 +28,21 @@ func String() *stringProcessor {
 	}
 }
 
-func (v *stringProcessor) Parse(val any, dest *string) p.ZogErrList {
-	// TODO create context -> but for single field
-	var ctx = p.NewParseCtx()
+func (v *stringProcessor) Parse(val any, dest *string, options ...ParsingOption) p.ZogErrList {
 	errs := p.NewErrsList()
+	ctx := p.NewParseCtx(errs, conf.ErrorFormatter)
+	for _, opt := range options {
+		opt(ctx)
+	}
 	path := p.PathBuilder("")
-	// TODO handle options
 
-	v.process(val, dest, errs, path, ctx)
+	v.process(val, dest, path, ctx)
 
 	return errs.List
 }
 
-func (v *stringProcessor) process(val any, dest any, errs p.ZogErrors, path p.PathBuilder, ctx p.ParseCtx) {
-	primitiveProcessor(val, dest, errs, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, conf.Coercers.String)
+func (v *stringProcessor) process(val any, dest any, path p.PathBuilder, ctx p.ParseCtx) {
+	primitiveProcessor(val, dest, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, conf.Coercers.String)
 }
 
 // Adds pretransform function to schema
@@ -67,7 +67,7 @@ func (v *stringProcessor) PostTransform(transform p.PostTransform) *stringProces
 
 // marks field as required
 func (v *stringProcessor) Required(options ...TestOption) *stringProcessor {
-	r := p.Required(p.DErrorFunc("is a required field"))
+	r := p.Required()
 	for _, opt := range options {
 		opt(&r)
 	}
@@ -97,8 +97,8 @@ func (v *stringProcessor) Catch(val string) *stringProcessor {
 // custom test function call it -> schema.Test("test_name", z.Message(""), func(val any, ctx p.ParseCtx) bool {return true})
 func (v *stringProcessor) Test(ruleName string, errorMsg TestOption, validateFunc p.TestFunc) *stringProcessor {
 	t := p.Test{
-		Name:         ruleName,
-		ErrorFunc:    nil,
+		ErrCode:      ruleName,
+		ErrFmt:       nil,
 		ValidateFunc: validateFunc,
 	}
 	errorMsg(&t)
@@ -109,7 +109,7 @@ func (v *stringProcessor) Test(ruleName string, errorMsg TestOption, validateFun
 
 // checks that the value is one of the enum values
 func (v *stringProcessor) OneOf(enum []string, options ...TestOption) *stringProcessor {
-	t := p.In(enum, fmt.Sprintf("should be one of %v", enum))
+	t := p.In(enum)
 	for _, opt := range options {
 		opt(&t)
 	}
@@ -119,7 +119,7 @@ func (v *stringProcessor) OneOf(enum []string, options ...TestOption) *stringPro
 
 // checks that the value is at least n characters long
 func (v *stringProcessor) Min(n int, options ...TestOption) *stringProcessor {
-	t := p.LenMin[string](n, p.DErrorFunc(fmt.Sprintf("should be at least %d characters long", n)))
+	t := p.LenMin[string](n)
 	for _, opt := range options {
 		opt(&t)
 	}
@@ -129,7 +129,7 @@ func (v *stringProcessor) Min(n int, options ...TestOption) *stringProcessor {
 
 // checks that the value is at most n characters long
 func (v *stringProcessor) Max(n int, options ...TestOption) *stringProcessor {
-	t := p.LenMax[string](n, p.DErrorFunc(fmt.Sprintf("should be at most %d characters long", n)))
+	t := p.LenMax[string](n)
 	for _, opt := range options {
 		opt(&t)
 	}
@@ -139,7 +139,7 @@ func (v *stringProcessor) Max(n int, options ...TestOption) *stringProcessor {
 
 // checks that the value is exactly n characters long
 func (v *stringProcessor) Len(n int, options ...TestOption) *stringProcessor {
-	t := p.Len[string](n, p.DErrorFunc(fmt.Sprintf("should be exactly %d characters long", n)))
+	t := p.Len[string](n)
 	for _, opt := range options {
 		opt(&t)
 	}
@@ -150,8 +150,7 @@ func (v *stringProcessor) Len(n int, options ...TestOption) *stringProcessor {
 // checks that the value is a valid email address
 func (v *stringProcessor) Email(options ...TestOption) *stringProcessor {
 	t := p.Test{
-		Name:      "email",
-		ErrorFunc: p.DErrorFunc("is not a valid email address"),
+		ErrCode: p.ErrCodeEmail,
 		ValidateFunc: func(v any, ctx p.ParseCtx) bool {
 			email, ok := v.(string)
 			if !ok {
@@ -169,8 +168,7 @@ func (v *stringProcessor) Email(options ...TestOption) *stringProcessor {
 
 func (v *stringProcessor) URL(options ...TestOption) *stringProcessor {
 	t := p.Test{
-		Name:      "url",
-		ErrorFunc: p.DErrorFunc("is not a valid url"),
+		ErrCode: p.ErrCodeURL,
 		ValidateFunc: func(v any, ctx p.ParseCtx) bool {
 			u, ok := v.(string)
 			if !ok {
@@ -189,8 +187,8 @@ func (v *stringProcessor) URL(options ...TestOption) *stringProcessor {
 
 func (v *stringProcessor) HasPrefix(s string, options ...TestOption) *stringProcessor {
 	t := p.Test{
-		Name:      "startsWith",
-		ErrorFunc: p.DErrorFunc(fmt.Sprintf("should start with %s", s)),
+		ErrCode: p.ErrCodeHasPrefix,
+		Params:  make(map[string]any, 1),
 		ValidateFunc: func(v any, ctx p.ParseCtx) bool {
 			val, ok := v.(string)
 			if !ok {
@@ -199,6 +197,7 @@ func (v *stringProcessor) HasPrefix(s string, options ...TestOption) *stringProc
 			return strings.HasPrefix(val, s)
 		},
 	}
+	t.Params[p.ErrCodeHasPrefix] = s
 	for _, opt := range options {
 		opt(&t)
 	}
@@ -208,8 +207,8 @@ func (v *stringProcessor) HasPrefix(s string, options ...TestOption) *stringProc
 
 func (v *stringProcessor) HasSuffix(s string, options ...TestOption) *stringProcessor {
 	t := p.Test{
-		Name:      "endsWith",
-		ErrorFunc: p.DErrorFunc(fmt.Sprintf("should end with %s", s)),
+		ErrCode: p.ErrCodeHasSuffix,
+		Params:  make(map[string]any, 1),
 		ValidateFunc: func(v any, ctx p.ParseCtx) bool {
 			val, ok := v.(string)
 			if !ok {
@@ -218,6 +217,7 @@ func (v *stringProcessor) HasSuffix(s string, options ...TestOption) *stringProc
 			return strings.HasSuffix(val, s)
 		},
 	}
+	t.Params[p.ErrCodeHasSuffix] = s
 	for _, opt := range options {
 		opt(&t)
 	}
@@ -227,8 +227,8 @@ func (v *stringProcessor) HasSuffix(s string, options ...TestOption) *stringProc
 
 func (v *stringProcessor) Contains(sub string, options ...TestOption) *stringProcessor {
 	t := p.Test{
-		Name:      "contains",
-		ErrorFunc: p.DErrorFunc(fmt.Sprintf("should contain %s", sub)),
+		ErrCode: p.ErrCodeContains,
+		Params:  make(map[string]any, 1),
 		ValidateFunc: func(v any, ctx p.ParseCtx) bool {
 			val, ok := v.(string)
 			if !ok {
@@ -237,6 +237,7 @@ func (v *stringProcessor) Contains(sub string, options ...TestOption) *stringPro
 			return strings.Contains(val, sub)
 		},
 	}
+	t.Params[p.ErrCodeContains] = sub
 	for _, opt := range options {
 		opt(&t)
 	}
@@ -246,8 +247,7 @@ func (v *stringProcessor) Contains(sub string, options ...TestOption) *stringPro
 
 func (v *stringProcessor) ContainsUpper(options ...TestOption) *stringProcessor {
 	t := p.Test{
-		Name:      "containsUpper",
-		ErrorFunc: p.DErrorFunc("should contain at least one uppercase letter"),
+		ErrCode: p.ErrCodeContainsUpper,
 		ValidateFunc: func(v any, ctx p.ParseCtx) bool {
 			val, ok := v.(string)
 			if !ok {
@@ -270,7 +270,7 @@ func (v *stringProcessor) ContainsUpper(options ...TestOption) *stringProcessor 
 
 func (v *stringProcessor) ContainsDigit(options ...TestOption) *stringProcessor {
 	t := p.Test{
-		Name: "containsDigit",
+		ErrCode: p.ErrCodeContainsDigit,
 		ValidateFunc: func(v any, ctx p.ParseCtx) bool {
 			val, ok := v.(string)
 			if !ok {
@@ -283,7 +283,6 @@ func (v *stringProcessor) ContainsDigit(options ...TestOption) *stringProcessor 
 			}
 			return false
 		},
-		ErrorFunc: p.DErrorFunc("should contain at least one digit"),
 	}
 
 	for _, opt := range options {
@@ -297,7 +296,7 @@ func (v *stringProcessor) ContainsDigit(options ...TestOption) *stringProcessor 
 func (v *stringProcessor) ContainsSpecial(options ...TestOption) *stringProcessor {
 	t :=
 		p.Test{
-			Name: "containsSpecial",
+			ErrCode: p.ErrCodeContainsSpecial,
 			ValidateFunc: func(v any, ctx p.ParseCtx) bool {
 				val, ok := v.(string)
 				if !ok {
@@ -313,7 +312,6 @@ func (v *stringProcessor) ContainsSpecial(options ...TestOption) *stringProcesso
 				}
 				return false
 			},
-			ErrorFunc: p.DErrorFunc("should contain at least one special character"),
 		}
 	for _, opt := range options {
 		opt(&t)
