@@ -1,7 +1,6 @@
 package zog
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -26,7 +25,6 @@ func TestSlicePassSchema(t *testing.T) {
 
 	errs := schema.Parse([]any{"a", "b", "c"}, &s)
 	assert.Nil(t, errs)
-	fmt.Println(s)
 	assert.Len(t, s, 3)
 	assert.Equal(t, s[0], "a")
 	assert.Equal(t, s[1], "b")

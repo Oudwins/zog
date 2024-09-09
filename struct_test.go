@@ -1,7 +1,6 @@
 package zog
 
 import (
-	"fmt"
 	"testing"
 	"time"
 
@@ -38,7 +37,7 @@ type objTagged struct {
 	Tim time.Time
 }
 
-func TestExampleStruct(t *testing.T) {
+func TestStructExample(t *testing.T) {
 	var o obj
 
 	data := map[string]any{
@@ -55,9 +54,8 @@ func TestExampleStruct(t *testing.T) {
 	assert.Equal(t, o.Str, "hello")
 }
 
-func TestTaggedStruct(t *testing.T) {
+func TestStructTags(t *testing.T) {
 	var o objTagged
-	fmt.Println(o.Tim)
 
 	data := map[string]any{
 		"s":   "hello",
@@ -81,7 +79,7 @@ var nestedSchema = Struct(Schema{
 	"schema": Struct(Schema{"str": String().Required()}),
 })
 
-func TestNestedStructs(t *testing.T) {
+func TestStructNestedStructs(t *testing.T) {
 
 	v := struct {
 		Str    string
@@ -107,7 +105,7 @@ func TestNestedStructs(t *testing.T) {
 
 }
 
-func TestOptionalStructs(t *testing.T) {
+func TestStructOptional(t *testing.T) {
 	type TestStruct struct {
 		Str string `zog:"str"`
 		In  int    `zog:"in"`
@@ -121,7 +119,7 @@ func TestOptionalStructs(t *testing.T) {
 	assert.Nil(t, errs)
 }
 
-func TestMergeSchema(t *testing.T) {
+func TestStructMergeSchema(t *testing.T) {
 	var nameSchema = Struct(Schema{
 		"name": String().Min(3, Message("Override default message")).Max(10),
 	})
