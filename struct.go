@@ -110,10 +110,15 @@ func (v *structProcessor) process(data any, dest any, path p.PathBuilder, ctx p.
 		}
 	}()
 
-	_, isZeroVal := data.(*p.EmptyDataProvider)
+	_, isEmptyDP := data.(*p.EmptyDataProvider)
 
-	if isZeroVal && v.required == nil {
-		return
+	if isEmptyDP || p.IsZeroValue(data) {
+		if v.required == nil {
+			return
+		} else {
+			ctx.NewError(path, Errors.Required(data, destType))
+			return
+		}
 	}
 
 	// 2. cast data as DataProvider
@@ -123,12 +128,6 @@ func (v *structProcessor) process(data any, dest any, path p.PathBuilder, ctx p.
 			ctx.NewError(path, Errors.New(p.ErrCodeCoerce, data, destType, nil, "", errors.New("could not convert data to a data provider")))
 			return
 		}
-	}
-
-	// required
-	if v.required != nil && isZeroVal {
-		ctx.NewError(path, Errors.Required(data, destType))
-		return
 	}
 
 	// 3. Process / validate struct fields

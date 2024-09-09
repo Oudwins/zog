@@ -70,7 +70,6 @@ func (v *sliceProcessor) process(val any, dest any, path p.PathBuilder, ctx p.Pa
 	// 2. cast data to string & handle default/required
 	isZeroVal := p.IsZeroValue(val)
 	destVal := reflect.ValueOf(dest).Elem()
-	// WHAT IF THIS IS NOT A SLICE???? TODO ! FUCK in default we set an invalid type
 	var refVal reflect.Value
 
 	if isZeroVal {
@@ -78,22 +77,22 @@ func (v *sliceProcessor) process(val any, dest any, path p.PathBuilder, ctx p.Pa
 			refVal = reflect.ValueOf(v.defaultVal)
 		} else if v.required == nil {
 			return
+		} else {
+			// REQUIRED & ZERO VALUE
+			ctx.NewError(path, Errors.Required(val, destType))
+			return
 		}
 	} else {
 		// make sure val is a slice if not try to make it one
 		v, err := conf.Coercers.Slice(val)
 		if err != nil {
 			ctx.NewError(path, Errors.New(p.ErrCodeCoerce, val, destType, nil, "", err))
+			return
 		}
 		refVal = reflect.ValueOf(v)
 	}
 
 	destVal.Set(reflect.MakeSlice(destVal.Type(), refVal.Len(), refVal.Len()))
-
-	// required
-	if v.required != nil && !v.required.ValidateFunc(dest, ctx) {
-		ctx.NewError(path, Errors.Required(val, destType))
-	}
 
 	// 3.1 tests for slice items
 	if v.schema != nil {

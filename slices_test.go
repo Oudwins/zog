@@ -163,3 +163,12 @@ func TestSliceCustomTest(t *testing.T) {
 	errs := schema.Parse(input, &s)
 	assert.Empty(t, errs)
 }
+
+func TestSliceInvalidData(t *testing.T) {
+	input := "not a slice"
+	s := []string{}
+	schema := Slice(String())
+	errs := schema.Parse(input, &s)
+	assert.Nil(t, errs)
+	assert.Equal(t, s, []string{input})
+}

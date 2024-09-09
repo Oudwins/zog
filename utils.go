@@ -161,6 +161,16 @@ func primitiveProcessor[T p.ZogPrimitive](val any, dest any, path p.PathBuilder,
 		} else if required == nil {
 			// This handles optional case
 			return
+		} else {
+			// is required & zero value
+			// required
+			if catch != nil {
+				*destPtr = *catch
+				hasCatched = true
+			} else {
+				ctx.NewError(path, Errors.Required(val, destType))
+				return
+			}
 		}
 	} else {
 		newVal, err := coercer(val)
@@ -174,19 +184,6 @@ func primitiveProcessor[T p.ZogPrimitive](val any, dest any, path p.PathBuilder,
 				ctx.NewError(path, Errors.New(p.ErrCodeCoerce, val, destType, nil, "", err))
 				return
 			}
-		}
-	}
-	if hasCatched {
-		return
-	}
-	// required
-	if required != nil && !required.ValidateFunc(*destPtr, ctx) {
-		if catch != nil {
-			*destPtr = *catch
-			hasCatched = true
-		} else {
-			ctx.NewError(path, Errors.Required(val, destType))
-			return
 		}
 	}
 
