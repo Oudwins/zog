@@ -28,7 +28,7 @@ func String() *stringProcessor {
 	}
 }
 
-func (v *stringProcessor) Parse(val any, dest *string, options ...ParsingOption) p.ZogErrList {
+func (v *stringProcessor) Parse(data any, dest *string, options ...ParsingOption) p.ZogErrList {
 	errs := p.NewErrsList()
 	ctx := p.NewParseCtx(errs, conf.ErrorFormatter)
 	for _, opt := range options {
@@ -36,7 +36,7 @@ func (v *stringProcessor) Parse(val any, dest *string, options ...ParsingOption)
 	}
 	path := p.PathBuilder("")
 
-	v.process(val, dest, path, ctx)
+	v.process(data, dest, path, ctx)
 
 	return errs.List
 }

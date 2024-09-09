@@ -26,14 +26,14 @@ func Slice(schema Processor) *sliceProcessor {
 }
 
 // only supports val = slice[any] & dest = &slice[]
-func (v *sliceProcessor) Parse(val any, dest any, options ...ParsingOption) p.ZogErrMap {
+func (v *sliceProcessor) Parse(data any, dest any, options ...ParsingOption) p.ZogErrMap {
 	errs := p.NewErrsMap()
 	ctx := p.NewParseCtx(errs, conf.ErrorFormatter)
 	for _, opt := range options {
 		opt(ctx)
 	}
 	path := p.PathBuilder("")
-	v.process(val, dest, path, ctx)
+	v.process(data, dest, path, ctx)
 
 	return errs.M
 }

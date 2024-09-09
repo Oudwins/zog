@@ -20,7 +20,7 @@ func Time() *timeProcessor {
 	return &timeProcessor{}
 }
 
-func (v *timeProcessor) Parse(val any, dest *time.Time, options ...ParsingOption) p.ZogErrList {
+func (v *timeProcessor) Parse(data any, dest *time.Time, options ...ParsingOption) p.ZogErrList {
 	errs := p.NewErrsList()
 	ctx := p.NewParseCtx(errs, conf.ErrorFormatter)
 
@@ -30,7 +30,7 @@ func (v *timeProcessor) Parse(val any, dest *time.Time, options ...ParsingOption
 
 	path := p.PathBuilder("")
 
-	v.process(val, dest, path, ctx)
+	v.process(data, dest, path, ctx)
 
 	return errs.List
 }

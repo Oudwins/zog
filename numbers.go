@@ -29,7 +29,7 @@ func Int() *numberProcessor[int] {
 }
 
 // parses the value and stores it in the destination
-func (v *numberProcessor[T]) Parse(val any, dest *T, options ...ParsingOption) p.ZogErrList {
+func (v *numberProcessor[T]) Parse(data any, dest *T, options ...ParsingOption) p.ZogErrList {
 	errs := p.NewErrsList()
 	ctx := p.NewParseCtx(errs, conf.ErrorFormatter)
 	for _, opt := range options {
@@ -38,7 +38,7 @@ func (v *numberProcessor[T]) Parse(val any, dest *T, options ...ParsingOption) p
 
 	path := p.PathBuilder("")
 
-	v.process(val, dest, path, ctx)
+	v.process(data, dest, path, ctx)
 
 	return errs.List
 }
