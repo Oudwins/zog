@@ -3,6 +3,7 @@ package zog
 import (
 	"testing"
 
+	p "github.com/Oudwins/zog/primitives"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -159,6 +160,20 @@ func TestNumberLte(t *testing.T) {
 func TestNumberParse(t *testing.T) {
 	dest := 0
 	validator := Int()
+	errs := validator.Parse(5, &dest)
+	if len(errs) > 0 {
+		t.Errorf("Expected no errors, got %v", errs)
+	}
+	assert.Equal(t, 5, dest)
+}
+
+func TestNumberCustomTest(t *testing.T) {
+	validator := Int().Test("custom_test", func(val any, ctx p.ParseCtx) bool {
+		// Custom test logic here
+		assert.Equal(t, 5, val)
+		return true
+	})
+	dest := 0
 	errs := validator.Parse(5, &dest)
 	if len(errs) > 0 {
 		t.Errorf("Expected no errors, got %v", errs)

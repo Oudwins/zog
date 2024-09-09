@@ -3,6 +3,7 @@ package zog
 import (
 	"testing"
 
+	p "github.com/Oudwins/zog/primitives"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -149,4 +150,16 @@ func TestSliceOfStructs(t *testing.T) {
 
 	assert.Len(t, errsMap["users[0].name"], 1)
 	assert.Len(t, errsMap["users[1].name"], 1)
+}
+
+func TestSliceCustomTest(t *testing.T) {
+	input := []string{"abc", "defg", "hijkl"}
+	s := []string{}
+	schema := Slice(String()).Test("custom_test", func(val any, ctx p.ParseCtx) bool {
+		// Custom test logic here
+		x := val.(*[]string)
+		return assert.Equal(t, input, *x)
+	})
+	errs := schema.Parse(input, &s)
+	assert.Empty(t, errs)
 }

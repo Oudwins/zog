@@ -45,9 +45,9 @@ func TestStringRequiredAborts(t *testing.T) {
 
 func TestStringUserTests(t *testing.T) {
 
-	field := String().Test("test", Message("Invalid"), func(val any, ctx p.ParseCtx) bool {
+	field := String().Test("test", func(val any, ctx p.ParseCtx) bool {
 		return val == "test"
-	})
+	}, Message("Invalid"))
 
 	var dest string
 

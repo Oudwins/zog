@@ -89,16 +89,16 @@ func (v *timeProcessor) Catch(val time.Time) *timeProcessor {
 
 // GLOBAL METHODS
 
-// custom test function call it -> schema.Test("test_name", z.Message(""), func(val any, ctx p.ParseCtx) bool {return true})
-func (v *timeProcessor) Test(ruleName string, errorMsg TestOption, validateFunc p.TestFunc) *timeProcessor {
+// custom test function call it -> schema.Test("error_code", func(val any, ctx p.ParseCtx) bool {return true})
+func (v *timeProcessor) Test(errorCode string, validateFunc p.TestFunc, opts ...TestOption) *timeProcessor {
 	t := p.Test{
-		ErrCode:      ruleName,
-		ErrFmt:       nil,
+		ErrCode:      errorCode,
 		ValidateFunc: validateFunc,
 	}
-	errorMsg(&t)
+	for _, opt := range opts {
+		opt(&t)
+	}
 	v.tests = append(v.tests, t)
-
 	return v
 }
 

@@ -153,14 +153,16 @@ func (v *sliceProcessor) Default(val any) *sliceProcessor {
 
 // !TESTS
 
-// custom test function call it -> schema.Test("test_name", z.Message(""), func(val any, ctx p.ParseCtx) bool {return true})
-func (v *sliceProcessor) Test(ruleName string, errorMsg TestOption, validateFunc p.TestFunc) *sliceProcessor {
-	v.tests = append(v.tests, p.Test{
-		ErrCode:      ruleName,
-		ErrFmt:       nil,
+// custom test function call it -> schema.Test("error_code", func(val any, ctx p.ParseCtx) bool {return true})
+func (v *sliceProcessor) Test(errorCode string, validateFunc p.TestFunc, opts ...TestOption) *sliceProcessor {
+	t := p.Test{
+		ErrCode:      errorCode,
 		ValidateFunc: validateFunc,
-	})
-	errorMsg(&v.tests[len(v.tests)-1])
+	}
+	for _, opt := range opts {
+		opt(&t)
+	}
+	v.tests = append(v.tests, t)
 	return v
 }
 
