@@ -1,5 +1,37 @@
 # Changelog
 
+## [0.7.0](https://github.com/Oudwins/zog/compare/v0.6.2...v0.7.0) (2024-09-09)
+
+
+### ⚠ BREAKING CHANGES
+
+* custom tests now require that you pass a test struct or use the TestFunc() helper
+* order of schema.Test() params has changed from (errorCode, z.Message(), func) to (errCode, func, [optionalTestOptions])
+* All z.Errors functions have changed. I still don't recommend you use them since they might still change in the future
+
+### Features
+
+* better errors ([fe78a8d](https://github.com/Oudwins/zog/commit/fe78a8d072abf23f9c7d60d2b8560d2384dd899f))
+* move coercers to default variable to make it easier to replace the coercers struct without losing access to the default coercers ([2387330](https://github.com/Oudwins/zog/commit/2387330e60306ed7767a90be155d7479df12e21c))
+* new & improved API for custom tests ([9acfc37](https://github.com/Oudwins/zog/commit/9acfc378a530f651b2bcf2e7c4f344f4cbc2f8d2))
+
+
+### Bug Fixes
+
+* bool coercer ([#14](https://github.com/Oudwins/zog/issues/14)) ([01f8c17](https://github.com/Oudwins/zog/commit/01f8c17b38050604112f688006b259a60df6a58a))
+* minor fix to order of operations when required is set ([cff0fc3](https://github.com/Oudwins/zog/commit/cff0fc3a87bbc2c574601fe81daddafb5f48a279))
+* Time().EQ() was broken due to typo ([9310e1a](https://github.com/Oudwins/zog/commit/9310e1a5dab72fac18440921a84b3fa68d65e9b0))
+
+
+### Miscellaneous Chores
+
+* release 0.7.0 ([0e0eb47](https://github.com/Oudwins/zog/commit/0e0eb47d8094f7f84f9581630534d2e26838bef9))
+
+
+### Code Refactoring
+
+* custom test method is now more in line with the rest. ([d163f36](https://github.com/Oudwins/zog/commit/d163f369ba6310cf849d1271a214ad95082bd641))
+
 ## [0.6.2](https://github.com/Oudwins/zog/compare/v0.6.1...v0.6.2) (2024-08-16)
 
 
