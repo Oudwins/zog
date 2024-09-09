@@ -152,6 +152,7 @@ func (v *timeProcessor) Before(t time.Time) *timeProcessor {
 func (v *timeProcessor) EQ(t time.Time) *timeProcessor {
 	r := p.Test{
 		ErrCode: p.ErrCodeEQ,
+		Params:  make(map[string]any, 1),
 		ValidateFunc: func(v any, ctx p.ParseCtx) bool {
 			val, ok := v.(time.Time)
 			if !ok {
