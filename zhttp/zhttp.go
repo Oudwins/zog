@@ -1,6 +1,7 @@
 package zhttp
 
 import (
+	"encoding/json"
 	"net/http"
 	"net/url"
 
@@ -30,10 +31,21 @@ func (u urlDataProvider) GetNestedProvider(key string) p.DataProvider {
 	return u
 }
 
+// Only supports form data & query parms
 func NewRequestDataProvider(r *http.Request) (urlDataProvider, error) {
 	err := r.ParseForm()
 	if err != nil {
 		return urlDataProvider{}, err
 	}
 	return urlDataProvider{Data: r.Form}, nil
+}
+
+func NewJsonDataProvider(r *http.Request) (p.DataProvider, error) {
+	var data map[string]any
+	decod := json.NewDecoder(r.Body)
+	err := decod.Decode(&data)
+	if err != nil {
+		return nil, err
+	}
+	return p.NewMapDataProvider(data), nil
 }

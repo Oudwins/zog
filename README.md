@@ -188,7 +188,7 @@ func Init() {
 }
 ```
 
-**zhttp: helps parse http requests forms & query params**
+**zhttp: helps parse http requests**
 
 ```go
 import (
@@ -205,8 +205,10 @@ func handlePostRequest(w http.ResponseWriter, r *http.Request) {
     Name string
     Age int
   }
-  // Parse the request into the user struct from the query params or the form data
+  // if using query params or form data:
   errs := userSchema.Parse(zhttp.NewRequestDataProvider(r), &user)
+  // if using json:
+  errs := userSchema.Parse(zhttp.NewJsonDataProvider(r), &user)
   if errs != nil {
   }
   user.Name // defined
