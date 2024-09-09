@@ -1,30 +1,14 @@
 package primitives
 
 import (
-	"fmt"
 	"reflect"
 
 	"golang.org/x/exp/constraints"
 )
 
-// Default error func that takes the value as param. Expect msg = "%s is a required field"
-func DErrorFuncWithVal(msg string) ErrorFunc {
-	return func(val any, ctx ParseCtx) string {
-		return fmt.Sprintf(msg, val)
-	}
-}
-
-// Default error func, doesn't take any params
-func DErrorFunc(msg string) ErrorFunc {
-	return func(val any, ctx ParseCtx) string {
-		return msg
-	}
-}
-
-func Required(fn ErrorFunc) Test {
+func Required() Test {
 	t := Test{
-		Name:      "required",
-		ErrorFunc: fn,
+		ErrCode: ErrCodeRequired,
 		ValidateFunc: func(val any, ctx ParseCtx) bool {
 			return !IsZeroValue(val)
 		},
@@ -36,20 +20,23 @@ type LengthCapable[K any] interface {
 	~[]any | ~[]K | string | map[any]any | ~chan any
 }
 
-func LenMin[T LengthCapable[any]](n int, errFn ErrorFunc) Test {
-	return Test{
-		Name:      "min",
-		ErrorFunc: errFn,
+func LenMin[T LengthCapable[any]](n int) Test {
+	t := Test{
+		ErrCode: ErrCodeMin,
+		Params:  make(map[string]any, 1),
 		ValidateFunc: func(val any, ctx ParseCtx) bool {
 			x := val.(T)
 			return len(x) >= n
 		},
 	}
+	t.Params[ErrCodeMin] = n
+	return t
 }
 
-func LenMax[T LengthCapable[any]](n int, errFn ErrorFunc) Test {
-	return Test{
-		Name: "max",
+func LenMax[T LengthCapable[any]](n int) Test {
+	t := Test{
+		ErrCode: ErrCodeMax,
+		Params:  make(map[string]any, 1),
 		ValidateFunc: func(v any, ctx ParseCtx) bool {
 			val, ok := v.(T)
 			if !ok {
@@ -57,13 +44,15 @@ func LenMax[T LengthCapable[any]](n int, errFn ErrorFunc) Test {
 			}
 			return len(val) <= n
 		},
-		ErrorFunc: errFn,
 	}
+	t.Params[ErrCodeMax] = n
+	return t
 }
 
-func Len[T LengthCapable[any]](n int, errFn ErrorFunc) Test {
-	return Test{
-		Name: "length",
+func Len[T LengthCapable[any]](n int) Test {
+	t := Test{
+		ErrCode: ErrCodeLen,
+		Params:  make(map[string]any, 1),
 		ValidateFunc: func(v any, ctx ParseCtx) bool {
 			val, ok := v.(T)
 			if !ok {
@@ -71,13 +60,15 @@ func Len[T LengthCapable[any]](n int, errFn ErrorFunc) Test {
 			}
 			return len(val) == n
 		},
-		ErrorFunc: errFn,
 	}
+	t.Params[ErrCodeLen] = n
+	return t
 }
 
-func In[T any](values []T, msg string) Test {
-	return Test{
-		Name: "oneof",
+func In[T any](values []T) Test {
+	t := Test{
+		ErrCode: ErrCodeOneOf,
+		Params:  make(map[string]any, 1),
 		ValidateFunc: func(val any, ctx ParseCtx) bool {
 			for _, value := range values {
 				v := val.(T)
@@ -87,13 +78,15 @@ func In[T any](values []T, msg string) Test {
 			}
 			return false
 		},
-		ErrorFunc: DErrorFunc(msg),
 	}
+	t.Params[ErrCodeOneOf] = values
+	return t
 }
 
-func EQ[T comparable](n T, msg string) Test {
-	return Test{
-		Name: "eq",
+func EQ[T comparable](n T) Test {
+	t := Test{
+		ErrCode: ErrCodeEQ,
+		Params:  make(map[string]any, 1),
 		ValidateFunc: func(val any, ctx ParseCtx) bool {
 			v, ok := val.(T)
 			if !ok {
@@ -101,14 +94,15 @@ func EQ[T comparable](n T, msg string) Test {
 			}
 			return v == n
 		},
-		ErrorFunc: DErrorFunc(msg),
 	}
+	t.Params[ErrCodeEQ] = n
+	return t
 }
 
-func LTE[T constraints.Ordered](n T, msg string) Test {
-	return Test{
-		Name: "lte",
-
+func LTE[T constraints.Ordered](n T) Test {
+	t := Test{
+		ErrCode: ErrCodeLTE,
+		Params:  make(map[string]any, 1),
 		ValidateFunc: func(val any, ctx ParseCtx) bool {
 			v, ok := val.(T)
 			if !ok {
@@ -116,14 +110,15 @@ func LTE[T constraints.Ordered](n T, msg string) Test {
 			}
 			return v <= n
 		},
-		ErrorFunc: DErrorFunc(msg),
 	}
+	t.Params[ErrCodeLTE] = n
+	return t
 }
 
-func GTE[T constraints.Ordered](n T, msg string) Test {
-	return Test{
-		Name: "gte",
-
+func GTE[T constraints.Ordered](n T) Test {
+	t := Test{
+		ErrCode: ErrCodeGTE,
+		Params:  make(map[string]any, 1),
 		ValidateFunc: func(val any, ctx ParseCtx) bool {
 			v, ok := val.(T)
 			if !ok {
@@ -131,14 +126,15 @@ func GTE[T constraints.Ordered](n T, msg string) Test {
 			}
 			return v >= n
 		},
-		ErrorFunc: DErrorFunc(msg),
 	}
+	t.Params[ErrCodeGTE] = n
+	return t
 }
 
-func LT[T constraints.Ordered](n T, msg string) Test {
-	return Test{
-		Name: "lt",
-
+func LT[T constraints.Ordered](n T) Test {
+	t := Test{
+		ErrCode: ErrCodeLT,
+		Params:  make(map[string]any, 1),
 		ValidateFunc: func(val any, ctx ParseCtx) bool {
 			v, ok := val.(T)
 			if !ok {
@@ -146,14 +142,15 @@ func LT[T constraints.Ordered](n T, msg string) Test {
 			}
 			return v < n
 		},
-		ErrorFunc: DErrorFunc(msg),
 	}
+	t.Params[ErrCodeLT] = n
+	return t
 }
 
-func GT[T constraints.Ordered](n T, msg string) Test {
-	return Test{
-		Name: "gt",
-
+func GT[T constraints.Ordered](n T) Test {
+	t := Test{
+		ErrCode: ErrCodeGT,
+		Params:  make(map[string]any, 1),
 		ValidateFunc: func(val any, ctx ParseCtx) bool {
 			v, ok := val.(T)
 			if !ok {
@@ -161,6 +158,7 @@ func GT[T constraints.Ordered](n T, msg string) Test {
 			}
 			return v > n
 		},
-		ErrorFunc: DErrorFunc(msg),
 	}
+	t.Params[ErrCodeGT] = n
+	return t
 }

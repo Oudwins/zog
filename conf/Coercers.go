@@ -10,8 +10,8 @@ import (
 // takes in an original value and attempts to coerce it into another type. Returns an error if the coercion fails.
 type CoercerFunc = func(original any) (value any, err error)
 
-// a map of coercer functions. The key is the type of the destination and the value is the coercer function. You may override this map to add your own coercer functions and they will affect the behaviour of all zog schemas.
-var Coercers = struct {
+// The coercer functions used in zog by default.
+var DefaultCoercers = struct {
 	Bool    CoercerFunc
 	String  CoercerFunc
 	Int     CoercerFunc
@@ -122,3 +122,6 @@ var Coercers = struct {
 		}
 	},
 }
+
+// Please override this variable instead of `DefaultCoercers` to add your own coercer functions.
+var Coercers = DefaultCoercers

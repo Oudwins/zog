@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestSchemaOptionalByDefault(t *testing.T) {
+func TestStringSchemaOptionalByDefault(t *testing.T) {
 	field := String().Len(3).Contains("foo").HasPrefix("pre").HasSuffix("fix")
 	var dest string
 
@@ -23,7 +23,7 @@ func TestSchemaOptionalByDefault(t *testing.T) {
 
 }
 
-func TestPreTransform(t *testing.T) {
+func TestStringPreTransform(t *testing.T) {
 	field := String().Required().Len(3).PreTransform(func(val any, ctx ParseCtx) (any, error) {
 		return "foo", nil
 	})
@@ -34,7 +34,7 @@ func TestPreTransform(t *testing.T) {
 	assert.Equal(t, "foo", dest)
 }
 
-func TestRequiredAborts(t *testing.T) {
+func TestStringRequiredAborts(t *testing.T) {
 	field := String().Required().Len(3)
 	var dest string
 
@@ -43,11 +43,11 @@ func TestRequiredAborts(t *testing.T) {
 	assert.Len(t, errs, 1)
 }
 
-func TestUserTests(t *testing.T) {
+func TestStringUserTests(t *testing.T) {
 
-	field := String().Test("test", Message("Invalid"), func(val any, ctx p.ParseCtx) bool {
+	field := String().Test(TestFunc("test", func(val any, ctx p.ParseCtx) bool {
 		return val == "test"
-	})
+	}), Message("Invalid"))
 
 	var dest string
 
@@ -58,20 +58,20 @@ func TestUserTests(t *testing.T) {
 
 	errs = field.Parse("not test", &dest)
 	assert.NotEmpty(t, errs)
-	assert.Equal(t, "Invalid", errs[0].Message)
+	assert.Equal(t, "Invalid", errs[0].Message())
 
 }
 
-func TestMessage(t *testing.T) {
+func TestStringMessage(t *testing.T) {
 	field := String().Min(5, Message("min")).Email(Message("email"))
 	var dest string
 	errs := field.Parse("x", &dest)
 	assert.NotEmpty(t, errs)
-	assert.Equal(t, "min", errs[0].Message)
-	assert.Equal(t, "email", errs[1].Message)
+	assert.Equal(t, "min", errs[0].Message())
+	assert.Equal(t, "email", errs[1].Message())
 }
 
-func TestLength(t *testing.T) {
+func TestStringLength(t *testing.T) {
 	field := String().Len(3)
 	var dest string
 
@@ -93,7 +93,7 @@ func TestLength(t *testing.T) {
 	assert.Equal(t, "1234567", dest)
 }
 
-func TestRequired(t *testing.T) {
+func TestStringRequired(t *testing.T) {
 	field := String().Required()
 	var dest string
 
@@ -106,7 +106,7 @@ func TestRequired(t *testing.T) {
 	assert.Equal(t, "foo", dest)
 }
 
-func TestOptional(t *testing.T) {
+func TestStringOptional(t *testing.T) {
 	field := String().Optional()
 	var dest string
 
@@ -121,7 +121,7 @@ func TestOptional(t *testing.T) {
 	assert.Equal(t, "foo", dest)
 }
 
-func TestDefault(t *testing.T) {
+func TestStringDefault(t *testing.T) {
 	field := String().Default("bar")
 	var dest string
 
@@ -136,7 +136,7 @@ func TestDefault(t *testing.T) {
 	assert.Equal(t, "foo", dest)
 }
 
-func TestCatch(t *testing.T) {
+func TestStringCatch(t *testing.T) {
 	field := String().Required().Min(5).Catch("error")
 	var dest string
 
@@ -151,7 +151,7 @@ func TestCatch(t *testing.T) {
 	assert.Equal(t, "not error", dest)
 }
 
-func TestEmail(t *testing.T) {
+func TestStringEmail(t *testing.T) {
 	field := String().Email()
 	var dest string
 
@@ -164,7 +164,7 @@ func TestEmail(t *testing.T) {
 	assert.Equal(t, "test@example.com", dest)
 }
 
-func TestURL(t *testing.T) {
+func TestStringURL(t *testing.T) {
 	field := String().URL()
 	var dest string
 
@@ -177,7 +177,7 @@ func TestURL(t *testing.T) {
 	assert.Equal(t, "http://example.com", dest)
 }
 
-func TestHasPrefix(t *testing.T) {
+func TestStringHasPrefix(t *testing.T) {
 	field := String().HasPrefix("pre")
 	var dest string
 
@@ -190,7 +190,7 @@ func TestHasPrefix(t *testing.T) {
 	assert.Equal(t, "prefix", dest)
 }
 
-func TestHasPostfix(t *testing.T) {
+func TestStringHasPostfix(t *testing.T) {
 	field := String().HasSuffix("fix")
 	var dest string
 
@@ -203,7 +203,7 @@ func TestHasPostfix(t *testing.T) {
 	assert.Equal(t, "postfix", dest)
 }
 
-func TestContains(t *testing.T) {
+func TestStringContains(t *testing.T) {
 	field := String().Contains("contains")
 	var dest string
 
@@ -216,7 +216,7 @@ func TestContains(t *testing.T) {
 	assert.Equal(t, "contains", dest)
 }
 
-func TestContainsDigit(t *testing.T) {
+func TestStringContainsDigit(t *testing.T) {
 	field := String().ContainsDigit()
 	var dest string
 
@@ -229,7 +229,7 @@ func TestContainsDigit(t *testing.T) {
 	assert.Equal(t, "1234", dest)
 }
 
-func TestContainsUpper(t *testing.T) {
+func TestStringContainsUpper(t *testing.T) {
 	field := String().ContainsUpper()
 	var dest string
 
@@ -242,7 +242,7 @@ func TestContainsUpper(t *testing.T) {
 	assert.Equal(t, "UPPERCASE", dest)
 }
 
-func TestContainsSpecial(t *testing.T) {
+func TestStringContainsSpecial(t *testing.T) {
 	field := String().ContainsSpecial()
 	var dest string
 

@@ -26,23 +26,27 @@ func Slice(schema Processor) *sliceProcessor {
 }
 
 // only supports val = slice[any] & dest = &slice[]
-func (v *sliceProcessor) Parse(val any, dest any) p.ZogErrMap {
-	var ctx = p.NewParseCtx()
+func (v *sliceProcessor) Parse(data any, dest any, options ...ParsingOption) p.ZogErrMap {
 	errs := p.NewErrsMap()
+	ctx := p.NewParseCtx(errs, conf.ErrorFormatter)
+	for _, opt := range options {
+		opt(ctx)
+	}
 	path := p.PathBuilder("")
-	v.process(val, dest, errs, path, ctx)
+	v.process(data, dest, path, ctx)
 
 	return errs.M
 }
 
-func (v *sliceProcessor) process(val any, dest any, errs p.ZogErrors, path p.PathBuilder, ctx p.ParseCtx) {
+func (v *sliceProcessor) process(val any, dest any, path p.PathBuilder, ctx p.ParseCtx) {
+	destType := p.TypeSlice
 	// 1. preTransforms
 	if v.preTransforms != nil {
 		for _, fn := range v.preTransforms {
 			nVal, err := fn(val, ctx)
 			// bail if error in preTransform
 			if err != nil {
-				errs.Add(path, Errors.WrapUnknown(err))
+				ctx.NewError(path, Errors.WrapUnknown(val, destType, err))
 				return
 			}
 			val = nVal
@@ -52,11 +56,11 @@ func (v *sliceProcessor) process(val any, dest any, errs p.ZogErrors, path p.Pat
 	// 4. postTransforms
 	defer func() {
 		// only run posttransforms on success
-		if errs.IsEmpty() {
+		if ctx.HasErrored() {
 			for _, fn := range v.postTransforms {
 				err := fn(dest, ctx)
 				if err != nil {
-					errs.Add(path, Errors.WrapUnknown(err))
+					ctx.NewError(path, Errors.WrapUnknown(val, destType, err))
 					return
 				}
 			}
@@ -66,7 +70,6 @@ func (v *sliceProcessor) process(val any, dest any, errs p.ZogErrors, path p.Pat
 	// 2. cast data to string & handle default/required
 	isZeroVal := p.IsZeroValue(val)
 	destVal := reflect.ValueOf(dest).Elem()
-	// WHAT IF THIS IS NOT A SLICE???? TODO ! FUCK in default we set an invalid type
 	var refVal reflect.Value
 
 	if isZeroVal {
@@ -74,22 +77,22 @@ func (v *sliceProcessor) process(val any, dest any, errs p.ZogErrors, path p.Pat
 			refVal = reflect.ValueOf(v.defaultVal)
 		} else if v.required == nil {
 			return
+		} else {
+			// REQUIRED & ZERO VALUE
+			ctx.NewError(path, Errors.Required(val, destType))
+			return
 		}
 	} else {
 		// make sure val is a slice if not try to make it one
 		v, err := conf.Coercers.Slice(val)
 		if err != nil {
-			errs.Add(path, Errors.Wrap(err, "failed to validate field"))
+			ctx.NewError(path, Errors.New(p.ErrCodeCoerce, val, destType, nil, "", err))
+			return
 		}
 		refVal = reflect.ValueOf(v)
 	}
 
 	destVal.Set(reflect.MakeSlice(destVal.Type(), refVal.Len(), refVal.Len()))
-
-	// required
-	if v.required != nil && !v.required.ValidateFunc(dest, ctx) {
-		errs.Add(path, Errors.New(v.required.ErrorFunc(dest, ctx)))
-	}
 
 	// 3.1 tests for slice items
 	if v.schema != nil {
@@ -97,7 +100,7 @@ func (v *sliceProcessor) process(val any, dest any, errs p.ZogErrors, path p.Pat
 			item := refVal.Index(idx).Interface()
 			ptr := destVal.Index(idx).Addr().Interface()
 			path := path.Push(fmt.Sprintf("[%d]", idx))
-			v.schema.process(item, ptr, errs, path, ctx)
+			v.schema.process(item, ptr, path, ctx)
 		}
 	}
 
@@ -110,7 +113,7 @@ func (v *sliceProcessor) process(val any, dest any, errs p.ZogErrors, path p.Pat
 			// 	break
 			// }
 			//
-			errs.Add(path, Errors.New(test.ErrorFunc(dest, ctx)))
+			ctx.NewError(path, Errors.FromTest(val, destType, &test, ctx))
 		}
 	}
 	// 4. postTransforms -> defered see above
@@ -120,7 +123,7 @@ func (v *sliceProcessor) process(val any, dest any, errs p.ZogErrors, path p.Pat
 
 // marks field as required
 func (v *sliceProcessor) Required(options ...TestOption) *sliceProcessor {
-	r := p.Required(p.DErrorFunc("is a required field"))
+	r := p.Required()
 	for _, opt := range options {
 		opt(&r)
 	}
@@ -149,21 +152,19 @@ func (v *sliceProcessor) Default(val any) *sliceProcessor {
 
 // !TESTS
 
-// custom test function call it -> schema.Test("test_name", z.Message(""), func(val any, ctx p.ParseCtx) bool {return true})
-func (v *sliceProcessor) Test(ruleName string, errorMsg TestOption, validateFunc p.TestFunc) *sliceProcessor {
-	v.tests = append(v.tests, p.Test{
-		Name:         ruleName,
-		ErrorFunc:    nil,
-		ValidateFunc: validateFunc,
-	})
-	errorMsg(&v.tests[len(v.tests)-1])
+// custom test function call it -> schema.Test(t z.Test, opts ...TestOption)
+func (v *sliceProcessor) Test(t p.Test, opts ...TestOption) *sliceProcessor {
+	for _, opt := range opts {
+		opt(&t)
+	}
+	v.tests = append(v.tests, t)
 	return v
 }
 
 // Minimum number of items
 func (v *sliceProcessor) Min(n int, options ...TestOption) *sliceProcessor {
 	v.tests = append(v.tests,
-		sliceMin(n, fmt.Sprintf("should be at least %d items long", n)),
+		sliceMin(n),
 	)
 	for _, opt := range options {
 		opt(&v.tests[len(v.tests)-1])
@@ -175,7 +176,7 @@ func (v *sliceProcessor) Min(n int, options ...TestOption) *sliceProcessor {
 // Maximum number of items
 func (v *sliceProcessor) Max(n int, options ...TestOption) *sliceProcessor {
 	v.tests = append(v.tests,
-		sliceMax(n, fmt.Sprintf("should be at maximum %d items long", n)),
+		sliceMax(n),
 	)
 	for _, opt := range options {
 		opt(&v.tests[len(v.tests)-1])
@@ -186,7 +187,7 @@ func (v *sliceProcessor) Max(n int, options ...TestOption) *sliceProcessor {
 // Exact number of items
 func (v *sliceProcessor) Len(n int, options ...TestOption) *sliceProcessor {
 	v.tests = append(v.tests,
-		sliceLength(n, fmt.Sprintf("should be exactly %d items long", n)),
+		sliceLength(n),
 	)
 	for _, opt := range options {
 		opt(&v.tests[len(v.tests)-1])
@@ -198,8 +199,8 @@ func (v *sliceProcessor) Len(n int, options ...TestOption) *sliceProcessor {
 func (v *sliceProcessor) Contains(value any, options ...TestOption) *sliceProcessor {
 	v.tests = append(v.tests,
 		p.Test{
-			Name:      "contains",
-			ErrorFunc: p.DErrorFunc(fmt.Sprintf("should contain %v", value)),
+			ErrCode: p.ErrCodeContains,
+			Params:  make(map[string]any, 1),
 			ValidateFunc: func(val any, ctx p.ParseCtx) bool {
 				rv := reflect.ValueOf(val).Elem()
 				if rv.Kind() != reflect.Slice {
@@ -217,17 +218,17 @@ func (v *sliceProcessor) Contains(value any, options ...TestOption) *sliceProces
 			},
 		},
 	)
-
+	v.tests[len(v.tests)-1].Params[p.ErrCodeContains] = value
 	for _, opt := range options {
 		opt(&v.tests[len(v.tests)-1])
 	}
 	return v
 }
 
-func sliceMin(n int, errMsg string) p.Test {
-	return p.Test{
-		Name:      "sliceMin",
-		ErrorFunc: p.DErrorFunc(errMsg),
+func sliceMin(n int) p.Test {
+	t := p.Test{
+		ErrCode: p.ErrCodeMin,
+		Params:  make(map[string]any, 1),
 		ValidateFunc: func(val any, ctx p.ParseCtx) bool {
 			rv := reflect.ValueOf(val).Elem()
 			if rv.Kind() != reflect.Slice {
@@ -236,11 +237,13 @@ func sliceMin(n int, errMsg string) p.Test {
 			return rv.Len() >= n
 		},
 	}
+	t.Params[p.ErrCodeMin] = n
+	return t
 }
-func sliceMax(n int, errMsg string) p.Test {
-	return p.Test{
-		Name:      "sliceMax",
-		ErrorFunc: p.DErrorFunc(errMsg),
+func sliceMax(n int) p.Test {
+	t := p.Test{
+		ErrCode: p.ErrCodeMax,
+		Params:  make(map[string]any, 1),
 		ValidateFunc: func(val any, ctx p.ParseCtx) bool {
 			rv := reflect.ValueOf(val).Elem()
 			if rv.Kind() != reflect.Slice {
@@ -249,11 +252,13 @@ func sliceMax(n int, errMsg string) p.Test {
 			return rv.Len() <= n
 		},
 	}
+	t.Params[p.ErrCodeMax] = n
+	return t
 }
-func sliceLength(n int, errMsg string) p.Test {
-	return p.Test{
-		Name:      "sliceLength",
-		ErrorFunc: p.DErrorFunc(errMsg),
+func sliceLength(n int) p.Test {
+	t := p.Test{
+		ErrCode: p.ErrCodeLen,
+		Params:  make(map[string]any, 1),
 		ValidateFunc: func(val any, ctx p.ParseCtx) bool {
 			rv := reflect.ValueOf(val).Elem()
 			if rv.Kind() != reflect.Slice {
@@ -262,4 +267,6 @@ func sliceLength(n int, errMsg string) p.Test {
 			return rv.Len() == n
 		},
 	}
+	t.Params[p.ErrCodeLen] = n
+	return t
 }

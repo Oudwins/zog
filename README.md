@@ -26,11 +26,11 @@ Killer Features:
   - **zenv**: parse environment variables
   - **zhttp**: parse http forms & query params
 
-**API Stability:**
-
-- I will consider the API stable when we reach v1.0.0
-- However, I believe very little API changes will happen from the current implementation. The API that is most likely to change is the everything related to customizing error messages & data providers. However, if you use the provided wrappers (i.e `z.Message()` & `z.NewMapDataProvider()`) those APIs will most likely not change and you won't be affected.
-- Zog will not respect semver until v1.0.0 is released. Expect breaking changes (mainly in non basic apis) until then.
+> **API Stability:**
+>
+> - I will consider the API stable when we reach v1.0.0
+> - However, I believe very little API changes will happen from the current implementation. The APIs are are most likely to change are the data providers and the ParseCtx most other APIs should remain the same
+> - Zog will not respect semver until v1.0.0 is released. Expect breaking changes (mainly in non basic apis) until then.
 
 ## Introduction
 
@@ -73,7 +73,7 @@ func main() {
     "firstname": "", // won't return an error because fields are optional by default
     "age": "30", // will get casted to int
   }
-  errsMap := schema.Parse(z.NewMapDataProvider(m), &u)
+  errsMap := schema.Parse(m, &u) // here it would be slightly more efficient to use NewMapDataProvider(m) but both work
   if errsMap != nil {
     // handle errors -> see Errors section
   }
@@ -93,10 +93,10 @@ errsList := Time().Required().Parse("2020-01-01T00:00:00Z", &t)
 
 ```go
 var dest []string
-Slice(String().Email().Required()).PreTransform(func(val any, ctx z.ParseCtx) (any, error) {
+Slice(String().Email().Required()).PreTransform(func(data any, ctx z.ParseCtx) (any, error) {
   s := val.(string)
   return strings.Split(s, ","), nil
-}).PostTransform(func(val any, ctx z.ParseCtx) error {
+}).PostTransform(func(destPtr any, ctx z.ParseCtx) error {
   s := val.(*[]string)
   for i, v := range s {
     s[i] = strings.TrimSpace(v)
@@ -107,11 +107,11 @@ Slice(String().Email().Required()).PreTransform(func(val any, ctx z.ParseCtx) (a
 
 ## Core Design Decisions
 
-- The struct validator always expects a `DataProvider`, which is an interface that wraps around an input like a map. This is less efficient than doing it directly but allows us to reuse the same code for all kinds of data sources (i.e json, query params, forms, etc).
 - All fields optinal by default. Same as graphql
-- Errors returned by you can be an instance of ZogError or an error. If you return an error, it will be wrapped in a ZogError using the error.Error() value as the message. ZogError is just a struct that wraps around an error and adds a message field which is is text that can be shown to the user.
-- You should not depend on test execution order. They might run in parallel in the future
 - When parsing into structs, private fields are ignored (same as stdlib json.Unmarshal)
+- The struct parser expects a `DataProvider` (although if you pass something else to the data field it will try to coerce it into a `DataProvider`), which is an interface that wraps around an input like a map. This is less efficient than doing it directly but allows us to reuse the same code for all kinds of data sources (i.e json, query params, forms, etc).
+- Errors returned by you can be the ZogError interface or an error. If you return an error, it will be wrapped in a ZogError. ZogError is just a struct that wraps around an error and adds a message field which is is text that can be shown to the user.
+- You should not depend on test execution order. They might run in parallel in the future
 
 > **A WORD OF CAUTION. ZOG & PANICS**
 > Zog will never panic due to invalid input but will always panic if invalid destination is passed to the `Parse` function (i.e if the destination does not match the schema).
@@ -125,7 +125,7 @@ type User struct {
   Name string
   Age int // age will be ignored since it is not a field in the schema
 }
-// this struct is not a valid destionation for the schema. It is missing the name field. This will cause a panic
+// this struct is not a valid destination for the schema. It is missing the name field. This will cause a panic
 type User2 struct {
   Email string,
   Age int
@@ -133,7 +133,7 @@ type User2 struct {
 
 ```
 
-**Changes from zog**:
+**Changes from zod**:
 
 - The refine method for providing a custom validation function is renamed to `schema.Test()`
 - schemas are optional by default (in zod they are required)
@@ -147,7 +147,6 @@ Most of these things are issues we would like to address in future versions.
 - slices do not support pointers
 - maps are not a supported schema type
 - structs and slices don't support catch, and structs don't suppoort default values
-- You can provide custom error messages, but cannot customize coercion error messages or set global defaults
 - Validations and parsing cannot be run separately
 - It is not recommended to use very deeply nested schemas since that requires a lot of reflection and can have a negative impact on performance
 
@@ -216,16 +215,45 @@ func handlePostRequest(w http.ResponseWriter, r *http.Request) {
 
 ```
 
-## Errors
+## Parsing Context
 
-> **WARNING**: The errors API is probably what is most likely to change in the future. I will try to keep it backwards compatible but I can't guarantee it.
+Zog uses a `ParseCtx` to pass around information related to a specific `schema.Parse()` call. Currently use of the parse context is quite limited but it will be expanded upon in the future.
 
-Zog creates its own error type called `ZogError` that implements the error interface.
+**uses**
+
+1. Pass custom data to custom functions
+
+Here is an example with a pretransform
 
 ```go
-type ZogError struct {
-  Message string
-  Err     error
+nameSchema := z.String().Min(3).PreTransform(func(data any, ctx z.ParseCtx) (any, error) {
+  char := ctx.Get("split_by")
+  return strings.Split(data.(string), char), nil
+})
+nameSchema.Parse("Michael Jackson", &dest, z.WithCtxValue("split_by", " "))
+```
+
+2. Change the error formatter
+
+```go
+nameSchema := z.String().Min(3)
+nameSchema.Parse(data, &dest, z.WithErrFormatter(MyCustomErrorMessageFormatter))
+```
+
+## Errors
+
+Zog creates its own error interface called `ZogError` which also implements the error interface.
+
+```go
+type ZogError interface {
+	Code() ZogErrCode // unique error code
+	Value() any    // the value that caused the error
+	Dtype() ZogType // type of the destionation
+	Params() map[string]any // params for the error as defined by
+	Message() string
+	SetMessage(string)
+	Error() string // returns the string of the wrapped error
+	Unwrap() error // returns the wrapped error
 }
 ```
 
@@ -237,6 +265,7 @@ This is what will be returned by the `Parse` function. To be precise:
 For example:
 
 ```go
+// ! WARNING EXAMPLES HERE ARE SHOWN AS IF ZogError IS A STRUCT FOR EASIER READING BUT IT IS AN INTERFACE
 errList := z.String().Min(5).Parse("foo", &dest) // can return []z.ZogError{z.ZogError{Message: "min length is 5"}} or nil
 errMap := z.Struct(z.Schema{"name": z.String().Min(5)}).Parse(data, &dest) // can return map[string][]z.ZogError{"name": []z.ZogError{{Message: "min length is 5"}}} or nil
 
@@ -247,6 +276,7 @@ errsMap2 := z.Slice(z.String().Min(5)).Len(2).Parse(data, &dest) // can return m
 Additionally, `z.ZogErrMap` will use the field path as the key. Meaning
 
 ```go
+// ! WARNING EXAMPLES HERE ARE SHOWN AS IF ZogError IS A STRUCT FOR EASIER READING BUT IT IS AN INTERFACE
 errsMap := z.Struct(z.Schema{"inner": z.Struct(z.Schema{"name": z.String().Min(5)}), "slice": z.Slice(z.String().Min(5))}).Parse(data, &dest)
 errsMap["inner.name"] // will return []z.ZogError{{Message: "min length is 5"}}
 errsMap["slice[0]"] // will return []z.ZogError{{Message: "min length is 5"}}
@@ -258,11 +288,65 @@ errsMap["slice[0]"] // will return []z.ZogError{{Message: "min length is 5"}}
 errsMap := z.Slice(z.String()).Min(2).Parse(data, &dest)
 errsMap["$root"] // will return []z.ZogError{{Message: "slice length is not 2"}}
 errsMap["$first"] || errsMap.First() // (equivalent) will return the same in this case []z.ZogError{{Message: "slice length is not 2"}}
-
 ```
 
-**Sanitizing Errors**
+### Sanitizing Errors
+
 If you want to return errors to the user without the possibility of exposing internal errors, you can use the Zog sanitizer functions `z.Errors.SanitizeMap(errsMap)` or `z.Errors.SanitizeSlice(errsSlice)`. These functions will return a map or slice of strings of the error messages (stripping out the internal error).
+
+### Error Formatting & i18n
+
+You have many different options for handling the formatting of error messages. Here are a few examples:
+
+**OPTION 1: Use z.Message() or z.MessageFunc() to customize the error messages**
+
+```go
+userSchema := z.Struct(z.Schema{
+  "name": z.String().Min(3, z.Message("min length is 3")),
+  "age": z.Int().GT(18, z.MessageFunc(func(e z.ZogError, p z.ParseCtx) {
+    e.SetMessage("age must be greater than 18")
+  })),
+})
+```
+
+This is the simplest option but it has some limitations, for example you cannot customize the error messages for coercion errors.
+
+**OPTION 2: Iterate over the returned errors and create custom messages**
+
+```go
+errs := userSchema.Parse(data, &user)
+msgs := formatZogErrors(errs)
+
+func FormatZogErrors(errs z.ZogErrMap) map[string][]string {
+  // iterate over errors and create custom messages based on the error code, the params and destination type
+}
+```
+
+**OPTION 3: Override the default error formatter**
+Under the conf package you will find `ErrorFormatter` which is a function that is in charge of formatting the error messages. You can override this function to customize the error messages for all zog schemas.
+
+You can also override the `DefaultErrMsgMap` which is a `map[zogType][ErrCode]` or just specific keys to customize the error messages for specific zog types or codes.
+
+For more information on this see the [overriding defaults section](#overriding-defaults)
+
+**OPTION 4: Override the error formatter for a specific parsing execution**
+
+```go
+userSchema.Parse(data, &user, z.WithErrFormatter(conf.ErrorFormatter)) // set the error formatter for this parse to be the default formatter. This doesn't make a lot of sense but you can pass a custom one
+```
+
+**What do I recommend for i18n?**
+If you are serius about i18n and want to translate all your messages and return meaningful error messages I recommend you choose option 3 and do something like this:
+
+```go
+zconf.ErrorFormatter = func(e p.ZogError, p p.ParseCtx) {
+  lang := p.Get("lang").(string)
+  // generate a different error message based on the language
+}
+
+// then when you parse a schema you can pass the language
+userSchema.Parse(data, &user, z.WithCtxValue("lang", "en"))
+```
 
 ### Example ways of delivering errors to users
 
@@ -298,12 +382,12 @@ templ signupFormTempl(data *SignupFormData, errs z.ZogErrMap) {
   <input type="text" name="email" value={data.Email}>
   // display only the first error
   if e, ok := errs["email"]; ok {
-    <p class="error">{e[0].Message}</p>
+    <p class="error">{e[0].Message()}</p>
   }
   <input type="text" name="password" value={data.Password}>
   // display only the first error
   if e, ok := errs["password"]; ok {
-    <p class="error">{e[0].Message}</p>
+    <p class="error">{e[0].Message()}</p>
   }
 }
 ```
@@ -328,6 +412,34 @@ if errs != nil {
 
 ```
 
+## Creating Custom Tests
+
+Zog supports two main ways of creating custom tests a simple function and a struct.
+
+**OPTION 1: Full Test Definition**
+
+```go
+nameSchema := z.String().Test(z.Test{
+  ErrCode: "custom_error_code", // this is the error code for all errors constructed from this test
+  Params: map[string]any{"foo": "bar"}, // these will be passed to the error formatter via the constructed error
+  ErrFmt: func(e z.ZogError, p z.ParseCtx) // This is what z.Message() sets, its a function to format the error message
+  ValidateFunc: func(data any, ctx z.ParseCtx) bool{...}, // this is the validate func
+})
+```
+
+Beware that if using the default error formatter you will get the default error message for any error code that is not defined see [error formatting](#error-formatting--i18n). You can define the ErrFmt function or use z.Message() like so:
+
+```go
+nameSchema := z.String().Test(MyCustomTest(), z.Message("hello world") ) // MyCustomTest() returns the z.Test so it can be reused
+```
+
+**OPTION 2: use z.TestFunc Helper**
+
+```go
+// here I will set a custom message so I don't have to add my message to the error messages map
+nameSchema := z.String().Test(z.TestFunc("error_code", func (data any, ctx z.ParseCtx)bool{...}), z.Message("custom msg"))
+```
+
 ## Reference
 
 ### Generic Schema Methods
@@ -336,7 +448,7 @@ These are methods that can be used on most types of schemas
 
 ```go
 // gets passed the destionation valiue and the context and returns a boolean. Please note for complex types you will be passed a pointer to the destination value
-schema.Test("rule name", z.Message("message or function"), func(val any, ctx z.ParseCtx) bool {})
+schema.Test("rule name", func(val any, ctx z.ParseCtx) bool {}, ...options)
 
 // marks the schema as required. Remember fields are optional by default
 schema.Required(z.Message("message or function"))
@@ -347,9 +459,9 @@ schema.Required().Optional() // marks the schema as optional
 schema.Default(val) // sets the default value. See Zog execution flow
 schema.Catch(val) // sets the catch value. A value to use if the validation fails. See Zog execution flow
 
-schema.PreTransform(func(val any, ctx z.ParseCtx) (any, error) {}) // transforms the value before validation. returned value will override the input value. See Zog execution flow
+schema.PreTransform(func(data any, ctx z.ParseCtx) (any, error) {}) // transforms the value before validation. returned value will override the input value. See Zog execution flow. errors returned from this will be wrapped in a ZogError under the "custom" code (You may also return a ZogError from this function)
 
-schema.PostTransform(func(destPtr any, ctx z.ParseCtx) error {}) // transforms the value after validation. Receives a pointer to the destination value.
+schema.PostTransform(func(destPtr any, ctx z.ParseCtx) error {}) // transforms the value after validation. Receives a pointer to the destination value. errors returned from this will be wrapped in a ZogError under the "custom" code (you may also return a ZogError from this function)
 ```
 
 ### Types
@@ -445,8 +557,6 @@ Slice(String()).Contains("foo")
 
 Zog uses internal functions to handle many aspects of validation & parsing. We aim to provide a simple way for you to customize the default behaviour of Zog through simple declarative code inside your project. You can find the options you can tweak & override in the conf package (`github.com/Oudwins/zog/conf`).
 
-Currently the only default behaviour that can be overridden are the coerce functions, in the future we will add more.
-
 ### Overriding the default coercer functions
 
 Lets go through an example of overriding the `float64` coercer function, because we want to support floats that use a comma as the decimal separator.
@@ -457,9 +567,6 @@ import (
 	"github.com/Oudwins/zog/conf"
 )
 
-// we save the original to use later
-var zogFloat64Coercer =  conf.Coercers.Float64;
-
 // we override the coercer function for float64
 conf.Coercers.Float64 = func(data any) (any, error) {
   str, ok := data.(string)
@@ -468,8 +575,29 @@ conf.Coercers.Float64 = func(data any) (any, error) {
     return MyCustomFloatCoercer(str)
   }
   // fallback to the original function
-  return zogFloat64Coercer(data)
+  return conf.DefaultCoercers.Float64(data)
 }
+```
+
+### Overriding the default error formatting
+
+There are two different things you can override from the errors configuration:
+
+1. The error formatter function
+2. The error messages map. Which is a `map[zogType][ErrCode]` or just specific keys to customize the error messages for specific zog types or codes.
+
+```go
+// override the error formatter function
+conf.ErrorFormatter = func(e p.ZogError, p p.ParseCtx) {
+  // do something with the error
+  ...
+  // fallback to the default error formatter
+  conf.DefaultErrorFormatter(e, p)
+}
+
+// override specific error messages
+// For this you will need to import `zog/primitives` package. Which you should use with caution since it is an internal package
+conf.DefaultErrMsgMap["string"]["my_custom_error_code"] = "my custom error message"
 ```
 
 ## Zog Schema Parsign Execution Structure
@@ -500,9 +628,7 @@ These are the things I want to add to zog before v1.0.0
 
 - For structs & slices: support pointers
 - Support for schema.Clone()
-- Better support for custom error messages (including failed coercion error messages) & i18n
 - support for catch & default for structs & slices
-- implement errors.SanitizeMap/Slice -> Will leave only the safe error messages. No internal stuff. Optionally this could be a parsing option in the style of `schema.Parse(m, &dest, z.WithSanitizeErrors())`
 - Add additional tests
 - Better docs
 

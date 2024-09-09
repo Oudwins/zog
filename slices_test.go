@@ -1,9 +1,9 @@
 package zog
 
 import (
-	"fmt"
 	"testing"
 
+	p "github.com/Oudwins/zog/primitives"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -26,7 +26,6 @@ func TestSlicePassSchema(t *testing.T) {
 
 	errs := schema.Parse([]any{"a", "b", "c"}, &s)
 	assert.Nil(t, errs)
-	fmt.Println(s)
 	assert.Len(t, s, 3)
 	assert.Equal(t, s[0], "a")
 	assert.Equal(t, s[1], "b")
@@ -151,4 +150,25 @@ func TestSliceOfStructs(t *testing.T) {
 
 	assert.Len(t, errsMap["users[0].name"], 1)
 	assert.Len(t, errsMap["users[1].name"], 1)
+}
+
+func TestSliceCustomTest(t *testing.T) {
+	input := []string{"abc", "defg", "hijkl"}
+	s := []string{}
+	schema := Slice(String()).Test(TestFunc("custom_test", func(val any, ctx p.ParseCtx) bool {
+		// Custom test logic here
+		x := val.(*[]string)
+		return assert.Equal(t, input, *x)
+	}))
+	errs := schema.Parse(input, &s)
+	assert.Empty(t, errs)
+}
+
+func TestSliceInvalidData(t *testing.T) {
+	input := "not a slice"
+	s := []string{}
+	schema := Slice(String())
+	errs := schema.Parse(input, &s)
+	assert.Nil(t, errs)
+	assert.Equal(t, s, []string{input})
 }
