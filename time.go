@@ -90,11 +90,7 @@ func (v *timeProcessor) Catch(val time.Time) *timeProcessor {
 // GLOBAL METHODS
 
 // custom test function call it -> schema.Test("error_code", func(val any, ctx p.ParseCtx) bool {return true})
-func (v *timeProcessor) Test(errorCode string, validateFunc p.TestFunc, opts ...TestOption) *timeProcessor {
-	t := p.Test{
-		ErrCode:      errorCode,
-		ValidateFunc: validateFunc,
-	}
+func (v *timeProcessor) Test(t p.Test, opts ...TestOption) *timeProcessor {
 	for _, opt := range opts {
 		opt(&t)
 	}

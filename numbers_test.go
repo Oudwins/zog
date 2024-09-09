@@ -168,11 +168,11 @@ func TestNumberParse(t *testing.T) {
 }
 
 func TestNumberCustomTest(t *testing.T) {
-	validator := Int().Test("custom_test", func(val any, ctx p.ParseCtx) bool {
+	validator := Int().Test(TestFunc("custom_test", func(val any, ctx p.ParseCtx) bool {
 		// Custom test logic here
 		assert.Equal(t, 5, val)
 		return true
-	})
+	}))
 	dest := 0
 	errs := validator.Parse(5, &dest)
 	if len(errs) > 0 {

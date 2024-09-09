@@ -218,12 +218,8 @@ func (v *structProcessor) Optional() *structProcessor {
 // }
 
 // ! VALIDATORS
-// custom test function call it -> schema.Test("error_code", func(val any, ctx p.ParseCtx) bool {return true})
-func (v *structProcessor) Test(errorCode string, validateFunc p.TestFunc, opts ...TestOption) *structProcessor {
-	t := p.Test{
-		ErrCode:      errorCode,
-		ValidateFunc: validateFunc,
-	}
+// custom test function call it -> schema.Test(t z.Test, opts ...TestOption)
+func (v *structProcessor) Test(t p.Test, opts ...TestOption) *structProcessor {
 	for _, opt := range opts {
 		opt(&t)
 	}

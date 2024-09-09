@@ -152,12 +152,8 @@ func (v *sliceProcessor) Default(val any) *sliceProcessor {
 
 // !TESTS
 
-// custom test function call it -> schema.Test("error_code", func(val any, ctx p.ParseCtx) bool {return true})
-func (v *sliceProcessor) Test(errorCode string, validateFunc p.TestFunc, opts ...TestOption) *sliceProcessor {
-	t := p.Test{
-		ErrCode:      errorCode,
-		ValidateFunc: validateFunc,
-	}
+// custom test function call it -> schema.Test(t z.Test, opts ...TestOption)
+func (v *sliceProcessor) Test(t p.Test, opts ...TestOption) *sliceProcessor {
 	for _, opt := range opts {
 		opt(&t)
 	}

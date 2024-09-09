@@ -78,10 +78,10 @@ func TestTimeCatch(t *testing.T) {
 
 func TestTimeCustomTest(t *testing.T) {
 	now := time.Now()
-	schema := Time().Test("custom_test", func(val any, ctx p.ParseCtx) bool {
+	schema := Time().Test(TestFunc("custom_test", func(val any, ctx p.ParseCtx) bool {
 		// Custom test logic here
 		return true
-	})
+	}))
 	errs := schema.Parse(now, &now)
 	assert.Nil(t, errs)
 }

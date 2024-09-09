@@ -156,7 +156,7 @@ func TestStructCustomTest(t *testing.T) {
 	// Create a schema with a custom test
 	schema := Struct(Schema{
 		"str": String().Required(),
-		"num": Int().Test("customTest", customTest),
+		"num": Int().Test(TestFunc("customTest", customTest)),
 	})
 
 	var obj CustomStruct

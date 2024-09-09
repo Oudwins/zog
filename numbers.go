@@ -105,12 +105,8 @@ func (v *numberProcessor[T]) Catch(val T) *numberProcessor[T] {
 	return v
 }
 
-// custom test function call it -> schema.Test("error_code", func(val any, ctx p.ParseCtx) bool {return true})
-func (v *numberProcessor[T]) Test(errorCode string, validateFunc p.TestFunc, opts ...TestOption) *numberProcessor[T] {
-	t := p.Test{
-		ErrCode:      errorCode,
-		ValidateFunc: validateFunc,
-	}
+// custom test function call it -> schema.Test(test, options)
+func (v *numberProcessor[T]) Test(t p.Test, opts ...TestOption) *numberProcessor[T] {
 	for _, opt := range opts {
 		opt(&t)
 	}
@@ -120,6 +116,7 @@ func (v *numberProcessor[T]) Test(errorCode string, validateFunc p.TestFunc, opt
 
 // UNIQUE METHODS
 
+// Check that the value is one of the enum values
 func (v *numberProcessor[T]) OneOf(enum []T, options ...TestOption) *numberProcessor[T] {
 	t := p.In(enum)
 	for _, opt := range options {

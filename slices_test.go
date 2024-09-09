@@ -155,11 +155,11 @@ func TestSliceOfStructs(t *testing.T) {
 func TestSliceCustomTest(t *testing.T) {
 	input := []string{"abc", "defg", "hijkl"}
 	s := []string{}
-	schema := Slice(String()).Test("custom_test", func(val any, ctx p.ParseCtx) bool {
+	schema := Slice(String()).Test(TestFunc("custom_test", func(val any, ctx p.ParseCtx) bool {
 		// Custom test logic here
 		x := val.(*[]string)
 		return assert.Equal(t, input, *x)
-	})
+	}))
 	errs := schema.Parse(input, &s)
 	assert.Empty(t, errs)
 }

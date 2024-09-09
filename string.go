@@ -94,12 +94,8 @@ func (v *stringProcessor) Catch(val string) *stringProcessor {
 }
 
 // ! VALIDATORS
-// custom test function call it -> schema.Test("error_code", func(val any, ctx p.ParseCtx) bool {return true})
-func (v *stringProcessor) Test(errorCode string, validateFunc p.TestFunc, opts ...TestOption) *stringProcessor {
-	t := p.Test{
-		ErrCode:      errorCode,
-		ValidateFunc: validateFunc,
-	}
+// custom test function call it -> schema.Test(t z.Test, opts ...TestOption)
+func (v *stringProcessor) Test(t p.Test, opts ...TestOption) *stringProcessor {
 	for _, opt := range opts {
 		opt(&t)
 	}

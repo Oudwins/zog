@@ -13,9 +13,23 @@ type Processor interface {
 	process(val any, dest any, path p.PathBuilder, ctx p.ParseCtx)
 }
 
-// ! Parse Context
+// ! Passing Types through
 
 type ParseCtx = p.ParseCtx
+type Test = p.Test
+
+type ZogError = p.ZogError
+type ZogErrMap = p.ZogErrMap
+type ZogErrList = p.ZogErrList
+
+// ! TESTS
+func TestFunc(errCode p.ZogErrCode, validateFunc p.TestFunc) p.Test {
+	t := p.Test{
+		ErrCode:      errCode,
+		ValidateFunc: validateFunc,
+	}
+	return t
+}
 
 // ! ERRORS
 type errHelpers struct {
@@ -76,10 +90,6 @@ func (e *errHelpers) SanitizeList(l p.ZogErrList) []string {
 	}
 	return errs
 }
-
-type ZogError = p.ZogError
-type ZogErrMap = p.ZogErrMap
-type ZogErrList = p.ZogErrList
 
 // ! Data Providers
 
