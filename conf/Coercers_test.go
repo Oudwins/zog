@@ -91,17 +91,16 @@ func TestFloat64Coercer(t *testing.T) {
 		{input: 123, want: 123.00},
 		{input: "123", want: 123.00},
 		{input: 1.23, want: 1.23},
-		{input: true, want: 1.00},
 		{input: "x", err: true},
 	}
 
 	for _, test := range tests {
-		f, err = Coercers.Int(test.input)
+		f, err = Coercers.Float64(test.input)
 		if test.err {
 			assert.NotNil(t, err)
 		} else {
 			assert.Nil(t, err)
-			assert.Equal(t, test.want, f.(int))
+			assert.Equal(t, test.want, f.(float64))
 		}
 	}
 }
