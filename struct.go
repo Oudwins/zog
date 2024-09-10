@@ -139,11 +139,15 @@ func (v *structProcessor) process(data any, dest any, path p.PathBuilder, ctx p.
 		if !fieldMeta.IsExported() {
 			continue
 		}
-		// TODO handle both upper & lowerCase first letter
+		// handle both upper & lowerCase first letter
 		fieldKey := string(unicode.ToLower(rune(fieldMeta.Name[0]))) + fieldMeta.Name[1:]
 		processor, ok := v.schema[fieldKey]
 		if !ok {
-			continue
+			fieldKey = string(unicode.ToUpper(rune(fieldMeta.Name[0]))) + fieldMeta.Name[1:]
+			processor, ok = v.schema[fieldKey]
+			if !ok {
+				continue
+			}
 		}
 		fieldTag, ok := fieldMeta.Tag.Lookup(p.ZogTag)
 		if ok {
