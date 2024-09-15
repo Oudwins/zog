@@ -1,6 +1,7 @@
 package zog
 
 import (
+	"strings"
 	"testing"
 
 	p "github.com/Oudwins/zog/primitives"
@@ -164,11 +165,55 @@ func TestSliceCustomTest(t *testing.T) {
 	assert.Empty(t, errs)
 }
 
-func TestSliceInvalidData(t *testing.T) {
+func TestSliceWithStringInput(t *testing.T) {
 	input := "not a slice"
 	s := []string{}
-	schema := Slice(String())
+	schema := Slice(String()).Required()
 	errs := schema.Parse(input, &s)
 	assert.Nil(t, errs)
 	assert.Equal(t, s, []string{input})
+}
+
+func TestSliceOptionalSlice(t *testing.T) {
+	s := []string{}
+	schema := Slice(String())
+
+	errs := schema.Parse(nil, &s)
+	assert.Nil(t, errs)
+	assert.Len(t, s, 0)
+}
+
+func TestSlicePostTransform(t *testing.T) {
+	s := []string{}
+	schema := Slice(String()).PostTransform(func(dataPtr any, ctx ParseCtx) error {
+		s := dataPtr.(*[]string)
+		for i := 0; i < len(*s); i++ {
+			(*s)[i] = strings.ToUpper((*s)[i])
+		}
+		return nil
+	})
+
+	errs := schema.Parse([]string{"a", "b", "c"}, &s)
+
+	assert.Nil(t, errs)
+	assert.Len(t, s, 3)
+	assert.Equal(t, []string{"A", "B", "C"}, s)
+}
+
+func TestSliceCustomPreTransform(t *testing.T) {
+	s := []string{}
+	schema := Slice(String()).PreTransform(func(data any, ctx ParseCtx) (any, error) {
+		s := data.([]string)
+		for i := 0; i < len(s); i++ {
+			s[i] = strings.ToUpper(s[i])
+		}
+		return s, nil
+	})
+
+	errs := schema.Parse([]string{"a", "b", "c"}, &s)
+	assert.Nil(t, errs)
+	assert.Len(t, s, 3)
+	assert.Equal(t, s[0], "A")
+	assert.Equal(t, s[1], "B")
+	assert.Equal(t, s[2], "C")
 }
