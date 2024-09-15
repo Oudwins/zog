@@ -56,7 +56,7 @@ func (v *sliceProcessor) process(val any, dest any, path p.PathBuilder, ctx p.Pa
 	// 4. postTransforms
 	defer func() {
 		// only run posttransforms on success
-		if ctx.HasErrored() {
+		if !ctx.HasErrored() {
 			for _, fn := range v.postTransforms {
 				err := fn(dest, ctx)
 				if err != nil {
@@ -117,6 +117,24 @@ func (v *sliceProcessor) process(val any, dest any, path p.PathBuilder, ctx p.Pa
 		}
 	}
 	// 4. postTransforms -> defered see above
+}
+
+// Adds pretransform function to schema
+func (v *sliceProcessor) PreTransform(transform p.PreTransform) *sliceProcessor {
+	if v.preTransforms == nil {
+		v.preTransforms = []p.PreTransform{}
+	}
+	v.preTransforms = append(v.preTransforms, transform)
+	return v
+}
+
+// Adds posttransform function to schema
+func (v *sliceProcessor) PostTransform(transform p.PostTransform) *sliceProcessor {
+	if v.postTransforms == nil {
+		v.postTransforms = []p.PostTransform{}
+	}
+	v.postTransforms = append(v.postTransforms, transform)
+	return v
 }
 
 // !MODIFIERS
