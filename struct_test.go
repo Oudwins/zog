@@ -1,6 +1,7 @@
 package zog
 
 import (
+	"encoding/json"
 	"testing"
 	"time"
 
@@ -169,4 +170,61 @@ func TestStructCustomTest(t *testing.T) {
 	assert.Nil(t, errs)
 	assert.Equal(t, obj.Str, "hello")
 	assert.Equal(t, obj.Num, 10)
+}
+
+func TestStructFromIssue(t *testing.T) {
+	s := `{
+  "nombre": "Juan",
+  "apellido": "Perez",
+  "email": "test@test.com",
+  "alu_id": 25,
+  "password": "hunter1"
+}`
+	var data map[string]any
+	json.Unmarshal([]byte(s), &data)
+
+	var output struct {
+		Nombre   string `zog:"nombre"`
+		Apellido string `zog:"apellido"`
+		Email    string `zog:"email"`
+		AluID    int    `zog:"alu_id"`
+		Password string `zog:"password"`
+	}
+	schema := Struct(Schema{
+		"nombre":   String().Required(Message("this doesn't display even if validation fails")),
+		"apellido": String().Required(),
+		"email":    String().Required(),
+		"aluID":    Int().Required(),
+		"password": String().Required(),
+	})
+	errs := schema.Parse(data, &output)
+	assert.Nil(t, errs)
+	assert.Equal(t, "Juan", output.Nombre)
+	assert.Equal(t, "Perez", output.Apellido)
+	assert.Equal(t, "test@test.com", output.Email)
+	assert.Equal(t, 25, output.AluID)
+	assert.Equal(t, "hunter1", output.Password)
+}
+
+func TestStructPanicsOnSchemaMismatch(t *testing.T) {
+
+	var objSchema = Struct(Schema{
+		"str":         String().Required(),
+		"in":          Int().Required(),
+		"fl":          Float().Required(),
+		"bol":         Bool().Required(),
+		"tim":         Time().Required(),
+		"cause_panic": String(),
+	})
+	var o obj
+	data := map[string]any{
+		"str": "hello",
+		"in":  10,
+		"fl":  10.5,
+		"bol": true,
+		"tim": "2024-08-06T00:00:00Z",
+	}
+	assert.Panics(t, func() {
+		objSchema.Parse(data, &o)
+	})
 }
