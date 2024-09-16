@@ -181,7 +181,8 @@ func TestStructFromIssue(t *testing.T) {
   "password": "hunter1"
 }`
 	var data map[string]any
-	json.Unmarshal([]byte(s), &data)
+	err := json.Unmarshal([]byte(s), &data)
+	assert.Nil(t, err)
 
 	var output struct {
 		Nombre   string `zog:"nombre"`
