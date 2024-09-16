@@ -640,7 +640,8 @@ These are the things I want to add to zog before v1.0.0
 - Big thank you to @AlexanderArvidsson for being there to talk about architecture and design decisions. It helped a lot to have someone to bounce ideas off of
 - Credit for all the inspiration goes to /colinhacks/zod & /jquense/yup
 - Credit for the initial idea goes to anthony -> /anthdm/superkit he made a hacky version of this idea that I used as a starting point, I was never happy with it so I inspired me to rewrite it from scratch
-- Credit for the logo goes to /colinhacks/zod
+- Credit for the zod logo goes to /colinhacks/zod
+- To @anthonyGG for the idea to do a Zog like validation library for golang. I wouldn't have started working on it if it weren't for him
 
 ## License
 
