@@ -2,6 +2,7 @@ package zog
 
 import (
 	"errors"
+	"fmt"
 	"maps"
 	"reflect"
 	"strings"
@@ -137,9 +138,13 @@ func (v *structProcessor) process(data any, dest any, path p.PathBuilder, ctx p.
 	for key, processor := range v.schema {
 		fieldKey := key
 		key = strings.ToUpper(string(key[0])) + key[1:]
+
+		fieldMeta, ok := structVal.Type().FieldByName(key)
+		if !ok {
+			panic(fmt.Sprintf("Struct is missing expected schema key: %s", key))
+		}
 		destPtr := structVal.FieldByName(key).Addr().Interface()
 
-		fieldMeta, _ := structVal.Type().FieldByName(key)
 		fieldTag, ok := fieldMeta.Tag.Lookup(p.ZogTag)
 		if ok {
 			fieldKey = fieldTag
