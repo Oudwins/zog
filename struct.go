@@ -4,7 +4,7 @@ import (
 	"errors"
 	"maps"
 	"reflect"
-	"unicode"
+	"strings"
 
 	"github.com/Oudwins/zog/conf"
 	p "github.com/Oudwins/zog/primitives"
@@ -132,29 +132,19 @@ func (v *structProcessor) process(data any, dest any, path p.PathBuilder, ctx p.
 
 	// 3. Process / validate struct fields
 	structVal := reflect.ValueOf(dest).Elem()
-	for i := 0; i < structVal.NumField(); i++ {
-		fieldMeta := structVal.Type().Field(i)
+	//
 
-		// skip private fields
-		if !fieldMeta.IsExported() {
-			continue
-		}
-		// handle both upper & lowerCase first letter
-		fieldKey := string(unicode.ToLower(rune(fieldMeta.Name[0]))) + fieldMeta.Name[1:]
-		processor, ok := v.schema[fieldKey]
-		if !ok {
-			fieldKey = string(unicode.ToUpper(rune(fieldMeta.Name[0]))) + fieldMeta.Name[1:]
-			processor, ok = v.schema[fieldKey]
-			if !ok {
-				continue
-			}
-		}
+	for key, processor := range v.schema {
+		fieldKey := key
+		key = strings.ToUpper(string(key[0])) + key[1:]
+		destPtr := structVal.FieldByName(key).Addr().Interface()
+
+		fieldMeta, _ := structVal.Type().FieldByName(key)
 		fieldTag, ok := fieldMeta.Tag.Lookup(p.ZogTag)
 		if ok {
 			fieldKey = fieldTag
 		}
 
-		destPtr := structVal.Field(i).Addr().Interface()
 		switch schema := processor.(type) {
 		case *structProcessor:
 			schema.process(dataProv.GetNestedProvider(fieldKey), destPtr, path.Push(fieldKey), ctx)
@@ -162,6 +152,7 @@ func (v *structProcessor) process(data any, dest any, path p.PathBuilder, ctx p.
 		default:
 			schema.process(dataProv.Get(fieldKey), destPtr, path.Push(fieldKey), ctx)
 		}
+
 	}
 
 	// 3. Tests for struct
