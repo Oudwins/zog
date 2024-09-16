@@ -116,7 +116,7 @@ func (v *structProcessor) process(data any, dest any, path p.PathBuilder, ctx p.
 		if v.required == nil {
 			return
 		} else {
-			ctx.NewError(path, Errors.Required(data, destType))
+			ctx.NewError(path, Errors.FromTest(data, destType, v.required, ctx))
 			return
 		}
 	}

@@ -1,6 +1,7 @@
 package zog
 
 import (
+	"net/url"
 	"regexp"
 	"strings"
 
@@ -10,7 +11,6 @@ import (
 
 var (
 	emailRegex = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
-	urlRegex   = regexp.MustCompile(`^(http(s)?://)?([\da-z\.-]+)\.([a-z\.]{2,6})([/\w \.-]*)*/?$`)
 )
 
 type stringProcessor struct {
@@ -166,12 +166,12 @@ func (v *stringProcessor) URL(options ...TestOption) *stringProcessor {
 	t := p.Test{
 		ErrCode: p.ErrCodeURL,
 		ValidateFunc: func(v any, ctx p.ParseCtx) bool {
-			u, ok := v.(string)
+			s, ok := v.(string)
 			if !ok {
 				return false
 			}
-			isOk := urlRegex.MatchString(u)
-			return isOk
+			u, err := url.Parse(s)
+			return err == nil && u.Scheme != "" && u.Host != ""
 		},
 	}
 	for _, opt := range options {
