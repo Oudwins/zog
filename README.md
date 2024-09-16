@@ -48,6 +48,7 @@ import (
    )
 
 var nameSchema = z.Struct(z.Schema{
+  // its very important that schema keys like "name" match the struct field name NOT the input data
   "name": z.String().Min(3, z.Message("Override default message")).Max(10),
 })
 
@@ -125,7 +126,7 @@ type User struct {
   Name string
   Age int // age will be ignored since it is not a field in the schema
 }
-// this struct is not a valid destination for the schema. It is missing the name field. This will cause a panic
+// this struct is not a valid destination for the schema. It is missing the name field. This will cause a panic even if the input data is map[string]any{"name": "zog"}
 type User2 struct {
   Email string,
   Age int
