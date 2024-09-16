@@ -342,7 +342,7 @@ userSchema.Parse(data, &user, z.WithErrFormatter(conf.ErrorFormatter)) // set th
 If you are serius about i18n and want to translate all your messages and return meaningful error messages I recommend you choose option 3 and do something like this:
 
 ```go
-zconf.ErrorFormatter = func(e p.ZogError, p p.ParseCtx) {
+zconf.ErrorFormatter = func(e p.ZogError, p z.ParseCtx) {
   lang := p.Get("lang").(string)
   // generate a different error message based on the language
 }
@@ -591,7 +591,7 @@ There are two different things you can override from the errors configuration:
 
 ```go
 // override the error formatter function
-conf.ErrorFormatter = func(e p.ZogError, p p.ParseCtx) {
+conf.ErrorFormatter = func(e p.ZogError, p z.ParseCtx) {
   // do something with the error
   ...
   // fallback to the default error formatter
