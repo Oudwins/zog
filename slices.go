@@ -79,7 +79,7 @@ func (v *sliceProcessor) process(val any, dest any, path p.PathBuilder, ctx p.Pa
 			return
 		} else {
 			// REQUIRED & ZERO VALUE
-			ctx.NewError(path, Errors.Required(val, destType))
+			ctx.NewError(path, Errors.FromTest(val, destType, v.required, ctx))
 			return
 		}
 	} else {

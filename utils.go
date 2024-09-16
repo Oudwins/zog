@@ -60,10 +60,6 @@ func (e *errHelpers) WrapUnknown(o any, destType p.ZogType, err error) p.ZogErro
 	return zerr
 }
 
-func (e *errHelpers) Required(o any, destType p.ZogType) p.ZogError {
-	return e.New(p.ErrCodeRequired, o, destType, nil, "", nil)
-}
-
 func (e *errHelpers) New(code p.ZogErrCode, o any, destType p.ZogType, params map[string]any, msg string, err error) p.ZogError {
 	return &p.ZogErr{
 		C:       code,
@@ -178,7 +174,7 @@ func primitiveProcessor[T p.ZogPrimitive](val any, dest any, path p.PathBuilder,
 				*destPtr = *catch
 				hasCatched = true
 			} else {
-				ctx.NewError(path, Errors.Required(val, destType))
+				ctx.NewError(path, Errors.FromTest(val, destType, required, ctx))
 				return
 			}
 		}

@@ -94,11 +94,12 @@ func TestStringLength(t *testing.T) {
 }
 
 func TestStringRequired(t *testing.T) {
-	field := String().Required()
+	field := String().Required(Message("a"))
 	var dest string
 
 	errs := field.Parse("", &dest)
 	assert.NotEmpty(t, errs)
+	assert.Equal(t, errs[0].Message(), "a")
 
 	errs = field.Parse("foo", &dest)
 	assert.Empty(t, errs)
