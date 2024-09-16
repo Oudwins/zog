@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.8.0](https://github.com/Oudwins/zog/compare/v0.7.0...v0.8.0) (2024-09-16)
+
+
+### Features
+
+* added transforms for slices ([#22](https://github.com/Oudwins/zog/issues/22)) ([71c01cb](https://github.com/Oudwins/zog/commit/71c01cb0b97741f35b9ae1bdce8f4ac966881b41))
+* json data provider ([2d10c92](https://github.com/Oudwins/zog/commit/2d10c92eeb4d273e11d2bd4ede8e1b1741e897c4))
+* panic on invalid struct schema ([#25](https://github.com/Oudwins/zog/issues/25)) ([8d5b493](https://github.com/Oudwins/zog/commit/8d5b49329102d6db6e7fa949cb3228e7fe9ee72f))
+
+
+### Bug Fixes
+
+* required custom z.Message ([#24](https://github.com/Oudwins/zog/issues/24)) ([49198a0](https://github.com/Oudwins/zog/commit/49198a0b8d9678f76fd87b4328122a6392a902be))
+* structs now handle both uppercase and lowercase first letters ([4fbc9c3](https://github.com/Oudwins/zog/commit/4fbc9c305cd3d91b224753d3ba76e7d7ba250b6b))
+
 ## [0.7.0](https://github.com/Oudwins/zog/compare/v0.6.2...v0.7.0) (2024-09-09)
 
 
