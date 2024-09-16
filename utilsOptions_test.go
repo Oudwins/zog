@@ -15,7 +15,7 @@ func TestWithCtxValue(t *testing.T) {
 
 func TestWithErrFormatter(t *testing.T) {
 	var ctx = p.NewParseCtx(p.NewErrsList(), nil)
-	WithErrFormatter(func(e p.ZogError, p p.ParseCtx) {
+	WithErrFormatter(func(e p.ZogError, p ParseCtx) {
 		e.SetMessage("foo")
 	})(ctx)
 

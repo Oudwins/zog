@@ -38,7 +38,7 @@ func (v *sliceProcessor) Parse(data any, dest any, options ...ParsingOption) p.Z
 	return errs.M
 }
 
-func (v *sliceProcessor) process(val any, dest any, path p.PathBuilder, ctx p.ParseCtx) {
+func (v *sliceProcessor) process(val any, dest any, path p.PathBuilder, ctx ParseCtx) {
 	destType := p.TypeSlice
 	// 1. preTransforms
 	if v.preTransforms != nil {
@@ -219,7 +219,7 @@ func (v *sliceProcessor) Contains(value any, options ...TestOption) *sliceProces
 		p.Test{
 			ErrCode: p.ErrCodeContains,
 			Params:  make(map[string]any, 1),
-			ValidateFunc: func(val any, ctx p.ParseCtx) bool {
+			ValidateFunc: func(val any, ctx ParseCtx) bool {
 				rv := reflect.ValueOf(val).Elem()
 				if rv.Kind() != reflect.Slice {
 					return false
@@ -247,7 +247,7 @@ func sliceMin(n int) p.Test {
 	t := p.Test{
 		ErrCode: p.ErrCodeMin,
 		Params:  make(map[string]any, 1),
-		ValidateFunc: func(val any, ctx p.ParseCtx) bool {
+		ValidateFunc: func(val any, ctx ParseCtx) bool {
 			rv := reflect.ValueOf(val).Elem()
 			if rv.Kind() != reflect.Slice {
 				return false
@@ -262,7 +262,7 @@ func sliceMax(n int) p.Test {
 	t := p.Test{
 		ErrCode: p.ErrCodeMax,
 		Params:  make(map[string]any, 1),
-		ValidateFunc: func(val any, ctx p.ParseCtx) bool {
+		ValidateFunc: func(val any, ctx ParseCtx) bool {
 			rv := reflect.ValueOf(val).Elem()
 			if rv.Kind() != reflect.Slice {
 				return false
@@ -277,7 +277,7 @@ func sliceLength(n int) p.Test {
 	t := p.Test{
 		ErrCode: p.ErrCodeLen,
 		Params:  make(map[string]any, 1),
-		ValidateFunc: func(val any, ctx p.ParseCtx) bool {
+		ValidateFunc: func(val any, ctx ParseCtx) bool {
 			rv := reflect.ValueOf(val).Elem()
 			if rv.Kind() != reflect.Slice {
 				return false

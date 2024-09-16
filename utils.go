@@ -10,7 +10,7 @@ import (
 )
 
 type Processor interface {
-	process(val any, dest any, path p.PathBuilder, ctx p.ParseCtx)
+	process(val any, dest any, path p.PathBuilder, ctx ParseCtx)
 }
 
 // ! Passing Types through
@@ -39,7 +39,7 @@ type errHelpers struct {
 var Errors = errHelpers{}
 
 // Create error from (originValue any, destinationValue any, test *p.Test)
-func (e *errHelpers) FromTest(o any, destType p.ZogType, t *p.Test, p p.ParseCtx) p.ZogError {
+func (e *errHelpers) FromTest(o any, destType p.ZogType, t *p.Test, p ParseCtx) p.ZogError {
 	er := e.New(t.ErrCode, o, destType, t.Params, "", nil)
 	if t.ErrFmt != nil {
 		t.ErrFmt(er, p)
@@ -119,7 +119,7 @@ func getDestType(dest any) p.ZogType {
 	return p.TypeString
 }
 
-func primitiveProcessor[T p.ZogPrimitive](val any, dest any, path p.PathBuilder, ctx p.ParseCtx, preTransforms []p.PreTransform, tests []p.Test, postTransforms []p.PostTransform, defaultVal *T, required *p.Test, catch *T, coercer conf.CoercerFunc) {
+func primitiveProcessor[T p.ZogPrimitive](val any, dest any, path p.PathBuilder, ctx ParseCtx, preTransforms []p.PreTransform, tests []p.Test, postTransforms []p.PostTransform, defaultVal *T, required *p.Test, catch *T, coercer conf.CoercerFunc) {
 	canCatch := catch != nil
 	hasCatched := false
 

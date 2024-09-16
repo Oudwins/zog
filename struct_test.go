@@ -148,7 +148,7 @@ func TestStructCustomTest(t *testing.T) {
 	}
 
 	// Create a custom test function
-	customTest := func(val any, ctx p.ParseCtx) bool {
+	customTest := func(val any, ctx ParseCtx) bool {
 		// Custom test logic here
 		num := val.(int)
 		return num > 0

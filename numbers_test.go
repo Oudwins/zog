@@ -3,7 +3,6 @@ package zog
 import (
 	"testing"
 
-	p "github.com/Oudwins/zog/primitives"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -168,7 +167,7 @@ func TestNumberParse(t *testing.T) {
 }
 
 func TestNumberCustomTest(t *testing.T) {
-	validator := Int().Test(TestFunc("custom_test", func(val any, ctx p.ParseCtx) bool {
+	validator := Int().Test(TestFunc("custom_test", func(val any, ctx ParseCtx) bool {
 		// Custom test logic here
 		assert.Equal(t, 5, val)
 		return true

@@ -82,7 +82,7 @@ func (v *structProcessor) Parse(data any, destPtr any, options ...ParsingOption)
 	return errs.M
 }
 
-func (v *structProcessor) process(data any, dest any, path p.PathBuilder, ctx p.ParseCtx) {
+func (v *structProcessor) process(data any, dest any, path p.PathBuilder, ctx ParseCtx) {
 	destType := p.TypeStruct
 	// 1. preTransforms
 	if v.preTransforms != nil {

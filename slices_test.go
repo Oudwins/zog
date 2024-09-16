@@ -4,7 +4,6 @@ import (
 	"strings"
 	"testing"
 
-	p "github.com/Oudwins/zog/primitives"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -156,7 +155,7 @@ func TestSliceOfStructs(t *testing.T) {
 func TestSliceCustomTest(t *testing.T) {
 	input := []string{"abc", "defg", "hijkl"}
 	s := []string{}
-	schema := Slice(String()).Test(TestFunc("custom_test", func(val any, ctx p.ParseCtx) bool {
+	schema := Slice(String()).Test(TestFunc("custom_test", func(val any, ctx ParseCtx) bool {
 		// Custom test logic here
 		x := val.(*[]string)
 		return assert.Equal(t, input, *x)

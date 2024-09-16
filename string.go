@@ -41,7 +41,7 @@ func (v *stringProcessor) Parse(data any, dest *string, options ...ParsingOption
 	return errs.List
 }
 
-func (v *stringProcessor) process(val any, dest any, path p.PathBuilder, ctx p.ParseCtx) {
+func (v *stringProcessor) process(val any, dest any, path p.PathBuilder, ctx ParseCtx) {
 	primitiveProcessor(val, dest, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, conf.Coercers.String)
 }
 
@@ -147,7 +147,7 @@ func (v *stringProcessor) Len(n int, options ...TestOption) *stringProcessor {
 func (v *stringProcessor) Email(options ...TestOption) *stringProcessor {
 	t := p.Test{
 		ErrCode: p.ErrCodeEmail,
-		ValidateFunc: func(v any, ctx p.ParseCtx) bool {
+		ValidateFunc: func(v any, ctx ParseCtx) bool {
 			email, ok := v.(string)
 			if !ok {
 				return false
@@ -165,7 +165,7 @@ func (v *stringProcessor) Email(options ...TestOption) *stringProcessor {
 func (v *stringProcessor) URL(options ...TestOption) *stringProcessor {
 	t := p.Test{
 		ErrCode: p.ErrCodeURL,
-		ValidateFunc: func(v any, ctx p.ParseCtx) bool {
+		ValidateFunc: func(v any, ctx ParseCtx) bool {
 			s, ok := v.(string)
 			if !ok {
 				return false
@@ -185,7 +185,7 @@ func (v *stringProcessor) HasPrefix(s string, options ...TestOption) *stringProc
 	t := p.Test{
 		ErrCode: p.ErrCodeHasPrefix,
 		Params:  make(map[string]any, 1),
-		ValidateFunc: func(v any, ctx p.ParseCtx) bool {
+		ValidateFunc: func(v any, ctx ParseCtx) bool {
 			val, ok := v.(string)
 			if !ok {
 				return false
@@ -205,7 +205,7 @@ func (v *stringProcessor) HasSuffix(s string, options ...TestOption) *stringProc
 	t := p.Test{
 		ErrCode: p.ErrCodeHasSuffix,
 		Params:  make(map[string]any, 1),
-		ValidateFunc: func(v any, ctx p.ParseCtx) bool {
+		ValidateFunc: func(v any, ctx ParseCtx) bool {
 			val, ok := v.(string)
 			if !ok {
 				return false
@@ -225,7 +225,7 @@ func (v *stringProcessor) Contains(sub string, options ...TestOption) *stringPro
 	t := p.Test{
 		ErrCode: p.ErrCodeContains,
 		Params:  make(map[string]any, 1),
-		ValidateFunc: func(v any, ctx p.ParseCtx) bool {
+		ValidateFunc: func(v any, ctx ParseCtx) bool {
 			val, ok := v.(string)
 			if !ok {
 				return false
@@ -244,7 +244,7 @@ func (v *stringProcessor) Contains(sub string, options ...TestOption) *stringPro
 func (v *stringProcessor) ContainsUpper(options ...TestOption) *stringProcessor {
 	t := p.Test{
 		ErrCode: p.ErrCodeContainsUpper,
-		ValidateFunc: func(v any, ctx p.ParseCtx) bool {
+		ValidateFunc: func(v any, ctx ParseCtx) bool {
 			val, ok := v.(string)
 			if !ok {
 				return false
@@ -267,7 +267,7 @@ func (v *stringProcessor) ContainsUpper(options ...TestOption) *stringProcessor 
 func (v *stringProcessor) ContainsDigit(options ...TestOption) *stringProcessor {
 	t := p.Test{
 		ErrCode: p.ErrCodeContainsDigit,
-		ValidateFunc: func(v any, ctx p.ParseCtx) bool {
+		ValidateFunc: func(v any, ctx ParseCtx) bool {
 			val, ok := v.(string)
 			if !ok {
 				return false
@@ -293,7 +293,7 @@ func (v *stringProcessor) ContainsSpecial(options ...TestOption) *stringProcesso
 	t :=
 		p.Test{
 			ErrCode: p.ErrCodeContainsSpecial,
-			ValidateFunc: func(v any, ctx p.ParseCtx) bool {
+			ValidateFunc: func(v any, ctx ParseCtx) bool {
 				val, ok := v.(string)
 				if !ok {
 					return false

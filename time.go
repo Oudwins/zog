@@ -35,7 +35,7 @@ func (v *timeProcessor) Parse(data any, dest *time.Time, options ...ParsingOptio
 	return errs.List
 }
 
-func (v *timeProcessor) process(val any, dest any, path p.PathBuilder, ctx p.ParseCtx) {
+func (v *timeProcessor) process(val any, dest any, path p.PathBuilder, ctx ParseCtx) {
 	primitiveProcessor(val, dest, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, conf.Coercers.Time)
 }
 
@@ -89,7 +89,7 @@ func (v *timeProcessor) Catch(val time.Time) *timeProcessor {
 
 // GLOBAL METHODS
 
-// custom test function call it -> schema.Test("error_code", func(val any, ctx p.ParseCtx) bool {return true})
+// custom test function call it -> schema.Test("error_code", func(val any, ctx ParseCtx) bool {return true})
 func (v *timeProcessor) Test(t p.Test, opts ...TestOption) *timeProcessor {
 	for _, opt := range opts {
 		opt(&t)
@@ -105,7 +105,7 @@ func (v *timeProcessor) After(t time.Time) *timeProcessor {
 	r := p.Test{
 		ErrCode: p.ErrCodeAfter,
 		Params:  make(map[string]any, 1),
-		ValidateFunc: func(v any, ctx p.ParseCtx) bool {
+		ValidateFunc: func(v any, ctx ParseCtx) bool {
 			val, ok := v.(time.Time)
 			if !ok {
 				return false
@@ -127,7 +127,7 @@ func (v *timeProcessor) Before(t time.Time) *timeProcessor {
 		p.Test{
 			ErrCode: p.ErrCodeBefore,
 			Params:  make(map[string]any, 1),
-			ValidateFunc: func(v any, ctx p.ParseCtx) bool {
+			ValidateFunc: func(v any, ctx ParseCtx) bool {
 				val, ok := v.(time.Time)
 				if !ok {
 					return false
@@ -149,7 +149,7 @@ func (v *timeProcessor) EQ(t time.Time) *timeProcessor {
 	r := p.Test{
 		ErrCode: p.ErrCodeEQ,
 		Params:  make(map[string]any, 1),
-		ValidateFunc: func(v any, ctx p.ParseCtx) bool {
+		ValidateFunc: func(v any, ctx ParseCtx) bool {
 			val, ok := v.(time.Time)
 			if !ok {
 				return false

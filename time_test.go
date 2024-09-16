@@ -4,7 +4,6 @@ import (
 	"testing"
 	"time"
 
-	p "github.com/Oudwins/zog/primitives"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -78,7 +77,7 @@ func TestTimeCatch(t *testing.T) {
 
 func TestTimeCustomTest(t *testing.T) {
 	now := time.Now()
-	schema := Time().Test(TestFunc("custom_test", func(val any, ctx p.ParseCtx) bool {
+	schema := Time().Test(TestFunc("custom_test", func(val any, ctx ParseCtx) bool {
 		// Custom test logic here
 		return true
 	}))

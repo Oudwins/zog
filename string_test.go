@@ -3,7 +3,6 @@ package zog
 import (
 	"testing"
 
-	p "github.com/Oudwins/zog/primitives"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -45,7 +44,7 @@ func TestStringRequiredAborts(t *testing.T) {
 
 func TestStringUserTests(t *testing.T) {
 
-	field := String().Test(TestFunc("test", func(val any, ctx p.ParseCtx) bool {
+	field := String().Test(TestFunc("test", func(val any, ctx ParseCtx) bool {
 		return val == "test"
 	}), Message("Invalid"))
 

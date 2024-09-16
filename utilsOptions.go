@@ -8,7 +8,7 @@ type TestOption = func(test *p.Test)
 
 func Message(msg string) TestOption {
 	return func(test *p.Test) {
-		test.ErrFmt = func(e p.ZogError, p p.ParseCtx) {
+		test.ErrFmt = func(e p.ZogError, p ParseCtx) {
 			e.SetMessage(msg)
 		}
 	}
