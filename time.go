@@ -4,7 +4,8 @@ import (
 	"time"
 
 	"github.com/Oudwins/zog/conf"
-	p "github.com/Oudwins/zog/primitives"
+	p "github.com/Oudwins/zog/internals"
+	"github.com/Oudwins/zog/zconst"
 )
 
 type timeProcessor struct {
@@ -103,7 +104,7 @@ func (v *timeProcessor) Test(t p.Test, opts ...TestOption) *timeProcessor {
 // Checks that the value is after the given time
 func (v *timeProcessor) After(t time.Time) *timeProcessor {
 	r := p.Test{
-		ErrCode: p.ErrCodeAfter,
+		ErrCode: zconst.ErrCodeAfter,
 		Params:  make(map[string]any, 1),
 		ValidateFunc: func(v any, ctx ParseCtx) bool {
 			val, ok := v.(time.Time)
@@ -113,7 +114,7 @@ func (v *timeProcessor) After(t time.Time) *timeProcessor {
 			return val.After(t)
 		},
 	}
-	r.Params[p.ErrCodeAfter] = t
+	r.Params[zconst.ErrCodeAfter] = t
 	for _, opt := range v.tests {
 		r.ErrFmt = opt.ErrFmt
 	}
@@ -125,7 +126,7 @@ func (v *timeProcessor) After(t time.Time) *timeProcessor {
 func (v *timeProcessor) Before(t time.Time) *timeProcessor {
 	r :=
 		p.Test{
-			ErrCode: p.ErrCodeBefore,
+			ErrCode: zconst.ErrCodeBefore,
 			Params:  make(map[string]any, 1),
 			ValidateFunc: func(v any, ctx ParseCtx) bool {
 				val, ok := v.(time.Time)
@@ -135,7 +136,7 @@ func (v *timeProcessor) Before(t time.Time) *timeProcessor {
 				return val.Before(t)
 			},
 		}
-	r.Params[p.ErrCodeBefore] = t
+	r.Params[zconst.ErrCodeBefore] = t
 	for _, opt := range v.tests {
 		r.ErrFmt = opt.ErrFmt
 	}
@@ -147,7 +148,7 @@ func (v *timeProcessor) Before(t time.Time) *timeProcessor {
 // Checks that the value is equal to the given time
 func (v *timeProcessor) EQ(t time.Time) *timeProcessor {
 	r := p.Test{
-		ErrCode: p.ErrCodeEQ,
+		ErrCode: zconst.ErrCodeEQ,
 		Params:  make(map[string]any, 1),
 		ValidateFunc: func(v any, ctx ParseCtx) bool {
 			val, ok := v.(time.Time)
@@ -157,7 +158,7 @@ func (v *timeProcessor) EQ(t time.Time) *timeProcessor {
 			return val.Equal(t)
 		},
 	}
-	r.Params[p.ErrCodeEQ] = t
+	r.Params[zconst.ErrCodeEQ] = t
 	for _, opt := range v.tests {
 		r.ErrFmt = opt.ErrFmt
 	}

@@ -6,7 +6,8 @@ import (
 	"time"
 
 	"github.com/Oudwins/zog/conf"
-	p "github.com/Oudwins/zog/primitives"
+	p "github.com/Oudwins/zog/internals"
+	"github.com/Oudwins/zog/zconst"
 )
 
 type Processor interface {
@@ -23,7 +24,7 @@ type ZogErrMap = p.ZogErrMap
 type ZogErrList = p.ZogErrList
 
 // ! TESTS
-func TestFunc(errCode p.ZogErrCode, validateFunc p.TestFunc) p.Test {
+func TestFunc(errCode zconst.ZogErrCode, validateFunc p.TestFunc) p.Test {
 	t := p.Test{
 		ErrCode:      errCode,
 		ValidateFunc: validateFunc,
@@ -39,7 +40,7 @@ type errHelpers struct {
 var Errors = errHelpers{}
 
 // Create error from (originValue any, destinationValue any, test *p.Test)
-func (e *errHelpers) FromTest(o any, destType p.ZogType, t *p.Test, p ParseCtx) p.ZogError {
+func (e *errHelpers) FromTest(o any, destType zconst.ZogType, t *p.Test, p ParseCtx) p.ZogError {
 	er := e.New(t.ErrCode, o, destType, t.Params, "", nil)
 	if t.ErrFmt != nil {
 		t.ErrFmt(er, p)
@@ -48,11 +49,11 @@ func (e *errHelpers) FromTest(o any, destType p.ZogType, t *p.Test, p ParseCtx) 
 }
 
 // Create error from
-func (e *errHelpers) FromErr(o any, destType p.ZogType, err error) p.ZogError {
-	return e.New(p.ErrCodeCustom, o, destType, nil, "", err)
+func (e *errHelpers) FromErr(o any, destType zconst.ZogType, err error) p.ZogError {
+	return e.New(zconst.ErrCodeCustom, o, destType, nil, "", err)
 }
 
-func (e *errHelpers) WrapUnknown(o any, destType p.ZogType, err error) p.ZogError {
+func (e *errHelpers) WrapUnknown(o any, destType zconst.ZogType, err error) p.ZogError {
 	zerr, ok := err.(p.ZogError)
 	if !ok {
 		return e.FromErr(o, destType, err)
@@ -60,7 +61,7 @@ func (e *errHelpers) WrapUnknown(o any, destType p.ZogType, err error) p.ZogErro
 	return zerr
 }
 
-func (e *errHelpers) New(code p.ZogErrCode, o any, destType p.ZogType, params map[string]any, msg string, err error) p.ZogError {
+func (e *errHelpers) New(code zconst.ZogErrCode, o any, destType zconst.ZogType, params map[string]any, msg string, err error) p.ZogError {
 	return &p.ZogErr{
 		C:       code,
 		ParamsM: params,
@@ -96,27 +97,27 @@ func NewMapDataProvider[T any](m map[string]T) p.DataProvider {
 
 // ! PRIMITIVE PROCESSING
 
-func getDestType(dest any) p.ZogType {
+func getDestType(dest any) zconst.ZogType {
 	switch reflect.TypeOf(dest).Kind() {
 	case reflect.Slice:
-		return p.TypeSlice
+		return zconst.TypeSlice
 	case reflect.Struct:
 		if reflect.TypeOf(dest) == reflect.TypeOf(time.Time{}) {
-			return p.TypeTime
+			return zconst.TypeTime
 		}
-		return p.TypeStruct
+		return zconst.TypeStruct
 	case reflect.Float64:
 	case reflect.Int:
-		return p.TypeNumber
+		return zconst.TypeNumber
 	case reflect.Bool:
-		return p.TypeBool
+		return zconst.TypeBool
 	case reflect.String:
-		return p.TypeString
+		return zconst.TypeString
 	default:
 		log.Fatal("Unsupported destination type")
 	}
 	// should never get here
-	return p.TypeString
+	return zconst.TypeString
 }
 
 func primitiveProcessor[T p.ZogPrimitive](val any, dest any, path p.PathBuilder, ctx ParseCtx, preTransforms []p.PreTransform, tests []p.Test, postTransforms []p.PostTransform, defaultVal *T, required *p.Test, catch *T, coercer conf.CoercerFunc) {
@@ -187,7 +188,7 @@ func primitiveProcessor[T p.ZogPrimitive](val any, dest any, path p.PathBuilder,
 				*destPtr = *catch
 				hasCatched = true
 			} else {
-				ctx.NewError(path, Errors.New(p.ErrCodeCoerce, val, destType, nil, "", err))
+				ctx.NewError(path, Errors.New(zconst.ErrCodeCoerce, val, destType, nil, "", err))
 				return
 			}
 		}

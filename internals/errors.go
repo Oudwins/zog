@@ -1,8 +1,12 @@
-package primitives
+package internals
+
+import (
+	zconst "github.com/Oudwins/zog/zconst"
+)
 
 // Error interface returned from all processors
 type ZogError interface {
-	Code() ZogErrCode
+	Code() zconst.ZogErrCode
 	Value() any    // the error value
 	Dtype() string // destination type
 	Params() map[string]any
@@ -19,16 +23,16 @@ type ErrFmtFunc = func(e ZogError, p ParseCtx)
 
 // Error implementation
 type ZogErr struct {
-	C       ZogErrCode     // error code
-	ParamsM map[string]any // params for the error (e.g. min, max, len, etc)
-	Typ     string         // destination type
-	Val     any            // value that caused the error
+	C       zconst.ZogErrCode // error code
+	ParamsM map[string]any    // params for the error (e.g. min, max, len, etc)
+	Typ     string            // destination type
+	Val     any               // value that caused the error
 	Msg     string
 	Err     error // the underlying error
 }
 
 // error code, err uuid
-func (e *ZogErr) Code() ZogErrCode {
+func (e *ZogErr) Code() zconst.ZogErrCode {
 	return e.C
 }
 

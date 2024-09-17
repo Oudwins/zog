@@ -3,7 +3,7 @@ package zenv
 import (
 	"os"
 
-	p "github.com/Oudwins/zog/primitives"
+	p "github.com/Oudwins/zog/internals"
 )
 
 type envDataProvider struct {
