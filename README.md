@@ -599,8 +599,9 @@ conf.ErrorFormatter = func(e p.ZogError, p z.ParseCtx) {
 }
 
 // override specific error messages
-// For this you will need to import `zog/primitives` package. Which you should use with caution since it is an internal package
-conf.DefaultErrMsgMap["string"]["my_custom_error_code"] = "my custom error message"
+// For this I recommend you import `zod/zconst` which contains zog constants
+conf.DefaultErrMsgMap[zconst.TypeString]["my_custom_error_code"] = "my custom error message"
+conf.DefaultErrMsgMap[zconst.TypeString][zconst.ErrCodeRequired] = "Now all required errors will get this message"
 ```
 
 ## Zog Schema Parsign Execution Structure
