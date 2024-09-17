@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	p "github.com/Oudwins/zog/primitives"
+	zconst "github.com/Oudwins/zog/zconst"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -12,9 +13,9 @@ func TestDefaultErrorFormatter(t *testing.T) {
 		input p.ZogError
 		want  string
 	}{
-		{input: &p.ZogErr{C: p.ErrCodeRequired, Typ: p.TypeString}, want: DefaultErrMsgMap[p.TypeString][p.ErrCodeRequired]},
-		{input: &p.ZogErr{C: p.ErrCodeRequired, Typ: p.TypeString, Msg: "DON'T OVERRIDE ME"}, want: "DON'T OVERRIDE ME"},
-		{input: &p.ZogErr{C: "INVALID_ERR_CODE", Typ: p.TypeString}, want: "string is invalid"},
+		{input: &p.ZogErr{C: zconst.ErrCodeRequired, Typ: zconst.TypeString}, want: DefaultErrMsgMap[zconst.TypeString][zconst.ErrCodeRequired]},
+		{input: &p.ZogErr{C: zconst.ErrCodeRequired, Typ: zconst.TypeString, Msg: "DON'T OVERRIDE ME"}, want: "DON'T OVERRIDE ME"},
+		{input: &p.ZogErr{C: "INVALID_ERR_CODE", Typ: zconst.TypeString}, want: "string is invalid"},
 	}
 
 	for _, test := range tests {

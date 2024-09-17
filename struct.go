@@ -9,6 +9,7 @@ import (
 
 	"github.com/Oudwins/zog/conf"
 	p "github.com/Oudwins/zog/primitives"
+	"github.com/Oudwins/zog/zconst"
 )
 
 type StructParser interface {
@@ -83,7 +84,7 @@ func (v *structProcessor) Parse(data any, destPtr any, options ...ParsingOption)
 }
 
 func (v *structProcessor) process(data any, dest any, path p.PathBuilder, ctx ParseCtx) {
-	destType := p.TypeStruct
+	destType := zconst.TypeStruct
 	// 1. preTransforms
 	if v.preTransforms != nil {
 		for _, fn := range v.preTransforms {
@@ -126,7 +127,7 @@ func (v *structProcessor) process(data any, dest any, path p.PathBuilder, ctx Pa
 	dataProv, ok := data.(p.DataProvider)
 	if !ok {
 		if dataProv, ok = p.TryNewAnyDataProvider(data); !ok {
-			ctx.NewError(path, Errors.New(p.ErrCodeCoerce, data, destType, nil, "", errors.New("could not convert data to a data provider")))
+			ctx.NewError(path, Errors.New(zconst.ErrCodeCoerce, data, destType, nil, "", errors.New("could not convert data to a data provider")))
 			return
 		}
 	}
@@ -145,7 +146,7 @@ func (v *structProcessor) process(data any, dest any, path p.PathBuilder, ctx Pa
 		}
 		destPtr := structVal.FieldByName(key).Addr().Interface()
 
-		fieldTag, ok := fieldMeta.Tag.Lookup(p.ZogTag)
+		fieldTag, ok := fieldMeta.Tag.Lookup(zconst.ZogTag)
 		if ok {
 			fieldKey = fieldTag
 		}

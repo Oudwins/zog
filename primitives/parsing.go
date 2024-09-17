@@ -1,5 +1,7 @@
 package primitives
 
+import zconst "github.com/Oudwins/zog/zconst"
+
 type ZogParseCtx struct {
 	Fmter  ErrFmtFunc
 	Errors ZogErrors
@@ -49,7 +51,7 @@ func NewParseCtx(errs ZogErrors, fmter ErrFmtFunc) *ZogParseCtx {
 type TestFunc = func(val any, ctx ParseCtx) bool
 
 type Test struct {
-	ErrCode      ZogErrCode
+	ErrCode      zconst.ZogErrCode
 	Params       map[string]any
 	ErrFmt       ErrFmtFunc
 	ValidateFunc TestFunc

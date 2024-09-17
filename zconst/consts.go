@@ -1,4 +1,4 @@
-package primitives
+package zconst
 
 const (
 	ZogTag = "zog"

@@ -7,6 +7,7 @@ import (
 
 	"github.com/Oudwins/zog/conf"
 	p "github.com/Oudwins/zog/primitives"
+	"github.com/Oudwins/zog/zconst"
 )
 
 var (
@@ -146,7 +147,7 @@ func (v *stringProcessor) Len(n int, options ...TestOption) *stringProcessor {
 // checks that the value is a valid email address
 func (v *stringProcessor) Email(options ...TestOption) *stringProcessor {
 	t := p.Test{
-		ErrCode: p.ErrCodeEmail,
+		ErrCode: zconst.ErrCodeEmail,
 		ValidateFunc: func(v any, ctx ParseCtx) bool {
 			email, ok := v.(string)
 			if !ok {
@@ -164,7 +165,7 @@ func (v *stringProcessor) Email(options ...TestOption) *stringProcessor {
 
 func (v *stringProcessor) URL(options ...TestOption) *stringProcessor {
 	t := p.Test{
-		ErrCode: p.ErrCodeURL,
+		ErrCode: zconst.ErrCodeURL,
 		ValidateFunc: func(v any, ctx ParseCtx) bool {
 			s, ok := v.(string)
 			if !ok {
@@ -183,7 +184,7 @@ func (v *stringProcessor) URL(options ...TestOption) *stringProcessor {
 
 func (v *stringProcessor) HasPrefix(s string, options ...TestOption) *stringProcessor {
 	t := p.Test{
-		ErrCode: p.ErrCodeHasPrefix,
+		ErrCode: zconst.ErrCodeHasPrefix,
 		Params:  make(map[string]any, 1),
 		ValidateFunc: func(v any, ctx ParseCtx) bool {
 			val, ok := v.(string)
@@ -193,7 +194,7 @@ func (v *stringProcessor) HasPrefix(s string, options ...TestOption) *stringProc
 			return strings.HasPrefix(val, s)
 		},
 	}
-	t.Params[p.ErrCodeHasPrefix] = s
+	t.Params[zconst.ErrCodeHasPrefix] = s
 	for _, opt := range options {
 		opt(&t)
 	}
@@ -203,7 +204,7 @@ func (v *stringProcessor) HasPrefix(s string, options ...TestOption) *stringProc
 
 func (v *stringProcessor) HasSuffix(s string, options ...TestOption) *stringProcessor {
 	t := p.Test{
-		ErrCode: p.ErrCodeHasSuffix,
+		ErrCode: zconst.ErrCodeHasSuffix,
 		Params:  make(map[string]any, 1),
 		ValidateFunc: func(v any, ctx ParseCtx) bool {
 			val, ok := v.(string)
@@ -213,7 +214,7 @@ func (v *stringProcessor) HasSuffix(s string, options ...TestOption) *stringProc
 			return strings.HasSuffix(val, s)
 		},
 	}
-	t.Params[p.ErrCodeHasSuffix] = s
+	t.Params[zconst.ErrCodeHasSuffix] = s
 	for _, opt := range options {
 		opt(&t)
 	}
@@ -223,7 +224,7 @@ func (v *stringProcessor) HasSuffix(s string, options ...TestOption) *stringProc
 
 func (v *stringProcessor) Contains(sub string, options ...TestOption) *stringProcessor {
 	t := p.Test{
-		ErrCode: p.ErrCodeContains,
+		ErrCode: zconst.ErrCodeContains,
 		Params:  make(map[string]any, 1),
 		ValidateFunc: func(v any, ctx ParseCtx) bool {
 			val, ok := v.(string)
@@ -233,7 +234,7 @@ func (v *stringProcessor) Contains(sub string, options ...TestOption) *stringPro
 			return strings.Contains(val, sub)
 		},
 	}
-	t.Params[p.ErrCodeContains] = sub
+	t.Params[zconst.ErrCodeContains] = sub
 	for _, opt := range options {
 		opt(&t)
 	}
@@ -243,7 +244,7 @@ func (v *stringProcessor) Contains(sub string, options ...TestOption) *stringPro
 
 func (v *stringProcessor) ContainsUpper(options ...TestOption) *stringProcessor {
 	t := p.Test{
-		ErrCode: p.ErrCodeContainsUpper,
+		ErrCode: zconst.ErrCodeContainsUpper,
 		ValidateFunc: func(v any, ctx ParseCtx) bool {
 			val, ok := v.(string)
 			if !ok {
@@ -266,7 +267,7 @@ func (v *stringProcessor) ContainsUpper(options ...TestOption) *stringProcessor 
 
 func (v *stringProcessor) ContainsDigit(options ...TestOption) *stringProcessor {
 	t := p.Test{
-		ErrCode: p.ErrCodeContainsDigit,
+		ErrCode: zconst.ErrCodeContainsDigit,
 		ValidateFunc: func(v any, ctx ParseCtx) bool {
 			val, ok := v.(string)
 			if !ok {
@@ -292,7 +293,7 @@ func (v *stringProcessor) ContainsDigit(options ...TestOption) *stringProcessor 
 func (v *stringProcessor) ContainsSpecial(options ...TestOption) *stringProcessor {
 	t :=
 		p.Test{
-			ErrCode: p.ErrCodeContainsSpecial,
+			ErrCode: zconst.ErrCodeContainsSpecial,
 			ValidateFunc: func(v any, ctx ParseCtx) bool {
 				val, ok := v.(string)
 				if !ok {

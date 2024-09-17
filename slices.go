@@ -6,6 +6,7 @@ import (
 
 	"github.com/Oudwins/zog/conf"
 	p "github.com/Oudwins/zog/primitives"
+	"github.com/Oudwins/zog/zconst"
 )
 
 type sliceProcessor struct {
@@ -39,7 +40,7 @@ func (v *sliceProcessor) Parse(data any, dest any, options ...ParsingOption) p.Z
 }
 
 func (v *sliceProcessor) process(val any, dest any, path p.PathBuilder, ctx ParseCtx) {
-	destType := p.TypeSlice
+	destType := zconst.TypeSlice
 	// 1. preTransforms
 	if v.preTransforms != nil {
 		for _, fn := range v.preTransforms {
@@ -86,7 +87,7 @@ func (v *sliceProcessor) process(val any, dest any, path p.PathBuilder, ctx Pars
 		// make sure val is a slice if not try to make it one
 		v, err := conf.Coercers.Slice(val)
 		if err != nil {
-			ctx.NewError(path, Errors.New(p.ErrCodeCoerce, val, destType, nil, "", err))
+			ctx.NewError(path, Errors.New(zconst.ErrCodeCoerce, val, destType, nil, "", err))
 			return
 		}
 		refVal = reflect.ValueOf(v)
@@ -217,7 +218,7 @@ func (v *sliceProcessor) Len(n int, options ...TestOption) *sliceProcessor {
 func (v *sliceProcessor) Contains(value any, options ...TestOption) *sliceProcessor {
 	v.tests = append(v.tests,
 		p.Test{
-			ErrCode: p.ErrCodeContains,
+			ErrCode: zconst.ErrCodeContains,
 			Params:  make(map[string]any, 1),
 			ValidateFunc: func(val any, ctx ParseCtx) bool {
 				rv := reflect.ValueOf(val).Elem()
@@ -236,7 +237,7 @@ func (v *sliceProcessor) Contains(value any, options ...TestOption) *sliceProces
 			},
 		},
 	)
-	v.tests[len(v.tests)-1].Params[p.ErrCodeContains] = value
+	v.tests[len(v.tests)-1].Params[zconst.ErrCodeContains] = value
 	for _, opt := range options {
 		opt(&v.tests[len(v.tests)-1])
 	}
@@ -245,7 +246,7 @@ func (v *sliceProcessor) Contains(value any, options ...TestOption) *sliceProces
 
 func sliceMin(n int) p.Test {
 	t := p.Test{
-		ErrCode: p.ErrCodeMin,
+		ErrCode: zconst.ErrCodeMin,
 		Params:  make(map[string]any, 1),
 		ValidateFunc: func(val any, ctx ParseCtx) bool {
 			rv := reflect.ValueOf(val).Elem()
@@ -255,12 +256,12 @@ func sliceMin(n int) p.Test {
 			return rv.Len() >= n
 		},
 	}
-	t.Params[p.ErrCodeMin] = n
+	t.Params[zconst.ErrCodeMin] = n
 	return t
 }
 func sliceMax(n int) p.Test {
 	t := p.Test{
-		ErrCode: p.ErrCodeMax,
+		ErrCode: zconst.ErrCodeMax,
 		Params:  make(map[string]any, 1),
 		ValidateFunc: func(val any, ctx ParseCtx) bool {
 			rv := reflect.ValueOf(val).Elem()
@@ -270,12 +271,12 @@ func sliceMax(n int) p.Test {
 			return rv.Len() <= n
 		},
 	}
-	t.Params[p.ErrCodeMax] = n
+	t.Params[zconst.ErrCodeMax] = n
 	return t
 }
 func sliceLength(n int) p.Test {
 	t := p.Test{
-		ErrCode: p.ErrCodeLen,
+		ErrCode: zconst.ErrCodeLen,
 		Params:  make(map[string]any, 1),
 		ValidateFunc: func(val any, ctx ParseCtx) bool {
 			rv := reflect.ValueOf(val).Elem()
@@ -285,6 +286,6 @@ func sliceLength(n int) p.Test {
 			return rv.Len() == n
 		},
 	}
-	t.Params[p.ErrCodeLen] = n
+	t.Params[zconst.ErrCodeLen] = n
 	return t
 }
