@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strings"
 
-	p "github.com/Oudwins/zog/primitives"
+	p "github.com/Oudwins/zog/internals"
 	zconst "github.com/Oudwins/zog/zconst"
 )
 

@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/Oudwins/zog/conf"
-	p "github.com/Oudwins/zog/primitives"
+	p "github.com/Oudwins/zog/internals"
 	"github.com/Oudwins/zog/zconst"
 )
 

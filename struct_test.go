@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	p "github.com/Oudwins/zog/primitives"
+	p "github.com/Oudwins/zog/internals"
 	"github.com/stretchr/testify/assert"
 )
 

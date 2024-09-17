@@ -1,7 +1,7 @@
 package zog
 
 import (
-	p "github.com/Oudwins/zog/primitives"
+	p "github.com/Oudwins/zog/internals"
 )
 
 type TestOption = func(test *p.Test)

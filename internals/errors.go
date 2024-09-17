@@ -1,4 +1,4 @@
-package primitives
+package internals
 
 import (
 	zconst "github.com/Oudwins/zog/zconst"

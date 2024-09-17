@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"net/url"
 
-	p "github.com/Oudwins/zog/primitives"
+	p "github.com/Oudwins/zog/internals"
 )
 
 type urlDataProvider struct {
