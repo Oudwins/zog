@@ -18,9 +18,11 @@ const (
 type ZogErrCode = string
 
 const (
-	ErrCodeCustom   ZogErrCode = "custom"         // all
-	ErrCodeRequired ZogErrCode = "required"       // all
-	ErrCodeCoerce   ZogErrCode = "coerce"         // all
+	ErrCodeCustom   ZogErrCode = "custom"   // all
+	ErrCodeRequired ZogErrCode = "required" // all
+	ErrCodeCoerce   ZogErrCode = "coerce"   // all
+	// all. Applied when other errror code is not implemented. Required to be implemented for every zog type!
+	ErrCodeFallback ZogErrCode = "fallback"
 	ErrCodeEQ       ZogErrCode = "eq"             // number, time, string
 	ErrCodeOneOf    ZogErrCode = "one_of_options" // string or number
 
