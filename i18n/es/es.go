@@ -9,7 +9,7 @@ var Map conf.LangMap = map[zconst.ZogType]map[zconst.ZogErrCode]string{
 	zconst.TypeString: {
 		zconst.ErrCodeRequired:        "Es obligatorio",
 		zconst.ErrCodeMin:             "Cadena debe contener al menos {{min}} caracter(es)",
-		zconst.ErrCodeMax:             "Cadena debe contener como máximo {{min}} caracter(es)",
+		zconst.ErrCodeMax:             "Cadena debe contener como máximo {{max}} caracter(es)",
 		zconst.ErrCodeLen:             "Cadena debe tener exactamente {{len}} caracter(es)",
 		zconst.ErrCodeEmail:           "Debe ser un correo electrónico válido",
 		zconst.ErrCodeURL:             "Debe ser una URL válida",
