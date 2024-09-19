@@ -7,6 +7,9 @@ import (
 )
 
 // Takes a map[langKey]conf.LangMap
+// usage is i18n.SetLanguagesErrsMap(map[string]zconst.LangMap{
+// "es": es.Map, "en": en.Map,
+// })
 func SetLanguagesErrsMap(m map[string]zconst.LangMap, defaultLang string) {
 	langKey := "lang"
 
