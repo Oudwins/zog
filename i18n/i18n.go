@@ -9,9 +9,14 @@ import (
 // Takes a map[langKey]conf.LangMap
 // usage is i18n.SetLanguagesErrsMap(map[string]zconst.LangMap{
 // "es": es.Map, "en": en.Map,
-// })
-func SetLanguagesErrsMap(m map[string]zconst.LangMap, defaultLang string) {
+// }, "en", i18n.WithLangKey("langKey"))
+// schema.Parse(data, &dest, z.WithCtxValue("langKey", "es"))
+func SetLanguagesErrsMap(m map[string]zconst.LangMap, defaultLang string, opts ...setLanguageOption) {
 	langKey := "lang"
+
+	for _, op := range opts {
+		op(&langKey)
+	}
 
 	conf.ErrorFormatter = func(e internals.ZogError, ctx internals.ParseCtx) {
 		lang := ctx.Get(langKey)
@@ -26,3 +31,16 @@ func SetLanguagesErrsMap(m map[string]zconst.LangMap, defaultLang string) {
 		conf.NewDefaultFormatter(m[defaultLang])(e, ctx)
 	}
 }
+
+// Override the default lang key used to get the language from the ParseContext
+func WithLangKey(key string) setLanguageOption {
+	return func(lk *string) {
+		*lk = key
+	}
+}
+
+// Please use the helper function this type may very well change in the future but the helper function's API will stay the same
+type setLanguageOption = func(langKey *string)
+
+// Proxy the type for easy use
+type LangMap = zconst.LangMap
