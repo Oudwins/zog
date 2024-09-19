@@ -22,9 +22,10 @@ Killer Features:
 - Almost no reflection when using primitive types
 - **Built-in coercion** support for most types
 - Zero dependencies!
-- **Two Helper Packages**
+- **Three Helper Packages**
   - **zenv**: parse environment variables
   - **zhttp**: parse http forms & query params
+  - **i18n**: Opinionated solution to good i18n zog errors
 
 > **API Stability:**
 >
@@ -151,9 +152,9 @@ Most of these things are issues we would like to address in future versions.
 - Validations and parsing cannot be run separately
 - It is not recommended to use very deeply nested schemas since that requires a lot of reflection and can have a negative impact on performance
 
-## Helper Packages (zenv & zhttp)
+## Helper Packages
 
-For convenience zog provides two helper packages:
+For convenience zog provides three helper packages:
 
 **zenv: helps validate environment variables**
 
@@ -215,6 +216,31 @@ func handlePostRequest(w http.ResponseWriter, r *http.Request) {
   user.Name // defined
   user.Age // defined
 }
+
+```
+
+**zi18n: helps with having error messages in multiple languages**
+
+```go
+// Somewhere when you start your app
+import (
+  "github.com/Oudwins/zog/i18n"
+  "github.com/Oudwins/zog/i18n/es"
+  "github.com/Oudwins/zog/i18n/en"
+)
+i18n.SetLanguagesErrsMap(map[string]i18n.LangMap{
+  "es": es.Map,
+  "en": en.Map,
+},
+"es", // default language
+i18n.WithLangKey("langKey"), // default lang key is "lang"
+)
+
+
+// Now when we parse
+schema.Parse(data, &dest, z.WithCtxValue("langKey", "es")) // get spanish errors
+schema.Parse(data, &dest, z.WithCtxValue("langKey", "en")) // get english errors
+schema.Parse(data, &dest) // get default lang errors (spanish in this case)
 
 ```
 
