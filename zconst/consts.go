@@ -4,6 +4,9 @@ const (
 	ZogTag = "zog"
 )
 
+// Map used to format errors in Zog. Both ZogType & ZogErrCode are just strings
+type LangMap = map[ZogType]map[ZogErrCode]string
+
 type ZogType = string
 
 const (
