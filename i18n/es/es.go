@@ -1,4 +1,4 @@
-package zes
+package es
 
 import (
 	"github.com/Oudwins/zog/conf"
