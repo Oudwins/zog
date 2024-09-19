@@ -1,11 +1,10 @@
 package es
 
 import (
-	"github.com/Oudwins/zog/conf"
 	"github.com/Oudwins/zog/zconst"
 )
 
-var Map conf.LangMap = map[zconst.ZogType]map[zconst.ZogErrCode]string{
+var Map zconst.LangMap = map[zconst.ZogType]map[zconst.ZogErrCode]string{
 	zconst.TypeString: {
 		zconst.ErrCodeRequired:        "Es obligatorio",
 		zconst.ErrCodeMin:             "Cadena debe contener al menos {{min}} caracter(es)",
