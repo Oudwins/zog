@@ -56,5 +56,9 @@ var Map zconst.LangMap = map[zconst.ZogType]map[zconst.ZogErrCode]string{
 	zconst.TypeStruct: {
 		zconst.ErrCodeRequired: "Es obligatorio",
 		zconst.ErrCodeFallback: "Estructura no es válida",
+		// ZHTTP ERRORS
+		zconst.ErrCodeZHTTPInvalidJSON:  "JSON no válido",
+		zconst.ErrCodeZHTTPInvalidForm:  "Formulario no válido",
+		zconst.ErrCodeZHTTPInvalidQuery: "Parámetros de consulta no válidos",
 	},
 }

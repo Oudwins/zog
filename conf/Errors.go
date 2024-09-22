@@ -31,6 +31,7 @@ func NewDefaultFormatter(m zconst.LangMap) p.ErrFmtFunc {
 			// TODO replace this with a string builder
 			msg = strings.ReplaceAll(msg, "{{"+k+"}}", fmt.Sprintf("%v", v))
 		}
+		msg = strings.ReplaceAll(msg, "{{value}}", fmt.Sprintf("%v", e.Value()))
 		e.SetMessage(msg)
 	}
 
