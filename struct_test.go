@@ -116,7 +116,10 @@ func TestStructOptional(t *testing.T) {
 	}
 
 	var o TestStruct
-	errs := objSchema.Parse(&p.EmptyDataProvider{}, &o)
+	var m = map[string]any{}
+	dp := p.NewMapDataProvider(m)
+	dp = dp.GetNestedProvider("str")
+	errs := objSchema.Parse(dp, &o)
 	assert.Nil(t, errs)
 }
 

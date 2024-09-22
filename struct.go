@@ -1,7 +1,6 @@
 package zog
 
 import (
-	"errors"
 	"fmt"
 	"maps"
 	"reflect"
@@ -112,24 +111,31 @@ func (v *structProcessor) process(data any, dest any, path p.PathBuilder, ctx Pa
 		}
 	}()
 
-	_, isEmptyDP := data.(*p.EmptyDataProvider)
-
-	if isEmptyDP || p.IsZeroValue(data) {
-		if v.required == nil {
-			return
-		} else {
+	// 2. cast data as DataProvider
+	_, isEmpty := data.(*p.EmptyDataProvider)
+	if isEmpty {
+		if v.required != nil {
 			ctx.NewError(path, Errors.FromTest(data, destType, v.required, ctx))
 			return
 		}
+		return
 	}
+	dataProv, err := p.TryNewAnyDataProvider(data)
 
-	// 2. cast data as DataProvider
-	dataProv, ok := data.(p.DataProvider)
-	if !ok {
-		if dataProv, ok = p.TryNewAnyDataProvider(data); !ok {
-			ctx.NewError(path, Errors.New(zconst.ErrCodeCoerce, data, destType, nil, "", errors.New("could not convert data to a data provider")))
+	// 2.5 check for required & errors
+	if err != nil {
+		// This means its optional and we got an error coercing the value to a DataProvider, so we can ignore it
+		if v.required == nil && err.C == zconst.ErrCodeCoerce {
 			return
 		}
+		// This means that its required but we got an error coercing the value or a factory errored with required
+		if v.required != nil && (err.C == zconst.ErrCodeCoerce || err.C == zconst.ErrCodeRequired) {
+			ctx.NewError(path, Errors.FromTest(data, destType, v.required, ctx))
+			return
+		}
+		// Some other error happened. Coercion error
+		ctx.NewError(path, err.SDType(destType).SValue(data))
+		return
 	}
 
 	// 3. Process / validate struct fields
