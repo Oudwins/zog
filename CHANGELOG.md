@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.9.0](https://github.com/Oudwins/zog/compare/v0.8.0...v0.9.0) (2024-09-22)
+
+
+### Features
+
+* i18n package with spanish & english translations ([#28](https://github.com/Oudwins/zog/issues/28)) ([1120fd6](https://github.com/Oudwins/zog/commit/1120fd68759696f1ef9113757af2b5448fa10448))
+* improved zhttp library ([#32](https://github.com/Oudwins/zog/issues/32)) ([891bb6c](https://github.com/Oudwins/zog/commit/891bb6c4c50896094c6c370832486b0862d1172a))
+* trim space for env variables ([166d881](https://github.com/Oudwins/zog/commit/166d8812e429ea8648a9272006d29290fb227733))
+
 ## [0.8.0](https://github.com/Oudwins/zog/compare/v0.7.0...v0.8.0) (2024-09-16)
 
 
