@@ -18,3 +18,8 @@ However, until we reach v1.0.0, since we are still in the early stages of the pr
 ## Understanding the code
 
 - I suggest you read the README.md section on the core design decisions & Zog Parsing Execution Structure
+
+## Code Style
+
+- **Test Names**: Test{USER_API_BEING_TESTED}{DESCRIPTION}
+  - Specially important when testing the main ZogTypes, for example: `TestStringRequired`
