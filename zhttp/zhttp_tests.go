@@ -40,8 +40,7 @@ func TestRequest(t *testing.T) {
 	})
 	u := User{}
 
-	dp, err := NewRequestDataProvider(req)
-	assert.Nil(t, err)
+	dp := Request(req)
 	errs := schema.Parse(dp, &u)
 
 	assert.Equal(t, "john@doe.com", u.Email)
@@ -62,6 +61,7 @@ func TestRequestParams(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating request: %v", err)
 	}
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 	type User struct {
 		Email     string   `param:"email"`
@@ -84,7 +84,7 @@ func TestRequestParams(t *testing.T) {
 			z.String().Min(1)).Min(2),
 	})
 	u := User{}
-	dp, err := NewRequestDataProvider(req)
+	dp := Request(req)
 	assert.Nil(t, err)
 	errs := schema.Parse(dp, &u)
 
