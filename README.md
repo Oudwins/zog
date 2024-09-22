@@ -30,7 +30,7 @@ Killer Features:
 > **API Stability:**
 >
 > - I will consider the API stable when we reach v1.0.0
-> - However, I believe very little API changes will happen from the current implementation. The APIs are are most likely to change are the data providers and the ParseCtx most other APIs should remain the same
+> - However, I believe very little API changes will happen from the current implementation. The APIs are are most likely to change are the **data providers** (please don't make your own if possible use the helpers whose APIs will not change meaningfully) and the ParseCtx most other APIs should remain the same
 > - Zog will not respect semver until v1.0.0 is released. Expect breaking changes (mainly in non basic apis) until then.
 
 ## Introduction
@@ -75,7 +75,7 @@ func main() {
     "firstname": "", // won't return an error because fields are optional by default
     "age": "30", // will get casted to int
   }
-  errsMap := schema.Parse(m, &u) // here it would be slightly more efficient to use NewMapDataProvider(m) but both work
+  errsMap := schema.Parse(m, &u)
   if errsMap != nil {
     // handle errors -> see Errors section
   }
@@ -105,6 +105,12 @@ Slice(String().Email().Required()).PreTransform(func(data any, ctx z.ParseCtx) (
   }
   return nil
 }).Parse("foo@bar.com,bar@foo.com", &dest) // dest = [foo@bar.com bar@foo.com]
+```
+
+**6 Use the zhttp package to parse JSON, Forms or Query Params**
+
+```go
+err := userSchema.Parse(zhttp.Request(r), &user)
 ```
 
 ## Core Design Decisions
@@ -156,6 +162,37 @@ Most of these things are issues we would like to address in future versions.
 
 For convenience zog provides three helper packages:
 
+**zhttp: helps parse http requests**
+
+```go
+import (
+  z "github.com/Oudwins/zog"
+  "github.com/Oudwins/zog/zhttp"
+)
+var userSchema = z.Struct(z.Schema{
+  "name": z.String().Required(),
+  "age": z.Int().Required().GT(18),
+})
+
+func handlePostRequest(w http.ResponseWriter, r *http.Request) {
+  var user := struct {
+    Name string
+    Age int
+  }
+  // if using json (i.e json Content-Type header):
+  errs := userSchema.Parse(zhttp.Request(r), &user)
+  // if using form data (i.e Content-Type header = application/x-www-form-urlencoded)
+  errs := userSchema.Parse(zhttp.Request(r), &user)
+  // if using query params (i.e no http Content-Type header)
+  errs := userSchema.Parse(zhttp.Request(r), &user)
+  if errs != nil {
+  }
+  user.Name // defined
+  user.Age // defined
+}
+
+```
+
 **zenv: helps validate environment variables**
 
 ```go
@@ -188,44 +225,46 @@ func Init() {
     log.Fatal(errs)
   }
 }
-```
 
-**zhttp: helps parse http requests**
-
-```go
-import (
-  z "github.com/Oudwins/zog"
-  "github.com/Oudwins/zog/zhttp"
-)
-var userSchema = z.Struct(z.Schema{
-  "name": z.String().Required(),
-  "age": z.Int().Required().GT(18),
-})
-
-func handlePostRequest(w http.ResponseWriter, r *http.Request) {
-  var user := struct {
-    Name string
-    Age int
-  }
-  // if using query params or form data:
-  errs := userSchema.Parse(zhttp.NewRequestDataProvider(r), &user)
-  // if using json:
-  errs := userSchema.Parse(zhttp.NewJsonDataProvider(r), &user)
-  if errs != nil {
-  }
-  user.Name // defined
-  user.Age // defined
+// if you want to always panic on error
+var Env = parse()
+func Parse() env {
+	var e env
+	errs := envSchema.Parse(zenv.NewDataProvider(), &e)
+	if errs != nil {
+		fmt.Println("FAILURE TO PARSE ENV VARIABLES")
+		log.Fatal(z.Errors.SanitizeMap(errs))
+	}
+	return e
 }
-
 ```
 
 **zi18n: helps with having error messages in multiple languages**
+There are two use cases for zi18n:
+
+1. You just want to change the language of your error messages
+2. You want to support having errors in multiple languages because your app is in 2+ languages
+
+USE CASE 1:
+
+```go
+// import one of our supported languages
+import (
+  "github.com/Oudwins/zog/i18n/es"
+  "github.com/Oudwins/zog/i18n/en"
+  "github.com/Oudwins/zog/conf" // import the zog configuration packag
+)
+// override the default error map
+conf.DefaultErrMsgMap = es.Map // now all errors will be in spanish!
+```
+
+USE CASE 2:
 
 ```go
 // Somewhere when you start your app
 import (
-  "github.com/Oudwins/zog/i18n"
-  "github.com/Oudwins/zog/i18n/es"
+  "github.com/Oudwins/zog/i18n" // import the i18n library
+  "github.com/Oudwins/zog/i18n/es" // import any of the supported language maps or build your own
   "github.com/Oudwins/zog/i18n/en"
 )
 i18n.SetLanguagesErrsMap(map[string]i18n.LangMap{
@@ -233,7 +272,7 @@ i18n.SetLanguagesErrsMap(map[string]i18n.LangMap{
   "en": en.Map,
 },
 "es", // default language
-i18n.WithLangKey("langKey"), // default lang key is "lang"
+i18n.WithLangKey("langKey"), // (optional) default lang key is "lang"
 )
 
 
@@ -241,7 +280,6 @@ i18n.WithLangKey("langKey"), // default lang key is "lang"
 schema.Parse(data, &dest, z.WithCtxValue("langKey", "es")) // get spanish errors
 schema.Parse(data, &dest, z.WithCtxValue("langKey", "en")) // get english errors
 schema.Parse(data, &dest) // get default lang errors (spanish in this case)
-
 ```
 
 ## Parsing Context
@@ -324,6 +362,8 @@ errsMap["$first"] || errsMap.First() // (equivalent) will return the same in thi
 If you want to return errors to the user without the possibility of exposing internal errors, you can use the Zog sanitizer functions `z.Errors.SanitizeMap(errsMap)` or `z.Errors.SanitizeSlice(errsSlice)`. These functions will return a map or slice of strings of the error messages (stripping out the internal error).
 
 ### Error Formatting & i18n
+
+> Please also look at the section on the i18n package above.
 
 You have many different options for handling the formatting of error messages. Here are a few examples:
 
@@ -428,7 +468,7 @@ templ signupFormTempl(data *SignupFormData, errs z.ZogErrMap) {
 Zog providers a helper function called `z.Errors.SanitizeMap(errsMap)` that will return a map of strings of the error messages (stripping out the internal error). So, if you do not mind sending errors to your users in the same form zog returns them, you can do something like this:
 
 ```go
-errs := schema.Parse(data, &userFormData)
+errs := schema.Parse(zhttp.Request(r), &userFormData)
 
 if errs != nil {
   sanitized := z.Errors.SanitizeMap(errs)
@@ -476,12 +516,10 @@ nameSchema := z.String().Test(z.TestFunc("error_code", func (data any, ctx z.Par
 These are methods that can be used on most types of schemas
 
 ```go
-// gets passed the destionation valiue and the context and returns a boolean. Please note for complex types you will be passed a pointer to the destination value
-schema.Test("rule name", func(val any, ctx z.ParseCtx) bool {}, ...options)
 
 // marks the schema as required. Remember fields are optional by default
 schema.Required(z.Message("message or function"))
-schema.Optional() // marks the schema as optional
+schema.Optional() // marks the schema as optional (default)
 // optional & required are mutually exclusive
 schema.Required().Optional() // marks the schema as optional
 
@@ -568,7 +606,7 @@ user := struct {
   Name string `zog:"firstname"` // name will be parsed from the firstname field
   Age int // since zog tag is not set, age will be parsed from the age field
 }
-s.Parse(NewMapDataProvider(map[string]any{"firstname": "hello", "age": 10}), &user)
+s.Parse(map[string]any{"firstname": "hello", "age": 10}, &user)
 ```
 
 #### Slices

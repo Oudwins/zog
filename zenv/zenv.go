@@ -7,6 +7,8 @@ import (
 	p "github.com/Oudwins/zog/internals"
 )
 
+var _ p.DataProvider = &envDataProvider{}
+
 type envDataProvider struct {
 }
 
@@ -20,4 +22,8 @@ func (e *envDataProvider) GetNestedProvider(key string) p.DataProvider {
 
 func NewDataProvider() *envDataProvider {
 	return &envDataProvider{}
+}
+
+func (e *envDataProvider) GetUnderlying() any {
+	return nil
 }

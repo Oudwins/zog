@@ -12,9 +12,9 @@ type ZogError interface {
 	Params() map[string]any
 	Message() string
 	SetMessage(string)
-	// returns the string of the wrapped error
+	// returns the string of the wrapped error if any
 	Error() string
-	// returns the wrapped error
+	// returns the wrapped error if any
 	Unwrap() error
 }
 
@@ -40,14 +40,27 @@ func (e *ZogErr) Code() zconst.ZogErrCode {
 func (e *ZogErr) Value() any {
 	return e.Value
 }
+func (e *ZogErr) SValue(v any) *ZogErr {
+	e.Val = v
+	return e
+}
 
 // destination type TODO
 func (e *ZogErr) Dtype() string {
 	return e.Typ
 }
+func (e *ZogErr) SDType(t string) *ZogErr {
+	e.Typ = t
+	return e
+}
 
 func (e *ZogErr) Params() map[string]any {
 	return e.ParamsM
+}
+
+func (e *ZogErr) SParams(p map[string]any) *ZogErr {
+	e.ParamsM = p
+	return e
 }
 func (e *ZogErr) Message() string {
 	return e.Msg
