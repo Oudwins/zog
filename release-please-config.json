@@ -1,4 +1,5 @@
 {
+  "plugins": [],
   "packages": {
     ".": {
       "changelog-path": "CHANGELOG.md",
