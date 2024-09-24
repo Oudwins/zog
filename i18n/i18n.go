@@ -6,13 +6,18 @@ import (
 	"github.com/Oudwins/zog/zconst"
 )
 
+const (
+	// Default lang key used to get the language from the ParseContext
+	LangKey = "lang"
+)
+
 // Takes a map[langKey]conf.LangMap
 // usage is i18n.SetLanguagesErrsMap(map[string]zconst.LangMap{
 // "es": es.Map, "en": en.Map,
 // }, "en", i18n.WithLangKey("langKey"))
 // schema.Parse(data, &dest, z.WithCtxValue("langKey", "es"))
 func SetLanguagesErrsMap(m map[string]zconst.LangMap, defaultLang string, opts ...setLanguageOption) {
-	langKey := "lang"
+	langKey := LangKey
 
 	for _, op := range opts {
 		op(&langKey)
