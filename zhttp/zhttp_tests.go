@@ -1,11 +1,14 @@
 package zhttp
 
 import (
+	"io"
 	"net/http"
+	"net/url"
 	"strings"
 	"testing"
 
 	z "github.com/Oudwins/zog"
+	"github.com/Oudwins/zog/zconst"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -98,80 +101,111 @@ func TestRequestParams(t *testing.T) {
 	assert.Empty(t, errs)
 }
 
-// func TestStringURL(t *testing.T) {
-// 	type Foo struct {
-// 		Url string
-// 	}
-// 	foo := Foo{
-// 		Url: "not an url",
-// 	}
-// 	schema := Schema{
-// 		"url": String().URL(),
-// 	}
-// 	errors, ok := Validate(foo, schema)
-// 	assert.False(t, ok)
-// 	assert.Len(t, errors["url"], 1)
+// Unit tests for url data provider
+func TestUrlDataProviderGet(t *testing.T) {
+	data := url.Values{
+		"single":     []string{"value"},
+		"multiple":   []string{"value1", "value2"},
+		"array[]":    []string{"item1", "item2"},
+		"emptyArray": []string{},
+	}
+	provider := urlDataProvider{Data: data}
 
-// 	foo.Url = "https://www.user.com"
-// 	errors, ok = Validate(foo, schema)
-// 	assert.True(t, ok)
-// 	assert.Empty(t, errors)
-// }
+	tests := []struct {
+		name     string
+		key      string
+		expected any
+	}{
+		{"Single value", "single", "value"},
+		{"Multiple values", "multiple", []string{"value1", "value2"}},
+		{"Array notation", "array[]", []string{"item1", "item2"}},
+		{"Empty array", "emptyArray", ""},
+		{"Non-existent key", "nonexistent", ""},
+	}
 
-// func TestStringIn(t *testing.T) {
-// 	type Foo struct {
-// 		Currency string
-// 	}
-// 	foo := Foo{"eur"}
-// 	currencies := []string{"eur", "usd", "chz"}
-// 	schema := Schema{
-// 		"currency": Enum(currencies),
-// 	}
-// 	errors, ok := Validate(foo, schema)
-// 	assert.True(t, ok)
-// 	assert.Empty(t, errors)
-// 	foo = Foo{"foo"}
-// 	errors, ok = Validate(foo, schema)
-// 	assert.False(t, ok)
-// 	assert.Len(t, errors["currency"], 1)
-// }
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := provider.Get(tt.key)
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}
 
-// func TestValidate(t *testing.T) {
-// 	type User struct {
-// 		Email    string
-// 		Username string
-// 	}
-// 	schema := Schema{
-// 		"email": String().Email(),
-// 		// Test both lower and uppercase
-// 		"username": String().Min(3).Max(10),
-// 	}
-// 	user := User{
-// 		Email:    "foo@bar.com",
-// 		Username: "pedropedro",
-// 	}
-// 	errors, ok := Validate(user, schema)
-// 	assert.True(t, ok)
-// 	assert.Empty(t, errors)
-// 	assert.Empty(t, errors)
-// }
+func TestUrlDataProviderGetNestedProvider(t *testing.T) {
+	data := url.Values{"key": []string{"value"}}
+	provider := urlDataProvider{Data: data}
 
-// func TestEmpty(t *testing.T) {
-// 	type User struct {
-// 		Email    string
-// 		Username string
-// 	}
-// 	schema := Schema{
-// 		"email":    String(),
-// 		"username": String(),
-// 	}
-// 	user := User{
-// 		Email:    "",
-// 		Username: "",
-// 	}
+	nestedProvider := provider.GetNestedProvider("any_key")
+	assert.Equal(t, provider, nestedProvider)
+}
 
-// 	errors, ok := Validate(user, schema)
-// 	assert.True(t, ok)
-// 	assert.Empty(t, errors)
-// 	assert.Empty(t, errors)
-// }
+func TestUrlDataProviderGetUnderlying(t *testing.T) {
+	data := url.Values{"key": []string{"value"}}
+	provider := urlDataProvider{Data: data}
+
+	underlying := provider.GetUnderlying()
+	assert.Equal(t, data, underlying)
+}
+
+func TestRequestContentTypeJSON(t *testing.T) {
+	jsonBody := `{"name":"John","age":30}`
+	req, _ := http.NewRequest("POST", "/test", strings.NewReader(jsonBody))
+	req.Header.Set("Content-Type", "application/json")
+
+	dpFactory := Request(req)
+	_, err := dpFactory()
+	assert.NoError(t, err)
+}
+
+func TestRequestContentTypeForm(t *testing.T) {
+	formData := "name=John&age=30"
+	req, _ := http.NewRequest("POST", "/test", strings.NewReader(formData))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	dpFactory := Request(req)
+	dp, err := dpFactory()
+
+	assert.NoError(t, err)
+	assert.IsType(t, urlDataProvider{}, dp)
+}
+
+func TestRequestContentTypeDefault(t *testing.T) {
+	req, _ := http.NewRequest("GET", "/test?name=John&age=30", nil)
+
+	dpFactory := Request(req)
+	dp, err := dpFactory()
+
+	assert.NoError(t, err)
+	assert.IsType(t, urlDataProvider{}, dp)
+}
+
+func TestParseJsonValid(t *testing.T) {
+	jsonData := `{"name":"John","age":30}`
+	reader := io.NopCloser(strings.NewReader(jsonData))
+
+	_, err := parseJson(reader)
+	assert.NoError(t, err)
+}
+
+func TestParseJsonInvalid(t *testing.T) {
+	invalidJSON := `{"name":"John","age":30`
+	reader := io.NopCloser(strings.NewReader(invalidJSON))
+
+	dp, err := parseJson(reader)
+
+	assert.Error(t, err)
+	assert.Nil(t, dp)
+	assert.Equal(t, zconst.ErrCodeZHTTPInvalidJSON, err.C)
+}
+
+func TestForm(t *testing.T) {
+	data := url.Values{
+		"name": []string{"John"},
+		"age":  []string{"30"},
+	}
+
+	dp := form(data)
+
+	assert.IsType(t, urlDataProvider{}, dp)
+	assert.Equal(t, data, dp.(urlDataProvider).Data)
+}
