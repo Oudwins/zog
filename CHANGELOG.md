@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.1](https://github.com/Oudwins/zog/compare/v0.9.0...v0.9.1) (2024-09-26)
+
+
+### Bug Fixes
+
+* zhttp request method ([f69af8b](https://github.com/Oudwins/zog/commit/f69af8b09107236878388abda005966e8b16726c))
+
 ## [0.9.0](https://github.com/Oudwins/zog/compare/v0.8.0...v0.9.0) (2024-09-22)
 
 
