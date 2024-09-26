@@ -52,11 +52,8 @@ func Request(r *http.Request) p.DpFactory {
 			return form(r.Form), nil
 		default:
 			// This handles generic GET request from browser. We treat it as url.Values
-			err := r.ParseForm()
-			if err != nil {
-				return nil, &p.ZogErr{C: zconst.ErrCodeZHTTPInvalidQuery, Err: err}
-			}
-			return form(r.Form), nil
+			params := r.URL.Query()
+			return form(params), nil
 		}
 	}
 }
@@ -64,7 +61,7 @@ func Request(r *http.Request) p.DpFactory {
 func parseJson(data io.ReadCloser) (p.DataProvider, *p.ZogErr) {
 	var m map[string]any
 	decod := json.NewDecoder(data)
-	err := decod.Decode(&data)
+	err := decod.Decode(&m)
 	if err != nil {
 		return nil, &p.ZogErr{C: zconst.ErrCodeZHTTPInvalidJSON, Err: err}
 	}
