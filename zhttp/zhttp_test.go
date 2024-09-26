@@ -57,14 +57,13 @@ func TestRequest(t *testing.T) {
 }
 
 func TestRequestParams(t *testing.T) {
-	formData := "name=JohnDoe&email=john@doe.com&age=30&age=20&isMarried=true&lights=on&cash=10.5&swagger=doweird&swagger=swagger"
+	formData := "name=JohnDoe&email=john@doe.com&age=30&isMarried=true&lights=on&cash=10.5&swagger=doweird&swagger=swagger"
 
 	// Create a fake HTTP request with form data
 	req, err := http.NewRequest("POST", "/submit?"+formData, nil)
 	if err != nil {
 		t.Fatalf("Error creating request: %v", err)
 	}
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 	type User struct {
 		Email     string   `param:"email"`
@@ -153,8 +152,10 @@ func TestRequestContentTypeJSON(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 
 	dpFactory := Request(req)
-	_, err := dpFactory()
-	assert.NoError(t, err)
+	dp, err := dpFactory()
+	assert.Nil(t, err)
+	assert.Equal(t, "John", dp.Get("name"))
+	assert.Equal(t, float64(30), dp.Get("age"))
 }
 
 func TestRequestContentTypeForm(t *testing.T) {
@@ -165,8 +166,9 @@ func TestRequestContentTypeForm(t *testing.T) {
 	dpFactory := Request(req)
 	dp, err := dpFactory()
 
-	assert.NoError(t, err)
-	assert.IsType(t, urlDataProvider{}, dp)
+	assert.Nil(t, err)
+	assert.Equal(t, "John", dp.Get("name"))
+	assert.Equal(t, "30", dp.Get("age"))
 }
 
 func TestRequestContentTypeDefault(t *testing.T) {
@@ -175,16 +177,19 @@ func TestRequestContentTypeDefault(t *testing.T) {
 	dpFactory := Request(req)
 	dp, err := dpFactory()
 
-	assert.NoError(t, err)
-	assert.IsType(t, urlDataProvider{}, dp)
+	assert.Nil(t, err)
+	assert.Equal(t, "John", dp.Get("name"))
+	assert.Equal(t, "30", dp.Get("age"))
 }
 
 func TestParseJsonValid(t *testing.T) {
 	jsonData := `{"name":"John","age":30}`
 	reader := io.NopCloser(strings.NewReader(jsonData))
 
-	_, err := parseJson(reader)
-	assert.NoError(t, err)
+	dp, err := parseJson(reader)
+	assert.Nil(t, err)
+	assert.Equal(t, "John", dp.Get("name"))
+	assert.Equal(t, float64(30), dp.Get("age"))
 }
 
 func TestParseJsonInvalid(t *testing.T) {
