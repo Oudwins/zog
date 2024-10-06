@@ -31,7 +31,13 @@
 
             # https://github.com/golangci/golangci-lint
             golangci-lint
+
+            # Tests summaries
+            gotestsum
           ];
+          shellHook = ''
+            export CGO_ENABLED="0" # disables cgo. Not sure why this fixes debugger on tests in vscode
+          '';
         };
       });
     };

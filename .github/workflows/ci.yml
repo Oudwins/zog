@@ -21,11 +21,11 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go-version }}
-      - name: Set up Make
-        run: sudo apt-get install make
+      # - name: Set up Make
+      #   run: sudo apt-get install make
       - name: Run tests
-        run: make test
-
+        #run: make test
+        run: go test ./...
   golangci:
     name: lint
     runs-on: ubuntu-latest

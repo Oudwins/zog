@@ -120,7 +120,7 @@ func getDestType(dest any) zconst.ZogType {
 	return zconst.TypeString
 }
 
-func primitiveProcessor[T p.ZogPrimitive](val any, dest any, path p.PathBuilder, ctx ParseCtx, preTransforms []p.PreTransform, tests []p.Test, postTransforms []p.PostTransform, defaultVal *T, required *p.Test, catch *T, coercer conf.CoercerFunc) {
+func primitiveProcessor[T p.ZogPrimitive](val any, dest any, path p.PathBuilder, ctx ParseCtx, preTransforms []p.PreTransform, tests []p.Test, postTransforms []p.PostTransform, defaultVal *T, required *p.Test, catch *T, coercer conf.CoercerFunc, isZeroFunc conf.IsZeroValueFunc) {
 	canCatch := catch != nil
 	hasCatched := false
 
@@ -160,7 +160,7 @@ func primitiveProcessor[T p.ZogPrimitive](val any, dest any, path p.PathBuilder,
 	}
 
 	// 2. cast data to string & handle default/required
-	isZeroVal := p.IsZeroValue(val)
+	isZeroVal := isZeroFunc(val)
 
 	if isZeroVal {
 		if defaultVal != nil {

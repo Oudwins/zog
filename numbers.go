@@ -53,7 +53,7 @@ func (v *numberProcessor[T]) process(val any, dest any, path p.PathBuilder, ctx 
 		coercer = conf.Coercers.Int
 	}
 
-	primitiveProcessor(val, dest, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, coercer)
+	primitiveProcessor(val, dest, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, coercer, conf.IsZeroValue.Int)
 }
 
 // GLOBAL METHODS
