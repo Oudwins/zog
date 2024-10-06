@@ -9,7 +9,7 @@ type IsZeroValueFunc = func(val any) bool
 
 // IsZeroValue is a map of functions to determine if a value is zero.
 // This is used to determine how to handle required, default and catch schema properties.
-var DefaultIsZeroValue = struct {
+var DefaultParseIsZeroValue = struct {
 	Bool    IsZeroValueFunc
 	String  IsZeroValueFunc
 	Int     IsZeroValueFunc
@@ -35,6 +35,6 @@ var DefaultIsZeroValue = struct {
 	//Struct:  p.IsZeroValue,
 }
 
-// IsZeroValue is a map of functions to determine if a value is zero.
+// ParseIsZeroValue is a map of functions to determine if a value is zero.
 // This is used to determine how to handle required, default and catch schema properties.
-var IsZeroValue = DefaultIsZeroValue
+var ParseIsZeroValue = DefaultParseIsZeroValue
