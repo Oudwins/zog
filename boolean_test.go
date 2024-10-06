@@ -1,7 +1,10 @@
 package zog
 
 import (
+	"fmt"
 	"testing"
+
+	p "github.com/Oudwins/zog/internals"
 )
 
 func TestBoolParse(t *testing.T) {
@@ -297,6 +300,107 @@ func TestBoolFalse(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			var result bool
+			errs := boolProc.Parse(test.data, &result)
+
+			if (len(errs) > 0) != test.expectErr {
+				t.Errorf("Expected error: %v, got: %v", test.expectErr, errs)
+			}
+
+			if result != test.expected {
+				t.Errorf("Expected %v, but got %v", test.expected, result)
+			}
+		})
+	}
+}
+func TestBoolPreTransform(t *testing.T) {
+	tests := []struct {
+		name      string
+		data      interface{}
+		transform p.PreTransform
+		expectErr bool
+		expected  bool
+	}{
+		{
+			name: "Valid transform",
+			data: "true",
+			transform: func(val any, ctx ParseCtx) (any, error) {
+				if s, ok := val.(string); ok {
+					return s == "true", nil
+				}
+				return val, nil
+			},
+			expected: true,
+		},
+		{
+			name: "Invalid transform",
+			data: "invalid",
+			transform: func(val any, ctx ParseCtx) (any, error) {
+				return nil, fmt.Errorf("invalid input")
+			},
+			expectErr: true,
+			expected:  false,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			boolProc := Bool().PreTransform(test.transform)
+			var result bool
+			errs := boolProc.Parse(test.data, &result)
+
+			if (len(errs) > 0) != test.expectErr {
+				t.Errorf("Expected error: %v, got: %v", test.expectErr, errs)
+			}
+
+			if result != test.expected {
+				t.Errorf("Expected %v, but got %v", test.expected, result)
+			}
+		})
+	}
+}
+
+func TestBoolPostTransform(t *testing.T) {
+	tests := []struct {
+		name      string
+		data      interface{}
+		transform p.PostTransform
+		expectErr bool
+		expected  bool
+	}{
+		{
+			name: "Invert boolean",
+			data: true,
+			transform: func(val any, ctx ParseCtx) error {
+				if b, ok := val.(*bool); ok {
+					*b = !*b
+				}
+				return nil
+			},
+			expected: false,
+		},
+		{
+			name: "No change",
+			data: false,
+			transform: func(val any, ctx ParseCtx) error {
+				return nil
+			},
+			expected: false,
+		},
+		{
+			name: "Invalid transform",
+			data: true,
+			transform: func(val any, ctx ParseCtx) error {
+				return fmt.Errorf("invalid operation")
+			},
+			expectErr: true,
+			expected:  true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			boolProc := Bool().PostTransform(test.transform)
 			var result bool
 			errs := boolProc.Parse(test.data, &result)
 
