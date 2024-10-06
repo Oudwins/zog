@@ -115,6 +115,14 @@ func TestStructOptional(t *testing.T) {
 		Tim time.Time
 	}
 
+	var objSchema = Struct(Schema{
+		"str": String().Required(),
+		"in":  Int().Required(),
+		"fl":  Float().Required(),
+		"bol": Bool().Required(),
+		"tim": Time().Required(),
+	}).Required().Optional() // should override required
+
 	var o TestStruct
 	var m = map[string]any{}
 	dp := p.NewMapDataProvider(m)
@@ -144,7 +152,7 @@ func TestStructMergeSchema(t *testing.T) {
 	assert.Equal(t, o.Age, 20)
 }
 
-func TestStructCustomTest(t *testing.T) {
+func TestStructCustomTestInSchema(t *testing.T) {
 	type CustomStruct struct {
 		Str string `zog:"str"`
 		Num int    `zog:"num"`
@@ -173,6 +181,32 @@ func TestStructCustomTest(t *testing.T) {
 	assert.Nil(t, errs)
 	assert.Equal(t, obj.Str, "hello")
 	assert.Equal(t, obj.Num, 10)
+}
+
+func TestStructCustomTest(t *testing.T) {
+	type CustomStruct struct {
+		Str string `zog:"str"`
+	}
+
+	schema := Struct(Schema{
+		"str": String(),
+	}).Test(TestFunc("customTest", func(val any, ctx ParseCtx) bool {
+		s := val.(*CustomStruct)
+		return s.Str == "valid"
+	}), Message("customTest"))
+
+	var obj CustomStruct
+	data := map[string]any{
+		"str": "invalid",
+	}
+
+	errs := schema.Parse(data, &obj)
+	assert.NotNil(t, errs)
+	assert.Equal(t, "customTest", errs["$root"][0].Code())
+	assert.Equal(t, "customTest", errs["$root"][0].Message())
+	data["str"] = "valid"
+	errs = schema.Parse(data, &obj)
+	assert.Nil(t, errs)
 }
 
 func TestStructFromIssue(t *testing.T) {
@@ -232,3 +266,104 @@ func TestStructPanicsOnSchemaMismatch(t *testing.T) {
 		objSchema.Parse(data, &o)
 	})
 }
+
+func TestStructPreTransforms(t *testing.T) {
+	type TestStruct struct {
+		Value string
+	}
+
+	preTransform := func(val any, ctx ParseCtx) (any, error) {
+		if m, ok := val.(map[string]any); ok {
+			m["value"] = "transformed"
+			return m, nil
+		}
+		return val, nil
+	}
+
+	schema := Struct(Schema{
+		"value": String().Required(),
+	}).PreTransform(preTransform)
+
+	var output TestStruct
+	data := map[string]any{"value": "original"}
+
+	errs := schema.Parse(data, &output)
+	assert.Nil(t, errs)
+	assert.Equal(t, "transformed", output.Value)
+}
+
+func TestStructPostTransforms(t *testing.T) {
+	type TestStruct struct {
+		Value string
+	}
+
+	postTransform := func(val any, ctx ParseCtx) error {
+		if s, ok := val.(*TestStruct); ok {
+			s.Value = "post_" + s.Value
+		}
+		return nil
+	}
+
+	schema := Struct(Schema{
+		"value": String().Required(),
+	}).PostTransform(postTransform)
+
+	var output TestStruct
+	data := map[string]any{"value": "original"}
+
+	errs := schema.Parse(data, &output)
+	assert.Nil(t, errs)
+	assert.Equal(t, "post_original", output.Value)
+}
+
+func TestStructRequired(t *testing.T) {
+	type TestStruct struct {
+		Somefield string
+	}
+
+	schema := Struct(Schema{
+		"somefield": String().Required(),
+	}).Required(Message("custom_required"))
+
+	var output TestStruct
+	data := map[string]any{
+		"somefield": "someValue",
+	}
+
+	errs := schema.Parse(data, &output)
+	assert.Nil(t, errs)
+	assert.Equal(t, "someValue", output.Somefield)
+	var output2 TestStruct
+	errs = schema.Parse(nil, &output2)
+	assert.NotNil(t, errs)
+	assert.NotEmpty(t, errs["$root"])
+	assert.Equal(t, "custom_required", errs["$root"][0].Message())
+}
+
+// func TestStructOptional(t *testing.T) {
+// 	type TestStruct struct {
+// 		OptionalField string
+// 	}
+
+// 	schema := Struct(Schema{
+// 		"optionalField": String().Optional(),
+// 	})
+
+// 	t.Run("Optional field present", func(t *testing.T) {
+// 		var output TestStruct
+// 		data := map[string]any{"optionalField": "present"}
+
+// 		errs := schema.Parse(data, &output)
+// 		assert.Nil(t, errs)
+// 		assert.Equal(t, "present", output.OptionalField)
+// 	})
+
+// 	t.Run("Optional field missing", func(t *testing.T) {
+// 		var output TestStruct
+// 		data := map[string]any{}
+
+// 		errs := schema.Parse(data, &output)
+// 		assert.Nil(t, errs)
+// 		assert.Equal(t, "", output.OptionalField)
+// 	})
+// }
