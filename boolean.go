@@ -34,7 +34,7 @@ func (v *boolProcessor) Parse(data any, dest *bool, options ...ParsingOption) p.
 }
 
 func (v *boolProcessor) process(val any, dest any, path p.PathBuilder, ctx ParseCtx) {
-	primitiveProcessor(val, dest, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, conf.Coercers.Bool, conf.IsZeroValue.Bool)
+	primitiveProcessor(val, dest, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, conf.Coercers.Bool, conf.ParseIsZeroValue.Bool)
 }
 
 // GLOBAL METHODS
