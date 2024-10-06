@@ -50,6 +50,31 @@ func TestBoolParse(t *testing.T) {
 	}
 }
 
+func TestParsingOption(t *testing.T) {
+	t.Run("Parse context is passed to parsing option", func(t *testing.T) {
+		boolProc := Bool()
+		var result bool
+		var contextPassed bool
+
+		// Create a fake parsing option that checks if it receives a ParseCtx
+		fakeOption := func(p *p.ZogParseCtx) {
+			if p != nil {
+				contextPassed = true
+			}
+		}
+
+		errs := boolProc.Parse(true, &result, fakeOption)
+
+		if len(errs) > 0 {
+			t.Errorf("Unexpected errors: %v", errs)
+		}
+
+		if !contextPassed {
+			t.Error("Parse context was not passed to the parsing option")
+		}
+	})
+}
+
 func TestBoolRequired(t *testing.T) {
 	tests := []struct {
 		name      string
