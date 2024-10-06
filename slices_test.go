@@ -1,6 +1,7 @@
 package zog
 
 import (
+	"reflect"
 	"strings"
 	"testing"
 
@@ -8,101 +9,6 @@ import (
 )
 
 // !STRUCTS
-// NOT YET SUPPORTED. Should be simple. Just need to check if its a struct processor in which case we need to build an any data provider
-//
-//	func TestSliceStruct(t *testing.T) {
-//		type TestStruct struct {
-//			T string
-//		}
-//		schema := Slice(Struct(Schema{"t": String().Required()}))
-//		sl := []TestStruct{}
-//		errs := schema.Parse([]any{map[string]any{"t": "a"}, map[string]any{"t": "b"}}, &sl)
-//	}
-
-func TestSlicePassSchema(t *testing.T) {
-
-	s := []string{}
-	schema := Slice(String().Required())
-
-	errs := schema.Parse([]any{"a", "b", "c"}, &s)
-	assert.Nil(t, errs)
-	assert.Len(t, s, 3)
-	assert.Equal(t, s[0], "a")
-	assert.Equal(t, s[1], "b")
-	assert.Equal(t, s[2], "c")
-}
-
-func TestSliceErrors(t *testing.T) {
-	s := []string{}
-	schema := Slice(String().Required().Min(2))
-
-	errs := schema.Parse([]any{"a", "b"}, &s)
-	assert.Len(t, errs, 3)
-	assert.NotEmpty(t, errs["[0]"])
-	assert.NotEmpty(t, errs["[1]"])
-	assert.Empty(t, errs["[2]"])
-}
-
-func TestSliceLen(t *testing.T) {
-	s := []string{}
-
-	els := []string{"a", "b", "c", "d", "e"}
-	schema := Slice(String().Required()).Len(2)
-	errs := schema.Parse(els[:2], &s)
-	assert.Len(t, s, 2)
-	assert.Nil(t, errs)
-	errs = schema.Parse(els[:1], &s)
-	assert.NotEmpty(t, errs)
-
-	// min
-	schema = Slice(String().Required()).Min(2)
-	errs = schema.Parse(els[:4], &s)
-	assert.Nil(t, errs)
-	errs = schema.Parse(els[:1], &s)
-	assert.NotEmpty(t, errs)
-	// max
-	schema = Slice(String().Required()).Max(3)
-	errs = schema.Parse(els[:1], &s)
-	assert.Nil(t, errs)
-	errs = schema.Parse(els[:4], &s)
-	assert.NotNil(t, errs)
-
-}
-
-func TestSliceContains(t *testing.T) {
-
-	s := []string{}
-	items := []string{"a", "b", "c"}
-
-	schema := Slice(String()).Contains("a")
-	errs := schema.Parse(items, &s)
-	assert.Nil(t, errs)
-	assert.Len(t, s, 3)
-
-	schema = Slice(String()).Contains("d")
-	errs = schema.Parse(items, &s)
-	assert.NotEmpty(t, errs)
-}
-
-func TestSliceDefaultCoercing(t *testing.T) {
-	s := []string{}
-	schema := Slice(String())
-	errs := schema.Parse("a", &s)
-	assert.Nil(t, errs)
-	assert.Len(t, s, 1)
-	assert.Equal(t, s[0], "a")
-}
-
-func TestSliceDefault(t *testing.T) {
-	schema := Slice(String()).Default([]string{"a", "b", "c"})
-	s := []string{}
-	err := schema.Parse(nil, &s)
-	assert.Nil(t, err)
-	assert.Len(t, s, 3)
-	assert.Equal(t, s[0], "a")
-	assert.Equal(t, s[1], "b")
-	assert.Equal(t, s[2], "c")
-}
 
 type User struct {
 	Name string
@@ -152,34 +58,78 @@ func TestSliceOfStructs(t *testing.T) {
 	assert.Len(t, errsMap["users[1].name"], 1)
 }
 
-func TestSliceCustomTest(t *testing.T) {
-	input := []string{"abc", "defg", "hijkl"}
-	s := []string{}
-	schema := Slice(String()).Test(TestFunc("custom_test", func(val any, ctx ParseCtx) bool {
-		// Custom test logic here
-		x := val.(*[]string)
-		return assert.Equal(t, input, *x)
-	}))
-	errs := schema.Parse(input, &s)
-	assert.Empty(t, errs)
-}
-
-func TestSliceWithStringInput(t *testing.T) {
-	input := "not a slice"
-	s := []string{}
-	schema := Slice(String()).Required()
-	errs := schema.Parse(input, &s)
-	assert.Nil(t, errs)
-	assert.Equal(t, s, []string{input})
-}
-
 func TestSliceOptionalSlice(t *testing.T) {
 	s := []string{}
-	schema := Slice(String())
+	schema := Slice(String()) // should be optional by default
 
 	errs := schema.Parse(nil, &s)
 	assert.Nil(t, errs)
 	assert.Len(t, s, 0)
+
+	schema.Required().Optional() // should override required
+	errs = schema.Parse(nil, &s)
+	assert.Nil(t, errs)
+	assert.Len(t, s, 0)
+}
+
+func TestSliceRequired(t *testing.T) {
+	s := []string{}
+	customMsg := "This slice is required and cannot be empty"
+	schema := Slice(String()).Required(Message(customMsg))
+
+	// Test with nil value
+	errs := schema.Parse(nil, &s)
+	assert.NotNil(t, errs)
+	assert.Equal(t, customMsg, errs["$root"][0].Message())
+
+	// Test with empty slice
+	errs = schema.Parse([]string{}, &s)
+	assert.Nil(t, errs)
+	assert.Len(t, s, 0)
+
+}
+func TestSliceDefaultCoercing(t *testing.T) {
+	s := []string{}
+	schema := Slice(String())
+	errs := schema.Parse("a", &s)
+	assert.Nil(t, errs)
+	assert.Len(t, s, 1)
+	assert.Equal(t, s[0], "a")
+}
+
+func TestSliceDefault(t *testing.T) {
+	schema := Slice(String()).Default([]string{"a", "b", "c"})
+	s := []string{}
+	err := schema.Parse(nil, &s)
+	assert.Nil(t, err)
+	assert.Len(t, s, 3)
+	assert.Equal(t, s[0], "a")
+	assert.Equal(t, s[1], "b")
+	assert.Equal(t, s[2], "c")
+}
+
+func TestSlicePassSchema(t *testing.T) {
+
+	s := []string{}
+	schema := Slice(String().Required())
+
+	errs := schema.Parse([]any{"a", "b", "c"}, &s)
+	assert.Nil(t, errs)
+	assert.Len(t, s, 3)
+	assert.Equal(t, s[0], "a")
+	assert.Equal(t, s[1], "b")
+	assert.Equal(t, s[2], "c")
+}
+
+func TestSliceErrors(t *testing.T) {
+	s := []string{}
+	schema := Slice(String().Required().Min(2))
+
+	errs := schema.Parse([]any{"a", "b"}, &s)
+	assert.Len(t, errs, 3)
+	assert.NotEmpty(t, errs["[0]"])
+	assert.NotEmpty(t, errs["[1]"])
+	assert.Empty(t, errs["[2]"])
 }
 
 func TestSlicePostTransform(t *testing.T) {
@@ -199,7 +149,7 @@ func TestSlicePostTransform(t *testing.T) {
 	assert.Equal(t, []string{"A", "B", "C"}, s)
 }
 
-func TestSliceCustomPreTransform(t *testing.T) {
+func TestSlicePreTransform(t *testing.T) {
 	s := []string{}
 	schema := Slice(String()).PreTransform(func(data any, ctx ParseCtx) (any, error) {
 		s := data.([]string)
@@ -215,4 +165,66 @@ func TestSliceCustomPreTransform(t *testing.T) {
 	assert.Equal(t, s[0], "A")
 	assert.Equal(t, s[1], "B")
 	assert.Equal(t, s[2], "C")
+}
+
+// VALIDATORS
+
+func TestSliceLen(t *testing.T) {
+	s := []string{}
+
+	els := []string{"a", "b", "c", "d", "e"}
+	schema := Slice(String().Required()).Len(2, Message("custom"))
+	errs := schema.Parse(els[:2], &s)
+	assert.Len(t, s, 2)
+	assert.Nil(t, errs)
+	errs = schema.Parse(els[:1], &s)
+	assert.NotEmpty(t, errs)
+	assert.Equal(t, "custom", errs["$root"][0].Message())
+	// min
+	schema = Slice(String().Required()).Min(2, Message("custom"))
+	errs = schema.Parse(els[:4], &s)
+	assert.Nil(t, errs)
+	errs = schema.Parse(els[:1], &s)
+	assert.NotEmpty(t, errs)
+	assert.Equal(t, "custom", errs["$root"][0].Message())
+	// max
+	schema = Slice(String().Required()).Max(3, Message("custom"))
+	errs = schema.Parse(els[:1], &s)
+	assert.Nil(t, errs)
+	errs = schema.Parse(els[:4], &s)
+	assert.NotNil(t, errs)
+	assert.Equal(t, "custom", errs["$root"][0].Message())
+}
+
+func TestSliceContains(t *testing.T) {
+
+	s := []string{}
+	items := []string{"a", "b", "c"}
+
+	schema := Slice(String()).Contains("a")
+	errs := schema.Parse(items, &s)
+	assert.Nil(t, errs)
+	assert.Len(t, s, 3)
+
+	schema = Slice(String()).Contains("d", Message("custom"))
+	errs = schema.Parse(items, &s)
+	assert.NotEmpty(t, errs)
+	assert.Equal(t, "custom", errs["$root"][0].Message())
+}
+
+func TestSliceCustomTest(t *testing.T) {
+	input := []string{"abc", "defg", "hijkl"}
+	s := []string{}
+	schema := Slice(String()).Test(TestFunc("custom_test", func(val any, ctx ParseCtx) bool {
+		// Custom test logic here
+		x := val.(*[]string)
+		return reflect.DeepEqual(input, *x)
+	}), Message("custom"))
+	errs := schema.Parse(input, &s)
+	assert.Empty(t, errs)
+	assert.Equal(t, input, s)
+	errs = schema.Parse(input[1:], &s)
+	assert.NotEmpty(t, errs)
+	assert.Equal(t, "custom", errs["$root"][0].Message())
+	assert.Equal(t, "custom_test", errs["$root"][0].Code())
 }

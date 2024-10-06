@@ -35,6 +35,7 @@ type structProcessor struct {
 	// catch          any
 }
 
+// WARNING. THIS WILL PROBABLY BE DEPRECATED SOON IN FAVOR OF z.Merge(schema1, schema2)
 func (v *structProcessor) Merge(other *structProcessor) *structProcessor {
 	new := &structProcessor{
 		preTransforms:  make([]p.PreTransform, len(v.preTransforms)+len(other.preTransforms)),

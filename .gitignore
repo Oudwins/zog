@@ -2,3 +2,4 @@ playground
 .idea
 .vscode
 .direnv
+profile.cov
