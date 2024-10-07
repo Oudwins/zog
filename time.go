@@ -102,7 +102,7 @@ func (v *timeProcessor) Test(t p.Test, opts ...TestOption) *timeProcessor {
 // UNIQUE METHODS
 
 // Checks that the value is after the given time
-func (v *timeProcessor) After(t time.Time) *timeProcessor {
+func (v *timeProcessor) After(t time.Time, opts ...TestOption) *timeProcessor {
 	r := p.Test{
 		ErrCode: zconst.ErrCodeAfter,
 		Params:  make(map[string]any, 1),
@@ -115,6 +115,9 @@ func (v *timeProcessor) After(t time.Time) *timeProcessor {
 		},
 	}
 	r.Params[zconst.ErrCodeAfter] = t
+	for _, opt := range opts {
+		opt(&r)
+	}
 	for _, opt := range v.tests {
 		r.ErrFmt = opt.ErrFmt
 	}
@@ -123,7 +126,7 @@ func (v *timeProcessor) After(t time.Time) *timeProcessor {
 }
 
 // Checks that the value is before the given time
-func (v *timeProcessor) Before(t time.Time) *timeProcessor {
+func (v *timeProcessor) Before(t time.Time, opts ...TestOption) *timeProcessor {
 	r :=
 		p.Test{
 			ErrCode: zconst.ErrCodeBefore,
@@ -137,8 +140,8 @@ func (v *timeProcessor) Before(t time.Time) *timeProcessor {
 			},
 		}
 	r.Params[zconst.ErrCodeBefore] = t
-	for _, opt := range v.tests {
-		r.ErrFmt = opt.ErrFmt
+	for _, opt := range opts {
+		opt(&r)
 	}
 	v.tests = append(v.tests, r)
 
@@ -146,7 +149,7 @@ func (v *timeProcessor) Before(t time.Time) *timeProcessor {
 }
 
 // Checks that the value is equal to the given time
-func (v *timeProcessor) EQ(t time.Time) *timeProcessor {
+func (v *timeProcessor) EQ(t time.Time, opts ...TestOption) *timeProcessor {
 	r := p.Test{
 		ErrCode: zconst.ErrCodeEQ,
 		Params:  make(map[string]any, 1),
@@ -159,8 +162,8 @@ func (v *timeProcessor) EQ(t time.Time) *timeProcessor {
 		},
 	}
 	r.Params[zconst.ErrCodeEQ] = t
-	for _, opt := range v.tests {
-		r.ErrFmt = opt.ErrFmt
+	for _, opt := range opts {
+		opt(&r)
 	}
 	v.tests = append(v.tests, r)
 
