@@ -38,9 +38,12 @@ type structProcessor struct {
 // WARNING. THIS WILL PROBABLY BE DEPRECATED SOON IN FAVOR OF z.Merge(schema1, schema2)
 func (v *structProcessor) Merge(other *structProcessor) *structProcessor {
 	new := &structProcessor{
-		preTransforms:  make([]p.PreTransform, len(v.preTransforms)+len(other.preTransforms)),
-		postTransforms: make([]p.PostTransform, len(v.postTransforms)+len(other.postTransforms)),
-		tests:          make([]p.Test, len(v.tests)+len(other.tests)),
+		// preTransforms:  make([]p.PreTransform, len(v.preTransforms)+len(other.preTransforms)),
+		// postTransforms: make([]p.PostTransform, len(v.postTransforms)+len(other.postTransforms)),
+		// tests:          make([]p.Test, len(v.tests)+len(other.tests)),
+		preTransforms:  make([]p.PreTransform, 0),
+		postTransforms: make([]p.PostTransform, 0),
+		tests:          make([]p.Test, 0),
 	}
 	if v.preTransforms != nil {
 		new.preTransforms = append(new.preTransforms, v.preTransforms...)
