@@ -23,3 +23,12 @@ func TestWithErrFormatter(t *testing.T) {
 	ctx.NewError(p.PathBuilder(""), err)
 	assert.Equal(t, "foo", err.Message())
 }
+
+func TestWithMessageFunc(t *testing.T) {
+	var out string
+	err := String().Min(5, MessageFunc(func(e p.ZogError, p p.ParseCtx) {
+		e.SetMessage("HELLO WORLD")
+	})).Parse("1234", &out)
+
+	assert.Equal(t, "HELLO WORLD", err[0].Message())
+}

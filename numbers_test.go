@@ -7,7 +7,7 @@ import (
 )
 
 func TestNumberRequired(t *testing.T) {
-	validator := Int().Required()
+	validator := Int().Required(Message("custom"))
 	var dest int
 	errs := validator.Parse(5, &dest)
 	if len(errs) > 0 {
@@ -19,6 +19,7 @@ func TestNumberRequired(t *testing.T) {
 	if len(errs) == 0 {
 		t.Errorf("Expected errors, got none")
 	}
+	assert.Equal(t, "custom", errs[0].Message())
 }
 
 func TestNumberOptional(t *testing.T) {

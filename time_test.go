@@ -9,12 +9,13 @@ import (
 
 func TestTimeRequired(t *testing.T) {
 	var now time.Time
-	schema := Time().Required()
+	schema := Time().Required(Message("custom"))
 	errs := schema.Parse(time.Now(), &now)
 	assert.Nil(t, errs)
 	now = time.Time{}
 	errs = schema.Parse(nil, &now)
 	assert.Len(t, errs, 1)
+	assert.Equal(t, "custom", errs[0].Message())
 }
 
 func TestTimeOptional(t *testing.T) {
@@ -85,40 +86,43 @@ func TestTimePostTransform(t *testing.T) {
 func TestTimeAfter(t *testing.T) {
 	now := time.Now()
 
-	schema := Time().After(time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC))
+	schema := Time().After(time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC), Message("custom"))
 	errs := schema.Parse(now, &now)
 	assert.Nil(t, errs)
 
 	now = time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)
 	errs = schema.Parse(now, &now)
 	assert.Len(t, errs, 1)
+	assert.Equal(t, "custom", errs[0].Message())
 }
 func TestTimeBefore(t *testing.T) {
 	now := time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)
-	schema := Time().Before(time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC))
+	schema := Time().Before(time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC), Message("custom"))
 	errs := schema.Parse(now, &now)
 	assert.Nil(t, errs)
 	now = time.Date(2022, 1, 1, 0, 0, 0, 0, time.UTC)
 	errs = schema.Parse(now, &now)
 	assert.Len(t, errs, 1)
+	assert.Equal(t, "custom", errs[0].Message())
 }
 
 func TestTimeEQ(t *testing.T) {
 	now := time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)
-	schema := Time().EQ(time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC))
+	schema := Time().EQ(time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC), Message("custom"))
 	errs := schema.Parse(now, &now)
 	assert.Nil(t, errs)
 	now = time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)
 	errs = schema.Parse(now, &now)
 	assert.Len(t, errs, 1)
+	assert.Equal(t, "custom", errs[0].Message())
 }
 
 func TestTimeCustomTest(t *testing.T) {
 	now := time.Now()
 	schema := Time().Test(TestFunc("custom_test", func(val any, ctx ParseCtx) bool {
-		// Custom test logic here
-		return true
-	}))
+		return val != now
+	}), Message("custom"))
 	errs := schema.Parse(now, &now)
-	assert.Nil(t, errs)
+	assert.NotNil(t, errs)
+	assert.Equal(t, "custom", errs[0].Message())
 }
