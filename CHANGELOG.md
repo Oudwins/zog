@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.10.0](https://github.com/Oudwins/zog/compare/v0.9.1...v0.10.0) (2024-10-07)
+
+
+### Features
+
+* add test options to time methods ([42db318](https://github.com/Oudwins/zog/commit/42db318598f4673b8369925d82ebc57b39dba0c5))
+
+
+### Bug Fixes
+
+* boolean false parsing behavior ([#35](https://github.com/Oudwins/zog/issues/35)) ([8670b64](https://github.com/Oudwins/zog/commit/8670b641d53724bed570a89c2c60da8dd1645b13))
+* struct merge panic on merging schemas with transforms ([90ccc88](https://github.com/Oudwins/zog/commit/90ccc885cc4579dcf80bcce3743e0d4992b22d14))
+
 ## [0.9.1](https://github.com/Oudwins/zog/compare/v0.9.0...v0.9.1) (2024-09-26)
 
 
