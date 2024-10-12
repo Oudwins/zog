@@ -59,6 +59,15 @@ func Request(r *http.Request) p.DpFactory {
 	}
 }
 
+// Parses JSON data from request body. Does not support json arrays or primitives
+/*
+- "null" -> nil -> Not accepted by zhttp -> errs["$root"]-> required error
+- "{}" -> okay -> map[]{}
+- "" -> parsing error -> errs["$root"]-> parsing error
+- "1213" -> zhttp -> plain value
+  - struct schema -> hey this valid input
+  - "string is not an object"
+*/
 func parseJson(data io.ReadCloser) (p.DataProvider, *p.ZogErr) {
 	var m map[string]any
 	decod := json.NewDecoder(data)
