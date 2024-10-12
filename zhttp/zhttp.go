@@ -2,6 +2,7 @@ package zhttp
 
 import (
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 	"net/url"
@@ -64,6 +65,9 @@ func parseJson(data io.ReadCloser) (p.DataProvider, *p.ZogErr) {
 	err := decod.Decode(&m)
 	if err != nil {
 		return nil, &p.ZogErr{C: zconst.ErrCodeZHTTPInvalidJSON, Err: err}
+	}
+	if m == nil {
+		return nil, &p.ZogErr{C: zconst.ErrCodeZHTTPInvalidJSON, Err: errors.New("nill json body")}
 	}
 	return p.NewMapDataProvider(m), nil
 }

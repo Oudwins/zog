@@ -203,6 +203,28 @@ func TestParseJsonInvalid(t *testing.T) {
 	assert.Equal(t, zconst.ErrCodeZHTTPInvalidJSON, err.C)
 }
 
+func TestParseJsonWithNilValue(t *testing.T) {
+	jsonData := `null`
+	reader := io.NopCloser(strings.NewReader(jsonData))
+	_, err := parseJson(reader)
+	assert.NotNil(t, err)
+}
+
+func TestParseJsonWithEmptyObject(t *testing.T) {
+	jsonData := `{}`
+	reader := io.NopCloser(strings.NewReader(jsonData))
+	dp, err := parseJson(reader)
+	assert.Nil(t, err)
+	assert.Equal(t, map[string]any{}, dp.GetUnderlying())
+}
+
+func TestParseJsonWithPlainValue(t *testing.T) {
+	jsonData := `"string"`
+	reader := io.NopCloser(strings.NewReader(jsonData))
+	_, err := parseJson(reader)
+	assert.NotNil(t, err)
+}
+
 func TestForm(t *testing.T) {
 	data := url.Values{
 		"name": []string{"John"},
