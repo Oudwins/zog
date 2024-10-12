@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.10.1](https://github.com/Oudwins/zog/compare/v0.10.0...v0.10.1) (2024-10-12)
+
+
+### Bug Fixes
+
+* consider "    " to be a zero value ([d4856e9](https://github.com/Oudwins/zog/commit/d4856e9bb0c973e7df3bb653111bc14a361b69df))
+* zhttp handles input json being null ([9e8b8d3](https://github.com/Oudwins/zog/commit/9e8b8d3696d1c8fb505fcaf590b43c9f4150aa1d))
+
 ## [0.10.0](https://github.com/Oudwins/zog/compare/v0.9.1...v0.10.0) (2024-10-07)
 
 
