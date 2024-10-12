@@ -1,6 +1,8 @@
 package conf
 
 import (
+	"strings"
+
 	p "github.com/Oudwins/zog/internals"
 )
 
@@ -27,7 +29,14 @@ var DefaultParseIsZeroValue = struct {
 		_, ok := val.(bool)
 		return !ok
 	},
-	String:  p.IsZeroValue,
+	String: func(val any) bool {
+		s, ok := val.(string)
+		if ok {
+			// Considers "   " to be a zero value
+			return p.IsZeroValue(strings.TrimSpace(s))
+		}
+		return p.IsZeroValue(val)
+	},
 	Int:     p.IsZeroValue,
 	Float64: p.IsZeroValue,
 	Time:    p.IsZeroValue,
