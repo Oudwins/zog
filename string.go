@@ -336,3 +336,22 @@ func (v *stringProcessor) UUID(options ...TestOption) *stringProcessor {
 	v.tests = append(v.tests, t)
 	return v
 }
+
+// checks that value matches to regex
+func (v *stringProcessor) Regex(regex *regexp.Regexp, options ...TestOption) *stringProcessor {
+	t := p.Test{
+		ErrCode: zconst.ErrCodeRegex,
+		ValidateFunc: func(v any, ctx ParseCtx) bool {
+			s, ok := v.(string)
+			if !ok {
+				return false
+			}
+			return regex.MatchString(s)
+		},
+	}
+	for _, opt := range options {
+		opt(&t)
+	}
+	v.tests = append(v.tests, t)
+	return v
+}
