@@ -42,6 +42,7 @@ const (
 
 	// string only
 	ErrCodeEmail           ZogErrCode = "email"
+	ErrCodeUUID            ZogErrCode = "uuid"
 	ErrCodeURL             ZogErrCode = "url"
 	ErrCodeHasPrefix       ZogErrCode = "prefix"
 	ErrCodeHasSuffix       ZogErrCode = "suffix"

@@ -12,6 +12,7 @@ import (
 
 var (
 	emailRegex = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
+	uuidRegex  = regexp.MustCompile("^[0-9a-fA-F]{8}\\b-[0-9a-fA-F]{4}\\b-[0-9a-fA-F]{4}\\b-[0-9a-fA-F]{4}\\b-[0-9a-fA-F]{12}$")
 )
 
 type stringProcessor struct {
@@ -310,6 +311,25 @@ func (v *stringProcessor) ContainsSpecial(options ...TestOption) *stringProcesso
 				return false
 			},
 		}
+	for _, opt := range options {
+		opt(&t)
+	}
+	v.tests = append(v.tests, t)
+	return v
+}
+
+// checks that the value is a valid uuid
+func (v *stringProcessor) UUID(options ...TestOption) *stringProcessor {
+	t := p.Test{
+		ErrCode: zconst.ErrCodeUUID,
+		ValidateFunc: func(v any, ctx ParseCtx) bool {
+			uuid, ok := v.(string)
+			if !ok {
+				return false
+			}
+			return uuidRegex.MatchString(uuid)
+		},
+	}
 	for _, opt := range options {
 		opt(&t)
 	}

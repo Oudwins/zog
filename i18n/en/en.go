@@ -11,6 +11,7 @@ var Map zconst.LangMap = map[zconst.ZogType]map[zconst.ZogErrCode]string{
 		zconst.ErrCodeMax:             "string must contain at most {{max}} character(s)",
 		zconst.ErrCodeLen:             "string must be exactly {{len}} character(s)",
 		zconst.ErrCodeEmail:           "must be a valid email",
+		zconst.ErrCodeUUID:            "must be a valid UUID",
 		zconst.ErrCodeURL:             "must be a valid URL",
 		zconst.ErrCodeHasPrefix:       "string must start with {{prefix}}",
 		zconst.ErrCodeHasSuffix:       "string must end with {{suffix}}",
