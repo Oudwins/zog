@@ -11,7 +11,7 @@ var Map zconst.LangMap = map[zconst.ZogType]map[zconst.ZogErrCode]string{
 		zconst.ErrCodeMax:             "Cadena debe contener como máximo {{max}} caracter(es)",
 		zconst.ErrCodeLen:             "Cadena debe tener exactamente {{len}} caracter(es)",
 		zconst.ErrCodeEmail:           "Debe ser un correo electrónico válido",
-		zconst.ErrCodeUUID:            "Debe ser una UUID válida",
+		zconst.ErrCodeUUID:            "Debe ser un UUID válido",
 		zconst.ErrCodeRegex:           "Cadena no es válida",
 		zconst.ErrCodeURL:             "Debe ser una URL válida",
 		zconst.ErrCodeHasPrefix:       "Cadena debe comenzar con {{prefix}}",
