@@ -43,7 +43,7 @@ const (
 	// string only
 	ErrCodeEmail           ZogErrCode = "email"
 	ErrCodeUUID            ZogErrCode = "uuid"
-	ErrCodeRegex           ZogErrCode = "regex"
+	ErrCodeMatch           ZogErrCode = "match"
 	ErrCodeURL             ZogErrCode = "url"
 	ErrCodeHasPrefix       ZogErrCode = "prefix"
 	ErrCodeHasSuffix       ZogErrCode = "suffix"

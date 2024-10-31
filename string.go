@@ -338,9 +338,10 @@ func (v *stringProcessor) UUID(options ...TestOption) *stringProcessor {
 }
 
 // checks that value matches to regex
-func (v *stringProcessor) Regex(regex *regexp.Regexp, options ...TestOption) *stringProcessor {
+func (v *stringProcessor) Match(regex *regexp.Regexp, options ...TestOption) *stringProcessor {
 	t := p.Test{
-		ErrCode: zconst.ErrCodeRegex,
+		ErrCode: zconst.ErrCodeMatch,
+		Params:  make(map[string]any, 1),
 		ValidateFunc: func(v any, ctx ParseCtx) bool {
 			s, ok := v.(string)
 			if !ok {
@@ -349,6 +350,7 @@ func (v *stringProcessor) Regex(regex *regexp.Regexp, options ...TestOption) *st
 			return regex.MatchString(s)
 		},
 	}
+	t.Params[zconst.ErrCodeMatch] = regex
 	for _, opt := range options {
 		opt(&t)
 	}

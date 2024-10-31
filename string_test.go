@@ -336,7 +336,7 @@ func TestStringUUID(t *testing.T) {
 
 func TestStringRegex(t *testing.T) {
 	r := regexp.MustCompile("^[0-9]{2}$")
-	field := String().Regex(r, Message("custom regex msg"))
+	field := String().Match(r, Message("custom regex msg"))
 	var dest string
 
 	errs := field.Parse("f81d4fae-7dec-11d0-a765-00a0c91e", &dest)
