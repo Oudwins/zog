@@ -1,6 +1,7 @@
 package zog
 
 import (
+	"regexp"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -314,4 +315,35 @@ func TestStringOneOf(t *testing.T) {
 	errs = field.Parse(nil, &dest)
 	assert.NotEmpty(t, errs)
 	assert.Equal(t, "custom required", errs[0].Message())
+}
+
+func TestStringUUID(t *testing.T) {
+	field := String().UUID(Message("custom uuid msg"))
+	var dest string
+
+	errs := field.Parse("f81d4fae-7dec-11d0-a765-00a0c91e", &dest)
+	assert.NotEmpty(t, errs)
+	assert.Equal(t, "custom uuid msg", errs[0].Message())
+
+	errs = field.Parse("f81d4fae-7dec-11d0-a765-00a0c91e6bf6", &dest)
+	assert.Empty(t, errs)
+	assert.Equal(t, "f81d4fae-7dec-11d0-a765-00a0c91e6bf6", dest)
+
+	errs = field.Parse("F81D4FAE-7DEC-11D0-A765-00A0C91E6BF6", &dest)
+	assert.Empty(t, errs)
+	assert.Equal(t, "F81D4FAE-7DEC-11D0-A765-00A0C91E6BF6", dest)
+}
+
+func TestStringRegex(t *testing.T) {
+	r := regexp.MustCompile("^[0-9]{2}$")
+	field := String().Match(r, Message("custom regex msg"))
+	var dest string
+
+	errs := field.Parse("f81d4fae-7dec-11d0-a765-00a0c91e", &dest)
+	assert.NotEmpty(t, errs)
+	assert.Equal(t, "custom regex msg", errs[0].Message())
+
+	errs = field.Parse("00", &dest)
+	assert.Empty(t, errs)
+	assert.Equal(t, "00", dest)
 }
