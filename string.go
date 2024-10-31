@@ -350,7 +350,7 @@ func (v *stringProcessor) Match(regex *regexp.Regexp, options ...TestOption) *st
 			return regex.MatchString(s)
 		},
 	}
-	t.Params[zconst.ErrCodeMatch] = regex
+	t.Params[zconst.ErrCodeMatch] = regex.String()
 	for _, opt := range options {
 		opt(&t)
 	}
