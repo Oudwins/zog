@@ -1,7 +1,5 @@
 package internals
 
-import "strings"
-
 type PathBuilder string
 
 func (p PathBuilder) Push(path string) PathBuilder {
@@ -12,9 +10,6 @@ func (p PathBuilder) Push(path string) PathBuilder {
 		return p + PathBuilder(path)
 	}
 	return p + PathBuilder("."+path)
-}
-func (p PathBuilder) Pop() PathBuilder {
-	return p[:strings.LastIndex(string(p), ".")]
 }
 
 func (p PathBuilder) String() string {

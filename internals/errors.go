@@ -159,10 +159,3 @@ func (s *ErrsMap) Add(p PathBuilder, err ZogError) {
 func (s ErrsMap) IsEmpty() bool {
 	return s.M == nil
 }
-
-func (s ErrsMap) First() ZogError {
-	if s.IsEmpty() {
-		return nil
-	}
-	return s.M[ERROR_KEY_FIRST][0]
-}
