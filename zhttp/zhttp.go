@@ -88,12 +88,3 @@ func form(data url.Values) p.DataProvider {
 // func params(data url.Values) p.DataProvider {
 // 	return form(data)
 // }
-
-// DEPRECATED: DO NOT USE WILL BE REMOVED
-func NewRequestDataProvider(r *http.Request) (urlDataProvider, error) {
-	err := r.ParseForm()
-	if err != nil {
-		return urlDataProvider{}, err
-	}
-	return urlDataProvider{Data: r.Form}, nil
-}
