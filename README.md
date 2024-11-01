@@ -152,6 +152,7 @@ type User2 struct {
   - The refine method for providing a custom validation function is renamed to `schema.Test()`
   - schemas are optional by default (in zod they are required)
   - The `z.Enum()` type from zod is removed in favor of `z.String().OneOf()` and is only supported for strings and numbers
+  - `string().regex` is renamed to `z.String().Match()` as that is in line with the regexp methods from the standard library (i.e `regexp.Match` and `regexp.MatchString()`)
 
 ## Limitations
 
@@ -325,8 +326,9 @@ type ZogError interface {
 	Params() map[string]any // params for the error as defined by
 	Message() string
 	SetMessage(string)
-	Error() string // returns the string of the wrapped error
-	Unwrap() error // returns the wrapped error
+	Error() string // returns the string representation of the ZogError. The same as String(). Printf will not print correctly otherwise.
+  String() string // returns the string representation of the ZogError. Example: "ZogError{Code: '', ...}"
+	Unwrap() error // returns the wrapped error.
 }
 ```
 
