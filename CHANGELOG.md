@@ -1,5 +1,34 @@
 # Changelog
 
+## [0.11.0](https://github.com/Oudwins/zog/compare/v0.10.0...v0.11.0) (2024-11-01)
+
+
+### ⚠ BREAKING CHANGES
+
+* zhttp.NewRequestDataProvider() which was deprecated is now removed. Please use zhttp.Request() instead
+* ZogError.Error() no longer proxies to the wrapped error. Now it returns a string representation of the ZogError. You can still access Wrapped error through Unwrap()
+
+### Features
+
+* Add string regex and uuid validators  ([#40](https://github.com/Oudwins/zog/issues/40)) ([8853d76](https://github.com/Oudwins/zog/commit/8853d76010adf109a9e912c306ee4811d3b62155))
+* error printing ([#43](https://github.com/Oudwins/zog/issues/43)) ([5446312](https://github.com/Oudwins/zog/commit/54463121bb9425f20e2522b790629ac1894f5268))
+
+
+### Bug Fixes
+
+* consider "    " to be a zero value ([d4856e9](https://github.com/Oudwins/zog/commit/d4856e9bb0c973e7df3bb653111bc14a361b69df))
+* zhttp handles input json being null ([9e8b8d3](https://github.com/Oudwins/zog/commit/9e8b8d3696d1c8fb505fcaf590b43c9f4150aa1d))
+
+
+### Miscellaneous Chores
+
+* release ([6bfc8cc](https://github.com/Oudwins/zog/commit/6bfc8cc22ea9cc76bd26e72dfa64dc5e639bd3a7))
+
+
+### Code Refactoring
+
+* removed zhttp new data provider ([86d4e6f](https://github.com/Oudwins/zog/commit/86d4e6f9c10654af11f1a7e4d0d1ba7ccddd5245))
+
 ## [0.10.0](https://github.com/Oudwins/zog/compare/v0.9.1...v0.10.0) (2024-10-07)
 
 
