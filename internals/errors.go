@@ -1,27 +1,39 @@
 package internals
 
 import (
+	"fmt"
+
 	zconst "github.com/Oudwins/zog/zconst"
 )
 
 // Error interface returned from all processors
 type ZogError interface {
+	// returns the error code for the error. This is a unique identifier for the error. Generally also the ID for the Test that caused the error.
 	Code() zconst.ZogErrCode
-	Value() any    // the error value
-	Dtype() string // destination type
+	// returns the data value that caused the error.
+	// if using Schema.Parse(data, dest) then this will be the value of data.
+	Value() any
+	// Returns destination type. i.e The zconst.ZogType of the value that was validated.
+	// if Using Schema.Parse(data, dest) then this will be the type of dest.
+	Dtype() string
+	// returns the params map for the error. Taken from the Test that caused the error. This may be nil if Test has no params.
 	Params() map[string]any
+	// returns the human readable, user-friendly message for the error. This is safe to expose to the user.
 	Message() string
+	// sets the human readable, user-friendly message for the error. This is safe to expose to the user.
 	SetMessage(string)
-	// returns the string of the wrapped error if any
+	// returns the string representation of the ZogError (same as String())
 	Error() string
-	// returns the wrapped error if any
+	// returns the wrapped error or nil if none
 	Unwrap() error
+	// returns the string representation of the ZogError (same as Error())
+	String() string
 }
 
 // this is the function that formats the error message given a zog error
 type ErrFmtFunc = func(e ZogError, p ParseCtx)
 
-// Error implementation
+// INTERNAL ONLY: Error implementation
 type ZogErr struct {
 	C       zconst.ZogErrCode // error code
 	ParamsM map[string]any    // params for the error (e.g. min, max, len, etc)
@@ -69,14 +81,20 @@ func (e *ZogErr) SetMessage(msg string) {
 	e.Msg = msg
 }
 func (e *ZogErr) Error() string {
-	return e.Err.Error()
+	return e.String()
 }
 func (e *ZogErr) Unwrap() error {
 	return e.Err
 }
 
-// list of errors. This is returned for each specific processor
+func (e *ZogErr) String() string {
+	return fmt.Sprintf("ZogError{Code: %v, Params: %v, Type: %v, Value: %v, Message: '%v', Error: %v}", SafeString(e.C), SafeString(e.ParamsM), SafeString(e.Typ), SafeString(e.Val), SafeString(e.Msg), SafeError(e.Err))
+}
+
+// list of errors. This is returned by processors for simple types (e.g. strings, numbers, booleans)
 type ZogErrList = []ZogError
+
+// map of errors. This is returned by processors for complex types (e.g. maps, slices, structs)
 type ZogErrMap = map[string][]ZogError
 
 // INTERNAL ONLY: Interface used to add errors during parsing & validation. It represents a group of errors (map or slice)
