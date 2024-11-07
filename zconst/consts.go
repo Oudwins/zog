@@ -58,8 +58,7 @@ const (
 	ErrCodeTrue  ZogErrCode = "true"
 	ErrCodeFalse ZogErrCode = "false"
 
-	// Structs only
-	// ZHTTP ERRORS FOR STRUCTS ONLY
+	// ZHTTP ERRORS
 	ErrCodeZHTTPInvalidJSON  ZogErrCode = "invalid_json"  // invalid json body
 	ErrCodeZHTTPInvalidForm  ZogErrCode = "invalid_form"  // invalid form data
 	ErrCodeZHTTPInvalidQuery ZogErrCode = "invalid_query" // invalid query params

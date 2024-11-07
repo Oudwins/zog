@@ -15,7 +15,19 @@ func TestNumberRequired(t *testing.T) {
 	}
 	assert.Equal(t, 5, dest)
 	dest = 0
-	errs = validator.Parse(0, &dest)
+	errs = validator.Parse("", &dest)
+	if len(errs) == 0 {
+		t.Errorf("Expected errors, got none")
+	}
+	assert.Equal(t, "custom", errs[0].Message())
+
+	errs = validator.Parse("     ", &dest)
+	if len(errs) == 0 {
+		t.Errorf("Expected errors, got none")
+	}
+	assert.Equal(t, "custom", errs[0].Message())
+
+	errs = validator.Parse(nil, &dest)
 	if len(errs) == 0 {
 		t.Errorf("Expected errors, got none")
 	}

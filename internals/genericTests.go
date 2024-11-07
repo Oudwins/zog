@@ -7,12 +7,12 @@ import (
 	"golang.org/x/exp/constraints"
 )
 
+// returns a required test to be used for processor.Required() method
 func Required() Test {
 	t := Test{
 		ErrCode: zconst.ErrCodeRequired,
-		ValidateFunc: func(val any, ctx ParseCtx) bool {
-			return !IsZeroValue(val)
-		},
+		// this is not an accident. required is only a test because it makes it easier to handle error messages. But the function to check if the value is a zero value is out of the scope of this test.
+		ValidateFunc: nil,
 	}
 	return t
 }

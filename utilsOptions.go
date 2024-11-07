@@ -6,6 +6,7 @@ import (
 
 type TestOption = func(test *p.Test)
 
+// Message is a function that allows you to set a custom message for the test.
 func Message(msg string) TestOption {
 	return func(test *p.Test) {
 		test.ErrFmt = func(e p.ZogError, p ParseCtx) {
@@ -14,6 +15,7 @@ func Message(msg string) TestOption {
 	}
 }
 
+// MessageFunc is a function that allows you to set a custom message formatter for the test.
 func MessageFunc(fn p.ErrFmtFunc) TestOption {
 	return func(test *p.Test) {
 		test.ErrFmt = fn

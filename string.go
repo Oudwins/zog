@@ -44,7 +44,7 @@ func (v *stringProcessor) Parse(data any, dest *string, options ...ParsingOption
 }
 
 func (v *stringProcessor) process(val any, dest any, path p.PathBuilder, ctx ParseCtx) {
-	primitiveProcessor(val, dest, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, conf.Coercers.String, conf.ParseIsZeroValue.String)
+	primitiveProcessor(val, dest, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, conf.Coercers.String, p.IsParseZeroValue)
 }
 
 // Adds pretransform function to schema

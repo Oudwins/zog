@@ -48,8 +48,10 @@ func NewParseCtx(errs ZogErrors, fmter ErrFmtFunc) *ZogParseCtx {
 	}
 }
 
+// TestFunc is a function that takes the data as input and returns a boolean indicating if it is valid or not
 type TestFunc = func(val any, ctx ParseCtx) bool
 
+// Test is a struct that represents an individual validation. For example `z.String().Min(3)` is a test that checks if the string is at least 3 characters long.
 type Test struct {
 	ErrCode      zconst.ZogErrCode
 	Params       map[string]any
