@@ -127,7 +127,7 @@ const (
 
 ## Custom Error Messages
 
-Zog has multiple ways of customizing error messages as well as support for [i18n](/i18n). Here is a list of the ways you can customize error messages:
+Zog has multiple ways of customizing error messages as well as support for [i18n](/packages/i18n). Here is a list of the ways you can customize error messages:
 
 #### **1. Using the z.Message() function**
 
@@ -207,9 +207,9 @@ conf.ErrorFormatter = func(e p.ZogError, p z.ParseCtx) {
 }
 ```
 
-#### **6. Use the [i18n](/i18n) package**
+#### **6. Use the [i18n](/packages/i18n) package**
 
-Really this only makes sense if you are doing i18n. Please please check out the [i18n](/i18n) section for more information.
+Really this only makes sense if you are doing i18n. Please please check out the [i18n](/packages/i18n) section for more information.
 
 ## Sanitizing Errors
 
