@@ -37,7 +37,7 @@ func (v *timeProcessor) Parse(data any, dest *time.Time, options ...ParsingOptio
 }
 
 func (v *timeProcessor) process(val any, dest any, path p.PathBuilder, ctx ParseCtx) {
-	primitiveProcessor(val, dest, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, conf.Coercers.Time, conf.ParseIsZeroValue.Time)
+	primitiveProcessor(val, dest, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, conf.Coercers.Time, p.IsParseZeroValue)
 }
 
 // Adds pretransform function to schema

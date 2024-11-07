@@ -34,7 +34,7 @@ func (v *boolProcessor) Parse(data any, dest *bool, options ...ParsingOption) p.
 }
 
 func (v *boolProcessor) process(val any, dest any, path p.PathBuilder, ctx ParseCtx) {
-	primitiveProcessor(val, dest, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, conf.Coercers.Bool, conf.ParseIsZeroValue.Bool)
+	primitiveProcessor(val, dest, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, conf.Coercers.Bool, p.IsParseZeroValue)
 }
 
 // GLOBAL METHODS
@@ -59,8 +59,11 @@ func (v *boolProcessor) PostTransform(transform p.PostTransform) *boolProcessor 
 
 // ! MODIFIERS
 // marks field as required
-func (v *boolProcessor) Required() *boolProcessor {
+func (v *boolProcessor) Required(options ...TestOption) *boolProcessor {
 	r := p.Required()
+	for _, opt := range options {
+		opt(&r)
+	}
 	v.required = &r
 	return v
 }

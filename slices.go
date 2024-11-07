@@ -69,7 +69,7 @@ func (v *sliceProcessor) process(val any, dest any, path p.PathBuilder, ctx Pars
 	}()
 
 	// 2. cast data to string & handle default/required
-	isZeroVal := conf.ParseIsZeroValue.Slice(val)
+	isZeroVal := p.IsParseZeroValue(val, ctx)
 	destVal := reflect.ValueOf(dest).Elem()
 	var refVal reflect.Value
 
