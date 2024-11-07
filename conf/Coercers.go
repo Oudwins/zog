@@ -107,6 +107,10 @@ var DefaultCoercers = struct {
 				return nil, fmt.Errorf("failed to parse time: %v", err)
 			}
 			return tim, nil
+		case int:
+			return time.Unix(int64(v), 0), nil
+		case int64:
+			return time.Unix(v, 0), nil
 		default:
 			return nil, fmt.Errorf("input data is an unsupported type to coerce to time.Time: %v", data)
 		}

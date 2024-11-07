@@ -117,6 +117,7 @@ func TestTimeCoercer(t *testing.T) {
 		{input: now, want: now},
 		{input: "2024-09-09T00:00:00.000Z", want: time.Date(2024, 9, 9, 0, 0, 0, 0, time.UTC)},
 		{input: 1.23, err: true},
+		{input: 1733007600, want: time.Unix(1733007600, 0)},
 	}
 
 	for _, test := range tests {
