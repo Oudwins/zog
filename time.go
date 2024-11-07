@@ -51,6 +51,27 @@ var Time TimeFunc = func(opts ...SchemaOption) *timeProcessor {
 	return t
 }
 
+// Sets the format function for the time schema
+// Usage is:
+//
+//	z.Time(z.Time.FormatFunc(func(data string) (time.Time, error) {
+//		return time.Parse(time.RFC3339, data)
+//	}))
+func (t TimeFunc) FormatFunc(format func(data string) (time.Time, error)) SchemaOption {
+	return func(s ZogSchema) {
+		s.setCoercer(conf.TimeCoercerFactory(format))
+	}
+}
+
+// Sets the string format for the  time schema
+// Usage is:
+// z.Time(z.Time.Format(time.RFC3339))
+func (t TimeFunc) Format(format string) SchemaOption {
+	return t.FormatFunc(func(data string) (time.Time, error) {
+		return time.Parse(format, data)
+	})
+}
+
 // Parses the data into the destination time.Time. Returns a list of errors
 func (v *timeProcessor) Parse(data any, dest *time.Time, options ...ParsingOption) p.ZogErrList {
 	errs := p.NewErrsList()
