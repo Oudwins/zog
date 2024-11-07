@@ -11,19 +11,7 @@ import (
 	"github.com/Oudwins/zog/zconst"
 )
 
-type StructParser interface {
-	Parse(val p.DataProvider, destPtr any) p.ZogErrMap
-}
-
-// A map of field names to zog schemas
-type Schema map[string]Processor
-
-// Returns a new structProcessor which can be used to parse input data into a struct
-func Struct(schema Schema) *structProcessor {
-	return &structProcessor{
-		schema: schema,
-	}
-}
+var _ ZogSchema = &structProcessor{}
 
 type structProcessor struct {
 	preTransforms  []p.PreTransform
@@ -35,55 +23,14 @@ type structProcessor struct {
 	// catch          any
 }
 
-// WARNING. THIS WILL PROBABLY BE DEPRECATED SOON IN FAVOR OF z.Merge(schema1, schema2)
-func (v *structProcessor) Merge(other *structProcessor) *structProcessor {
-	new := &structProcessor{
-		// preTransforms:  make([]p.PreTransform, len(v.preTransforms)+len(other.preTransforms)),
-		// postTransforms: make([]p.PostTransform, len(v.postTransforms)+len(other.postTransforms)),
-		// tests:          make([]p.Test, len(v.tests)+len(other.tests)),
-		preTransforms:  make([]p.PreTransform, 0),
-		postTransforms: make([]p.PostTransform, 0),
-		tests:          make([]p.Test, 0),
-	}
-	if v.preTransforms != nil {
-		new.preTransforms = append(new.preTransforms, v.preTransforms...)
-	}
-	if other.preTransforms != nil {
-		new.preTransforms = append(new.preTransforms, other.preTransforms...)
-	}
-
-	if v.postTransforms != nil {
-		new.postTransforms = append(new.postTransforms, v.postTransforms...)
-	}
-	if other.postTransforms != nil {
-		new.postTransforms = append(new.postTransforms, other.postTransforms...)
-	}
-
-	if v.tests != nil {
-		new.tests = append(new.tests, v.tests...)
-	}
-	if other.tests != nil {
-		new.tests = append(new.tests, other.tests...)
-	}
-	new.required = v.required
-	new.schema = Schema{}
-	maps.Copy(new.schema, v.schema)
-	maps.Copy(new.schema, other.schema)
-	return new
+// Returns the type of the schema
+func (v *structProcessor) getType() zconst.ZogType {
+	return zconst.TypeStruct
 }
 
-// Parses val into destPtr and validates each field based on the schema. Only supports val = map[string]any & dest = &struct
-func (v *structProcessor) Parse(data any, destPtr any, options ...ParsingOption) p.ZogErrMap {
-	errs := p.NewErrsMap()
-	ctx := p.NewParseCtx(errs, conf.ErrorFormatter)
-	for _, opt := range options {
-		opt(ctx)
-	}
-	path := p.PathBuilder("")
-
-	v.process(data, destPtr, path, ctx)
-
-	return errs.M
+// Sets the coercer for the schema
+func (v *structProcessor) setCoercer(c conf.CoercerFunc) {
+	// noop
 }
 
 func (v *structProcessor) process(data any, dest any, path p.PathBuilder, ctx ParseCtx) {
@@ -179,6 +126,69 @@ func (v *structProcessor) process(data any, dest any, path p.PathBuilder, ctx Pa
 		}
 	}
 
+}
+
+// ! USER FACING FUNCTIONS
+
+// A map of field names to zog schemas
+type Schema map[string]ZogSchema
+
+// Returns a new structProcessor which can be used to parse input data into a struct
+func Struct(schema Schema) *structProcessor {
+	return &structProcessor{
+		schema: schema,
+	}
+}
+
+// WARNING. THIS WILL PROBABLY BE DEPRECATED SOON IN FAVOR OF z.Merge(schema1, schema2)
+func (v *structProcessor) Merge(other *structProcessor) *structProcessor {
+	new := &structProcessor{
+		// preTransforms:  make([]p.PreTransform, len(v.preTransforms)+len(other.preTransforms)),
+		// postTransforms: make([]p.PostTransform, len(v.postTransforms)+len(other.postTransforms)),
+		// tests:          make([]p.Test, len(v.tests)+len(other.tests)),
+		preTransforms:  make([]p.PreTransform, 0),
+		postTransforms: make([]p.PostTransform, 0),
+		tests:          make([]p.Test, 0),
+	}
+	if v.preTransforms != nil {
+		new.preTransforms = append(new.preTransforms, v.preTransforms...)
+	}
+	if other.preTransforms != nil {
+		new.preTransforms = append(new.preTransforms, other.preTransforms...)
+	}
+
+	if v.postTransforms != nil {
+		new.postTransforms = append(new.postTransforms, v.postTransforms...)
+	}
+	if other.postTransforms != nil {
+		new.postTransforms = append(new.postTransforms, other.postTransforms...)
+	}
+
+	if v.tests != nil {
+		new.tests = append(new.tests, v.tests...)
+	}
+	if other.tests != nil {
+		new.tests = append(new.tests, other.tests...)
+	}
+	new.required = v.required
+	new.schema = Schema{}
+	maps.Copy(new.schema, v.schema)
+	maps.Copy(new.schema, other.schema)
+	return new
+}
+
+// Parses val into destPtr and validates each field based on the schema. Only supports val = map[string]any & dest = &struct
+func (v *structProcessor) Parse(data any, destPtr any, options ...ParsingOption) p.ZogErrMap {
+	errs := p.NewErrsMap()
+	ctx := p.NewParseCtx(errs, conf.ErrorFormatter)
+	for _, opt := range options {
+		opt(ctx)
+	}
+	path := p.PathBuilder("")
+
+	v.process(data, destPtr, path, ctx)
+
+	return errs.M
 }
 
 // Add a pretransform step to the schema

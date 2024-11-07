@@ -3,7 +3,10 @@ package zog
 import (
 	"github.com/Oudwins/zog/conf"
 	p "github.com/Oudwins/zog/internals"
+	"github.com/Oudwins/zog/zconst"
 )
+
+var _ ZogSchema = &boolProcessor{}
 
 type boolProcessor struct {
 	preTransforms  []p.PreTransform
@@ -12,12 +15,37 @@ type boolProcessor struct {
 	defaultVal     *bool
 	required       *p.Test
 	catch          *bool
+	coercer        conf.CoercerFunc
 }
 
-func Bool() *boolProcessor {
-	return &boolProcessor{
-		tests: []p.Test{},
+// ! INTERNALS
+
+// Returns the type of the schema
+func (v *boolProcessor) getType() zconst.ZogType {
+	return zconst.TypeBool
+}
+
+// Sets the coercer for the schema
+func (v *boolProcessor) setCoercer(c conf.CoercerFunc) {
+	v.coercer = c
+}
+
+// Internal function to process the data
+func (v *boolProcessor) process(val any, dest any, path p.PathBuilder, ctx ParseCtx) {
+	primitiveProcessor(val, dest, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, conf.Coercers.Bool, p.IsParseZeroValue)
+}
+
+// ! USER FACING FUNCTIONS
+
+// Returns a new Bool Schema
+func Bool(opts ...SchemaOption) *boolProcessor {
+	b := &boolProcessor{
+		coercer: conf.Coercers.Bool, // default coercer
 	}
+	for _, opt := range opts {
+		opt(b)
+	}
+	return b
 }
 
 func (v *boolProcessor) Parse(data any, dest *bool, options ...ParsingOption) p.ZogErrList {
@@ -31,10 +59,6 @@ func (v *boolProcessor) Parse(data any, dest *bool, options ...ParsingOption) p.
 	v.process(data, dest, path, ctx)
 
 	return errs.List
-}
-
-func (v *boolProcessor) process(val any, dest any, path p.PathBuilder, ctx ParseCtx) {
-	primitiveProcessor(val, dest, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, conf.Coercers.Bool, p.IsParseZeroValue)
 }
 
 // GLOBAL METHODS

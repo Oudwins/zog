@@ -22,14 +22,40 @@ type stringProcessor struct {
 	defaultVal     *string
 	required       *p.Test
 	catch          *string
+	coercer        conf.CoercerFunc
 }
 
-func String() *stringProcessor {
-	return &stringProcessor{
-		tests: []p.Test{},
+// ! INTERNALS
+
+// Internal function to process the data
+func (v *stringProcessor) process(val any, dest any, path p.PathBuilder, ctx ParseCtx) {
+	primitiveProcessor(val, dest, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, v.coercer, p.IsParseZeroValue)
+}
+
+// Returns the type of the schema
+func (v *stringProcessor) getType() zconst.ZogType {
+	return zconst.TypeString
+}
+
+// Sets the coercer for the schema
+func (v *stringProcessor) setCoercer(c conf.CoercerFunc) {
+	v.coercer = c
+}
+
+// ! USER FACING FUNCTIONS
+
+// Returns a new String Schema
+func String(opts ...SchemaOption) *stringProcessor {
+	s := &stringProcessor{
+		coercer: conf.Coercers.String, // default coercer
 	}
+	for _, opt := range opts {
+		opt(s)
+	}
+	return s
 }
 
+// Parses the data into the destination string. Returns a list of errors
 func (v *stringProcessor) Parse(data any, dest *string, options ...ParsingOption) p.ZogErrList {
 	errs := p.NewErrsList()
 	ctx := p.NewParseCtx(errs, conf.ErrorFormatter)
@@ -41,10 +67,6 @@ func (v *stringProcessor) Parse(data any, dest *string, options ...ParsingOption
 	v.process(data, dest, path, ctx)
 
 	return errs.List
-}
-
-func (v *stringProcessor) process(val any, dest any, path p.PathBuilder, ctx ParseCtx) {
-	primitiveProcessor(val, dest, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, conf.Coercers.String, p.IsParseZeroValue)
 }
 
 // Adds pretransform function to schema
@@ -95,7 +117,21 @@ func (v *stringProcessor) Catch(val string) *stringProcessor {
 	return v
 }
 
-// ! VALIDATORS
+// ! PRETRANSFORMS
+
+// PreTransform: trims the input data of whitespace if it is a string
+func (v *stringProcessor) Trim() *stringProcessor {
+	v.preTransforms = append(v.preTransforms, func(val any, ctx ParseCtx) (any, error) {
+		s, ok := val.(string)
+		if !ok {
+			return val, nil
+		}
+		return strings.TrimSpace(s), nil
+	})
+	return v
+}
+
+// ! Tests
 // custom test function call it -> schema.Test(t z.Test, opts ...TestOption)
 func (v *stringProcessor) Test(t p.Test, opts ...TestOption) *stringProcessor {
 	for _, opt := range opts {
@@ -105,7 +141,7 @@ func (v *stringProcessor) Test(t p.Test, opts ...TestOption) *stringProcessor {
 	return v
 }
 
-// checks that the value is one of the enum values
+// Test: checks that the value is one of the enum values
 func (v *stringProcessor) OneOf(enum []string, options ...TestOption) *stringProcessor {
 	t := p.In(enum)
 	for _, opt := range options {
@@ -115,7 +151,7 @@ func (v *stringProcessor) OneOf(enum []string, options ...TestOption) *stringPro
 	return v
 }
 
-// checks that the value is at least n characters long
+// Test: checks that the value is at least n characters long
 func (v *stringProcessor) Min(n int, options ...TestOption) *stringProcessor {
 	t := p.LenMin[string](n)
 	for _, opt := range options {
@@ -125,7 +161,7 @@ func (v *stringProcessor) Min(n int, options ...TestOption) *stringProcessor {
 	return v
 }
 
-// checks that the value is at most n characters long
+// Test: checks that the value is at most n characters long
 func (v *stringProcessor) Max(n int, options ...TestOption) *stringProcessor {
 	t := p.LenMax[string](n)
 	for _, opt := range options {
@@ -135,7 +171,7 @@ func (v *stringProcessor) Max(n int, options ...TestOption) *stringProcessor {
 	return v
 }
 
-// checks that the value is exactly n characters long
+// Test: checks that the value is exactly n characters long
 func (v *stringProcessor) Len(n int, options ...TestOption) *stringProcessor {
 	t := p.Len[string](n)
 	for _, opt := range options {
@@ -145,7 +181,7 @@ func (v *stringProcessor) Len(n int, options ...TestOption) *stringProcessor {
 	return v
 }
 
-// checks that the value is a valid email address
+// Test: checks that the value is a valid email address
 func (v *stringProcessor) Email(options ...TestOption) *stringProcessor {
 	t := p.Test{
 		ErrCode: zconst.ErrCodeEmail,
@@ -164,6 +200,7 @@ func (v *stringProcessor) Email(options ...TestOption) *stringProcessor {
 	return v
 }
 
+// Test: checks that the value is a valid URL
 func (v *stringProcessor) URL(options ...TestOption) *stringProcessor {
 	t := p.Test{
 		ErrCode: zconst.ErrCodeURL,
@@ -183,6 +220,7 @@ func (v *stringProcessor) URL(options ...TestOption) *stringProcessor {
 	return v
 }
 
+// Test: checks that the value has the prefix
 func (v *stringProcessor) HasPrefix(s string, options ...TestOption) *stringProcessor {
 	t := p.Test{
 		ErrCode: zconst.ErrCodeHasPrefix,
@@ -203,6 +241,7 @@ func (v *stringProcessor) HasPrefix(s string, options ...TestOption) *stringProc
 	return v
 }
 
+// Test: checks that the value has the suffix
 func (v *stringProcessor) HasSuffix(s string, options ...TestOption) *stringProcessor {
 	t := p.Test{
 		ErrCode: zconst.ErrCodeHasSuffix,
@@ -223,6 +262,7 @@ func (v *stringProcessor) HasSuffix(s string, options ...TestOption) *stringProc
 	return v
 }
 
+// Test: checks that the value contains the substring
 func (v *stringProcessor) Contains(sub string, options ...TestOption) *stringProcessor {
 	t := p.Test{
 		ErrCode: zconst.ErrCodeContains,
@@ -243,6 +283,7 @@ func (v *stringProcessor) Contains(sub string, options ...TestOption) *stringPro
 	return v
 }
 
+// Test: checks that the value contains an uppercase letter
 func (v *stringProcessor) ContainsUpper(options ...TestOption) *stringProcessor {
 	t := p.Test{
 		ErrCode: zconst.ErrCodeContainsUpper,
@@ -266,6 +307,7 @@ func (v *stringProcessor) ContainsUpper(options ...TestOption) *stringProcessor 
 	return v
 }
 
+// Test: checks that the value contains a digit
 func (v *stringProcessor) ContainsDigit(options ...TestOption) *stringProcessor {
 	t := p.Test{
 		ErrCode: zconst.ErrCodeContainsDigit,
@@ -291,6 +333,7 @@ func (v *stringProcessor) ContainsDigit(options ...TestOption) *stringProcessor 
 	return v
 }
 
+// Test: checks that the value contains a special character
 func (v *stringProcessor) ContainsSpecial(options ...TestOption) *stringProcessor {
 	t :=
 		p.Test{
@@ -318,7 +361,7 @@ func (v *stringProcessor) ContainsSpecial(options ...TestOption) *stringProcesso
 	return v
 }
 
-// checks that the value is a valid uuid
+// Test: checks that the value is a valid uuid
 func (v *stringProcessor) UUID(options ...TestOption) *stringProcessor {
 	t := p.Test{
 		ErrCode: zconst.ErrCodeUUID,
@@ -337,7 +380,7 @@ func (v *stringProcessor) UUID(options ...TestOption) *stringProcessor {
 	return v
 }
 
-// checks that value matches to regex
+// Test: checks that value matches to regex
 func (v *stringProcessor) Match(regex *regexp.Regexp, options ...TestOption) *stringProcessor {
 	t := p.Test{
 		ErrCode: zconst.ErrCodeMatch,

@@ -8,6 +8,9 @@ import (
 	"github.com/Oudwins/zog/zconst"
 )
 
+// ! INTERNALS
+var _ ZogSchema = &timeProcessor{}
+
 type timeProcessor struct {
 	preTransforms  []p.PreTransform
 	tests          []p.Test
@@ -15,12 +18,40 @@ type timeProcessor struct {
 	defaultVal     *time.Time
 	required       *p.Test
 	catch          *time.Time
+	coercer        conf.CoercerFunc
 }
 
-func Time() *timeProcessor {
-	return &timeProcessor{}
+// internal processes the data
+func (v *timeProcessor) process(val any, dest any, path p.PathBuilder, ctx ParseCtx) {
+	primitiveProcessor(val, dest, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, v.coercer, p.IsParseZeroValue)
 }
 
+// Returns the type of the schema
+func (v *timeProcessor) getType() zconst.ZogType {
+	return zconst.TypeString
+}
+
+// Sets the coercer for the schema
+func (v *timeProcessor) setCoercer(c conf.CoercerFunc) {
+	v.coercer = c
+}
+
+type TimeFunc func(opts ...SchemaOption) *timeProcessor
+
+// ! USER FACING FUNCTIONS
+
+// Returns a new Time Schema
+var Time TimeFunc = func(opts ...SchemaOption) *timeProcessor {
+	t := &timeProcessor{
+		coercer: conf.Coercers.Time,
+	}
+	for _, opt := range opts {
+		opt(t)
+	}
+	return t
+}
+
+// Parses the data into the destination time.Time. Returns a list of errors
 func (v *timeProcessor) Parse(data any, dest *time.Time, options ...ParsingOption) p.ZogErrList {
 	errs := p.NewErrsList()
 	ctx := p.NewParseCtx(errs, conf.ErrorFormatter)
@@ -34,10 +65,6 @@ func (v *timeProcessor) Parse(data any, dest *time.Time, options ...ParsingOptio
 	v.process(data, dest, path, ctx)
 
 	return errs.List
-}
-
-func (v *timeProcessor) process(val any, dest any, path p.PathBuilder, ctx ParseCtx) {
-	primitiveProcessor(val, dest, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, conf.Coercers.Time, p.IsParseZeroValue)
 }
 
 // Adds pretransform function to schema

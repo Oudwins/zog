@@ -10,20 +10,37 @@ import (
 	"github.com/Oudwins/zog/zconst"
 )
 
-type Processor interface {
+// The ZogSchema is the interface all schemas must implement
+type ZogSchema interface {
 	process(val any, dest any, path p.PathBuilder, ctx ParseCtx)
+	setCoercer(c conf.CoercerFunc)
+	getType() zconst.ZogType
 }
 
 // ! Passing Types through
 
+// ParseCtx is the context passed through the parser
 type ParseCtx = p.ParseCtx
-type Test = p.Test
 
+// ZogError is the ZogError interface
 type ZogError = p.ZogError
-type ZogErrMap = p.ZogErrMap
+
+// ZogErrList is a []ZogError returned from parsing primitive schemas
 type ZogErrList = p.ZogErrList
 
+// ZogErrMap is a map[string][]ZogError returned from parsing complex schemas
+type ZogErrMap = p.ZogErrMap
+
 // ! TESTS
+
+// Test is the test object
+type Test = p.Test
+
+// TestFunc is a helper function to define a custom test. It takes the error code which will be used for the error message and a validate function. Usage:
+//
+//	schema.Test(z.TestFunc(zconst.ErrCodeCustom, func(val any, ctx ParseCtx) bool {
+//		return val == "hello"
+//	}))
 func TestFunc(errCode zconst.ZogErrCode, validateFunc p.TestFunc) p.Test {
 	t := p.Test{
 		ErrCode:      errCode,
@@ -36,7 +53,7 @@ func TestFunc(errCode zconst.ZogErrCode, validateFunc p.TestFunc) p.Test {
 type errHelpers struct {
 }
 
-// Beware this API may change
+// Helper struct for dealing with zog errors. Beware this API may change
 var Errors = errHelpers{}
 
 // Create error from (originValue any, destinationValue any, test *p.Test)
