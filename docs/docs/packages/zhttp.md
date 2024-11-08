@@ -35,3 +35,19 @@ func handlePostRequest(w http.ResponseWriter, r *http.Request) {
 ```
 
 > **WARNING** The `zhttp` package does NOT currently support parsing into any data type that is NOT a struct.
+
+## Complex Forms
+
+If you need to parse complex forms or query params such as those parsed by packages like [qs](https://www.npmjs.com/package/qs), for example:
+
+```js
+assert.deepEqual(qs.parse("foo[bar]=baz"), {
+  foo: {
+    bar: "baz",
+  },
+});
+```
+
+zhttp does not currently support this types of forms (see [issue #8](https://github.com/Oudwins/zog/issues/8)). However I suggest you try using the [form go package](https://github.com/go-playground/form) which supports this type of parsing. You can integrate the library with zhttp by overriding the `zhttp.Config.Parsers.Form` function.
+
+> **WARNING**: This is depends on `DataProviders` which are not yet documented and may change in the future. I encourage you to avoid doing this unless you really need to.

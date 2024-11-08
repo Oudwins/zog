@@ -13,11 +13,19 @@ type ZogError interface {
 	// returns the data value that caused the error.
 	// if using Schema.Parse(data, dest) then this will be the value of data.
 	Value() any
+	// Sets the data value that caused the error.
+	// if using Schema.Parse(data, dest) then this will be the value of data.
+	SValue(any) ZogError
 	// Returns destination type. i.e The zconst.ZogType of the value that was validated.
 	// if Using Schema.Parse(data, dest) then this will be the type of dest.
 	Dtype() string
+	// Sets destination type. i.e The zconst.ZogType of the value that was validated.
+	// if Using Schema.Parse(data, dest) then this will be the type of dest.
+	SDType(zconst.ZogType) ZogError
 	// returns the params map for the error. Taken from the Test that caused the error. This may be nil if Test has no params.
 	Params() map[string]any
+	// Sets the params map for the error. Taken from the Test that caused the error. This may be nil if Test has no params.
+	SParams(map[string]any) ZogError
 	// returns the human readable, user-friendly message for the error. This is safe to expose to the user.
 	Message() string
 	// sets the human readable, user-friendly message for the error. This is safe to expose to the user.
@@ -52,7 +60,7 @@ func (e *ZogErr) Code() zconst.ZogErrCode {
 func (e *ZogErr) Value() any {
 	return e.Value
 }
-func (e *ZogErr) SValue(v any) *ZogErr {
+func (e *ZogErr) SValue(v any) ZogError {
 	e.Val = v
 	return e
 }
@@ -61,7 +69,7 @@ func (e *ZogErr) SValue(v any) *ZogErr {
 func (e *ZogErr) Dtype() string {
 	return e.Typ
 }
-func (e *ZogErr) SDType(t string) *ZogErr {
+func (e *ZogErr) SDType(t zconst.ZogType) ZogError {
 	e.Typ = t
 	return e
 }
@@ -70,7 +78,7 @@ func (e *ZogErr) Params() map[string]any {
 	return e.ParamsM
 }
 
-func (e *ZogErr) SParams(p map[string]any) *ZogErr {
+func (e *ZogErr) SParams(p map[string]any) ZogError {
 	e.ParamsM = p
 	return e
 }

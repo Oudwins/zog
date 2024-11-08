@@ -8,7 +8,7 @@ import (
 	"github.com/Oudwins/zog/zconst"
 )
 
-type DpFactory = func() (DataProvider, *ZogErr)
+type DpFactory = func() (DataProvider, ZogError)
 
 // This is used for parsing structs & maps
 type DataProvider interface {
@@ -62,7 +62,7 @@ func (e *EmptyDataProvider) GetUnderlying() any {
 	return e.Underlying
 }
 
-func TryNewAnyDataProvider(val any) (DataProvider, *ZogErr) {
+func TryNewAnyDataProvider(val any) (DataProvider, ZogError) {
 	dp, ok := val.(DataProvider)
 	if ok {
 		return dp, nil

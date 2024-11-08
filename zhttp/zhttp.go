@@ -3,13 +3,41 @@ package zhttp
 import (
 	"encoding/json"
 	"errors"
-	"io"
 	"net/http"
 	"net/url"
 
 	p "github.com/Oudwins/zog/internals"
 	"github.com/Oudwins/zog/zconst"
 )
+
+type ParserFunc = func(r *http.Request) (p.DataProvider, p.ZogError)
+
+var Config = struct {
+	Parsers struct {
+		JSON  ParserFunc
+		Form  ParserFunc
+		Query ParserFunc
+	}
+}{
+	Parsers: struct {
+		JSON  ParserFunc
+		Form  ParserFunc
+		Query ParserFunc
+	}{
+		JSON: parseJson,
+		Form: func(r *http.Request) (p.DataProvider, p.ZogError) {
+			err := r.ParseForm()
+			if err != nil {
+				return nil, &p.ZogErr{C: zconst.ErrCodeZHTTPInvalidForm, Err: err}
+			}
+			return form(r.Form), nil
+		},
+		Query: func(r *http.Request) (p.DataProvider, p.ZogError) {
+			// This handles generic GET request from browser. We treat it as url.Values
+			return form(r.URL.Query()), nil
+		},
+	},
+}
 
 type urlDataProvider struct {
 	Data url.Values
@@ -41,20 +69,14 @@ func (u urlDataProvider) GetUnderlying() any {
 // Usage:
 // schema.Parse(zhttp.Request(r), &dest)
 func Request(r *http.Request) p.DpFactory {
-	return func() (p.DataProvider, *p.ZogErr) {
+	return func() (p.DataProvider, p.ZogError) {
 		switch r.Header.Get("Content-Type") {
 		case "application/json":
-			return parseJson(r.Body)
+			return Config.Parsers.JSON(r)
 		case "application/x-www-form-urlencoded":
-			err := r.ParseForm()
-			if err != nil {
-				return nil, &p.ZogErr{C: zconst.ErrCodeZHTTPInvalidForm, Err: err}
-			}
-			return form(r.Form), nil
+			return Config.Parsers.Form(r)
 		default:
-			// This handles generic GET request from browser. We treat it as url.Values
-			params := r.URL.Query()
-			return form(params), nil
+			return Config.Parsers.Query(r)
 		}
 	}
 }
@@ -68,9 +90,9 @@ func Request(r *http.Request) p.DpFactory {
   - struct schema -> hey this valid input
   - "string is not an object"
 */
-func parseJson(data io.ReadCloser) (p.DataProvider, *p.ZogErr) {
+func parseJson(r *http.Request) (p.DataProvider, p.ZogError) {
 	var m map[string]any
-	decod := json.NewDecoder(data)
+	decod := json.NewDecoder(r.Body)
 	err := decod.Decode(&m)
 	if err != nil {
 		return nil, &p.ZogErr{C: zconst.ErrCodeZHTTPInvalidJSON, Err: err}
