@@ -4,6 +4,7 @@ import (
 	"regexp"
 	"testing"
 
+	"github.com/Oudwins/zog/zconst"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -346,4 +347,20 @@ func TestStringRegex(t *testing.T) {
 	errs = field.Parse("00", &dest)
 	assert.Empty(t, errs)
 	assert.Equal(t, "00", dest)
+}
+
+func TestStringSchemaOption(t *testing.T) {
+	s := String(WithCoercer(func(original any) (value any, err error) {
+		return "coerced", nil
+	}))
+
+	var result string
+	err := s.Parse(123, &result)
+	assert.Nil(t, err)
+	assert.Equal(t, "coerced", result)
+}
+
+func TestStringGetType(t *testing.T) {
+	s := String()
+	assert.Equal(t, zconst.TypeString, s.getType())
 }

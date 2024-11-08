@@ -9,36 +9,32 @@ import (
 	"github.com/Oudwins/zog/zconst"
 )
 
+var _ ZogSchema = &sliceProcessor{}
+
 type sliceProcessor struct {
 	preTransforms  []p.PreTransform
 	tests          []p.Test
-	schema         Processor
+	schema         ZogSchema
 	postTransforms []p.PostTransform
 	required       *p.Test
 	defaultVal     any
 	// catch          any
+	coercer conf.CoercerFunc
 }
 
-func Slice(schema Processor) *sliceProcessor {
-	return &sliceProcessor{
-		schema: schema,
-		tests:  []p.Test{},
-	}
+// ! INTERNALS
+
+// Returns the type of the schema
+func (v *sliceProcessor) getType() zconst.ZogType {
+	return zconst.TypeSlice
 }
 
-// only supports val = slice[any] & dest = &slice[]
-func (v *sliceProcessor) Parse(data any, dest any, options ...ParsingOption) p.ZogErrMap {
-	errs := p.NewErrsMap()
-	ctx := p.NewParseCtx(errs, conf.ErrorFormatter)
-	for _, opt := range options {
-		opt(ctx)
-	}
-	path := p.PathBuilder("")
-	v.process(data, dest, path, ctx)
-
-	return errs.M
+// Sets the coercer for the schema
+func (v *sliceProcessor) setCoercer(c conf.CoercerFunc) {
+	v.coercer = c
 }
 
+// Internal function to process the data
 func (v *sliceProcessor) process(val any, dest any, path p.PathBuilder, ctx ParseCtx) {
 	destType := zconst.TypeSlice
 	// 1. preTransforms
@@ -85,7 +81,7 @@ func (v *sliceProcessor) process(val any, dest any, path p.PathBuilder, ctx Pars
 		}
 	} else {
 		// make sure val is a slice if not try to make it one
-		v, err := conf.Coercers.Slice(val)
+		v, err := v.coercer(val)
 		if err != nil {
 			ctx.NewError(path, Errors.New(zconst.ErrCodeCoerce, val, destType, nil, "", err))
 			return
@@ -118,6 +114,30 @@ func (v *sliceProcessor) process(val any, dest any, path p.PathBuilder, ctx Pars
 		}
 	}
 	// 4. postTransforms -> defered see above
+}
+
+func Slice(schema ZogSchema, opts ...SchemaOption) *sliceProcessor {
+	s := &sliceProcessor{
+		schema:  schema,
+		coercer: conf.Coercers.Slice, // default coercer
+	}
+	for _, opt := range opts {
+		opt(s)
+	}
+	return s
+}
+
+// only supports val = slice[any] & dest = &slice[]
+func (v *sliceProcessor) Parse(data any, dest any, options ...ParsingOption) p.ZogErrMap {
+	errs := p.NewErrsMap()
+	ctx := p.NewParseCtx(errs, conf.ErrorFormatter)
+	for _, opt := range options {
+		opt(ctx)
+	}
+	path := p.PathBuilder("")
+	v.process(data, dest, path, ctx)
+
+	return errs.M
 }
 
 // Adds pretransform function to schema

@@ -5,6 +5,8 @@ import (
 	"testing"
 
 	p "github.com/Oudwins/zog/internals"
+	"github.com/Oudwins/zog/zconst"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestBoolParse(t *testing.T) {
@@ -48,6 +50,17 @@ func TestBoolParse(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestBoolSchemaOption(t *testing.T) {
+	s := Bool(WithCoercer(func(original any) (value any, err error) {
+		return true, nil
+	}))
+
+	var result bool
+	err := s.Parse("asdasdas", &result)
+	assert.Nil(t, err)
+	assert.Equal(t, true, result)
 }
 
 func TestParsingOption(t *testing.T) {
@@ -438,4 +451,9 @@ func TestBoolPostTransform(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestBoolGetType(t *testing.T) {
+	s := Bool()
+	assert.Equal(t, zconst.TypeBool, s.getType())
 }

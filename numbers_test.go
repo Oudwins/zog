@@ -3,8 +3,31 @@ package zog
 import (
 	"testing"
 
+	"github.com/Oudwins/zog/zconst"
 	"github.com/stretchr/testify/assert"
 )
+
+func TestIntSchemaOption(t *testing.T) {
+	s := Int(WithCoercer(func(original any) (value any, err error) {
+		return 42, nil
+	}))
+
+	var result int
+	err := s.Parse("123", &result)
+	assert.Nil(t, err)
+	assert.Equal(t, 42, result)
+}
+
+func TestFloatSchemaOption(t *testing.T) {
+	s := Float(WithCoercer(func(original any) (value any, err error) {
+		return 3.14, nil
+	}))
+
+	var result float64
+	err := s.Parse("2.718", &result)
+	assert.Nil(t, err)
+	assert.Equal(t, 3.14, result)
+}
 
 func TestNumberRequired(t *testing.T) {
 	validator := Int().Required(Message("custom"))
@@ -257,4 +280,14 @@ func TestNumberCustomTest(t *testing.T) {
 		t.Errorf("Expected no errors, got %v", errs)
 	}
 	assert.Equal(t, 5, dest)
+}
+
+func TestIntGetType(t *testing.T) {
+	i := Int()
+	assert.Equal(t, zconst.TypeNumber, i.getType())
+}
+
+func TestFloatGetType(t *testing.T) {
+	f := Float()
+	assert.Equal(t, zconst.TypeNumber, f.getType())
 }

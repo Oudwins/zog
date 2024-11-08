@@ -3,11 +3,14 @@ package zog
 import (
 	"github.com/Oudwins/zog/conf"
 	p "github.com/Oudwins/zog/internals"
+	"github.com/Oudwins/zog/zconst"
 )
 
 type Numeric interface {
 	~int | ~float64
 }
+
+var _ ZogSchema = &numberProcessor[int]{}
 
 type numberProcessor[T Numeric] struct {
 	preTransforms  []p.PreTransform
@@ -16,16 +19,48 @@ type numberProcessor[T Numeric] struct {
 	defaultVal     *T
 	required       *p.Test
 	catch          *T
+	coercer        conf.CoercerFunc
 }
 
-// creates a new float64 processor
-func Float() *numberProcessor[float64] {
-	return &numberProcessor[float64]{}
+// ! INTERNALS
+
+// Returns the type of the schema
+func (v *numberProcessor[T]) getType() zconst.ZogType {
+	return zconst.TypeNumber
 }
 
-// creates a new int processor
-func Int() *numberProcessor[int] {
-	return &numberProcessor[int]{}
+// Sets the coercer for the schema
+func (v *numberProcessor[T]) setCoercer(c conf.CoercerFunc) {
+	v.coercer = c
+}
+
+// Internal function to process the data
+func (v *numberProcessor[T]) process(val any, dest any, path p.PathBuilder, ctx ParseCtx) {
+	primitiveProcessor(val, dest, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, v.coercer, p.IsParseZeroValue)
+}
+
+// ! USER FACING FUNCTIONS
+
+// creates a new float64 schema
+func Float(opts ...SchemaOption) *numberProcessor[float64] {
+	s := &numberProcessor[float64]{
+		coercer: conf.Coercers.Float64,
+	}
+	for _, opt := range opts {
+		opt(s)
+	}
+	return s
+}
+
+// creates a new int schema
+func Int(opts ...SchemaOption) *numberProcessor[int] {
+	s := &numberProcessor[int]{
+		coercer: conf.Coercers.Int,
+	}
+	for _, opt := range opts {
+		opt(s)
+	}
+	return s
 }
 
 // parses the value and stores it in the destination
@@ -41,19 +76,6 @@ func (v *numberProcessor[T]) Parse(data any, dest *T, options ...ParsingOption) 
 	v.process(data, dest, path, ctx)
 
 	return errs.List
-}
-
-func (v *numberProcessor[T]) process(val any, dest any, path p.PathBuilder, ctx ParseCtx) {
-
-	var coercer conf.CoercerFunc
-	switch any(dest).(type) {
-	case *float64:
-		coercer = conf.Coercers.Float64
-	case *int:
-		coercer = conf.Coercers.Int
-	}
-
-	primitiveProcessor(val, dest, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, coercer, p.IsParseZeroValue)
 }
 
 // GLOBAL METHODS
