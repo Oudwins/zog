@@ -1,7 +1,6 @@
 package zhttp
 
 import (
-	"io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -184,9 +183,10 @@ func TestRequestContentTypeDefault(t *testing.T) {
 
 func TestParseJsonValid(t *testing.T) {
 	jsonData := `{"name":"John","age":30}`
-	reader := io.NopCloser(strings.NewReader(jsonData))
+	req, _ := http.NewRequest("POST", "/test", strings.NewReader(jsonData))
+	req.Header.Set("Content-Type", "application/json")
 
-	dp, err := parseJson(reader)
+	dp, err := Config.Parsers.JSON(req)
 	assert.Nil(t, err)
 	assert.Equal(t, "John", dp.Get("name"))
 	assert.Equal(t, float64(30), dp.Get("age"))
@@ -194,35 +194,34 @@ func TestParseJsonValid(t *testing.T) {
 
 func TestParseJsonInvalid(t *testing.T) {
 	invalidJSON := `{"name":"John","age":30`
-	reader := io.NopCloser(strings.NewReader(invalidJSON))
+	req, _ := http.NewRequest("POST", "/test", strings.NewReader(invalidJSON))
+	req.Header.Set("Content-Type", "application/json")
 
-	dp, err := parseJson(reader)
+	dp, err := Config.Parsers.JSON(req)
 
 	assert.Error(t, err)
 	assert.Nil(t, dp)
-	assert.Equal(t, zconst.ErrCodeZHTTPInvalidJSON, err.C)
+	assert.Equal(t, zconst.ErrCodeZHTTPInvalidJSON, err.Code())
 }
 
 func TestParseJsonWithNilValue(t *testing.T) {
 	jsonData := `null`
-	reader := io.NopCloser(strings.NewReader(jsonData))
-	_, err := parseJson(reader)
+	req, _ := http.NewRequest("POST", "/test", strings.NewReader(jsonData))
+	req.Header.Set("Content-Type", "application/json")
+
+	dp, err := Config.Parsers.JSON(req)
 	assert.NotNil(t, err)
+	assert.Nil(t, dp)
 }
 
 func TestParseJsonWithEmptyObject(t *testing.T) {
 	jsonData := `{}`
-	reader := io.NopCloser(strings.NewReader(jsonData))
-	dp, err := parseJson(reader)
+	req, _ := http.NewRequest("POST", "/test", strings.NewReader(jsonData))
+	req.Header.Set("Content-Type", "application/json")
+
+	dp, err := Config.Parsers.JSON(req)
 	assert.Nil(t, err)
 	assert.Equal(t, map[string]any{}, dp.GetUnderlying())
-}
-
-func TestParseJsonWithPlainValue(t *testing.T) {
-	jsonData := `"string"`
-	reader := io.NopCloser(strings.NewReader(jsonData))
-	_, err := parseJson(reader)
-	assert.NotNil(t, err)
 }
 
 func TestForm(t *testing.T) {

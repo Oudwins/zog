@@ -128,12 +128,13 @@ func (v *structProcessor) process(data any, dest any, path p.PathBuilder, ctx Pa
 
 	// 2.5 check for required & errors
 	if err != nil {
+		code := err.Code()
 		// This means its optional and we got an error coercing the value to a DataProvider, so we can ignore it
-		if v.required == nil && err.C == zconst.ErrCodeCoerce {
+		if v.required == nil && code == zconst.ErrCodeCoerce {
 			return
 		}
 		// This means that its required but we got an error coercing the value or a factory errored with required
-		if v.required != nil && (err.C == zconst.ErrCodeCoerce || err.C == zconst.ErrCodeRequired) {
+		if v.required != nil && (code == zconst.ErrCodeCoerce || code == zconst.ErrCodeRequired) {
 			ctx.NewError(path, Errors.FromTest(data, destType, v.required, ctx))
 			return
 		}
