@@ -4,11 +4,30 @@ sidebar_position: 5
 
 # Schema types
 
+```go
+// Primtives. Calling .Parse() on these will return []ZogError
+z.String()
+z.Int()
+z.Float()
+z.Bool()
+z.Time()
+
+// Complex Types. Calling .Parse() on these will return map[string][]ZogError. Where the key is the field path ("user.email") & $root is the list of complex type level errors not the specific field errors
+z.Struct(z.Schema{
+  "name": z.String(),
+})
+z.Slice(z.String())
+
+```
+
 ## Primtive Types
 
 ### String
 
 ```go
+// PreTransforms
+z.String().Trim() // trims the input data of whitespace if it is a string (does nothing otherwise)
+
 // Tests / Validations
 z.String().Test() // custom test
 z.String().Min(5) // validates min length
