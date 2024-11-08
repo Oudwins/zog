@@ -54,7 +54,17 @@ const config: Config = {
   ],
 
   themeConfig: {
-    // Replace with your project's social card
+    algolia: {
+      // The application ID provided by Algolia
+      appId: "59MBNZERK5",
+
+      // Public API key: it is safe to commit it
+      apiKey: "3a61a79e5795f3997187ec875b1a1288",
+
+      indexName: "zog",
+
+      insights: true,
+    },
     image: "img/zog-social-card.jpg",
     navbar: {
       title: "Zog",
