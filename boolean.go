@@ -32,7 +32,7 @@ func (v *boolProcessor) setCoercer(c conf.CoercerFunc) {
 
 // Internal function to process the data
 func (v *boolProcessor) process(val any, dest any, path p.PathBuilder, ctx ParseCtx) {
-	primitiveProcessor(val, dest, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, conf.Coercers.Bool, p.IsParseZeroValue)
+	primitiveProcessor(val, dest, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, v.coercer, p.IsParseZeroValue)
 }
 
 // ! USER FACING FUNCTIONS

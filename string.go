@@ -119,18 +119,6 @@ func (v *stringProcessor) Catch(val string) *stringProcessor {
 
 // ! PRETRANSFORMS
 
-// PreTransform: trims the input data of whitespace if it is a string
-func (v *stringProcessor) Trim() *stringProcessor {
-	v.preTransforms = append(v.preTransforms, func(val any, ctx ParseCtx) (any, error) {
-		s, ok := val.(string)
-		if !ok {
-			return val, nil
-		}
-		return strings.TrimSpace(s), nil
-	})
-	return v
-}
-
 // ! Tests
 // custom test function call it -> schema.Test(t z.Test, opts ...TestOption)
 func (v *stringProcessor) Test(t p.Test, opts ...TestOption) *stringProcessor {

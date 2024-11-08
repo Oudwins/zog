@@ -81,7 +81,7 @@ func (v *sliceProcessor) process(val any, dest any, path p.PathBuilder, ctx Pars
 		}
 	} else {
 		// make sure val is a slice if not try to make it one
-		v, err := conf.Coercers.Slice(val)
+		v, err := v.coercer(val)
 		if err != nil {
 			ctx.NewError(path, Errors.New(zconst.ErrCodeCoerce, val, destType, nil, "", err))
 			return

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	p "github.com/Oudwins/zog/internals"
+	"github.com/Oudwins/zog/zconst"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -346,3 +347,10 @@ func TestStructRequired(t *testing.T) {
 // 		assert.Equal(t, "", output.OptionalField)
 // 	})
 // }
+
+func TestStructGetType(t *testing.T) {
+	s := Struct(Schema{
+		"field": String(),
+	})
+	assert.Equal(t, zconst.TypeStruct, s.getType())
+}

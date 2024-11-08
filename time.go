@@ -28,7 +28,7 @@ func (v *timeProcessor) process(val any, dest any, path p.PathBuilder, ctx Parse
 
 // Returns the type of the schema
 func (v *timeProcessor) getType() zconst.ZogType {
-	return zconst.TypeString
+	return zconst.TypeTime
 }
 
 // Sets the coercer for the schema

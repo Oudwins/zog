@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Oudwins/zog/zconst"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -125,4 +126,38 @@ func TestTimeCustomTest(t *testing.T) {
 	errs := schema.Parse(now, &now)
 	assert.NotNil(t, errs)
 	assert.Equal(t, "custom", errs[0].Message())
+}
+
+func TestTimeSchemaOption(t *testing.T) {
+	s := Time(WithCoercer(func(original any) (value any, err error) {
+		return time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC), nil
+	}))
+
+	var result time.Time
+	err := s.Parse("invalid-date", &result)
+	assert.Nil(t, err)
+	assert.Equal(t, time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC), result)
+}
+
+func TestTimeFormat(t *testing.T) {
+	s := Time(Time.Format(time.RFC1123))
+	var result time.Time
+	err := s.Parse("Mon, 01 Jan 2024 00:00:00 UTC", &result)
+	assert.Nil(t, err)
+	assert.Equal(t, time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC), result)
+}
+
+func TestTimeFormatFunc(t *testing.T) {
+	s := Time(Time.FormatFunc(func(data string) (time.Time, error) {
+		return time.Parse(time.RFC1123, data)
+	}))
+	var result time.Time
+	err := s.Parse("Mon, 01 Jan 2024 00:00:00 UTC", &result)
+	assert.Nil(t, err)
+	assert.Equal(t, time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC), result)
+}
+
+func TestTimeGetType(t *testing.T) {
+	s := Time()
+	assert.Equal(t, zconst.TypeTime, s.getType())
 }

@@ -5,6 +5,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Oudwins/zog/zconst"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -227,4 +228,20 @@ func TestSliceCustomTest(t *testing.T) {
 	assert.NotEmpty(t, errs)
 	assert.Equal(t, "custom", errs["$root"][0].Message())
 	assert.Equal(t, "custom_test", errs["$root"][0].Code())
+}
+
+func TestSliceSchemaOption(t *testing.T) {
+	s := Slice(String(), WithCoercer(func(original any) (value any, err error) {
+		return []string{"coerced"}, nil
+	}))
+
+	var result []string
+	err := s.Parse(123, &result)
+	assert.Nil(t, err)
+	assert.Equal(t, []string{"coerced"}, result)
+}
+
+func TestSliceGetType(t *testing.T) {
+	s := Slice(String())
+	assert.Equal(t, zconst.TypeSlice, s.getType())
 }
