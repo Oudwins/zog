@@ -16,6 +16,7 @@ const (
 	TypeTime   ZogType = "time"
 	TypeSlice  ZogType = "slice"
 	TypeStruct ZogType = "struct"
+	TypePtr    ZogType = "ptr"
 )
 
 type ZogErrCode = string
@@ -23,6 +24,7 @@ type ZogErrCode = string
 const (
 	ErrCodeCustom   ZogErrCode = "custom"   // all
 	ErrCodeRequired ZogErrCode = "required" // all
+	ErrCodeNotNil   ZogErrCode = "not_nil"  // all (technically only applies to pointers)
 	ErrCodeCoerce   ZogErrCode = "coerce"   // all
 	// all. Applied when other errror code is not implemented. Required to be implemented for every zog type!
 	ErrCodeFallback ZogErrCode = "fallback"

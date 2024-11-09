@@ -7,6 +7,7 @@ import (
 var Map zconst.LangMap = map[zconst.ZogType]map[zconst.ZogErrCode]string{
 	zconst.TypeString: {
 		zconst.ErrCodeRequired:        "is required",
+		zconst.ErrCodeNotNil:          "must not be empty",
 		zconst.ErrCodeMin:             "string must contain at least {{min}} character(s)",
 		zconst.ErrCodeMax:             "string must contain at most {{max}} character(s)",
 		zconst.ErrCodeLen:             "string must be exactly {{len}} character(s)",
@@ -26,12 +27,14 @@ var Map zconst.LangMap = map[zconst.ZogType]map[zconst.ZogErrCode]string{
 	},
 	zconst.TypeBool: {
 		zconst.ErrCodeRequired: "is required",
+		zconst.ErrCodeNotNil:   "must not be empty",
 		zconst.ErrCodeTrue:     "must be true",
 		zconst.ErrCodeFalse:    "must be false",
 		zconst.ErrCodeFallback: "value is invalid",
 	},
 	zconst.TypeNumber: {
 		zconst.ErrCodeRequired: "is required",
+		zconst.ErrCodeNotNil:   "must not be empty",
 		zconst.ErrCodeLTE:      "number must be less than or equal to {{lte}}",
 		zconst.ErrCodeLT:       "number must be less than {{lt}}",
 		zconst.ErrCodeGTE:      "number must be greater than or equal to {{gte}}",
@@ -42,6 +45,7 @@ var Map zconst.LangMap = map[zconst.ZogType]map[zconst.ZogErrCode]string{
 	},
 	zconst.TypeTime: {
 		zconst.ErrCodeRequired: "is required",
+		zconst.ErrCodeNotNil:   "must not be empty",
 		zconst.ErrCodeAfter:    "time must be after {{after}}",
 		zconst.ErrCodeBefore:   "time must be before {{before}}",
 		zconst.ErrCodeEQ:       "time must be equal to {{eq}}",
@@ -49,6 +53,7 @@ var Map zconst.LangMap = map[zconst.ZogType]map[zconst.ZogErrCode]string{
 	},
 	zconst.TypeSlice: {
 		zconst.ErrCodeRequired: "is required",
+		zconst.ErrCodeNotNil:   "must not be empty",
 		zconst.ErrCodeMin:      "slice must contain at least {{min}} items",
 		zconst.ErrCodeMax:      "slice must contain at most {{max}} items",
 		zconst.ErrCodeLen:      "slice must contain exactly {{len}} items",
@@ -57,6 +62,7 @@ var Map zconst.LangMap = map[zconst.ZogType]map[zconst.ZogErrCode]string{
 	},
 	zconst.TypeStruct: {
 		zconst.ErrCodeRequired: "is required",
+		zconst.ErrCodeNotNil:   "must not be empty",
 		zconst.ErrCodeFallback: "struct is invalid",
 		// ZHTTP ERRORS
 		zconst.ErrCodeZHTTPInvalidJSON:  "invalid json body",
