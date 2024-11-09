@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.12.0](https://github.com/Oudwins/zog/compare/v0.11.0...v0.12.0) (2024-11-09)
+
+
+### Features
+
+* implement z.String().Trim() as a built in PreTransform that trims the input data if it is a string ([#51](https://github.com/Oudwins/zog/issues/51)) ([1d65859](https://github.com/Oudwins/zog/commit/1d65859a9c906ad5905220d06b2b0e3c3d9c628d))
+* schema custom coercer support via the z.WithCoercer function and custom time formats via z.Time.Format() fuction ([#48](https://github.com/Oudwins/zog/issues/48)) ([1472669](https://github.com/Oudwins/zog/commit/1472669a66b2928a18a923e794faa373821961cd))
+* time coercer now support for unix timestamps in ms  ([#47](https://github.com/Oudwins/zog/issues/47)) ([4c5b4bd](https://github.com/Oudwins/zog/commit/4c5b4bd56ac762325875c4adf0dbb9021e72fe00))
+* zhttp package now supports providing your own custom parsers ([#50](https://github.com/Oudwins/zog/issues/50)) ([e8a111f](https://github.com/Oudwins/zog/commit/e8a111fdad679b19a9b01968eff846de777ad24a))
+
+
+### Bug Fixes
+
+* required check not working with zero values from other types ([#44](https://github.com/Oudwins/zog/issues/44)) ([1abc8e8](https://github.com/Oudwins/zog/commit/1abc8e853f631a2bd34f86279140344228740371))
+
 ## [0.11.0](https://github.com/Oudwins/zog/compare/v0.10.0...v0.11.0) (2024-11-01)
 
 
