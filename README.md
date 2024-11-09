@@ -35,9 +35,6 @@ Killer Features:
   - **zhttp**: parse http forms & query params
   - **i18n**: Opinionated solution to good i18n zog errors
 
-> **DOCS**
-> For the full docs please visit [zog.dev](https://zog.dev)
-
 > **API Stability:**
 >
 > - I will consider the API stable when we reach v1.0.0
