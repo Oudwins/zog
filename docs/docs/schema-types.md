@@ -75,6 +75,9 @@ Use Time to validate `time.Time` instances
 z.Time().After(time.Now()) // validates time is after now
 z.Time().Before(time.Now()) // validates time is before now
 z.Time().Is(time.Now()) // validates time is equal to now
+
+// Schema Options
+z.Time(z.Time.Format(time.RFC3339)) // If input is a string, it will be parsed as a time.Time using the provided layout. time.RFC3339 is the default
 ```
 
 ## Complex Types

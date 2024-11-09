@@ -25,11 +25,22 @@ z.Struct(z.Schema{"name": z.String().Min(3)}).Parse(map[string]any{"name": "test
 
 Under the hood Zog follows the [Parsing Execution Structure](#parsing-execution-structure) and does a bunch of things under the hood to make sure your data is parsed correctly. Such as checking for zero values, coercing types, etc...
 
-Some of this might not be obvious so here is a table that breaksdown expected results of calling schema.Parse() on various inputs:
+## Coercion
 
-import ParsingResultsTable from "./parsing-table.tsx";
+Zog will attempt to coerce the data into the correct type. For example if you have a `z.Int()` schema and you pass in a `"1"` it will be coerced into an `int` type. This behaviour, like almost everything else in Zog, can be customized. Zog provides two main ways to customize coercion:
 
-<ParsingResultsTable />
+- [Global Coercion](/configuration#coercion) - Change the default coercion behaviour for all schemas. More details on this in the [configuration page](/configuration#coercion).
+- [Per schema coercers](#per-schema-coercers) - Define custom coercion functions for your schemas.
+
+#### Per schema coercers
+
+You can define custom coercion functions for your schemas by using the `z.WithCoercer()` schema option.
+
+```go
+z.String(z.WithCoercer(func(data any) (any, error) {
+   return "test", nil // now the result will be "test" no matter the input
+})).Parse("abc", &dest) // dest will be "test"
+```
 
 ## Parsing Context
 
