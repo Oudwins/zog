@@ -105,3 +105,13 @@ z.Slice(Float()).Max(5) // validates slice has at most 5 elements
 z.Slice(Bool()).Length(5) // validates slice has exactly 5 elements
 z.Slice(String()).Contains("foo") // validates slice contains the element "foo"
 ```
+
+### Pointers
+
+```go
+z.Ptr(z.String()) // validates pointer to string
+z.Ptr(z.Slice(z.String())) // validates pointer to slice of strings
+
+// Tests / Validators
+z.Ptr(z.String()).NotNil() // Validates pointer is not nil
+```

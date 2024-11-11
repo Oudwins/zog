@@ -7,6 +7,7 @@ import (
 var Map zconst.LangMap = map[zconst.ZogType]map[zconst.ZogErrCode]string{
 	zconst.TypeString: {
 		zconst.ErrCodeRequired:        "Es obligatorio",
+		zconst.ErrCodeNotNil:          "No debe estar vacio",
 		zconst.ErrCodeMin:             "Cadena debe contener al menos {{min}} caracter(es)",
 		zconst.ErrCodeMax:             "Cadena debe contener como máximo {{max}} caracter(es)",
 		zconst.ErrCodeLen:             "Cadena debe tener exactamente {{len}} caracter(es)",
@@ -26,12 +27,14 @@ var Map zconst.LangMap = map[zconst.ZogType]map[zconst.ZogErrCode]string{
 	},
 	zconst.TypeBool: {
 		zconst.ErrCodeRequired: "Es obligatorio",
+		zconst.ErrCodeNotNil:   "No debe estar vacio",
 		zconst.ErrCodeTrue:     "Debe ser verdadero",
 		zconst.ErrCodeFalse:    "Debe ser falso",
 		zconst.ErrCodeFallback: "Valor no es válido",
 	},
 	zconst.TypeNumber: {
 		zconst.ErrCodeRequired: "Es obligatorio",
+		zconst.ErrCodeNotNil:   "No debe estar vacio",
 		zconst.ErrCodeLTE:      "Número debe ser menor o igual a {{lte}}",
 		zconst.ErrCodeLT:       "Número debe ser menor que {{lt}}",
 		zconst.ErrCodeGTE:      "Número debe ser mayor o igual a {{gte}}",
@@ -42,6 +45,7 @@ var Map zconst.LangMap = map[zconst.ZogType]map[zconst.ZogErrCode]string{
 	},
 	zconst.TypeTime: {
 		zconst.ErrCodeRequired: "Es obligatorio",
+		zconst.ErrCodeNotNil:   "No debe estar vacio",
 		zconst.ErrCodeAfter:    "Fecha debe ser posterior a {{after}}",
 		zconst.ErrCodeBefore:   "Fecha debe ser anterior a {{before}}",
 		zconst.ErrCodeEQ:       "Fecha debe ser igual a {{eq}}",
@@ -49,6 +53,7 @@ var Map zconst.LangMap = map[zconst.ZogType]map[zconst.ZogErrCode]string{
 	},
 	zconst.TypeSlice: {
 		zconst.ErrCodeRequired: "Es obligatorio",
+		zconst.ErrCodeNotNil:   "No debe estar vacio",
 		zconst.ErrCodeMin:      "Lista debe contener al menos {{min}} elementos",
 		zconst.ErrCodeMax:      "Lista debe contener como máximo {{max}} elementos",
 		zconst.ErrCodeLen:      "Lista debe contener exactamente {{len}} elementos",
@@ -57,6 +62,7 @@ var Map zconst.LangMap = map[zconst.ZogType]map[zconst.ZogErrCode]string{
 	},
 	zconst.TypeStruct: {
 		zconst.ErrCodeRequired: "Es obligatorio",
+		zconst.ErrCodeNotNil:   "No debe estar vacio",
 		zconst.ErrCodeFallback: "Estructura no es válida",
 		// ZHTTP ERRORS
 		zconst.ErrCodeZHTTPInvalidJSON:  "JSON no válido",
