@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.12.1](https://github.com/Oudwins/zog/compare/v0.12.0...v0.12.1) (2024-11-11)
+
+
+### Features
+
+* support for parsing into pointers. Now you may have pointers in the destination ([#42](https://github.com/Oudwins/zog/issues/42)) ([fd6bbbf](https://github.com/Oudwins/zog/commit/fd6bbbf5f5afb7fbafdba066e43c6bf059f3d6b6))
+
+
+### Miscellaneous Chores
+
+* release 0.12.1 ([505dcdb](https://github.com/Oudwins/zog/commit/505dcdb181269042b27fad80ad350dfefa49961e))
+
 ## [0.12.0](https://github.com/Oudwins/zog/compare/v0.11.0...v0.12.0) (2024-11-09)
 
 
