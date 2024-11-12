@@ -66,7 +66,7 @@ type Test struct {
 type TestFunc = func(val any, ctx ParseCtx) bool
 ```
 
-You can view all the default tests that come with each [schema type here.](/schema-types)
+You can view all the default tests that come with each [schema type here.](/zog-schemas)
 
 ##### Creating Custom Tests
 
