@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.13.0](https://github.com/Oudwins/zog/compare/v0.12.1...v0.13.0) (2024-11-12)
+
+
+### Features
+
+* Implemented Struct().Pick(), Struct().Omit() and Struct().Extend() ([#53](https://github.com/Oudwins/zog/issues/53)) ([8adc803](https://github.com/Oudwins/zog/commit/8adc80356997c34725d11ee03905bd843f742067))
+
 ## [0.12.1](https://github.com/Oudwins/zog/compare/v0.12.0...v0.12.1) (2024-11-11)
 
 
