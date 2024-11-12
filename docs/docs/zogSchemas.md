@@ -2,7 +2,27 @@
 sidebar_position: 5
 ---
 
-# Schema types
+# Zog Schemas
+
+## Generic Schema Methods
+
+These are methods that can generally be called on any schema type (Some exceptions might exist).
+
+```go
+
+schema.Test(test) // create a custom test
+schema.Required() // marks field as required
+schema.Optional() // marks field as optional
+schema.Default(value) // sets default value for field
+schema.Catch(value) // sets catch value for field
+schema.PreTransform(fn) // adds a pre-transformation function to the schema
+schema.PostTransform(fn) // adds a post-transformation function to the schema
+
+// VALIDATION METHODS
+schema.Parse(data, dest) // parses the data into the destination
+```
+
+## Schema Types
 
 ```go
 // Primtives. Calling .Parse() on these will return []ZogError
@@ -17,7 +37,7 @@ z.Struct(z.Schema{
   "name": z.String(),
 })
 z.Slice(z.String())
-
+z.Ptr(z.String()) // validates pointer to string
 ```
 
 ## Primtive Types
@@ -90,6 +110,13 @@ s := z.Struct(z.Schema{
   "name": String().Required(),
   "age": Int().Required(),
 })
+
+// UTILITIES
+schema.Pick("key1", map[string]bool{"a": true, "b": false}) // creates a new shallow copy of the schema with only the specified fields. It supports both string keys and map[string]bool
+schema.Omit("key1", map[string]bool{"a": true, "b": false}) // creates a new shallow copy of the schema omiting the specified fields. It supports both string keys and map[string]bool
+
+schema.Extend(z.Schema{"a": z.String()}) // creates a new shallow copy of the schema with the additional fields
+schema.Merge(otherSchema, otherSchema2) // merges two or more schemas into a new schema. Last schema takes precedence for conflicting keys
 // Tests / Validators
 // None right now
 ```
@@ -99,6 +126,7 @@ s := z.Struct(z.Schema{
 ```go
 // usage
 schema := z.Slice(String())
+
 // Tests / Validators
 z.Slice(Int()).Min(5) // validates slice has at least 5 elements
 z.Slice(Float()).Max(5) // validates slice has at most 5 elements

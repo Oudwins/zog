@@ -2,7 +2,6 @@ package zog
 
 import (
 	"fmt"
-	"maps"
 	"reflect"
 	"strings"
 
@@ -138,43 +137,6 @@ func Struct(schema Schema) *structProcessor {
 	return &structProcessor{
 		schema: schema,
 	}
-}
-
-// WARNING. THIS WILL PROBABLY BE DEPRECATED SOON IN FAVOR OF z.Merge(schema1, schema2)
-func (v *structProcessor) Merge(other *structProcessor) *structProcessor {
-	new := &structProcessor{
-		// preTransforms:  make([]p.PreTransform, len(v.preTransforms)+len(other.preTransforms)),
-		// postTransforms: make([]p.PostTransform, len(v.postTransforms)+len(other.postTransforms)),
-		// tests:          make([]p.Test, len(v.tests)+len(other.tests)),
-		preTransforms:  make([]p.PreTransform, 0),
-		postTransforms: make([]p.PostTransform, 0),
-		tests:          make([]p.Test, 0),
-	}
-	if v.preTransforms != nil {
-		new.preTransforms = append(new.preTransforms, v.preTransforms...)
-	}
-	if other.preTransforms != nil {
-		new.preTransforms = append(new.preTransforms, other.preTransforms...)
-	}
-
-	if v.postTransforms != nil {
-		new.postTransforms = append(new.postTransforms, v.postTransforms...)
-	}
-	if other.postTransforms != nil {
-		new.postTransforms = append(new.postTransforms, other.postTransforms...)
-	}
-
-	if v.tests != nil {
-		new.tests = append(new.tests, v.tests...)
-	}
-	if other.tests != nil {
-		new.tests = append(new.tests, other.tests...)
-	}
-	new.required = v.required
-	new.schema = Schema{}
-	maps.Copy(new.schema, v.schema)
-	maps.Copy(new.schema, other.schema)
-	return new
 }
 
 // Parses val into destPtr and validates each field based on the schema. Only supports val = map[string]any & dest = &struct
