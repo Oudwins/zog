@@ -1,7 +1,7 @@
 <div align="center">
     <br />
     <a href="https://github.com/Oudwins/zog">
-     <img src="https://raw.githubusercontent.com/Oudwins/zog/master/assets/logo-v1.png" alt="Zog, a Zod-like schema parser & validator" />
+     <img src="https://raw.githubusercontent.com/Oudwins/zog/master/assets/zog-banner.jpg" height="350" alt="Zog, a Zod-like schema parser & validator" />
     </a>
 </div>
 
