@@ -6,11 +6,17 @@ import (
 	p "github.com/Oudwins/zog/internals"
 )
 
-// Merges two or more structSchemas into a new structSchema
-// PLEASE NOTE: This is a shallow merge. Meaning that:
-// - if you merge multiple schemas with the same key, the last one will take precedence
-// - preTransforms, postTransforms and tests are merged, but the order is not guaranteed and if you have multiple of the same type they will be duplicated
-// - if you modify a nested part of the schema it may effect the other schemas
+// Merge combines two or more schemas into a new schema.
+// It performs a shallow merge, meaning:
+//   - Fields with the same key from later schemas override earlier ones
+//   - PreTransforms, PostTransforms and tests are concatenated in order
+//   - Modifying nested schemas may affect the original schemas
+//
+// Parameters:
+//   - other: The first schema to merge with
+//   - others: Additional schemas to merge
+//
+// Returns a new schema containing the merged fields and transforms
 func (v *structProcessor) Merge(other *structProcessor, others ...*structProcessor) *structProcessor {
 	new := &structProcessor{
 		preTransforms:  make([]p.PreTransform, 0),
@@ -48,6 +54,8 @@ func (v *structProcessor) Merge(other *structProcessor, others ...*structProcess
 	return new
 }
 
+// cloneShallow creates a shallow copy of the schema.
+// The new schema shares references to the transforms, tests and inner schema.
 func (v *structProcessor) cloneShallow() *structProcessor {
 	new := &structProcessor{
 		preTransforms:  v.preTransforms,
@@ -59,6 +67,12 @@ func (v *structProcessor) cloneShallow() *structProcessor {
 	return new
 }
 
+// Omit creates a new schema with specified fields removed.
+// It accepts either strings or map[string]bool as arguments:
+//   - Strings directly specify fields to omit
+//   - For maps, fields are omitted when their boolean value is true
+//
+// Returns a new schema with the specified fields removed
 func (v *structProcessor) Omit(vals ...any) *structProcessor {
 	new := v.cloneShallow()
 	new.schema = Schema{}
@@ -78,6 +92,12 @@ func (v *structProcessor) Omit(vals ...any) *structProcessor {
 	return new
 }
 
+// Pick creates a new schema keeping only the specified fields.
+// It accepts either strings or map[string]bool as arguments:
+//   - Strings directly specify fields to keep
+//   - For maps, fields are kept when their boolean value is true
+//
+// Returns a new schema containing only the specified fields
 func (v *structProcessor) Pick(picks ...any) *structProcessor {
 	new := v.cloneShallow()
 	new.schema = Schema{}
@@ -96,6 +116,13 @@ func (v *structProcessor) Pick(picks ...any) *structProcessor {
 	return new
 }
 
+// Extend creates a new schema by adding additional fields from the provided schema.
+// Fields in the provided schema override any existing fields with the same key.
+//
+// Parameters:
+//   - schema: The schema containing fields to add
+//
+// Returns a new schema with the additional fields
 func (v *structProcessor) Extend(schema Schema) *structProcessor {
 	new := v.cloneShallow()
 	new.schema = Schema{}
