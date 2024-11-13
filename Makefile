@@ -9,3 +9,9 @@ test-cover:
 
 lint:
 	@go run github.com/golangci/golangci-lint/cmd/golangci-lint@latest run
+
+docs-install:
+	cd ./docs && npm i
+docs-dev:
+	cd ./docs && npm start
+

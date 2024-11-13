@@ -141,7 +141,6 @@ Slice(String().Email().Required()).PreTransform(func(data any, ctx z.ParseCtx) (
 
 These are some of the things I want to add to zog before v1.0.0
 
-- For structs & slices: support pointers
 - Support for schema.Clone()
 - support for catch & default for structs & slices
 - Struct generation from the schemas
