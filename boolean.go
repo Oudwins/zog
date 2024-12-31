@@ -48,6 +48,7 @@ func Bool(opts ...SchemaOption) *BoolSchema {
 	return b
 }
 
+// Parse data into destination pointer
 func (v *BoolSchema) Parse(data any, dest *bool, options ...ParsingOption) p.ZogErrList {
 	errs := p.NewErrsList()
 	ctx := p.NewParseCtx(errs, conf.ErrorFormatter)
@@ -61,11 +62,8 @@ func (v *BoolSchema) Parse(data any, dest *bool, options ...ParsingOption) p.Zog
 	return errs.List
 }
 
-func (v *boolProcessor) process(val any, dest any, path p.PathBuilder, ctx ParseCtx) {
-	primitiveProcessor(val, dest, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, conf.Coercers.Bool, conf.ParseIsZeroValue.Bool)
-}
-
-func (v *boolProcessor) Validate(val *bool, options ...ParsingOption) p.ZogErrList {
+// Validate data against schema
+func (v *BoolSchema) Validate(val *bool, options ...ParsingOption) p.ZogErrList {
 	errs := p.NewErrsList()
 	ctx := p.NewParseCtx(errs, conf.ErrorFormatter)
 	for _, opt := range options {
@@ -77,73 +75,9 @@ func (v *boolProcessor) Validate(val *bool, options ...ParsingOption) p.ZogErrLi
 	return errs.List
 }
 
-func (v *boolProcessor) validate(val any, path p.PathBuilder, ctx ParseCtx) {
-	canCatch := v.catch != nil
-
-	valPtr := val.(*bool)
-	// 4. postTransforms
-	defer func() {
-		// only run posttransforms on success
-		if !ctx.HasErrored() {
-			for _, fn := range v.postTransforms {
-				err := fn(val, ctx)
-				if err != nil {
-					ctx.NewError(path, Errors.WrapUnknown(val, zconst.TypeBool, err))
-					return
-				}
-			}
-		}
-	}()
-
-	// 1. preTransforms
-	for _, fn := range v.preTransforms {
-		nVal, err := fn(valPtr, ctx)
-		// bail if error in preTransform
-		if err != nil {
-			if canCatch {
-				*valPtr = *v.catch
-				return
-			}
-			ctx.NewError(path, Errors.WrapUnknown(val, zconst.TypeBool, err))
-			return
-		}
-		*valPtr = *nVal.(*bool)
-	}
-
-	// 2. cast data to string & handle default/required
-	// Warning. This uses generic IsZeroValue because for Validate we treat zero values as invalid for required fields. This is different from Parse.
-	isZeroVal := p.IsZeroValue(*valPtr)
-
-	if isZeroVal {
-		if v.defaultVal != nil {
-			*valPtr = *v.defaultVal
-		} else if v.required == nil {
-			// This handles optional case
-			return
-		} else {
-			// is required & zero value
-			// required
-			if v.catch != nil {
-				*valPtr = *v.catch
-				return
-			} else {
-				ctx.NewError(path, Errors.FromTest(val, zconst.TypeBool, v.required, ctx))
-				return
-			}
-		}
-	}
-	// 3. tests
-	for _, test := range v.tests {
-		if !test.ValidateFunc(*valPtr, ctx) {
-			// catching the first error if catch is set
-			if canCatch {
-				*valPtr = *v.catch
-				return
-			}
-			ctx.NewError(path, Errors.FromTest(val, zconst.TypeBool, &test, ctx))
-		}
-	}
-
+// Internal function to validate data
+func (v *BoolSchema) validate(val any, path p.PathBuilder, ctx ParseCtx) {
+	primitiveValidator(val, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch)
 }
 
 // GLOBAL METHODS

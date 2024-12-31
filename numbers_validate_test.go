@@ -3,77 +3,81 @@ package zog
 import (
 	"testing"
 
+	"github.com/Oudwins/zog/zconst"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestNumberRequired(t *testing.T) {
+func TestValidateNumberRequired(t *testing.T) {
 	validator := Int().Required(Message("custom"))
-	var dest int
-	errs := validator.Parse(5, &dest)
+	dest := 5
+	errs := validator.Validate(&dest)
 	if len(errs) > 0 {
 		t.Errorf("Expected no errors, got %v", errs)
 	}
 	assert.Equal(t, 5, dest)
+
 	dest = 0
-	errs = validator.Parse(0, &dest)
+	errs = validator.Validate(&dest)
 	if len(errs) == 0 {
 		t.Errorf("Expected errors, got none")
 	}
 	assert.Equal(t, "custom", errs[0].Message())
 }
 
-func TestNumberOptional(t *testing.T) {
+func TestValidateNumberOptional(t *testing.T) {
 	validator := Int().Optional()
-	dest := 0
-	errs := validator.Parse(5, &dest)
+	dest := 5
+	errs := validator.Validate(&dest)
 	if len(errs) > 0 {
 		t.Errorf("Expected no errors, got %v", errs)
 	}
-	errs = validator.Parse(nil, &dest)
-	if len(errs) > 0 {
-		t.Errorf("Expected no errors, got %v", errs)
-	}
-	assert.Equal(t, 5, dest)
-}
-
-func TestNumberDefault(t *testing.T) {
-	validator := Int().Default(10)
-	dest := 0
-	errs := validator.Parse(nil, &dest)
-	if len(errs) > 0 {
-		t.Errorf("Expected no errors, got %v", errs)
-	}
-	assert.Equal(t, 10, dest)
-}
-
-func TestNumberCatch(t *testing.T) {
-	validator := Int().Catch(0)
-	dest := 0
-	errs := validator.Parse("not a number", &dest)
+	dest = 0
+	errs = validator.Validate(&dest)
 	if len(errs) > 0 {
 		t.Errorf("Expected no errors, got %v", errs)
 	}
 	assert.Equal(t, 0, dest)
 }
 
-func TestNumberPreTransform(t *testing.T) {
-	preTransform := func(val any, ctx ParseCtx) (any, error) {
-		if v, ok := val.(int); ok {
-			return v * 2, nil
-		}
-		return val, nil
-	}
-
-	validator := Int().PreTransform(preTransform)
-	var dest int
-	errs := validator.Parse(5, &dest)
+func TestValidateNumberDefault(t *testing.T) {
+	validator := Int().Default(10)
+	dest := 0
+	errs := validator.Validate(&dest)
 	if len(errs) > 0 {
 		t.Errorf("Expected no errors, got %v", errs)
 	}
 	assert.Equal(t, 10, dest)
 }
 
-func TestNumberPostTransform(t *testing.T) {
+func TestValidateNumberCatch(t *testing.T) {
+	validator := Int().Catch(0)
+	dest := 42
+	errs := validator.Validate(&dest)
+	if len(errs) > 0 {
+		t.Errorf("Expected no errors, got %v", errs)
+	}
+	assert.Equal(t, 42, dest)
+}
+
+func TestValidateNumberPreTransform(t *testing.T) {
+	preTransform := func(val any, ctx ParseCtx) (any, error) {
+		if v, ok := val.(*int); ok {
+			out := *v * 2
+			return &out, nil
+		}
+		return val, nil
+	}
+
+	validator := Int().PreTransform(preTransform)
+	dest := 5
+	errs := validator.Validate(&dest)
+	if len(errs) > 0 {
+		t.Errorf("Expected no errors, got %v", errs)
+	}
+	assert.Equal(t, 10, dest)
+}
+
+func TestValidateNumberPostTransform(t *testing.T) {
 	postTransform := func(val any, ctx ParseCtx) error {
 		if v, ok := val.(*int); ok {
 			*v += 1
@@ -82,18 +86,19 @@ func TestNumberPostTransform(t *testing.T) {
 	}
 
 	validator := Int().PostTransform(postTransform)
-	var dest int
-	errs := validator.Parse(5, &dest)
+	dest := 5
+	errs := validator.Validate(&dest)
 	if len(errs) > 0 {
 		t.Errorf("Expected no errors, got %v", errs)
 	}
 	assert.Equal(t, 6, dest)
 }
 
-func TestNumberMultipleTransforms(t *testing.T) {
+func TestValidateNumberMultipleTransforms(t *testing.T) {
 	preTransform := func(val any, ctx ParseCtx) (any, error) {
-		if v, ok := val.(int); ok {
-			return v * 2, nil
+		if v, ok := val.(*int); ok {
+			out := *v * 2
+			return &out, nil
 		}
 		return val, nil
 	}
@@ -106,23 +111,23 @@ func TestNumberMultipleTransforms(t *testing.T) {
 	}
 
 	validator := Int().PreTransform(preTransform).PostTransform(postTransform)
-	var dest int
-	errs := validator.Parse(5, &dest)
+	dest := 5
+	errs := validator.Validate(&dest)
 	if len(errs) > 0 {
 		t.Errorf("Expected no errors, got %v", errs)
 	}
 	assert.Equal(t, 11, dest)
 }
 
-// validators
-func TestNumberOneOf(t *testing.T) {
+func TestValidateNumberOneOf(t *testing.T) {
 	validator := Int().OneOf([]int{1, 2, 3}, Message("custom"))
-	dest := 0
-	errs := validator.Parse(1, &dest)
+	dest := 1
+	errs := validator.Validate(&dest)
 	if len(errs) > 0 {
 		t.Errorf("Expected no errors, got %v", errs)
 	}
-	errs = validator.Parse(4, &dest)
+	dest = 4
+	errs = validator.Validate(&dest)
 	if len(errs) == 0 {
 		t.Errorf("Expected errors, got none")
 	}
@@ -130,14 +135,15 @@ func TestNumberOneOf(t *testing.T) {
 	assert.Equal(t, 4, dest)
 }
 
-func TestNumberEq(t *testing.T) {
+func TestValidateNumberEq(t *testing.T) {
 	validator := Int().EQ(5, Message("custom"))
-	dest := 0
-	errs := validator.Parse(5, &dest)
+	dest := 5
+	errs := validator.Validate(&dest)
 	if len(errs) > 0 {
 		t.Errorf("Expected no errors, got %v", errs)
 	}
-	errs = validator.Parse(4, &dest)
+	dest = 4
+	errs = validator.Validate(&dest)
 	if len(errs) == 0 {
 		t.Errorf("Expected errors, got none")
 	}
@@ -145,19 +151,21 @@ func TestNumberEq(t *testing.T) {
 	assert.Equal(t, 4, dest)
 }
 
-func TestNumberGt(t *testing.T) {
+func TestValidateNumberGt(t *testing.T) {
 	validator := Int().GT(5, Message("custom"))
-	dest := 0
-	errs := validator.Parse(6, &dest)
+	dest := 6
+	errs := validator.Validate(&dest)
 	if len(errs) > 0 {
 		t.Errorf("Expected no errors, got %v", errs)
 	}
-	errs = validator.Parse(5, &dest)
+	dest = 5
+	errs = validator.Validate(&dest)
 	if len(errs) == 0 {
 		t.Errorf("Expected errors, got none")
 	}
 	assert.Equal(t, "custom", errs[0].Message())
-	errs = validator.Parse(4, &dest)
+	dest = 4
+	errs = validator.Validate(&dest)
 	if len(errs) == 0 {
 		t.Errorf("Expected errors, got none")
 	}
@@ -165,18 +173,20 @@ func TestNumberGt(t *testing.T) {
 	assert.Equal(t, 4, dest)
 }
 
-func TestNumberGte(t *testing.T) {
-	dest := 0
+func TestValidateNumberGte(t *testing.T) {
+	dest := 6
 	validator := Int().GTE(5, Message("custom"))
-	errs := validator.Parse(6, &dest)
+	errs := validator.Validate(&dest)
 	if len(errs) > 0 {
 		t.Errorf("Expected no errors, got %v", errs)
 	}
-	errs = validator.Parse(5, &dest)
+	dest = 5
+	errs = validator.Validate(&dest)
 	if len(errs) > 0 {
 		t.Errorf("Expected no errors, got %v", errs)
 	}
-	errs = validator.Parse(4, &dest)
+	dest = 4
+	errs = validator.Validate(&dest)
 	if len(errs) == 0 {
 		t.Errorf("Expected errors, got none")
 	}
@@ -184,19 +194,21 @@ func TestNumberGte(t *testing.T) {
 	assert.Equal(t, 4, dest)
 }
 
-func TestNumberLt(t *testing.T) {
-	dest := 0
+func TestValidateNumberLt(t *testing.T) {
+	dest := 4
 	validator := Int().LT(5, Message("custom"))
-	errs := validator.Parse(4, &dest)
+	errs := validator.Validate(&dest)
 	if len(errs) > 0 {
 		t.Errorf("Expected no errors, got %v", errs)
 	}
-	errs = validator.Parse(5, &dest)
+	dest = 5
+	errs = validator.Validate(&dest)
 	if len(errs) == 0 {
 		t.Errorf("Expected errors, got none")
 	}
 	assert.Equal(t, "custom", errs[0].Message())
-	errs = validator.Parse(6, &dest)
+	dest = 6
+	errs = validator.Validate(&dest)
 	if len(errs) == 0 {
 		t.Errorf("Expected errors, got none")
 	}
@@ -204,18 +216,20 @@ func TestNumberLt(t *testing.T) {
 	assert.Equal(t, 6, dest)
 }
 
-func TestNumberLte(t *testing.T) {
-	dest := 0
+func TestValidateNumberLte(t *testing.T) {
+	dest := 4
 	validator := Int().LTE(5, Message("custom"))
-	errs := validator.Parse(4, &dest)
+	errs := validator.Validate(&dest)
 	if len(errs) > 0 {
 		t.Errorf("Expected no errors, got %v", errs)
 	}
-	errs = validator.Parse(5, &dest)
+	dest = 5
+	errs = validator.Validate(&dest)
 	if len(errs) > 0 {
 		t.Errorf("Expected no errors, got %v", errs)
 	}
-	errs = validator.Parse(6, &dest)
+	dest = 6
+	errs = validator.Validate(&dest)
 	if len(errs) == 0 {
 		t.Errorf("Expected errors, got none")
 	}
@@ -223,26 +237,36 @@ func TestNumberLte(t *testing.T) {
 	assert.Equal(t, 6, dest)
 }
 
-func TestNumberParse(t *testing.T) {
-	dest := 0
+func TestValidateNumberValidate(t *testing.T) {
+	dest := 5
 	validator := Int()
-	errs := validator.Parse(5, &dest)
+	errs := validator.Validate(&dest)
 	if len(errs) > 0 {
 		t.Errorf("Expected no errors, got %v", errs)
 	}
 	assert.Equal(t, 5, dest)
 }
 
-func TestNumberCustomTest(t *testing.T) {
+func TestValidateNumberCustomTest(t *testing.T) {
 	validator := Int().Test(TestFunc("custom_test", func(val any, ctx ParseCtx) bool {
 		// Custom test logic here
 		assert.Equal(t, 5, val)
 		return true
 	}), Message("custom"))
-	dest := 0
-	errs := validator.Parse(5, &dest)
+	dest := 5
+	errs := validator.Validate(&dest)
 	if len(errs) > 0 {
 		t.Errorf("Expected no errors, got %v", errs)
 	}
 	assert.Equal(t, 5, dest)
+}
+
+func TestValidateIntGetType(t *testing.T) {
+	i := Int()
+	assert.Equal(t, zconst.TypeNumber, i.getType())
+}
+
+func TestValidateFloatGetType(t *testing.T) {
+	f := Float()
+	assert.Equal(t, zconst.TypeNumber, f.getType())
 }
