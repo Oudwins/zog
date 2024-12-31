@@ -95,10 +95,10 @@ func parseJson(r *http.Request) (p.DataProvider, p.ZogError) {
 	decod := json.NewDecoder(r.Body)
 	err := decod.Decode(&m)
 	if err != nil {
-		return nil, &p.ZogErr{C: zconst.ErrCodeZHTTPInvalidJSON, Err: err}
+		return nil, &p.ZogErr{C: zconst.ErrCodeInvalidJSON, Err: err}
 	}
 	if m == nil {
-		return nil, &p.ZogErr{C: zconst.ErrCodeZHTTPInvalidJSON, Err: errors.New("nill json body")}
+		return nil, &p.ZogErr{C: zconst.ErrCodeInvalidJSON, Err: errors.New("nill json body")}
 	}
 	return p.NewMapDataProvider(m), nil
 }

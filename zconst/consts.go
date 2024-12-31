@@ -60,8 +60,9 @@ const (
 	ErrCodeTrue  ZogErrCode = "true"
 	ErrCodeFalse ZogErrCode = "false"
 
+	// JSON
+	ErrCodeInvalidJSON ZogErrCode = "invalid_json" // invalid json body
 	// ZHTTP ERRORS
-	ErrCodeZHTTPInvalidJSON  ZogErrCode = "invalid_json"  // invalid json body
 	ErrCodeZHTTPInvalidForm  ZogErrCode = "invalid_form"  // invalid form data
 	ErrCodeZHTTPInvalidQuery ZogErrCode = "invalid_query" // invalid query params
 )
