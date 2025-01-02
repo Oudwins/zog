@@ -52,7 +52,7 @@ func main() {
 }
 ```
 
-#### **4. Its easy to use with http**
+#### **4. Its easy to use with http & json**
 
 The [zhttp package](https://zog.dev/packages/zhttp) has you covered for JSON, Forms and Query Params, just do:
 
@@ -61,6 +61,15 @@ import (
   zhttp "github.com/Oudwins/zog/zhttp"
    )
 err := userSchema.Parse(zhttp.Request(r), &user)
+```
+
+If you are receiving json some other way you can use the [zjson package](https://zog.dev/packages/zjson)
+
+```go
+import (
+  zjson "github.com/Oudwins/zog/zjson"
+   )
+err := userSchema.Parse(zjson.Decode(bytes.NewReader(jsonBytes)), &user)
 ```
 
 #### **5. Or to validate your environment variables**
