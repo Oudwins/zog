@@ -64,8 +64,9 @@ var Map zconst.LangMap = map[zconst.ZogType]map[zconst.ZogErrCode]string{
 		zconst.ErrCodeRequired: "is required",
 		zconst.ErrCodeNotNil:   "must not be empty",
 		zconst.ErrCodeFallback: "struct is invalid",
+		// JSON
+		zconst.ErrCodeInvalidJSON: "invalid json body",
 		// ZHTTP ERRORS
-		zconst.ErrCodeZHTTPInvalidJSON:  "invalid json body",
 		zconst.ErrCodeZHTTPInvalidForm:  "invalid form data",
 		zconst.ErrCodeZHTTPInvalidQuery: "invalid query params",
 	},

@@ -186,7 +186,7 @@ func TestParseJsonValid(t *testing.T) {
 	req, _ := http.NewRequest("POST", "/test", strings.NewReader(jsonData))
 	req.Header.Set("Content-Type", "application/json")
 
-	dp, err := Config.Parsers.JSON(req)
+	dp, err := Config.Parsers.JSON(req)()
 	assert.Nil(t, err)
 	assert.Equal(t, "John", dp.Get("name"))
 	assert.Equal(t, float64(30), dp.Get("age"))
@@ -197,11 +197,11 @@ func TestParseJsonInvalid(t *testing.T) {
 	req, _ := http.NewRequest("POST", "/test", strings.NewReader(invalidJSON))
 	req.Header.Set("Content-Type", "application/json")
 
-	dp, err := Config.Parsers.JSON(req)
+	dp, err := Config.Parsers.JSON(req)()
 
 	assert.Error(t, err)
 	assert.Nil(t, dp)
-	assert.Equal(t, zconst.ErrCodeZHTTPInvalidJSON, err.Code())
+	assert.Equal(t, zconst.ErrCodeInvalidJSON, err.Code())
 }
 
 func TestParseJsonWithNilValue(t *testing.T) {
@@ -209,7 +209,7 @@ func TestParseJsonWithNilValue(t *testing.T) {
 	req, _ := http.NewRequest("POST", "/test", strings.NewReader(jsonData))
 	req.Header.Set("Content-Type", "application/json")
 
-	dp, err := Config.Parsers.JSON(req)
+	dp, err := Config.Parsers.JSON(req)()
 	assert.NotNil(t, err)
 	assert.Nil(t, dp)
 }
@@ -219,7 +219,7 @@ func TestParseJsonWithEmptyObject(t *testing.T) {
 	req, _ := http.NewRequest("POST", "/test", strings.NewReader(jsonData))
 	req.Header.Set("Content-Type", "application/json")
 
-	dp, err := Config.Parsers.JSON(req)
+	dp, err := Config.Parsers.JSON(req)()
 	assert.Nil(t, err)
 	assert.Equal(t, map[string]any{}, dp.GetUnderlying())
 }

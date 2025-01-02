@@ -1,16 +1,15 @@
 package zhttp
 
 import (
-	"encoding/json"
-	"errors"
 	"net/http"
 	"net/url"
 
 	p "github.com/Oudwins/zog/internals"
+	"github.com/Oudwins/zog/parsers/zjson"
 	"github.com/Oudwins/zog/zconst"
 )
 
-type ParserFunc = func(r *http.Request) (p.DataProvider, p.ZogError)
+type ParserFunc = func(r *http.Request) p.DpFactory
 
 var Config = struct {
 	Parsers struct {
@@ -24,17 +23,23 @@ var Config = struct {
 		Form  ParserFunc
 		Query ParserFunc
 	}{
-		JSON: parseJson,
-		Form: func(r *http.Request) (p.DataProvider, p.ZogError) {
-			err := r.ParseForm()
-			if err != nil {
-				return nil, &p.ZogErr{C: zconst.ErrCodeZHTTPInvalidForm, Err: err}
-			}
-			return form(r.Form), nil
+		JSON: func(r *http.Request) p.DpFactory {
+			return zjson.Decode(r.Body)
 		},
-		Query: func(r *http.Request) (p.DataProvider, p.ZogError) {
-			// This handles generic GET request from browser. We treat it as url.Values
-			return form(r.URL.Query()), nil
+		Form: func(r *http.Request) p.DpFactory {
+			return func() (p.DataProvider, p.ZogError) {
+				err := r.ParseForm()
+				if err != nil {
+					return nil, &p.ZogErr{C: zconst.ErrCodeZHTTPInvalidForm, Err: err}
+				}
+				return form(r.Form), nil
+			}
+		},
+		Query: func(r *http.Request) p.DpFactory {
+			return func() (p.DataProvider, p.ZogError) {
+				// This handles generic GET request from browser. We treat it as url.Values
+				return form(r.URL.Query()), nil
+			}
 		},
 	},
 }
@@ -68,39 +73,16 @@ func (u urlDataProvider) GetUnderlying() any {
 // Parses JSON, Form & Query data from request based on Content-Type header
 // Usage:
 // schema.Parse(zhttp.Request(r), &dest)
+// WARNING: FOR JSON PARSING DOES NOT SUPPORT JSON ARRAYS OR PRIMITIVES
 func Request(r *http.Request) p.DpFactory {
-	return func() (p.DataProvider, p.ZogError) {
-		switch r.Header.Get("Content-Type") {
-		case "application/json":
-			return Config.Parsers.JSON(r)
-		case "application/x-www-form-urlencoded":
-			return Config.Parsers.Form(r)
-		default:
-			return Config.Parsers.Query(r)
-		}
+	switch r.Header.Get("Content-Type") {
+	case "application/json":
+		return Config.Parsers.JSON(r)
+	case "application/x-www-form-urlencoded":
+		return Config.Parsers.Form(r)
+	default:
+		return Config.Parsers.Query(r)
 	}
-}
-
-// Parses JSON data from request body. Does not support json arrays or primitives
-/*
-- "null" -> nil -> Not accepted by zhttp -> errs["$root"]-> required error
-- "{}" -> okay -> map[]{}
-- "" -> parsing error -> errs["$root"]-> parsing error
-- "1213" -> zhttp -> plain value
-  - struct schema -> hey this valid input
-  - "string is not an object"
-*/
-func parseJson(r *http.Request) (p.DataProvider, p.ZogError) {
-	var m map[string]any
-	decod := json.NewDecoder(r.Body)
-	err := decod.Decode(&m)
-	if err != nil {
-		return nil, &p.ZogErr{C: zconst.ErrCodeZHTTPInvalidJSON, Err: err}
-	}
-	if m == nil {
-		return nil, &p.ZogErr{C: zconst.ErrCodeZHTTPInvalidJSON, Err: errors.New("nill json body")}
-	}
-	return p.NewMapDataProvider(m), nil
 }
 
 func form(data url.Values) p.DataProvider {
