@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.14.0](https://github.com/Oudwins/zog/compare/v0.13.0...v0.14.0) (2025-01-02)
+
+
+### Features
+
+* zjson package ([#58](https://github.com/Oudwins/zog/issues/58)) ([2009561](https://github.com/Oudwins/zog/commit/20095613cbe017772bb92e774cffcb4f8cda390b))
+
 ## [0.13.0](https://github.com/Oudwins/zog/compare/v0.12.1...v0.13.0) (2024-11-12)
 
 
