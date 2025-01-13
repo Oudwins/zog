@@ -10,12 +10,14 @@ import (
 	"github.com/Oudwins/zog/zconst"
 )
 
+var _ PrimitiveZogSchema[string] = &StringSchema{}
+
 var (
 	emailRegex = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
 	uuidRegex  = regexp.MustCompile(`^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$`)
 )
 
-type stringProcessor struct {
+type StringSchema struct {
 	preTransforms  []p.PreTransform
 	tests          []p.Test
 	postTransforms []p.PostTransform
@@ -28,25 +30,25 @@ type stringProcessor struct {
 // ! INTERNALS
 
 // Internal function to process the data
-func (v *stringProcessor) process(val any, dest any, path p.PathBuilder, ctx ParseCtx) {
+func (v *StringSchema) process(val any, dest any, path p.PathBuilder, ctx ParseCtx) {
 	primitiveProcessor(val, dest, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, v.coercer, p.IsParseZeroValue)
 }
 
 // Returns the type of the schema
-func (v *stringProcessor) getType() zconst.ZogType {
+func (v *StringSchema) getType() zconst.ZogType {
 	return zconst.TypeString
 }
 
 // Sets the coercer for the schema
-func (v *stringProcessor) setCoercer(c conf.CoercerFunc) {
+func (v *StringSchema) setCoercer(c conf.CoercerFunc) {
 	v.coercer = c
 }
 
 // ! USER FACING FUNCTIONS
 
 // Returns a new String Schema
-func String(opts ...SchemaOption) *stringProcessor {
-	s := &stringProcessor{
+func String(opts ...SchemaOption) *StringSchema {
+	s := &StringSchema{
 		coercer: conf.Coercers.String, // default coercer
 	}
 	for _, opt := range opts {
@@ -56,7 +58,7 @@ func String(opts ...SchemaOption) *stringProcessor {
 }
 
 // Parses the data into the destination string. Returns a list of errors
-func (v *stringProcessor) Parse(data any, dest *string, options ...ParsingOption) p.ZogErrList {
+func (v *StringSchema) Parse(data any, dest *string, options ...ParsingOption) p.ZogErrList {
 	errs := p.NewErrsList()
 	ctx := p.NewParseCtx(errs, conf.ErrorFormatter)
 	for _, opt := range options {
@@ -70,7 +72,7 @@ func (v *stringProcessor) Parse(data any, dest *string, options ...ParsingOption
 }
 
 // Adds pretransform function to schema
-func (v *stringProcessor) PreTransform(transform p.PreTransform) *stringProcessor {
+func (v *StringSchema) PreTransform(transform p.PreTransform) *StringSchema {
 	if v.preTransforms == nil {
 		v.preTransforms = []p.PreTransform{}
 	}
@@ -79,7 +81,7 @@ func (v *stringProcessor) PreTransform(transform p.PreTransform) *stringProcesso
 }
 
 // PreTransform: trims the input data of whitespace if it is a string
-func (v *stringProcessor) Trim() *stringProcessor {
+func (v *StringSchema) Trim() *StringSchema {
 	v.preTransforms = append(v.preTransforms, func(val any, ctx ParseCtx) (any, error) {
 		s, ok := val.(string)
 		if !ok {
@@ -91,7 +93,7 @@ func (v *stringProcessor) Trim() *stringProcessor {
 }
 
 // Adds posttransform function to schema
-func (v *stringProcessor) PostTransform(transform p.PostTransform) *stringProcessor {
+func (v *StringSchema) PostTransform(transform p.PostTransform) *StringSchema {
 	if v.postTransforms == nil {
 		v.postTransforms = []p.PostTransform{}
 	}
@@ -102,7 +104,7 @@ func (v *stringProcessor) PostTransform(transform p.PostTransform) *stringProces
 // ! MODIFIERS
 
 // marks field as required
-func (v *stringProcessor) Required(options ...TestOption) *stringProcessor {
+func (v *StringSchema) Required(options ...TestOption) *StringSchema {
 	r := p.Required()
 	for _, opt := range options {
 		opt(&r)
@@ -112,19 +114,19 @@ func (v *stringProcessor) Required(options ...TestOption) *stringProcessor {
 }
 
 // marks field as optional
-func (v *stringProcessor) Optional() *stringProcessor {
+func (v *StringSchema) Optional() *StringSchema {
 	v.required = nil
 	return v
 }
 
 // sets the default value
-func (v *stringProcessor) Default(val string) *stringProcessor {
+func (v *StringSchema) Default(val string) *StringSchema {
 	v.defaultVal = &val
 	return v
 }
 
 // sets the catch value (i.e the value to use if the validation fails)
-func (v *stringProcessor) Catch(val string) *stringProcessor {
+func (v *StringSchema) Catch(val string) *StringSchema {
 	v.catch = &val
 	return v
 }
@@ -133,7 +135,7 @@ func (v *stringProcessor) Catch(val string) *stringProcessor {
 
 // ! Tests
 // custom test function call it -> schema.Test(t z.Test, opts ...TestOption)
-func (v *stringProcessor) Test(t p.Test, opts ...TestOption) *stringProcessor {
+func (v *StringSchema) Test(t p.Test, opts ...TestOption) *StringSchema {
 	for _, opt := range opts {
 		opt(&t)
 	}
@@ -142,7 +144,7 @@ func (v *stringProcessor) Test(t p.Test, opts ...TestOption) *stringProcessor {
 }
 
 // Test: checks that the value is one of the enum values
-func (v *stringProcessor) OneOf(enum []string, options ...TestOption) *stringProcessor {
+func (v *StringSchema) OneOf(enum []string, options ...TestOption) *StringSchema {
 	t := p.In(enum)
 	for _, opt := range options {
 		opt(&t)
@@ -152,7 +154,7 @@ func (v *stringProcessor) OneOf(enum []string, options ...TestOption) *stringPro
 }
 
 // Test: checks that the value is at least n characters long
-func (v *stringProcessor) Min(n int, options ...TestOption) *stringProcessor {
+func (v *StringSchema) Min(n int, options ...TestOption) *StringSchema {
 	t := p.LenMin[string](n)
 	for _, opt := range options {
 		opt(&t)
@@ -162,7 +164,7 @@ func (v *stringProcessor) Min(n int, options ...TestOption) *stringProcessor {
 }
 
 // Test: checks that the value is at most n characters long
-func (v *stringProcessor) Max(n int, options ...TestOption) *stringProcessor {
+func (v *StringSchema) Max(n int, options ...TestOption) *StringSchema {
 	t := p.LenMax[string](n)
 	for _, opt := range options {
 		opt(&t)
@@ -172,7 +174,7 @@ func (v *stringProcessor) Max(n int, options ...TestOption) *stringProcessor {
 }
 
 // Test: checks that the value is exactly n characters long
-func (v *stringProcessor) Len(n int, options ...TestOption) *stringProcessor {
+func (v *StringSchema) Len(n int, options ...TestOption) *StringSchema {
 	t := p.Len[string](n)
 	for _, opt := range options {
 		opt(&t)
@@ -182,7 +184,7 @@ func (v *stringProcessor) Len(n int, options ...TestOption) *stringProcessor {
 }
 
 // Test: checks that the value is a valid email address
-func (v *stringProcessor) Email(options ...TestOption) *stringProcessor {
+func (v *StringSchema) Email(options ...TestOption) *StringSchema {
 	t := p.Test{
 		ErrCode: zconst.ErrCodeEmail,
 		ValidateFunc: func(v any, ctx ParseCtx) bool {
@@ -201,7 +203,7 @@ func (v *stringProcessor) Email(options ...TestOption) *stringProcessor {
 }
 
 // Test: checks that the value is a valid URL
-func (v *stringProcessor) URL(options ...TestOption) *stringProcessor {
+func (v *StringSchema) URL(options ...TestOption) *StringSchema {
 	t := p.Test{
 		ErrCode: zconst.ErrCodeURL,
 		ValidateFunc: func(v any, ctx ParseCtx) bool {
@@ -221,7 +223,7 @@ func (v *stringProcessor) URL(options ...TestOption) *stringProcessor {
 }
 
 // Test: checks that the value has the prefix
-func (v *stringProcessor) HasPrefix(s string, options ...TestOption) *stringProcessor {
+func (v *StringSchema) HasPrefix(s string, options ...TestOption) *StringSchema {
 	t := p.Test{
 		ErrCode: zconst.ErrCodeHasPrefix,
 		Params:  make(map[string]any, 1),
@@ -242,7 +244,7 @@ func (v *stringProcessor) HasPrefix(s string, options ...TestOption) *stringProc
 }
 
 // Test: checks that the value has the suffix
-func (v *stringProcessor) HasSuffix(s string, options ...TestOption) *stringProcessor {
+func (v *StringSchema) HasSuffix(s string, options ...TestOption) *StringSchema {
 	t := p.Test{
 		ErrCode: zconst.ErrCodeHasSuffix,
 		Params:  make(map[string]any, 1),
@@ -263,7 +265,7 @@ func (v *stringProcessor) HasSuffix(s string, options ...TestOption) *stringProc
 }
 
 // Test: checks that the value contains the substring
-func (v *stringProcessor) Contains(sub string, options ...TestOption) *stringProcessor {
+func (v *StringSchema) Contains(sub string, options ...TestOption) *StringSchema {
 	t := p.Test{
 		ErrCode: zconst.ErrCodeContains,
 		Params:  make(map[string]any, 1),
@@ -284,7 +286,7 @@ func (v *stringProcessor) Contains(sub string, options ...TestOption) *stringPro
 }
 
 // Test: checks that the value contains an uppercase letter
-func (v *stringProcessor) ContainsUpper(options ...TestOption) *stringProcessor {
+func (v *StringSchema) ContainsUpper(options ...TestOption) *StringSchema {
 	t := p.Test{
 		ErrCode: zconst.ErrCodeContainsUpper,
 		ValidateFunc: func(v any, ctx ParseCtx) bool {
@@ -308,7 +310,7 @@ func (v *stringProcessor) ContainsUpper(options ...TestOption) *stringProcessor 
 }
 
 // Test: checks that the value contains a digit
-func (v *stringProcessor) ContainsDigit(options ...TestOption) *stringProcessor {
+func (v *StringSchema) ContainsDigit(options ...TestOption) *StringSchema {
 	t := p.Test{
 		ErrCode: zconst.ErrCodeContainsDigit,
 		ValidateFunc: func(v any, ctx ParseCtx) bool {
@@ -334,7 +336,7 @@ func (v *stringProcessor) ContainsDigit(options ...TestOption) *stringProcessor 
 }
 
 // Test: checks that the value contains a special character
-func (v *stringProcessor) ContainsSpecial(options ...TestOption) *stringProcessor {
+func (v *StringSchema) ContainsSpecial(options ...TestOption) *StringSchema {
 	t :=
 		p.Test{
 			ErrCode: zconst.ErrCodeContainsSpecial,
@@ -362,7 +364,7 @@ func (v *stringProcessor) ContainsSpecial(options ...TestOption) *stringProcesso
 }
 
 // Test: checks that the value is a valid uuid
-func (v *stringProcessor) UUID(options ...TestOption) *stringProcessor {
+func (v *StringSchema) UUID(options ...TestOption) *StringSchema {
 	t := p.Test{
 		ErrCode: zconst.ErrCodeUUID,
 		ValidateFunc: func(v any, ctx ParseCtx) bool {
@@ -381,7 +383,7 @@ func (v *stringProcessor) UUID(options ...TestOption) *stringProcessor {
 }
 
 // Test: checks that value matches to regex
-func (v *stringProcessor) Match(regex *regexp.Regexp, options ...TestOption) *stringProcessor {
+func (v *StringSchema) Match(regex *regexp.Regexp, options ...TestOption) *StringSchema {
 	t := p.Test{
 		ErrCode: zconst.ErrCodeMatch,
 		Params:  make(map[string]any, 1),

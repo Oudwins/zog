@@ -9,9 +9,9 @@ import (
 )
 
 // ! INTERNALS
-var _ ZogSchema = &timeProcessor{}
+var _ PrimitiveZogSchema[time.Time] = &TimeSchema{}
 
-type timeProcessor struct {
+type TimeSchema struct {
 	preTransforms  []p.PreTransform
 	tests          []p.Test
 	postTransforms []p.PostTransform
@@ -22,27 +22,27 @@ type timeProcessor struct {
 }
 
 // internal processes the data
-func (v *timeProcessor) process(val any, dest any, path p.PathBuilder, ctx ParseCtx) {
+func (v *TimeSchema) process(val any, dest any, path p.PathBuilder, ctx ParseCtx) {
 	primitiveProcessor(val, dest, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, v.coercer, p.IsParseZeroValue)
 }
 
 // Returns the type of the schema
-func (v *timeProcessor) getType() zconst.ZogType {
+func (v *TimeSchema) getType() zconst.ZogType {
 	return zconst.TypeTime
 }
 
 // Sets the coercer for the schema
-func (v *timeProcessor) setCoercer(c conf.CoercerFunc) {
+func (v *TimeSchema) setCoercer(c conf.CoercerFunc) {
 	v.coercer = c
 }
 
-type TimeFunc func(opts ...SchemaOption) *timeProcessor
+type TimeFunc func(opts ...SchemaOption) *TimeSchema
 
 // ! USER FACING FUNCTIONS
 
 // Returns a new Time Schema
-var Time TimeFunc = func(opts ...SchemaOption) *timeProcessor {
-	t := &timeProcessor{
+var Time TimeFunc = func(opts ...SchemaOption) *TimeSchema {
+	t := &TimeSchema{
 		coercer: conf.Coercers.Time,
 	}
 	for _, opt := range opts {
@@ -73,7 +73,7 @@ func (t TimeFunc) Format(format string) SchemaOption {
 }
 
 // Parses the data into the destination time.Time. Returns a list of errors
-func (v *timeProcessor) Parse(data any, dest *time.Time, options ...ParsingOption) p.ZogErrList {
+func (v *TimeSchema) Parse(data any, dest *time.Time, options ...ParsingOption) p.ZogErrList {
 	errs := p.NewErrsList()
 	ctx := p.NewParseCtx(errs, conf.ErrorFormatter)
 
@@ -89,7 +89,7 @@ func (v *timeProcessor) Parse(data any, dest *time.Time, options ...ParsingOptio
 }
 
 // Adds pretransform function to schema
-func (v *timeProcessor) PreTransform(transform p.PreTransform) *timeProcessor {
+func (v *TimeSchema) PreTransform(transform p.PreTransform) *TimeSchema {
 	if v.preTransforms == nil {
 		v.preTransforms = []p.PreTransform{}
 	}
@@ -98,7 +98,7 @@ func (v *timeProcessor) PreTransform(transform p.PreTransform) *timeProcessor {
 }
 
 // Adds posttransform function to schema
-func (v *timeProcessor) PostTransform(transform p.PostTransform) *timeProcessor {
+func (v *TimeSchema) PostTransform(transform p.PostTransform) *TimeSchema {
 	if v.postTransforms == nil {
 		v.postTransforms = []p.PostTransform{}
 	}
@@ -109,7 +109,7 @@ func (v *timeProcessor) PostTransform(transform p.PostTransform) *timeProcessor 
 // ! MODIFIERS
 
 // marks field as required
-func (v *timeProcessor) Required(options ...TestOption) *timeProcessor {
+func (v *TimeSchema) Required(options ...TestOption) *TimeSchema {
 	r := p.Required()
 	for _, opt := range options {
 		opt(&r)
@@ -119,19 +119,19 @@ func (v *timeProcessor) Required(options ...TestOption) *timeProcessor {
 }
 
 // marks field as optional
-func (v *timeProcessor) Optional() *timeProcessor {
+func (v *TimeSchema) Optional() *TimeSchema {
 	v.required = nil
 	return v
 }
 
 // sets the default value
-func (v *timeProcessor) Default(val time.Time) *timeProcessor {
+func (v *TimeSchema) Default(val time.Time) *TimeSchema {
 	v.defaultVal = &val
 	return v
 }
 
 // sets the catch value (i.e the value to use if the validation fails)
-func (v *timeProcessor) Catch(val time.Time) *timeProcessor {
+func (v *TimeSchema) Catch(val time.Time) *TimeSchema {
 	v.catch = &val
 	return v
 }
@@ -139,7 +139,7 @@ func (v *timeProcessor) Catch(val time.Time) *timeProcessor {
 // GLOBAL METHODS
 
 // custom test function call it -> schema.Test("error_code", func(val any, ctx ParseCtx) bool {return true})
-func (v *timeProcessor) Test(t p.Test, opts ...TestOption) *timeProcessor {
+func (v *TimeSchema) Test(t p.Test, opts ...TestOption) *TimeSchema {
 	for _, opt := range opts {
 		opt(&t)
 	}
@@ -150,7 +150,7 @@ func (v *timeProcessor) Test(t p.Test, opts ...TestOption) *timeProcessor {
 // UNIQUE METHODS
 
 // Checks that the value is after the given time
-func (v *timeProcessor) After(t time.Time, opts ...TestOption) *timeProcessor {
+func (v *TimeSchema) After(t time.Time, opts ...TestOption) *TimeSchema {
 	r := p.Test{
 		ErrCode: zconst.ErrCodeAfter,
 		Params:  make(map[string]any, 1),
@@ -174,7 +174,7 @@ func (v *timeProcessor) After(t time.Time, opts ...TestOption) *timeProcessor {
 }
 
 // Checks that the value is before the given time
-func (v *timeProcessor) Before(t time.Time, opts ...TestOption) *timeProcessor {
+func (v *TimeSchema) Before(t time.Time, opts ...TestOption) *TimeSchema {
 	r :=
 		p.Test{
 			ErrCode: zconst.ErrCodeBefore,
@@ -197,7 +197,7 @@ func (v *timeProcessor) Before(t time.Time, opts ...TestOption) *timeProcessor {
 }
 
 // Checks that the value is equal to the given time
-func (v *timeProcessor) EQ(t time.Time, opts ...TestOption) *timeProcessor {
+func (v *TimeSchema) EQ(t time.Time, opts ...TestOption) *TimeSchema {
 	r := p.Test{
 		ErrCode: zconst.ErrCodeEQ,
 		Params:  make(map[string]any, 1),

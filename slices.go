@@ -9,9 +9,9 @@ import (
 	"github.com/Oudwins/zog/zconst"
 )
 
-var _ ZogSchema = &sliceProcessor{}
+var _ ComplexZogSchema = &SliceSchema{}
 
-type sliceProcessor struct {
+type SliceSchema struct {
 	preTransforms  []p.PreTransform
 	tests          []p.Test
 	schema         ZogSchema
@@ -25,17 +25,17 @@ type sliceProcessor struct {
 // ! INTERNALS
 
 // Returns the type of the schema
-func (v *sliceProcessor) getType() zconst.ZogType {
+func (v *SliceSchema) getType() zconst.ZogType {
 	return zconst.TypeSlice
 }
 
 // Sets the coercer for the schema
-func (v *sliceProcessor) setCoercer(c conf.CoercerFunc) {
+func (v *SliceSchema) setCoercer(c conf.CoercerFunc) {
 	v.coercer = c
 }
 
 // Internal function to process the data
-func (v *sliceProcessor) process(val any, dest any, path p.PathBuilder, ctx ParseCtx) {
+func (v *SliceSchema) process(val any, dest any, path p.PathBuilder, ctx ParseCtx) {
 	destType := zconst.TypeSlice
 	// 1. preTransforms
 	if v.preTransforms != nil {
@@ -116,8 +116,8 @@ func (v *sliceProcessor) process(val any, dest any, path p.PathBuilder, ctx Pars
 	// 4. postTransforms -> defered see above
 }
 
-func Slice(schema ZogSchema, opts ...SchemaOption) *sliceProcessor {
-	s := &sliceProcessor{
+func Slice(schema ZogSchema, opts ...SchemaOption) *SliceSchema {
+	s := &SliceSchema{
 		schema:  schema,
 		coercer: conf.Coercers.Slice, // default coercer
 	}
@@ -128,7 +128,7 @@ func Slice(schema ZogSchema, opts ...SchemaOption) *sliceProcessor {
 }
 
 // only supports val = slice[any] & dest = &slice[]
-func (v *sliceProcessor) Parse(data any, dest any, options ...ParsingOption) p.ZogErrMap {
+func (v *SliceSchema) Parse(data any, dest any, options ...ParsingOption) p.ZogErrMap {
 	errs := p.NewErrsMap()
 	ctx := p.NewParseCtx(errs, conf.ErrorFormatter)
 	for _, opt := range options {
@@ -141,7 +141,7 @@ func (v *sliceProcessor) Parse(data any, dest any, options ...ParsingOption) p.Z
 }
 
 // Adds pretransform function to schema
-func (v *sliceProcessor) PreTransform(transform p.PreTransform) *sliceProcessor {
+func (v *SliceSchema) PreTransform(transform p.PreTransform) *SliceSchema {
 	if v.preTransforms == nil {
 		v.preTransforms = []p.PreTransform{}
 	}
@@ -150,7 +150,7 @@ func (v *sliceProcessor) PreTransform(transform p.PreTransform) *sliceProcessor 
 }
 
 // Adds posttransform function to schema
-func (v *sliceProcessor) PostTransform(transform p.PostTransform) *sliceProcessor {
+func (v *SliceSchema) PostTransform(transform p.PostTransform) *SliceSchema {
 	if v.postTransforms == nil {
 		v.postTransforms = []p.PostTransform{}
 	}
@@ -161,7 +161,7 @@ func (v *sliceProcessor) PostTransform(transform p.PostTransform) *sliceProcesso
 // !MODIFIERS
 
 // marks field as required
-func (v *sliceProcessor) Required(options ...TestOption) *sliceProcessor {
+func (v *SliceSchema) Required(options ...TestOption) *SliceSchema {
 	r := p.Required()
 	for _, opt := range options {
 		opt(&r)
@@ -171,20 +171,20 @@ func (v *sliceProcessor) Required(options ...TestOption) *sliceProcessor {
 }
 
 // marks field as optional
-func (v *sliceProcessor) Optional() *sliceProcessor {
+func (v *SliceSchema) Optional() *SliceSchema {
 	v.required = nil
 	return v
 }
 
 // sets the default value
-func (v *sliceProcessor) Default(val any) *sliceProcessor {
+func (v *SliceSchema) Default(val any) *SliceSchema {
 	v.defaultVal = val
 	return v
 }
 
 // NOT IMPLEMENTED YET
 // sets the catch value (i.e the value to use if the validation fails)
-// func (v *sliceProcessor) Catch(val string) *sliceProcessor {
+// func (v *SliceSchema) Catch(val string) *SliceSchema {
 // 	v.catch = &val
 // 	return v
 // }
@@ -192,7 +192,7 @@ func (v *sliceProcessor) Default(val any) *sliceProcessor {
 // !TESTS
 
 // custom test function call it -> schema.Test(t z.Test, opts ...TestOption)
-func (v *sliceProcessor) Test(t p.Test, opts ...TestOption) *sliceProcessor {
+func (v *SliceSchema) Test(t p.Test, opts ...TestOption) *SliceSchema {
 	for _, opt := range opts {
 		opt(&t)
 	}
@@ -201,7 +201,7 @@ func (v *sliceProcessor) Test(t p.Test, opts ...TestOption) *sliceProcessor {
 }
 
 // Minimum number of items
-func (v *sliceProcessor) Min(n int, options ...TestOption) *sliceProcessor {
+func (v *SliceSchema) Min(n int, options ...TestOption) *SliceSchema {
 	v.tests = append(v.tests,
 		sliceMin(n),
 	)
@@ -213,7 +213,7 @@ func (v *sliceProcessor) Min(n int, options ...TestOption) *sliceProcessor {
 }
 
 // Maximum number of items
-func (v *sliceProcessor) Max(n int, options ...TestOption) *sliceProcessor {
+func (v *SliceSchema) Max(n int, options ...TestOption) *SliceSchema {
 	v.tests = append(v.tests,
 		sliceMax(n),
 	)
@@ -224,7 +224,7 @@ func (v *sliceProcessor) Max(n int, options ...TestOption) *sliceProcessor {
 }
 
 // Exact number of items
-func (v *sliceProcessor) Len(n int, options ...TestOption) *sliceProcessor {
+func (v *SliceSchema) Len(n int, options ...TestOption) *SliceSchema {
 	v.tests = append(v.tests,
 		sliceLength(n),
 	)
@@ -235,7 +235,7 @@ func (v *sliceProcessor) Len(n int, options ...TestOption) *sliceProcessor {
 }
 
 // Slice contains a specific value
-func (v *sliceProcessor) Contains(value any, options ...TestOption) *sliceProcessor {
+func (v *SliceSchema) Contains(value any, options ...TestOption) *SliceSchema {
 	v.tests = append(v.tests,
 		p.Test{
 			ErrCode: zconst.ErrCodeContains,

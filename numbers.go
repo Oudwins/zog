@@ -10,9 +10,9 @@ type Numeric interface {
 	~int | ~float64
 }
 
-var _ ZogSchema = &numberProcessor[int]{}
+var _ PrimitiveZogSchema[int] = &NumberSchema[int]{}
 
-type numberProcessor[T Numeric] struct {
+type NumberSchema[T Numeric] struct {
 	preTransforms  []p.PreTransform
 	tests          []p.Test
 	postTransforms []p.PostTransform
@@ -25,25 +25,25 @@ type numberProcessor[T Numeric] struct {
 // ! INTERNALS
 
 // Returns the type of the schema
-func (v *numberProcessor[T]) getType() zconst.ZogType {
+func (v *NumberSchema[T]) getType() zconst.ZogType {
 	return zconst.TypeNumber
 }
 
 // Sets the coercer for the schema
-func (v *numberProcessor[T]) setCoercer(c conf.CoercerFunc) {
+func (v *NumberSchema[T]) setCoercer(c conf.CoercerFunc) {
 	v.coercer = c
 }
 
 // Internal function to process the data
-func (v *numberProcessor[T]) process(val any, dest any, path p.PathBuilder, ctx ParseCtx) {
+func (v *NumberSchema[T]) process(val any, dest any, path p.PathBuilder, ctx ParseCtx) {
 	primitiveProcessor(val, dest, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, v.coercer, p.IsParseZeroValue)
 }
 
 // ! USER FACING FUNCTIONS
 
 // creates a new float64 schema
-func Float(opts ...SchemaOption) *numberProcessor[float64] {
-	s := &numberProcessor[float64]{
+func Float(opts ...SchemaOption) *NumberSchema[float64] {
+	s := &NumberSchema[float64]{
 		coercer: conf.Coercers.Float64,
 	}
 	for _, opt := range opts {
@@ -53,8 +53,8 @@ func Float(opts ...SchemaOption) *numberProcessor[float64] {
 }
 
 // creates a new int schema
-func Int(opts ...SchemaOption) *numberProcessor[int] {
-	s := &numberProcessor[int]{
+func Int(opts ...SchemaOption) *NumberSchema[int] {
+	s := &NumberSchema[int]{
 		coercer: conf.Coercers.Int,
 	}
 	for _, opt := range opts {
@@ -64,7 +64,7 @@ func Int(opts ...SchemaOption) *numberProcessor[int] {
 }
 
 // parses the value and stores it in the destination
-func (v *numberProcessor[T]) Parse(data any, dest *T, options ...ParsingOption) p.ZogErrList {
+func (v *NumberSchema[T]) Parse(data any, dest *T, options ...ParsingOption) p.ZogErrList {
 	errs := p.NewErrsList()
 	ctx := p.NewParseCtx(errs, conf.ErrorFormatter)
 	for _, opt := range options {
@@ -80,7 +80,7 @@ func (v *numberProcessor[T]) Parse(data any, dest *T, options ...ParsingOption) 
 
 // GLOBAL METHODS
 
-func (v *numberProcessor[T]) PreTransform(transform p.PreTransform) *numberProcessor[T] {
+func (v *NumberSchema[T]) PreTransform(transform p.PreTransform) *NumberSchema[T] {
 	if v.preTransforms == nil {
 		v.preTransforms = []p.PreTransform{}
 	}
@@ -89,7 +89,7 @@ func (v *numberProcessor[T]) PreTransform(transform p.PreTransform) *numberProce
 }
 
 // Adds posttransform function to schema
-func (v *numberProcessor[T]) PostTransform(transform p.PostTransform) *numberProcessor[T] {
+func (v *NumberSchema[T]) PostTransform(transform p.PostTransform) *NumberSchema[T] {
 	if v.postTransforms == nil {
 		v.postTransforms = []p.PostTransform{}
 	}
@@ -100,7 +100,7 @@ func (v *numberProcessor[T]) PostTransform(transform p.PostTransform) *numberPro
 // ! MODIFIERS
 
 // marks field as required
-func (v *numberProcessor[T]) Required(options ...TestOption) *numberProcessor[T] {
+func (v *NumberSchema[T]) Required(options ...TestOption) *NumberSchema[T] {
 	r := p.Required()
 	for _, opt := range options {
 		opt(&r)
@@ -110,25 +110,25 @@ func (v *numberProcessor[T]) Required(options ...TestOption) *numberProcessor[T]
 }
 
 // marks field as optional
-func (v *numberProcessor[T]) Optional() *numberProcessor[T] {
+func (v *NumberSchema[T]) Optional() *NumberSchema[T] {
 	v.required = nil
 	return v
 }
 
 // sets the default value
-func (v *numberProcessor[T]) Default(val T) *numberProcessor[T] {
+func (v *NumberSchema[T]) Default(val T) *NumberSchema[T] {
 	v.defaultVal = &val
 	return v
 }
 
 // sets the catch value (i.e the value to use if the validation fails)
-func (v *numberProcessor[T]) Catch(val T) *numberProcessor[T] {
+func (v *NumberSchema[T]) Catch(val T) *NumberSchema[T] {
 	v.catch = &val
 	return v
 }
 
 // custom test function call it -> schema.Test(test, options)
-func (v *numberProcessor[T]) Test(t p.Test, opts ...TestOption) *numberProcessor[T] {
+func (v *NumberSchema[T]) Test(t p.Test, opts ...TestOption) *NumberSchema[T] {
 	for _, opt := range opts {
 		opt(&t)
 	}
@@ -139,7 +139,7 @@ func (v *numberProcessor[T]) Test(t p.Test, opts ...TestOption) *numberProcessor
 // UNIQUE METHODS
 
 // Check that the value is one of the enum values
-func (v *numberProcessor[T]) OneOf(enum []T, options ...TestOption) *numberProcessor[T] {
+func (v *NumberSchema[T]) OneOf(enum []T, options ...TestOption) *NumberSchema[T] {
 	t := p.In(enum)
 	for _, opt := range options {
 		opt(&t)
@@ -149,7 +149,7 @@ func (v *numberProcessor[T]) OneOf(enum []T, options ...TestOption) *numberProce
 }
 
 // checks for equality
-func (v *numberProcessor[T]) EQ(n T, options ...TestOption) *numberProcessor[T] {
+func (v *NumberSchema[T]) EQ(n T, options ...TestOption) *NumberSchema[T] {
 	t := p.EQ(n)
 	for _, opt := range options {
 		opt(&t)
@@ -159,7 +159,7 @@ func (v *numberProcessor[T]) EQ(n T, options ...TestOption) *numberProcessor[T] 
 }
 
 // checks for lesser or equal
-func (v *numberProcessor[T]) LTE(n T, options ...TestOption) *numberProcessor[T] {
+func (v *NumberSchema[T]) LTE(n T, options ...TestOption) *NumberSchema[T] {
 	t := p.LTE(n)
 	for _, opt := range options {
 		opt(&t)
@@ -169,7 +169,7 @@ func (v *numberProcessor[T]) LTE(n T, options ...TestOption) *numberProcessor[T]
 }
 
 // checks for greater or equal
-func (v *numberProcessor[T]) GTE(n T, options ...TestOption) *numberProcessor[T] {
+func (v *NumberSchema[T]) GTE(n T, options ...TestOption) *NumberSchema[T] {
 	t := p.GTE(n)
 	for _, opt := range options {
 		opt(&t)
@@ -179,7 +179,7 @@ func (v *numberProcessor[T]) GTE(n T, options ...TestOption) *numberProcessor[T]
 }
 
 // checks for lesser
-func (v *numberProcessor[T]) LT(n T, options ...TestOption) *numberProcessor[T] {
+func (v *NumberSchema[T]) LT(n T, options ...TestOption) *NumberSchema[T] {
 	t := p.LT(n)
 	for _, opt := range options {
 		opt(&t)
@@ -189,7 +189,7 @@ func (v *numberProcessor[T]) LT(n T, options ...TestOption) *numberProcessor[T] 
 }
 
 // checks for greater
-func (v *numberProcessor[T]) GT(n T, options ...TestOption) *numberProcessor[T] {
+func (v *NumberSchema[T]) GT(n T, options ...TestOption) *NumberSchema[T] {
 	t := p.GT(n)
 	for _, opt := range options {
 		opt(&t)

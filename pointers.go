@@ -8,7 +8,9 @@ import (
 	"github.com/Oudwins/zog/zconst"
 )
 
-type pointerProcessor struct {
+var _ ComplexZogSchema = &PointerSchema{}
+
+type PointerSchema struct {
 	// preTransforms  []p.PreTransform
 	tests    []p.Test
 	schema   ZogSchema
@@ -18,24 +20,24 @@ type pointerProcessor struct {
 	// catch          *any
 }
 
-func (v *pointerProcessor) getType() zconst.ZogType {
+func (v *PointerSchema) getType() zconst.ZogType {
 	return zconst.TypePtr
 }
 
-func (v *pointerProcessor) setCoercer(c conf.CoercerFunc) {
+func (v *PointerSchema) setCoercer(c conf.CoercerFunc) {
 	v.schema.setCoercer(c)
 }
 
 // Ptr creates a pointer ZogSchema
-func Ptr(schema ZogSchema) *pointerProcessor {
-	return &pointerProcessor{
+func Ptr(schema ZogSchema) *PointerSchema {
+	return &PointerSchema{
 		tests:  []p.Test{},
 		schema: schema,
 	}
 }
 
 // Parse the data into the destination pointer
-func (v *pointerProcessor) Parse(data any, dest any, options ...ParsingOption) p.ZogErrMap {
+func (v *PointerSchema) Parse(data any, dest any, options ...ParsingOption) p.ZogErrMap {
 	errs := p.NewErrsMap()
 	ctx := p.NewParseCtx(errs, conf.ErrorFormatter)
 	for _, opt := range options {
@@ -48,7 +50,7 @@ func (v *pointerProcessor) Parse(data any, dest any, options ...ParsingOption) p
 	return errs.M
 }
 
-func (v *pointerProcessor) process(data any, dest any, path p.PathBuilder, ctx ParseCtx) {
+func (v *PointerSchema) process(data any, dest any, path p.PathBuilder, ctx ParseCtx) {
 	isZero := p.IsParseZeroValue(data, ctx)
 	if isZero {
 		if v.required != nil {
@@ -70,7 +72,7 @@ func (v *pointerProcessor) process(data any, dest any, path p.PathBuilder, ctx P
 	v.schema.process(data, di, path, ctx)
 }
 
-func (v *pointerProcessor) NotNil(options ...TestOption) *pointerProcessor {
+func (v *PointerSchema) NotNil(options ...TestOption) *PointerSchema {
 	r := p.Test{
 		ErrCode: zconst.ErrCodeNotNil,
 	}

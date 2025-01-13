@@ -11,10 +11,25 @@ import (
 )
 
 // The ZogSchema is the interface all schemas must implement
+// This is most useful for internal use. If you are looking to pass schemas around, use the ComplexZogSchema or PrimitiveZogSchema interfaces if possible.
 type ZogSchema interface {
 	process(val any, dest any, path p.PathBuilder, ctx ParseCtx)
 	setCoercer(c conf.CoercerFunc)
 	getType() zconst.ZogType
+}
+
+// This is a common interface for all complex schemas (i.e structs, slices, pointers...)
+// You can use this to pass any complex schema around
+type ComplexZogSchema interface {
+	ZogSchema
+	Parse(val any, dest any, options ...ParsingOption) ZogErrMap
+}
+
+// This is a common interface for all primitive schemas (i.e strings, numbers, booleans, time.Time...)
+// You can use this to pass any primitive schema around
+type PrimitiveZogSchema[T p.ZogPrimitive] interface {
+	ZogSchema
+	Parse(val any, dest *T, options ...ParsingOption) ZogErrList
 }
 
 // ! Passing Types through
