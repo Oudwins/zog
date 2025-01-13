@@ -6,9 +6,9 @@ import (
 	"github.com/Oudwins/zog/zconst"
 )
 
-var _ ZogSchema = &boolProcessor{}
+var _ PrimitiveZogSchema[bool] = &BoolSchema{}
 
-type boolProcessor struct {
+type BoolSchema struct {
 	preTransforms  []p.PreTransform
 	tests          []p.Test
 	postTransforms []p.PostTransform
@@ -21,25 +21,25 @@ type boolProcessor struct {
 // ! INTERNALS
 
 // Returns the type of the schema
-func (v *boolProcessor) getType() zconst.ZogType {
+func (v *BoolSchema) getType() zconst.ZogType {
 	return zconst.TypeBool
 }
 
 // Sets the coercer for the schema
-func (v *boolProcessor) setCoercer(c conf.CoercerFunc) {
+func (v *BoolSchema) setCoercer(c conf.CoercerFunc) {
 	v.coercer = c
 }
 
 // Internal function to process the data
-func (v *boolProcessor) process(val any, dest any, path p.PathBuilder, ctx ParseCtx) {
+func (v *BoolSchema) process(val any, dest any, path p.PathBuilder, ctx ParseCtx) {
 	primitiveProcessor(val, dest, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, v.coercer, p.IsParseZeroValue)
 }
 
 // ! USER FACING FUNCTIONS
 
 // Returns a new Bool Schema
-func Bool(opts ...SchemaOption) *boolProcessor {
-	b := &boolProcessor{
+func Bool(opts ...SchemaOption) *BoolSchema {
+	b := &BoolSchema{
 		coercer: conf.Coercers.Bool, // default coercer
 	}
 	for _, opt := range opts {
@@ -48,7 +48,7 @@ func Bool(opts ...SchemaOption) *boolProcessor {
 	return b
 }
 
-func (v *boolProcessor) Parse(data any, dest *bool, options ...ParsingOption) p.ZogErrList {
+func (v *BoolSchema) Parse(data any, dest *bool, options ...ParsingOption) p.ZogErrList {
 	errs := p.NewErrsList()
 	ctx := p.NewParseCtx(errs, conf.ErrorFormatter)
 	for _, opt := range options {
@@ -64,7 +64,7 @@ func (v *boolProcessor) Parse(data any, dest *bool, options ...ParsingOption) p.
 // GLOBAL METHODS
 
 // Adds pretransform function to schema
-func (v *boolProcessor) PreTransform(transform p.PreTransform) *boolProcessor {
+func (v *BoolSchema) PreTransform(transform p.PreTransform) *BoolSchema {
 	if v.preTransforms == nil {
 		v.preTransforms = []p.PreTransform{}
 	}
@@ -73,7 +73,7 @@ func (v *boolProcessor) PreTransform(transform p.PreTransform) *boolProcessor {
 }
 
 // Adds posttransform function to schema
-func (v *boolProcessor) PostTransform(transform p.PostTransform) *boolProcessor {
+func (v *BoolSchema) PostTransform(transform p.PostTransform) *BoolSchema {
 	if v.postTransforms == nil {
 		v.postTransforms = []p.PostTransform{}
 	}
@@ -83,7 +83,7 @@ func (v *boolProcessor) PostTransform(transform p.PostTransform) *boolProcessor 
 
 // ! MODIFIERS
 // marks field as required
-func (v *boolProcessor) Required(options ...TestOption) *boolProcessor {
+func (v *BoolSchema) Required(options ...TestOption) *BoolSchema {
 	r := p.Required()
 	for _, opt := range options {
 		opt(&r)
@@ -93,31 +93,31 @@ func (v *boolProcessor) Required(options ...TestOption) *boolProcessor {
 }
 
 // marks field as optional
-func (v *boolProcessor) Optional() *boolProcessor {
+func (v *BoolSchema) Optional() *BoolSchema {
 	v.required = nil
 	return v
 }
 
 // sets the default value
-func (v *boolProcessor) Default(val bool) *boolProcessor {
+func (v *BoolSchema) Default(val bool) *BoolSchema {
 	v.defaultVal = &val
 	return v
 }
 
 // sets the catch value (i.e the value to use if the validation fails)
-func (v *boolProcessor) Catch(val bool) *boolProcessor {
+func (v *BoolSchema) Catch(val bool) *BoolSchema {
 	v.catch = &val
 	return v
 }
 
 // UNIQUE METHODS
 
-func (v *boolProcessor) True() *boolProcessor {
+func (v *BoolSchema) True() *BoolSchema {
 	v.tests = append(v.tests, p.EQ[bool](true))
 	return v
 }
 
-func (v *boolProcessor) False() *boolProcessor {
+func (v *BoolSchema) False() *BoolSchema {
 	v.tests = append(v.tests, p.EQ[bool](false))
 	return v
 }

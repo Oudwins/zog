@@ -17,8 +17,8 @@ import (
 //   - others: Additional schemas to merge
 //
 // Returns a new schema containing the merged fields and transforms
-func (v *structProcessor) Merge(other *structProcessor, others ...*structProcessor) *structProcessor {
-	new := &structProcessor{
+func (v *StructSchema) Merge(other *StructSchema, others ...*StructSchema) *StructSchema {
+	new := &StructSchema{
 		preTransforms:  make([]p.PreTransform, 0),
 		postTransforms: make([]p.PostTransform, 0),
 		tests:          make([]p.Test, 0),
@@ -56,8 +56,8 @@ func (v *structProcessor) Merge(other *structProcessor, others ...*structProcess
 
 // cloneShallow creates a shallow copy of the schema.
 // The new schema shares references to the transforms, tests and inner schema.
-func (v *structProcessor) cloneShallow() *structProcessor {
-	new := &structProcessor{
+func (v *StructSchema) cloneShallow() *StructSchema {
+	new := &StructSchema{
 		preTransforms:  v.preTransforms,
 		postTransforms: v.postTransforms,
 		tests:          v.tests,
@@ -73,7 +73,7 @@ func (v *structProcessor) cloneShallow() *structProcessor {
 //   - For maps, fields are omitted when their boolean value is true
 //
 // Returns a new schema with the specified fields removed
-func (v *structProcessor) Omit(vals ...any) *structProcessor {
+func (v *StructSchema) Omit(vals ...any) *StructSchema {
 	new := v.cloneShallow()
 	new.schema = Schema{}
 	maps.Copy(new.schema, v.schema)
@@ -98,7 +98,7 @@ func (v *structProcessor) Omit(vals ...any) *structProcessor {
 //   - For maps, fields are kept when their boolean value is true
 //
 // Returns a new schema containing only the specified fields
-func (v *structProcessor) Pick(picks ...any) *structProcessor {
+func (v *StructSchema) Pick(picks ...any) *StructSchema {
 	new := v.cloneShallow()
 	new.schema = Schema{}
 	for _, pick := range picks {
@@ -123,7 +123,7 @@ func (v *structProcessor) Pick(picks ...any) *structProcessor {
 //   - schema: The schema containing fields to add
 //
 // Returns a new schema with the additional fields
-func (v *structProcessor) Extend(schema Schema) *structProcessor {
+func (v *StructSchema) Extend(schema Schema) *StructSchema {
 	new := v.cloneShallow()
 	new.schema = Schema{}
 	maps.Copy(new.schema, v.schema)

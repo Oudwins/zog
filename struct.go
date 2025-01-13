@@ -10,9 +10,9 @@ import (
 	"github.com/Oudwins/zog/zconst"
 )
 
-var _ ZogSchema = &structProcessor{}
+var _ ComplexZogSchema = &StructSchema{}
 
-type structProcessor struct {
+type StructSchema struct {
 	preTransforms  []p.PreTransform
 	schema         Schema
 	postTransforms []p.PostTransform
@@ -23,16 +23,16 @@ type structProcessor struct {
 }
 
 // Returns the type of the schema
-func (v *structProcessor) getType() zconst.ZogType {
+func (v *StructSchema) getType() zconst.ZogType {
 	return zconst.TypeStruct
 }
 
 // Sets the coercer for the schema
-func (v *structProcessor) setCoercer(c conf.CoercerFunc) {
+func (v *StructSchema) setCoercer(c conf.CoercerFunc) {
 	// noop
 }
 
-func (v *structProcessor) process(data any, dest any, path p.PathBuilder, ctx ParseCtx) {
+func (v *StructSchema) process(data any, dest any, path p.PathBuilder, ctx ParseCtx) {
 	destType := zconst.TypeStruct
 	// 1. preTransforms
 	if v.preTransforms != nil {
@@ -109,7 +109,7 @@ func (v *structProcessor) process(data any, dest any, path p.PathBuilder, ctx Pa
 		}
 
 		switch schema := processor.(type) {
-		case *structProcessor:
+		case *StructSchema:
 			schema.process(dataProv.GetNestedProvider(fieldKey), destPtr, path.Push(fieldKey), ctx)
 
 		default:
@@ -132,15 +132,15 @@ func (v *structProcessor) process(data any, dest any, path p.PathBuilder, ctx Pa
 // A map of field names to zog schemas
 type Schema map[string]ZogSchema
 
-// Returns a new structProcessor which can be used to parse input data into a struct
-func Struct(schema Schema) *structProcessor {
-	return &structProcessor{
+// Returns a new StructSchema which can be used to parse input data into a struct
+func Struct(schema Schema) *StructSchema {
+	return &StructSchema{
 		schema: schema,
 	}
 }
 
 // Parses val into destPtr and validates each field based on the schema. Only supports val = map[string]any & dest = &struct
-func (v *structProcessor) Parse(data any, destPtr any, options ...ParsingOption) p.ZogErrMap {
+func (v *StructSchema) Parse(data any, destPtr any, options ...ParsingOption) p.ZogErrMap {
 	errs := p.NewErrsMap()
 	ctx := p.NewParseCtx(errs, conf.ErrorFormatter)
 	for _, opt := range options {
@@ -154,7 +154,7 @@ func (v *structProcessor) Parse(data any, destPtr any, options ...ParsingOption)
 }
 
 // Add a pretransform step to the schema
-func (v *structProcessor) PreTransform(transform p.PreTransform) *structProcessor {
+func (v *StructSchema) PreTransform(transform p.PreTransform) *StructSchema {
 	if v.preTransforms == nil {
 		v.preTransforms = []p.PreTransform{}
 	}
@@ -163,7 +163,7 @@ func (v *structProcessor) PreTransform(transform p.PreTransform) *structProcesso
 }
 
 // Adds posttransform function to schema
-func (v *structProcessor) PostTransform(transform p.PostTransform) *structProcessor {
+func (v *StructSchema) PostTransform(transform p.PostTransform) *StructSchema {
 	if v.postTransforms == nil {
 		v.postTransforms = []p.PostTransform{}
 	}
@@ -174,7 +174,7 @@ func (v *structProcessor) PostTransform(transform p.PostTransform) *structProces
 // ! MODIFIERS
 
 // marks field as required
-func (v *structProcessor) Required(options ...TestOption) *structProcessor {
+func (v *StructSchema) Required(options ...TestOption) *StructSchema {
 	r := p.Required()
 	for _, opt := range options {
 		opt(&r)
@@ -184,26 +184,26 @@ func (v *structProcessor) Required(options ...TestOption) *structProcessor {
 }
 
 // marks field as optional
-func (v *structProcessor) Optional() *structProcessor {
+func (v *StructSchema) Optional() *StructSchema {
 	v.required = nil
 	return v
 }
 
 // // sets the default value
-// func (v *structProcessor) Default(val any) *structProcessor {
+// func (v *StructSchema) Default(val any) *StructSchema {
 // 	v.defaultVal = val
 // 	return v
 // }
 
 // // sets the catch value (i.e the value to use if the validation fails)
-// func (v *structProcessor) Catch(val any) *structProcessor {
+// func (v *StructSchema) Catch(val any) *StructSchema {
 // 	v.catch = val
 // 	return v
 // }
 
 // ! VALIDATORS
 // custom test function call it -> schema.Test(t z.Test, opts ...TestOption)
-func (v *structProcessor) Test(t p.Test, opts ...TestOption) *structProcessor {
+func (v *StructSchema) Test(t p.Test, opts ...TestOption) *StructSchema {
 	for _, opt := range opts {
 		opt(&t)
 	}
