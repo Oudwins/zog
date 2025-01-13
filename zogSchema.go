@@ -14,6 +14,7 @@ import (
 // This is most useful for internal use. If you are looking to pass schemas around, use the ComplexZogSchema or PrimitiveZogSchema interfaces if possible.
 type ZogSchema interface {
 	process(val any, dest any, path p.PathBuilder, ctx ParseCtx)
+	validate(val any, path p.PathBuilder, ctx ParseCtx)
 	setCoercer(c conf.CoercerFunc)
 	getType() zconst.ZogType
 }

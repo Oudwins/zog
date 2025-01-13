@@ -116,6 +116,86 @@ func (v *SliceSchema) process(val any, dest any, path p.PathBuilder, ctx ParseCt
 	// 4. postTransforms -> defered see above
 }
 
+// Validates a pointer pointer
+func (v *SliceSchema) Validate(data any) p.ZogErrMap {
+	errs := p.NewErrsMap()
+	ctx := p.NewParseCtx(errs, conf.ErrorFormatter)
+
+	v.validate(data, p.PathBuilder(""), ctx)
+	return errs.M
+}
+
+func (v *SliceSchema) validate(val any, path p.PathBuilder, ctx ParseCtx) {
+	destType := zconst.TypeSlice
+
+	// 4. postTransforms
+	defer func() {
+		// only run posttransforms on success
+		if !ctx.HasErrored() {
+			for _, fn := range v.postTransforms {
+				err := fn(val, ctx)
+				if err != nil {
+					ctx.NewError(path, Errors.WrapUnknown(val, destType, err))
+					return
+				}
+			}
+		}
+	}()
+	refVal := reflect.ValueOf(val).Elem()
+	// 1. preTransforms
+	// TODO this needs to actually set the slice
+	if v.preTransforms != nil {
+		for _, fn := range v.preTransforms {
+			nVal, err := fn(val, ctx)
+			// bail if error in preTransform
+			if err != nil {
+				ctx.NewError(path, Errors.WrapUnknown(val, destType, err))
+				return
+			}
+			// Set the underlying slice value through the pointer
+			refVal.Set(reflect.ValueOf(nVal).Elem())
+		}
+	}
+
+	// 2. cast data to string & handle default/required
+	isZeroVal := p.IsZeroValue(val)
+
+	if isZeroVal {
+		if v.defaultVal != nil {
+			refVal.Set(reflect.ValueOf(v.defaultVal))
+		} else if v.required == nil {
+			return
+		} else {
+			// REQUIRED & ZERO VALUE
+			ctx.NewError(path, Errors.FromTest(val, destType, v.required, ctx))
+			return
+		}
+	}
+
+	// 3.1 tests for slice items
+	if v.schema != nil {
+		for idx := 0; idx < refVal.Len(); idx++ {
+			item := refVal.Index(idx).Addr().Interface()
+			path := path.Push(fmt.Sprintf("[%d]", idx))
+			v.schema.process(item, item, path, ctx)
+		}
+	}
+
+	// 3. tests for slice
+	for _, test := range v.tests {
+		if !test.ValidateFunc(val, ctx) {
+			// catching the first error if catch is set
+			// if v.catch != nil {
+			// 	dest = v.catch
+			// 	break
+			// }
+			//
+			ctx.NewError(path, Errors.FromTest(val, destType, &test, ctx))
+		}
+	}
+	// 4. postTransforms -> defered see above
+}
+
 func Slice(schema ZogSchema, opts ...SchemaOption) *SliceSchema {
 	s := &SliceSchema{
 		schema:  schema,
