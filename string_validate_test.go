@@ -43,7 +43,8 @@ func TestValidateStringOptional(t *testing.T) {
 
 func TestValidateStringPreTransform(t *testing.T) {
 	field := String().Required().Len(3).PreTransform(func(val any, ctx ParseCtx) (any, error) {
-		return "foo", nil
+		s2 := "foo"
+		return &s2, nil
 	})
 	var dest string
 
@@ -372,14 +373,16 @@ func TestValidateStringRegex(t *testing.T) {
 }
 
 func TestValidateStringSchemaOption(t *testing.T) {
-	s := String(WithCoercer(func(original any) (value any, err error) {
-		return "coerced", nil
-	}))
+	var tp zconst.ZogType
+	s := String(func(s ZogSchema) {
+		tp = string(s.getType())
+	})
 
 	var result string = "123"
 	err := s.Validate(&result)
 	assert.Nil(t, err)
-	assert.Equal(t, "coerced", result)
+	assert.Equal(t, "123", result)
+	assert.Equal(t, zconst.TypeString, tp)
 }
 
 func TestValidateStringGetType(t *testing.T) {
