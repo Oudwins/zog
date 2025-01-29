@@ -26,6 +26,10 @@ func (v *TimeSchema) process(val any, dest any, path p.PathBuilder, ctx ParseCtx
 	primitiveProcessor(val, dest, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, v.coercer, p.IsParseZeroValue)
 }
 
+func (v *TimeSchema) validate(val any, path p.PathBuilder, ctx ParseCtx) {
+	primitiveValidator(val, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch)
+}
+
 // Returns the type of the schema
 func (v *TimeSchema) getType() zconst.ZogType {
 	return zconst.TypeTime
@@ -70,6 +74,14 @@ func (t TimeFunc) Format(format string) SchemaOption {
 	return t.FormatFunc(func(data string) (time.Time, error) {
 		return time.Parse(format, data)
 	})
+}
+
+// Validates an existing time.Time
+func (v *TimeSchema) Validate(data *time.Time) p.ZogErrList {
+	errs := p.NewErrsList()
+	ctx := p.NewParseCtx(errs, conf.ErrorFormatter)
+	v.validate(data, p.PathBuilder(""), ctx)
+	return errs.List
 }
 
 // Parses the data into the destination time.Time. Returns a list of errors
