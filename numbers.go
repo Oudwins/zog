@@ -79,7 +79,7 @@ func (v *NumberSchema[T]) Parse(data any, dest *T, options ...ParsingOption) p.Z
 }
 
 // Validates a number pointer
-func (v *numberProcessor[T]) Validate(data *T) p.ZogErrList {
+func (v *NumberSchema[T]) Validate(data *T) p.ZogErrList {
 	errs := p.NewErrsList()
 	ctx := p.NewParseCtx(errs, conf.ErrorFormatter)
 
@@ -87,7 +87,7 @@ func (v *numberProcessor[T]) Validate(data *T) p.ZogErrList {
 	return errs.List
 }
 
-func (v *numberProcessor[T]) validate(val any, path p.PathBuilder, ctx ParseCtx) {
+func (v *NumberSchema[T]) validate(val any, path p.PathBuilder, ctx ParseCtx) {
 	primitiveValidator(val, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch)
 }
 

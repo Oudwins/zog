@@ -100,7 +100,7 @@ func TestBoolValidateOptional(t *testing.T) {
 		name      string
 		data      bool
 		expected  bool
-		proc      *boolProcessor
+		proc      *BoolSchema
 		expectErr bool
 	}{
 		{

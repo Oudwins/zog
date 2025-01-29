@@ -35,7 +35,7 @@ func (v *StringSchema) process(val any, dest any, path p.PathBuilder, ctx ParseC
 }
 
 // Internal function to validate the data
-func (v *stringProcessor) validate(val any, path p.PathBuilder, ctx ParseCtx) {
+func (v *StringSchema) validate(val any, path p.PathBuilder, ctx ParseCtx) {
 	primitiveValidator(val, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch)
 }
 
@@ -77,7 +77,7 @@ func (v *StringSchema) Parse(data any, dest *string, options ...ParsingOption) p
 }
 
 // Validate Given string
-func (v *stringProcessor) Validate(data *string) p.ZogErrList {
+func (v *StringSchema) Validate(data *string) p.ZogErrList {
 	errs := p.NewErrsList()
 	ctx := p.NewParseCtx(errs, conf.ErrorFormatter)
 
@@ -97,11 +97,15 @@ func (v *StringSchema) PreTransform(transform p.PreTransform) *StringSchema {
 // PreTransform: trims the input data of whitespace if it is a string
 func (v *StringSchema) Trim() *StringSchema {
 	v.preTransforms = append(v.preTransforms, func(val any, ctx ParseCtx) (any, error) {
-		s, ok := val.(string)
-		if !ok {
+		switch v := val.(type) {
+		case *string:
+			*v = strings.TrimSpace(*v)
+			return v, nil
+		case string:
+			return strings.TrimSpace(v), nil
+		default:
 			return val, nil
 		}
-		return strings.TrimSpace(s), nil
 	})
 	return v
 }
