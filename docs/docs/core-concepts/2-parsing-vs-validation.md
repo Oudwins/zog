@@ -7,7 +7,7 @@ sidebar_position: 2
 
 Zog supports two main ways of processing data, both of which support the exact same schemas and can be used interchangeably without modifying the schema:
 - [`Schema.Parse(data, &dest, ...options)`](/core-concepts/parsing) - Parses the data into the destination pointer and returns a list of errors if any.
-- [`Schema.Validate(&data, ...options)`](/core-concepts/validation) - Validates the data and returns a list of errors if any.
+- [`Schema.Validate(&data, ...options)`](/core-concepts/validate) - Validates the data and returns a list of errors if any.
 
 
 > **You are probably wondering**
@@ -18,7 +18,7 @@ Zog supports two main ways of processing data, both of which support the exact s
 ## What is the difference?
 There is only one difference between the two:
 - For [`Schema.Parse(data, &dest, ...options)`](/core-concepts/parsing) you must provide data that Zog will parse into the destination structure. For example, if you use one of the helper packages like [zog-json](/packages/zjson) zog will unmarshal the json into the destination structure.
-- For [`Schema.Validate(&data, ...options)`](/core-concepts/validation) you are expected to have already parsed the data into the final structure you want and are now just validating that it is correct.
+- For [`Schema.Validate(&data, ...options)`](/core-concepts/validate) you are expected to have already parsed the data into the final structure you want and are now just validating that it is correct.
 
 
 **Okay, but what does this mean in practice?**
@@ -49,7 +49,12 @@ z.Ptr(z.Int()).NotNil().Validate(&valPtr) // No error
 
 
 ## Which should I use?
-If you can, use [`Schema.Validate(&data, ...options)`](/core-concepts/validation) as it is more efficient. But if you need the type coercion or zero value checking without pointers feel free to use [`Schema.Parse(data, &dest, ...options)`](/core-concepts/parsing).
+If you can, use [`Schema.Validate(&data, ...options)`](/core-concepts/validate) as it is more efficient. But if you need the type coercion or zero value checking without pointers feel free to use [`Schema.Parse(data, &dest, ...options)`](/core-concepts/parsing).
+
+
+
+## Validation Execution Structure
+Generally speaking when executing `schema.Validate()` Zog will follow a very similar execution structure to the one described in [Parsing Execution Structure](/core-concepts/parsing/#parsing-execution-structure).
 
 
 
