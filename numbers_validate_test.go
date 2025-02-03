@@ -61,9 +61,9 @@ func TestValidateNumberCatch(t *testing.T) {
 
 func TestValidateNumberPreTransform(t *testing.T) {
 	preTransform := func(val any, ctx ParseCtx) (any, error) {
-		if v, ok := val.(*int); ok {
-			out := *v * 2
-			return &out, nil
+		if v, ok := val.(int); ok {
+			out := v * 2
+			return out, nil
 		}
 		return val, nil
 	}
@@ -96,9 +96,9 @@ func TestValidateNumberPostTransform(t *testing.T) {
 
 func TestValidateNumberMultipleTransforms(t *testing.T) {
 	preTransform := func(val any, ctx ParseCtx) (any, error) {
-		if v, ok := val.(*int); ok {
-			out := *v * 2
-			return &out, nil
+		if v, ok := val.(int); ok {
+			out := v * 2
+			return out, nil
 		}
 		return val, nil
 	}

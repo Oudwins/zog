@@ -125,7 +125,7 @@ func (v *SliceSchema) Validate(data any) p.ZogErrMap {
 	return errs.M
 }
 
-func (v *SliceSchema) validate(val any, path p.PathBuilder, ctx ParseCtx) {
+func (v *SliceSchema) validate(ptr any, path p.PathBuilder, ctx ParseCtx) {
 	destType := zconst.TypeSlice
 
 	// 4. postTransforms
@@ -133,41 +133,40 @@ func (v *SliceSchema) validate(val any, path p.PathBuilder, ctx ParseCtx) {
 		// only run posttransforms on success
 		if !ctx.HasErrored() {
 			for _, fn := range v.postTransforms {
-				err := fn(val, ctx)
+				err := fn(ptr, ctx)
 				if err != nil {
-					ctx.NewError(path, Errors.WrapUnknown(val, destType, err))
+					ctx.NewError(path, Errors.WrapUnknown(ptr, destType, err))
 					return
 				}
 			}
 		}
 	}()
-	refVal := reflect.ValueOf(val).Elem()
+
+	refVal := reflect.ValueOf(ptr).Elem() // we use this to set the value to the ptr. But we still reference the ptr everywhere. This is correct even if it seems confusing.
 	// 1. preTransforms
-	// TODO this needs to actually set the slice
 	if v.preTransforms != nil {
 		for _, fn := range v.preTransforms {
-			nVal, err := fn(val, ctx)
+			nVal, err := fn(refVal.Interface(), ctx)
 			// bail if error in preTransform
 			if err != nil {
-				ctx.NewError(path, Errors.WrapUnknown(val, destType, err))
+				ctx.NewError(path, Errors.WrapUnknown(ptr, destType, err))
 				return
 			}
-			// Set the underlying slice value through the pointer
-			refVal.Set(reflect.ValueOf(nVal).Elem())
+			refVal.Set(reflect.ValueOf(nVal))
 		}
 	}
 
 	// 2. cast data to string & handle default/required
-	isZeroVal := p.IsZeroValue(val)
+	isZeroVal := p.IsZeroValue(ptr)
 
-	if isZeroVal {
+	if isZeroVal || refVal.Len() == 0 {
 		if v.defaultVal != nil {
 			refVal.Set(reflect.ValueOf(v.defaultVal))
 		} else if v.required == nil {
 			return
 		} else {
 			// REQUIRED & ZERO VALUE
-			ctx.NewError(path, Errors.FromTest(val, destType, v.required, ctx))
+			ctx.NewError(path, Errors.FromTest(ptr, destType, v.required, ctx))
 			return
 		}
 	}
@@ -177,20 +176,20 @@ func (v *SliceSchema) validate(val any, path p.PathBuilder, ctx ParseCtx) {
 		for idx := 0; idx < refVal.Len(); idx++ {
 			item := refVal.Index(idx).Addr().Interface()
 			path := path.Push(fmt.Sprintf("[%d]", idx))
-			v.schema.process(item, item, path, ctx)
+			v.schema.validate(item, path, ctx)
 		}
 	}
 
 	// 3. tests for slice
 	for _, test := range v.tests {
-		if !test.ValidateFunc(val, ctx) {
+		if !test.ValidateFunc(ptr, ctx) {
 			// catching the first error if catch is set
 			// if v.catch != nil {
 			// 	dest = v.catch
 			// 	break
 			// }
 			//
-			ctx.NewError(path, Errors.FromTest(val, destType, &test, ctx))
+			ctx.NewError(path, Errors.FromTest(ptr, destType, &test, ctx))
 		}
 	}
 	// 4. postTransforms -> defered see above

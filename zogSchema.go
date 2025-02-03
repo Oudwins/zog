@@ -191,7 +191,7 @@ func primitiveValidator[T p.ZogPrimitive](val any, path p.PathBuilder, ctx Parse
 
 	// 1. preTransforms
 	for _, fn := range preTransforms {
-		nVal, err := fn(valPtr, ctx)
+		nVal, err := fn(*valPtr, ctx)
 		// bail if error in preTransform
 		if err != nil {
 			if canCatch {
@@ -201,7 +201,7 @@ func primitiveValidator[T p.ZogPrimitive](val any, path p.PathBuilder, ctx Parse
 			ctx.NewError(path, Errors.WrapUnknown(val, zconst.TypeBool, err))
 			return
 		}
-		*valPtr = *nVal.(*T)
+		*valPtr = nVal.(T)
 	}
 
 	// 2. cast data to string & handle default/required

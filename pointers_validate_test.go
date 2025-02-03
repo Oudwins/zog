@@ -4,82 +4,61 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-
-	p "github.com/Oudwins/zog/internals"
 )
 
-// TODO
+func TestValidatePtrPrimitive(t *testing.T) {
+	var out *int = new(int)
+	*out = 10
+	s := Ptr(Int())
+	errs := s.Validate(&out)
+	assert.Empty(t, errs)
 
-func TestPtrPrimitive(t *testing.T) {
-	// in := 10
-	var out *int
-	s := Ptr(Int().Required())
-	err := s.Parse("", &out)
-	assert.Empty(t, err)
-	assert.Nil(t, out)
+	out = nil
+	errs = s.Validate(&out)
+	assert.Empty(t, errs)
 
-	err = s.Parse("not_empty", &out)
-	assert.NotNil(t, err)
-	assert.Equal(t, 0, *out)
-
-	err = s.Parse(10, &out)
-	assert.Empty(t, err)
-	assert.Equal(t, 10, *out)
-
-	// with zero value it also works
-	err = s.Parse(0, &out)
-	assert.Empty(t, err)
-	assert.Equal(t, 0, *out)
+	assert.Panics(t, func() {
+		s.Validate(nil)
+	})
 }
 
-func TestPtrInStruct(t *testing.T) {
+func TestValidatePtrInStruct(t *testing.T) {
 	type TestStruct struct {
 		Value *int
 	}
 
+	val := 10
+	out := TestStruct{Value: &val}
 	s := Struct(Schema{
 		"value": Ptr(Int()),
 	})
-	in := map[string]any{
-		"value": 10,
-	}
-	var out TestStruct
-	err := s.Parse(in, &out)
-
-	assert.Nil(t, err)
-	assert.NotNil(t, out)
-	assert.NotNil(t, out.Value)
+	errs := s.Validate(&out)
+	assert.Empty(t, errs)
 	assert.Equal(t, 10, *out.Value)
 }
 
-func TestPtrPtrInStruct(t *testing.T) {
+func TestValidatePtrPtrInStruct(t *testing.T) {
 	type TestStruct struct {
 		Value **int
 	}
 
+	val := 10
+	pval := &val
+	out := TestStruct{Value: &pval}
 	s := Struct(Schema{
 		"value": Ptr(Ptr(Int())),
 	})
-	in := map[string]any{
-		"value": 10,
-	}
-	var out TestStruct
-	// empty input
-	err := s.Parse("", &out)
-	assert.Empty(t, err)
-	assert.Nil(t, out.Value)
 
-	// good input
-	err = s.Parse(in, &out)
-
-	assert.Nil(t, err)
-	assert.NotNil(t, out)
-	assert.NotNil(t, out.Value)
-	assert.NotNil(t, *out.Value)
+	errs := s.Validate(&out)
+	assert.Empty(t, errs)
 	assert.Equal(t, 10, **out.Value)
+
+	out.Value = nil
+	errs = s.Validate(&out)
+	assert.Empty(t, errs)
 }
 
-func TestPtrNestedStructs(t *testing.T) {
+func TestValidatePtrNestedStructs(t *testing.T) {
 	type Inner struct {
 		Value *int
 	}
@@ -87,41 +66,36 @@ func TestPtrNestedStructs(t *testing.T) {
 		Inner *Inner
 	}
 
+	val := 10
+	inner := Inner{Value: &val}
+	out := Outer{Inner: &inner}
+
 	schema := Struct(Schema{
 		"inner": Ptr(Struct(Schema{
 			"value": Ptr(Int()),
 		})),
 	})
 
-	var out Outer
-	data := map[string]any{
-		"inner": map[string]any{
-			"value": 10,
-		},
-	}
-
-	err := schema.Parse(data, &out)
-	assert.Nil(t, err)
-	assert.NotNil(t, out.Inner)
-	assert.NotNil(t, out.Inner.Value)
+	errs := schema.Validate(&out)
+	assert.Empty(t, errs)
 	assert.Equal(t, 10, *out.Inner.Value)
 }
 
-func TestPtrInSlice(t *testing.T) {
-	schema := Slice(Ptr(Int()))
-	var out []*int
+func TestValidatePtrInSlice(t *testing.T) {
+	schema := Slice(Ptr(Int()).NotNil(Message("Testing")))
+	v1, v2, v3 := 10, 20, 30
+	var v4 *int
+	out := []*int{&v1, &v2, &v3, v4}
 
-	data := []any{10, 20, 30}
-	err := schema.Parse(data, &out)
-
-	assert.Nil(t, err)
-	assert.Len(t, out, 3)
+	errs := schema.Validate(&out)
+	assert.NotEmpty(t, errs)
 	assert.Equal(t, 10, *out[0])
 	assert.Equal(t, 20, *out[1])
 	assert.Equal(t, 30, *out[2])
+	assert.Equal(t, "Testing", errs["[3]"][0].Message())
 }
 
-func TestPtrSliceStruct(t *testing.T) {
+func TestValidatePtrSliceStruct(t *testing.T) {
 	type TestStruct struct {
 		Value int
 	}
@@ -129,73 +103,55 @@ func TestPtrSliceStruct(t *testing.T) {
 	schema := Slice(Ptr(Struct(Schema{
 		"value": Int(),
 	})))
-	var out []*TestStruct
-
-	data := []any{
-		map[string]any{"value": 10},
-		map[string]any{"value": 20},
-		map[string]any{"value": 30},
+	out := []*TestStruct{
+		{Value: 10},
+		{Value: 20},
+		{Value: 30},
 	}
-	err := schema.Parse(data, &out)
 
-	assert.Nil(t, err)
-	assert.Len(t, out, 3)
+	errs := schema.Validate(&out)
+	assert.Empty(t, errs)
 	assert.Equal(t, 10, out[0].Value)
 	assert.Equal(t, 20, out[1].Value)
 	assert.Equal(t, 30, out[2].Value)
 }
 
-func TestPtrRequired(t *testing.T) {
+func TestValidatePtrRequired(t *testing.T) {
 	schema := Ptr(String()).NotNil(Message("Testing"))
 	var dest *string
-	tests := []struct {
-		Val         any
-		ExpectedErr bool
-	}{
-		{nil, true},
-		{"", true},
-		{0, false},
-		{false, false},
-	}
-	for _, test := range tests {
-		err := schema.Parse(test.Val, &dest)
-		if test.ExpectedErr {
-			assert.NotNil(t, err)
-			x := err[p.ERROR_KEY_ROOT]
-			assert.Equal(t, "Testing", x[0].Message())
-		} else {
-			assert.Nil(t, err)
-		}
-	}
+	errs := schema.Validate(&dest)
+	assert.NotEmpty(t, errs)
+	assert.Equal(t, "Testing", errs[0].Message())
+
+	str := "test"
+	dest = &str
+	errs = schema.Validate(&dest)
+	assert.Empty(t, errs)
 }
 
-func TestPtrToStruct(t *testing.T) {
+func TestValidatePtrToStruct(t *testing.T) {
 	type TestStruct struct {
 		Value *int
 	}
 
-	var dest *TestStruct
+	val := 10
+	dest := &TestStruct{Value: &val}
 	s := Ptr(Struct(Schema{
 		"value": Ptr(Int()),
 	}))
-	in := map[string]any{
-		"value": 10,
-	}
-	err := s.Parse(in, &dest)
-	assert.Nil(t, err)
-	assert.NotNil(t, dest)
-	assert.NotNil(t, dest.Value)
+
+	errs := s.Validate(&dest)
+	assert.Empty(t, errs)
 	assert.Equal(t, 10, *dest.Value)
 }
 
-func TestPtrToSlice(t *testing.T) {
-
-	var dest *[]*int
+func TestValidatePtrToSlice(t *testing.T) {
+	v1, v2, v3 := 10, 20, 30
+	dest := &[]*int{&v1, &v2, &v3}
 	s := Ptr(Slice(Ptr(Int())))
-	err := s.Parse([]any{10, 20, 30}, &dest)
-	assert.Nil(t, err)
-	assert.NotNil(t, dest)
-	assert.Len(t, *dest, 3)
+
+	errs := s.Validate(&dest)
+	assert.Empty(t, errs)
 	assert.Equal(t, 10, *(*dest)[0])
 	assert.Equal(t, 20, *(*dest)[1])
 	assert.Equal(t, 30, *(*dest)[2])

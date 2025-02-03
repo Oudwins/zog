@@ -42,15 +42,17 @@ func TestValidateStringOptional(t *testing.T) {
 }
 
 func TestValidateStringPreTransform(t *testing.T) {
-	field := String().Required().Len(3).PreTransform(func(val any, ctx ParseCtx) (any, error) {
-		s2 := "foo"
-		return &s2, nil
+	field := String().Required().Len(6).PreTransform(func(val any, ctx ParseCtx) (any, error) {
+		if x, ok := val.(string); ok {
+			return "foo" + x, nil
+		}
+		return "invalid", nil
 	})
-	var dest string
+	dest := "bar"
 
 	errs := field.Validate(&dest)
 	assert.Empty(t, errs)
-	assert.Equal(t, "foo", dest)
+	assert.Equal(t, "foobar", dest)
 }
 
 func TestValidateStringTrim(t *testing.T) {

@@ -52,12 +52,7 @@ func TestTimeValidateCatch(t *testing.T) {
 func TestTimeValidatePreTransform(t *testing.T) {
 	validator := Time().PreTransform(func(data any, ctx ParseCtx) (any, error) {
 		// Add 1 hour to the input time
-		t, ok := data.(*time.Time)
-		if !ok {
-			return nil, nil
-		}
-		result := t.Add(time.Hour)
-		return &result, nil
+		return data.(time.Time).Add(time.Hour), nil
 	})
 
 	input := time.Date(2023, 1, 1, 12, 0, 0, 0, time.UTC)

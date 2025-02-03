@@ -76,22 +76,20 @@ func (v *PointerSchema) process(data any, dest any, path p.PathBuilder, ctx Pars
 func (v *PointerSchema) Validate(data any) p.ZogErrList {
 	errs := p.NewErrsList()
 	ctx := p.NewParseCtx(errs, conf.ErrorFormatter)
-
 	v.validate(data, p.PathBuilder(""), ctx)
 	return errs.List
 }
 
 func (v *PointerSchema) validate(val any, path p.PathBuilder, ctx ParseCtx) {
-	isZero := val == nil
-	if isZero {
+	rv := reflect.ValueOf(val)
+	destPtr := rv.Elem()
+	if !destPtr.IsValid() || destPtr.IsNil() {
 		if v.required != nil {
 			// ctx.AddError(v.required)
 			ctx.NewError(path, Errors.FromTest(val, v.schema.getType(), v.required, ctx))
 		}
 		return
 	}
-	rv := reflect.ValueOf(val)
-	destPtr := rv.Elem()
 	di := destPtr.Interface()
 	v.schema.validate(di, path, ctx)
 }

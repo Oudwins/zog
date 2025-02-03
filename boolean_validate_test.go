@@ -197,8 +197,8 @@ func TestBoolValidateCatch(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			boolProc := Bool().Catch(test.catch).PreTransform(func(val any, ctx ParseCtx) (any, error) {
-				if b, ok := val.(*bool); ok {
-					if *b == false {
+				if b, ok := val.(bool); ok {
+					if b == false {
 						return false, fmt.Errorf("invalid input")
 					}
 				}
@@ -287,8 +287,10 @@ func TestBoolValidatePreTransform(t *testing.T) {
 			name: "Valid transform",
 			data: true,
 			transform: func(val any, ctx ParseCtx) (any, error) {
-				b := false
-				return &b, nil
+				if b, ok := val.(bool); ok {
+					return !b, nil
+				}
+				return true, nil
 			},
 			expected: false,
 		},
