@@ -48,6 +48,7 @@ func Bool(opts ...SchemaOption) *BoolSchema {
 	return b
 }
 
+// Parse data into destination pointer
 func (v *BoolSchema) Parse(data any, dest *bool, options ...ParsingOption) p.ZogErrList {
 	errs := p.NewErrsList()
 	ctx := p.NewParseCtx(errs, conf.ErrorFormatter)
@@ -59,6 +60,24 @@ func (v *BoolSchema) Parse(data any, dest *bool, options ...ParsingOption) p.Zog
 	v.process(data, dest, path, ctx)
 
 	return errs.List
+}
+
+// Validate data against schema
+func (v *BoolSchema) Validate(val *bool, options ...ParsingOption) p.ZogErrList {
+	errs := p.NewErrsList()
+	ctx := p.NewParseCtx(errs, conf.ErrorFormatter)
+	for _, opt := range options {
+		opt(ctx)
+	}
+	path := p.PathBuilder("")
+
+	v.validate(val, path, ctx)
+	return errs.List
+}
+
+// Internal function to validate data
+func (v *BoolSchema) validate(val any, path p.PathBuilder, ctx ParseCtx) {
+	primitiveValidator(val, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch)
 }
 
 // GLOBAL METHODS

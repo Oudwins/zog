@@ -14,6 +14,7 @@ import (
 // This is most useful for internal use. If you are looking to pass schemas around, use the ComplexZogSchema or PrimitiveZogSchema interfaces if possible.
 type ZogSchema interface {
 	process(val any, dest any, path p.PathBuilder, ctx ParseCtx)
+	validate(val any, path p.PathBuilder, ctx ParseCtx)
 	setCoercer(c conf.CoercerFunc)
 	getType() zconst.ZogType
 }
@@ -36,6 +37,7 @@ type PrimitiveZogSchema[T p.ZogPrimitive] interface {
 
 // ParseCtx is the context passed through the parser
 type ParseCtx = p.ParseCtx
+type Ctx = p.ParseCtx
 
 // ZogError is the ZogError interface
 type ZogError = p.ZogError
@@ -167,4 +169,74 @@ func primitiveProcessor[T p.ZogPrimitive](val any, dest any, path p.PathBuilder,
 	}
 
 	// 4. postTransforms -> Done above on defer
+}
+
+func primitiveValidator[T p.ZogPrimitive](val any, path p.PathBuilder, ctx ParseCtx, preTransforms []p.PreTransform, tests []p.Test, postTransforms []p.PostTransform, defaultVal *T, required *p.Test, catch *T) {
+
+	canCatch := catch != nil
+
+	valPtr := val.(*T)
+	// 4. postTransforms
+	defer func() {
+		// only run posttransforms on success
+		if !ctx.HasErrored() {
+			for _, fn := range postTransforms {
+				err := fn(val, ctx)
+				if err != nil {
+					ctx.NewError(path, Errors.WrapUnknown(val, zconst.TypeBool, err))
+					return
+				}
+			}
+		}
+	}()
+
+	// 1. preTransforms
+	for _, fn := range preTransforms {
+		nVal, err := fn(*valPtr, ctx)
+		// bail if error in preTransform
+		if err != nil {
+			if canCatch {
+				*valPtr = *catch
+				return
+			}
+			ctx.NewError(path, Errors.WrapUnknown(val, zconst.TypeBool, err))
+			return
+		}
+		*valPtr = nVal.(T)
+	}
+
+	// 2. cast data to string & handle default/required
+	// Warning. This uses generic IsZeroValue because for Validate we treat zero values as invalid for required fields. This is different from Parse.
+	isZeroVal := p.IsZeroValue(*valPtr)
+
+	if isZeroVal {
+		if defaultVal != nil {
+			*valPtr = *defaultVal
+		} else if required == nil {
+			// This handles optional case
+			return
+		} else {
+			// is required & zero value
+			// required
+			if catch != nil {
+				*valPtr = *catch
+				return
+			} else {
+				ctx.NewError(path, Errors.FromTest(val, zconst.TypeBool, required, ctx))
+				return
+			}
+		}
+	}
+	// 3. tests
+	for _, test := range tests {
+		if !test.ValidateFunc(*valPtr, ctx) {
+			// catching the first error if catch is set
+			if canCatch {
+				*valPtr = *catch
+				return
+			}
+			ctx.NewError(path, Errors.FromTest(val, zconst.TypeBool, &test, ctx))
+		}
+	}
+
 }

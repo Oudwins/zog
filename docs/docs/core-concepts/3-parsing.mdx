@@ -1,10 +1,10 @@
 ---
-sidebar_position: 2
+sidebar_position: 3
 ---
 
 # Parsing
 
-## What is parsing?
+## What is schema.Parse()?
 
 To validate and parse your data into a destination pointer you can use the `schema.Parse()` function. The function signature looks like this:
 
@@ -40,31 +40,6 @@ You can define custom coercion functions for your schemas by using the `z.WithCo
 z.String(z.WithCoercer(func(data any) (any, error) {
    return "test", nil // now the result will be "test" no matter the input
 })).Parse("abc", &dest) // dest will be "test"
-```
-
-## Parsing Context
-
-Zog uses a `ParseCtx` to pass around information related to a specific `schema.Parse()` call. Currently use of the parse context is quite limited but it will be expanded upon in the future. It can be used for the following:
-
-#### Pass custom data to functions
-
-Here is an example with a pretransform
-
-```go
-nameSchema := z.String().Min(3).PreTransform(func(data any, ctx z.ParseCtx) (any, error) {
-  char := ctx.Get("split_by")
-  return strings.Split(data.(string), char), nil
-})
-nameSchema.Parse("Michael Jackson", &dest, z.WithCtxValue("split_by", " "))
-```
-
-#### Change the error formatter for this execution
-
-This might be useful for localization, or for changing the error messages for one specific execution.
-
-```go
-nameSchema := z.String().Min(3)
-nameSchema.Parse(data, &dest, z.WithErrFormatter(MyCustomErrorMessageFormatter))
 ```
 
 ## Parsing Execution Structure

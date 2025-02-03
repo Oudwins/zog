@@ -26,23 +26,24 @@ type stringSchema struct {
 
 ## PreTransforms
 
-Pretransforms is a list of function that are applied to the data before the [tests](#tests) are run. You can think of it like a `pipeline` if transformations for a specific schema. This is the function signature:
+Pretransforms is a list of function that are applied to the data before the [tests](#tests) are run. You can think of it like a `pipeline` if transformations for a specific schema. **PreTransforms are PURE functions**. They take in data and return new data. This is the function signature:
 
 ```go
 // takes the data as input and returns the new data which will then be passed onto the next functions. If the function returns an error all validation will be skipped & the error will be returned
-type PreTransform = func(data any, ctx ParseCtx) (out any, err error)
+type PreTransform = func(data any, ctx Ctx) (out any, err error)
 ```
 
 You can use pretransforms for things like trimming whitespace, splitting strings, etc. Here is an example of splitting a string into a slice of strings:
 
 ```go
-z.Slice(z.String()).PreTransform(func(data any, ctx ParseCtx) (any, error) {
+z.Slice(z.String()).PreTransform(func(data any, ctx Ctx) (any, error) {
   return strings.Split(data.(string), ","), nil
 }).Parse("item1,item2,item3", &dest)
 ```
 
 > **FOOTGUNS**
-> Please note that pretransforms are executed before type coercion (if using `schema.Parse()`). This means that if you are responsible for checking that the data matches your expected type. If you blinding typecast the data to, for example, an int and your user provides a string as input you will cause a panic.
+> *Type Coercion*: Please note that pretransforms are executed before type coercion (if using `schema.Parse()`). This means that if you are responsible for checking that the data matches your expected type. If you blinding typecast the data to, for example, an int and your user provides a string as input you will cause a panic.
+> *Pure Functions*: Since pretransforms are pure functions. A copy of the data is passed in. So if you place a preTransform on a large struct it will copy the entire struct which is not efficient. Be careful!
 
 ## Required, Default and Catch
 
@@ -63,7 +64,7 @@ type Test struct {
 	ErrCode      zconst.ZogErrCode // the error code to use if the validation fails. This helps identify the type of error, for example ErrCodeMin identifies the Min() test
 	ValidateFunc TestFunc // a function that takes the data as input and returns a boolean indicating if it is valid or not
 }
-type TestFunc = func(val any, ctx ParseCtx) bool
+type TestFunc = func(val any, ctx Ctx) bool
 ```
 
 You can view all the default tests that come with each [schema type here.](/zog-schemas)
@@ -74,13 +75,13 @@ There are two ways to create custom tests:
 
 ```go
 // 1. Using the `z.TestFunc()` function:
-z.String().Test(z.TestFunc("my_custom_error_code", func(data any, ctx z.ParseCtx) bool {
+z.String().Test(z.TestFunc("my_custom_error_code", func(data any, ctx z.Ctx) bool {
   return data == "test"
 }))
 // 2. Using the `z.Test` struct directly:
 z.String().Test(z.Test{
   ErrCode: "my_custom_error_code",
-  ValidateFunc: func(data any, ctx z.ParseCtx) bool {
+  ValidateFunc: func(data any, ctx z.Ctx) bool {
     return data == "test"
   },
 })
@@ -92,7 +93,7 @@ PostTransforms is a list of function that are applied to the data after the [tes
 
 ```go
 // type for functions called after validation & parsing is done
-type PostTransform = func(dataPtr any, ctx ParseCtx) error
+type PostTransform = func(dataPtr any, ctx Ctx) error
 ```
 
 As you can see the function takes a pointer to the data as input. This is to allow the function to modify the data.
@@ -106,7 +107,7 @@ type User struct {
 }
 z.Struct(z.Schema{
   "phone": z.String().Test(....),
-  }).PostTransform(func(dataPtr any, ctx z.ParseCtx) error {
+  }).PostTransform(func(dataPtr any, ctx z.Ctx) error {
   user := dataPtr.(*User)
   user.AreaCode = user.Phone[:3]
   user.Phone = user.Phone[3:]

@@ -72,6 +72,30 @@ func (v *PointerSchema) process(data any, dest any, path p.PathBuilder, ctx Pars
 	v.schema.process(data, di, path, ctx)
 }
 
+// Validates a pointer pointer
+func (v *PointerSchema) Validate(data any) p.ZogErrList {
+	errs := p.NewErrsList()
+	ctx := p.NewParseCtx(errs, conf.ErrorFormatter)
+	v.validate(data, p.PathBuilder(""), ctx)
+	return errs.List
+}
+
+func (v *PointerSchema) validate(val any, path p.PathBuilder, ctx ParseCtx) {
+	rv := reflect.ValueOf(val)
+	destPtr := rv.Elem()
+	if !destPtr.IsValid() || destPtr.IsNil() {
+		if v.required != nil {
+			// ctx.AddError(v.required)
+			ctx.NewError(path, Errors.FromTest(val, v.schema.getType(), v.required, ctx))
+		}
+		return
+	}
+	di := destPtr.Interface()
+	v.schema.validate(di, path, ctx)
+}
+
+// Validate Existing Pointer
+
 func (v *PointerSchema) NotNil(options ...TestOption) *PointerSchema {
 	r := p.Test{
 		ErrCode: zconst.ErrCodeNotNil,

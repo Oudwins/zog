@@ -34,6 +34,11 @@ func (v *StringSchema) process(val any, dest any, path p.PathBuilder, ctx ParseC
 	primitiveProcessor(val, dest, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, v.coercer, p.IsParseZeroValue)
 }
 
+// Internal function to validate the data
+func (v *StringSchema) validate(val any, path p.PathBuilder, ctx ParseCtx) {
+	primitiveValidator(val, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch)
+}
+
 // Returns the type of the schema
 func (v *StringSchema) getType() zconst.ZogType {
 	return zconst.TypeString
@@ -71,6 +76,15 @@ func (v *StringSchema) Parse(data any, dest *string, options ...ParsingOption) p
 	return errs.List
 }
 
+// Validate Given string
+func (v *StringSchema) Validate(data *string) p.ZogErrList {
+	errs := p.NewErrsList()
+	ctx := p.NewParseCtx(errs, conf.ErrorFormatter)
+
+	v.validate(data, p.PathBuilder(""), ctx)
+	return errs.List
+}
+
 // Adds pretransform function to schema
 func (v *StringSchema) PreTransform(transform p.PreTransform) *StringSchema {
 	if v.preTransforms == nil {
@@ -83,11 +97,15 @@ func (v *StringSchema) PreTransform(transform p.PreTransform) *StringSchema {
 // PreTransform: trims the input data of whitespace if it is a string
 func (v *StringSchema) Trim() *StringSchema {
 	v.preTransforms = append(v.preTransforms, func(val any, ctx ParseCtx) (any, error) {
-		s, ok := val.(string)
-		if !ok {
+		switch v := val.(type) {
+		case *string:
+			*v = strings.TrimSpace(*v)
+			return v, nil
+		case string:
+			return strings.TrimSpace(v), nil
+		default:
 			return val, nil
 		}
-		return strings.TrimSpace(s), nil
 	})
 	return v
 }

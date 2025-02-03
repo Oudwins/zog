@@ -363,8 +363,8 @@ func TestBoolPreTransform(t *testing.T) {
 			name: "Valid transform",
 			data: "true",
 			transform: func(val any, ctx ParseCtx) (any, error) {
-				if s, ok := val.(string); ok {
-					return s == "true", nil
+				if s, ok := val.(*string); ok {
+					return *s == "true", nil
 				}
 				return val, nil
 			},

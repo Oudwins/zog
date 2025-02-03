@@ -32,6 +32,85 @@ func (v *StructSchema) setCoercer(c conf.CoercerFunc) {
 	// noop
 }
 
+// TODO
+func (v *StructSchema) validate(ptr any, path p.PathBuilder, ctx ParseCtx) {
+	destType := zconst.TypeStruct
+
+	// 4. postTransforms
+	defer func() {
+		// only run posttransforms on success
+		if !ctx.HasErrored() {
+			for _, fn := range v.postTransforms {
+				err := fn(ptr, ctx)
+				if err != nil {
+					ctx.NewError(path, Errors.WrapUnknown(ptr, destType, err))
+					return
+				}
+			}
+		}
+	}()
+	refVal := reflect.ValueOf(ptr).Elem()
+	// 1. preTransforms
+	if v.preTransforms != nil {
+		for _, fn := range v.preTransforms {
+			nVal, err := fn(refVal.Interface(), ctx)
+			// bail if error in preTransform
+			if err != nil {
+				ctx.NewError(path, Errors.WrapUnknown(ptr, destType, err))
+				return
+			}
+			refVal.Set(reflect.ValueOf(nVal))
+		}
+	}
+
+	// 2. cast data to string & handle default/required
+	x := refVal.Interface()
+	isZeroVal := p.IsZeroValue(x)
+
+	if isZeroVal {
+		if v.required == nil {
+			return
+		} else {
+			// REQUIRED & ZERO VALUE
+			ctx.NewError(path, Errors.FromTest(ptr, destType, v.required, ctx))
+			return
+		}
+	}
+
+	// 3.1 tests for struct fields
+	for key, schema := range v.schema {
+		fieldKey := key
+		key = strings.ToUpper(string(key[0])) + key[1:]
+
+		fieldMeta, ok := refVal.Type().FieldByName(key)
+		if !ok {
+			panic(fmt.Sprintf("Struct is missing expected schema key: %s", key))
+		}
+		destPtr := refVal.FieldByName(key).Addr().Interface()
+
+		fieldTag, ok := fieldMeta.Tag.Lookup(zconst.ZogTag)
+		if ok {
+			fieldKey = fieldTag
+		}
+		schema.validate(destPtr, path.Push(fieldKey), ctx)
+
+	}
+
+	// 3. tests for slice
+	for _, test := range v.tests {
+		if !test.ValidateFunc(ptr, ctx) {
+			// catching the first error if catch is set
+			// if v.catch != nil {
+			// 	dest = v.catch
+			// 	break
+			// }
+			//
+			ctx.NewError(path, Errors.FromTest(ptr, destType, &test, ctx))
+		}
+	}
+	// 4. postTransforms -> defered see above
+}
+
 func (v *StructSchema) process(data any, dest any, path p.PathBuilder, ctx ParseCtx) {
 	destType := zconst.TypeStruct
 	// 1. preTransforms
@@ -149,6 +228,15 @@ func (v *StructSchema) Parse(data any, destPtr any, options ...ParsingOption) p.
 	path := p.PathBuilder("")
 
 	v.process(data, destPtr, path, ctx)
+
+	return errs.M
+}
+
+func (v *StructSchema) Validate(data any) p.ZogErrMap {
+	errs := p.NewErrsMap()
+	ctx := p.NewParseCtx(errs, conf.ErrorFormatter)
+
+	v.validate(data, p.PathBuilder(""), ctx)
 
 	return errs.M
 }

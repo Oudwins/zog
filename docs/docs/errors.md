@@ -145,11 +145,11 @@ This is a function available for all tests, it allows you to set a custom messag
 This function takes in an `ErrFmtFunc` which is the function used to format error messages in Zog. It has the following signature:
 
 ```go
-type ErrFmtFunc = func(e ZogError, p ParseCtx)
+type ErrFmtFunc = func(e ZogError, p Ctx)
 ```
 
 ```go
-err := z.String().Min(5, z.MessageFunc(func(e z.ZogError, p z.ParseCtx) {
+err := z.String().Min(5, z.MessageFunc(func(e z.ZogError, p z.Ctx) {
   e.SetMessage("string must be at least 5 characters long")
 })).Parse("bad", &dest)
 // err = []ZogError{{Message: "string must be at least 5 characters long"}}
@@ -160,7 +160,7 @@ err := z.String().Min(5, z.MessageFunc(func(e z.ZogError, p z.ParseCtx) {
 This allows you to set a custom error formatter for the entire parsing operation. Beware you must handle all error codes & types or you may get unexpected messages.
 
 ```go
-err := z.String().Min(5).Email().Parse("zog", &dest, z.WithErrFormatter(func(e z.ZogError, p z.ParseCtx) {
+err := z.String().Min(5).Email().Parse("zog", &dest, z.WithErrFormatter(func(e z.ZogError, p z.Ctx) {
   e.SetMessage("override message")
 }))
 // err = []ZogError{{Code: min_length_error, Message: "override message"}, {Code: email_error, Message: "override message"}}
@@ -199,7 +199,7 @@ But you can also outright override the error formatter and ignore the errors map
 
 ```go
 // override the error formatter function - CAREFUL with this you can set every error message to the same thing!
-conf.ErrorFormatter = func(e p.ZogError, p z.ParseCtx) {
+conf.ErrorFormatter = func(e p.ZogError, p z.Ctx) {
   // do something with the error
   ...
   // fallback to the default error formatter
