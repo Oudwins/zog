@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.15.0](https://github.com/Oudwins/zog/compare/v0.14.1...v0.15.0) (2025-02-03)
+
+
+### Features
+
+* New Validate method to validate existing structures ([#68](https://github.com/Oudwins/zog/issues/68)) ([8297022](https://github.com/Oudwins/zog/commit/82970228b25b3eaa619dc24e0237d754330d6b28))
+
+
+### Miscellaneous Chores
+
+* release 0.15.0 ([17cc76d](https://github.com/Oudwins/zog/commit/17cc76d1229e96501c25190f6b9a4ffadf3b2ef5))
+
 ## [0.14.1](https://github.com/Oudwins/zog/compare/v0.14.0...v0.14.1) (2025-01-13)
 
 
