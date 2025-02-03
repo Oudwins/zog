@@ -33,7 +33,9 @@ var userSchema = z.Struct(z.Schema{
 })
 ```
 
-#### **3 Parse into the struct**
+#### **3 Validate your schema**
+
+**Using [schema.Parse()](/core-concepts/parsing)**
 
 ```go
 func main() {
@@ -49,6 +51,21 @@ func main() {
   u.Name // "Zog"
   // note that this might look weird but we didn't say age was required so Zog just skiped the empty string and we are left with the uninitialized int
   u.Age // 0
+}
+```
+
+**Using [schema.Validate()](/core-concepts/validate)**
+
+```go
+func main() {
+  u := User{
+  Name: "Zog",
+  Age: 1,
+  }
+  errsMap := schema.Validate(&u)
+  if errsMap != nil {
+    // handle errors -> see Errors section
+  }
 }
 ```
 
@@ -94,10 +111,10 @@ errsList := Time().Required().Parse("2020-01-01T00:00:00Z", &t)
 
 ```go
 var dest []string
-Slice(String().Email().Required()).PreTransform(func(data any, ctx z.ParseCtx) (any, error) {
+Slice(String().Email().Required()).PreTransform(func(data any, ctx z.Ctx) (any, error) {
   s := val.(string)
   return strings.Split(s, ","), nil
-}).PostTransform(func(destPtr any, ctx z.ParseCtx) error {
+}).PostTransform(func(destPtr any, ctx z.Ctx) error {
   s := val.(*[]string)
   for i, v := range s {
     s[i] = strings.TrimSpace(v)

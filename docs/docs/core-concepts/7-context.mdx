@@ -1,0 +1,29 @@
+---
+sidebar_position: 7
+---
+
+# Context
+## What is context?
+
+Zog uses a `z.Ctx` interface to pass around information related to a specific `schema.Parse()` or `schema.Validate()` call. Currently use of the parse context is quite limited but it will be expanded upon in the future. It can be used for the following:
+
+#### Pass custom data to functions
+
+Here is an example with a pretransform
+
+```go
+nameSchema := z.String().Min(3).PreTransform(func(data any, ctx z.Ctx) (any, error) {
+  char := ctx.Get("split_by")
+  return strings.Split(data.(string), char), nil
+})
+nameSchema.Parse("Michael Jackson", &dest, z.WithCtxValue("split_by", " "))
+```
+
+#### Change the error formatter for this execution
+
+This might be useful for localization, or for changing the error messages for one specific execution.
+
+```go
+nameSchema := z.String().Min(3)
+nameSchema.Parse(data, &dest, z.WithErrFormatter(MyCustomErrorMessageFormatter))
+```

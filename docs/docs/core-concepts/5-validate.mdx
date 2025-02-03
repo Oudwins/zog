@@ -1,0 +1,47 @@
+---
+sidebar_position: 5
+---
+
+# Validate
+
+## What is schema.Validate()?
+
+
+To validate your data you can use the `schema.Validate()` function. The function signature looks like this:
+
+```go
+schema.Validate(dataPointer, options...)
+```
+
+This works with any Zog Schema:
+
+```go
+// string
+data := "test"
+z.String().Min(3).Validate(&data)
+// structs
+user := User{Name: "test"}
+z.Struct(z.Schema{"name": z.String().Min(3)}).Validate(&user)
+```
+
+## Required and Zero Values
+One quirk of `schema.Validate()` is that it will consider zero values as invalid if the schema is required. For example:
+
+```go
+var data int
+z.Int().Required().Validate(&data) // Error: int is required
+data = 0
+z.Int().Required().Validate(&data) // Error: int is required
+```
+
+To fix this you can use a pointer:
+
+```go
+var data *int
+z.Ptr(z.Int()).NotNil().Validate(&data) // Error: pointer is nil
+*data = 0
+z.Ptr(z.Int()).NotNil().Validate(&data) // No error
+```
+
+
+
