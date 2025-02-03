@@ -37,6 +37,7 @@ type PrimitiveZogSchema[T p.ZogPrimitive] interface {
 
 // ParseCtx is the context passed through the parser
 type ParseCtx = p.ParseCtx
+type Ctx = p.ParseCtx
 
 // ZogError is the ZogError interface
 type ZogError = p.ZogError
