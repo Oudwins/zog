@@ -75,7 +75,7 @@ var userSchema = z.Struct(z.Schema{
 
 #### **3 Validate your schema**
 
-**Using [schema.Parse()](/core-concepts/parsing)**
+**Using [schema.Parse()](https://zog.dev/core-concepts/parsing)**
 
 ```go
 func main() {
@@ -94,7 +94,7 @@ func main() {
 }
 ```
 
-**Using [schema.Validate()](/core-concepts/validate)**
+**Using [schema.Validate()](https://zog.dev/core-concepts/validate)**
 
 ```go
 func main() {
