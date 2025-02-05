@@ -24,7 +24,7 @@ Zog is a schema builder for runtime value parsing and validation. Define a schem
 Killer Features:
 
 - Concise yet expressive schema interface, equipped to model simple to complex data models
-- **Zod-like API**, use method chaining to build schemas in a typesafe manner
+- **[Zod](https://github.com/colinhacks/zod)-like API**, use method chaining to build schemas in a typesafe manner
 - **Extensible**: add your own validators, schemas and data providers
 - Rich error details, make debugging a breeze
 - Almost no reflection when using primitive types
