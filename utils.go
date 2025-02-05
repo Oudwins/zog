@@ -5,6 +5,45 @@ import (
 	"github.com/Oudwins/zog/zconst"
 )
 
+// ! Passing Types through
+
+// Deprecated: Use z.Ctx instead.
+// ParseCtx will be removed in the future since it is used for both validation and parsing and is a confusing name.
+type ParseCtx = p.ParseCtx
+
+// This is the context that is passed through an entire execution of `schema.Parse()` or `schema.Validate()`.
+// You can use it to pass a key/value for a specific execution. More about context in the [docs](https://zog.dev/context)
+type Ctx = p.ParseCtx
+
+// This is a type for the ZogError interface. It is the interface that all errors returned from zog implement.
+type ZogError = p.ZogError
+
+// This is a type for the ZogErrList type. It is a list of ZogErrors returned from parsing primitive schemas. The type is []ZogError
+type ZogErrList = p.ZogErrList
+
+// This is a type for the ZogErrMap type. It is a map[string][]ZogError returned from parsing complex schemas. The type is map[string][]ZogError
+// All errors are returned in a flat map, not matter how deep the schema is. For example:
+/*
+schema := z.Struct(z.Schema{
+  "address": z.Struct(z.Schema{
+    "street": z.String().Min(3).Max(10),
+    "city": z.String().Min(3).Max(10),
+  }),
+  "fields": z.Slice(z.String().Min(3).Max(10)),
+})
+errors = map[string][]ZogError{
+  "address.street": []ZogError{....}, // error for the street field in the address struct
+  "fields[0]": []ZogError{...}, // error for the first field in the slice
+}
+
+*/
+type ZogErrMap = p.ZogErrMap
+
+// ! TESTS
+
+// Test is the test object. It is the struct that represents an individual validation. For example `z.String().Min(3)` is a test that checks if the string is at least 3 characters long.
+type Test = p.Test
+
 // TestFunc is a helper function to define a custom test. It takes the error code which will be used for the error message and a validate function. Usage:
 //
 //	schema.Test(z.TestFunc(zconst.ErrCodeCustom, func(val any, ctx ParseCtx) bool {
