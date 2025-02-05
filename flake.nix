@@ -1,11 +1,11 @@
 {
-  description = "A Nix-flake-based Go 1.21 development environment";
+  description = "A Nix-flake-based Go 1.22 development environment";
 
   inputs.nixpkgs.url = "https://flakehub.com/f/NixOS/nixpkgs/0.1.*.tar.gz";
 
   outputs = { self, nixpkgs }:
     let
-      goVersion = 21; # Change this to update the whole stack
+      goVersion = 22; # Change this to update the whole stack
       nodejsVersion = 18; # Change this to update the docs
 
       supportedSystems = [ "x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin" ];

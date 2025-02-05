@@ -76,7 +76,10 @@ func (e *errHelpers) SanitizeList(l p.ZogErrList) []string {
 
 // ! Data Providers
 
-// Creates a new map data provider
+// Deprecated: This will be removed in the future.
+// You should just pass your map[string]T to the schema.Parse() function directly without using this:
+// old: schema.Parse(z.NewMapDataProvider(m), &dest)
+// new: schema.Parse(m, &dest)
 func NewMapDataProvider[T any](m map[string]T) p.DataProvider {
 	return p.NewMapDataProvider(m)
 }

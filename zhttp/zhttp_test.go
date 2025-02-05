@@ -36,7 +36,7 @@ func TestRequest(t *testing.T) {
 		"isMarried": z.Bool().True(),
 		"lights":    z.Bool().True(),
 		"cash":      z.Float().GT(10.0),
-		"swagger": z.String().Test(z.TestFunc("swagger", func(val any, ctx z.ParseCtx) bool {
+		"swagger": z.String().Test(z.TestFunc("swagger", func(val any, ctx z.Ctx) bool {
 			return val.(string) == "doweird"
 		})),
 	})
