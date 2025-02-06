@@ -17,8 +17,8 @@ Zog supports two main ways of processing data, both of which support the exact s
 
 ## What is the difference?
 There is only one difference between the two:
-- For [`Schema.Parse(data, &dest, ...options)`](/core-concepts/parsing) you must provide data that Zog will parse into the destination structure. For example, if you use one of the helper packages like [zog-json](/packages/zjson) zog will unmarshal the json into the destination structure.
-- For [`Schema.Validate(&data, ...options)`](/core-concepts/validate) you are expected to have already parsed the data into the final structure you want and are now just validating that it is correct.
+- For [Schema.Parse(data, &dest, ...options)](/core-concepts/parsing) you must provide data that Zog will parse into the destination structure. For example, if you use one of the helper packages like [zog-json](/packages/zjson) zog will unmarshal the json into the destination structure.
+- For [Schema.Validate(&data, ...options)](/core-concepts/validate) you are expected to have already parsed the data into the final structure you want and are now just validating that it is correct.
 
 
 **Okay, but what does this mean in practice?**
