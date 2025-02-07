@@ -320,33 +320,43 @@ func TestStructRequired(t *testing.T) {
 	assert.Equal(t, "custom_required", errs["$root"][0].Message())
 }
 
-// func TestStructOptional(t *testing.T) {
-// 	type TestStruct struct {
-// 		OptionalField string
-// 	}
+type Custom int
 
-// 	schema := Struct(Schema{
-// 		"optionalField": String().Optional(),
-// 	})
+const (
+	Custom1 Custom = 1
+	Custom2 Custom = 2
+)
 
-// 	t.Run("Optional field present", func(t *testing.T) {
-// 		var output TestStruct
-// 		data := map[string]any{"optionalField": "present"}
+func TestStructCustomType(t *testing.T) {
+	s := struct {
+		Custom int
+	}{}
+	schema := Struct(Schema{
+		"custom": Int().OneOf([]int{int(Custom1), int(Custom2)}),
+	})
+	errs := schema.Parse(map[string]any{"custom": int(Custom1)}, &s)
+	assert.Nil(t, errs)
+	assert.Equal(t, int(Custom1), s.Custom)
+}
 
-// 		errs := schema.Parse(data, &output)
-// 		assert.Nil(t, errs)
-// 		assert.Equal(t, "present", output.OptionalField)
-// 	})
+type Customs = int
 
-// 	t.Run("Optional field missing", func(t *testing.T) {
-// 		var output TestStruct
-// 		data := map[string]any{}
+const (
+	Customs1 Customs = 1
+	Customs2 Customs = 2
+)
 
-// 		errs := schema.Parse(data, &output)
-// 		assert.Nil(t, errs)
-// 		assert.Equal(t, "", output.OptionalField)
-// 	})
-// }
+func TestStructCustomType2(t *testing.T) {
+	s := struct {
+		Custom Customs
+	}{}
+	schema := Struct(Schema{
+		"custom": Int().OneOf([]int{Customs1, Customs2}),
+	})
+	errs := schema.Parse(map[string]any{"custom": Customs1}, &s)
+	assert.Nil(t, errs)
+	assert.Equal(t, Customs1, s.Custom)
+}
 
 func TestStructGetType(t *testing.T) {
 	s := Struct(Schema{
