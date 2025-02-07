@@ -43,5 +43,27 @@ z.Ptr(z.Int()).NotNil().Validate(&data) // Error: pointer is nil
 z.Ptr(z.Int()).NotNil().Validate(&data) // No error
 ```
 
+## Struct Validation Pattern
+Some people prefer calling validate method on the struct themselves. For that you can use this:
 
+```go
+type User struct {
+	ID int `zog:"id"`
+	Name string
+}
+var userSchema = z.Struct(z.Schema{
+	"id": z.Int().Required(),
+	"name": z.String().Required(),
+})
 
+func (u *User) Validate() z.ZogErrMap {
+	return userSchema.Validate(u)
+}
+
+// in some handler somewhere
+user := User{ID: 1, Name: "Alice"}
+err := user.Validate()
+if err != nil {
+	fmt.Println(err)
+}
+```
