@@ -17,3 +17,13 @@ func SafeError(x error) string {
 	}
 	return x.Error()
 }
+
+func AddTest(testArr []Test, t Test, isNot bool) []Test {
+	if isNot {
+		t.ValidateFunc = func(val any, ctx ParseCtx) bool {
+			return !t.ValidateFunc(val, ctx)
+		}
+	}
+
+	return append(testArr, t)
+}

@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/Oudwins/zog/conf"
+	"github.com/Oudwins/zog/internals"
 	p "github.com/Oudwins/zog/internals"
 	"github.com/Oudwins/zog/zconst"
 )
@@ -25,6 +26,7 @@ type StringSchema struct {
 	required       *p.Test
 	catch          *string
 	coercer        conf.CoercerFunc
+	isNot          bool
 }
 
 // ! INTERNALS
@@ -157,7 +159,7 @@ func (v *StringSchema) Test(t p.Test, opts ...TestOption) *StringSchema {
 	for _, opt := range opts {
 		opt(&t)
 	}
-	v.tests = append(v.tests, t)
+	v.tests = internals.AddTest(v.tests, t, v.isNot)
 	return v
 }
 
@@ -167,7 +169,7 @@ func (v *StringSchema) OneOf(enum []string, options ...TestOption) *StringSchema
 	for _, opt := range options {
 		opt(&t)
 	}
-	v.tests = append(v.tests, t)
+	v.tests = internals.AddTest(v.tests, t, v.isNot)
 	return v
 }
 
@@ -177,7 +179,7 @@ func (v *StringSchema) Min(n int, options ...TestOption) *StringSchema {
 	for _, opt := range options {
 		opt(&t)
 	}
-	v.tests = append(v.tests, t)
+	v.tests = internals.AddTest(v.tests, t, v.isNot)
 	return v
 }
 
@@ -187,7 +189,7 @@ func (v *StringSchema) Max(n int, options ...TestOption) *StringSchema {
 	for _, opt := range options {
 		opt(&t)
 	}
-	v.tests = append(v.tests, t)
+	v.tests = internals.AddTest(v.tests, t, v.isNot)
 	return v
 }
 
@@ -197,7 +199,7 @@ func (v *StringSchema) Len(n int, options ...TestOption) *StringSchema {
 	for _, opt := range options {
 		opt(&t)
 	}
-	v.tests = append(v.tests, t)
+	v.tests = internals.AddTest(v.tests, t, v.isNot)
 	return v
 }
 
@@ -216,7 +218,7 @@ func (v *StringSchema) Email(options ...TestOption) *StringSchema {
 	for _, opt := range options {
 		opt(&t)
 	}
-	v.tests = append(v.tests, t)
+	v.tests = internals.AddTest(v.tests, t, v.isNot)
 	return v
 }
 
@@ -236,7 +238,7 @@ func (v *StringSchema) URL(options ...TestOption) *StringSchema {
 	for _, opt := range options {
 		opt(&t)
 	}
-	v.tests = append(v.tests, t)
+	v.tests = internals.AddTest(v.tests, t, v.isNot)
 	return v
 }
 
@@ -257,7 +259,7 @@ func (v *StringSchema) HasPrefix(s string, options ...TestOption) *StringSchema 
 	for _, opt := range options {
 		opt(&t)
 	}
-	v.tests = append(v.tests, t)
+	v.tests = internals.AddTest(v.tests, t, v.isNot)
 	return v
 }
 
@@ -278,7 +280,7 @@ func (v *StringSchema) HasSuffix(s string, options ...TestOption) *StringSchema 
 	for _, opt := range options {
 		opt(&t)
 	}
-	v.tests = append(v.tests, t)
+	v.tests = internals.AddTest(v.tests, t, v.isNot)
 	return v
 }
 
@@ -299,7 +301,7 @@ func (v *StringSchema) Contains(sub string, options ...TestOption) *StringSchema
 	for _, opt := range options {
 		opt(&t)
 	}
-	v.tests = append(v.tests, t)
+	v.tests = internals.AddTest(v.tests, t, v.isNot)
 	return v
 }
 
@@ -323,7 +325,7 @@ func (v *StringSchema) ContainsUpper(options ...TestOption) *StringSchema {
 	for _, opt := range options {
 		opt(&t)
 	}
-	v.tests = append(v.tests, t)
+	v.tests = internals.AddTest(v.tests, t, v.isNot)
 	return v
 }
 
@@ -349,7 +351,7 @@ func (v *StringSchema) ContainsDigit(options ...TestOption) *StringSchema {
 		opt(&t)
 	}
 
-	v.tests = append(v.tests, t)
+	v.tests = internals.AddTest(v.tests, t, v.isNot)
 	return v
 }
 
@@ -377,7 +379,7 @@ func (v *StringSchema) ContainsSpecial(options ...TestOption) *StringSchema {
 	for _, opt := range options {
 		opt(&t)
 	}
-	v.tests = append(v.tests, t)
+	v.tests = internals.AddTest(v.tests, t, v.isNot)
 	return v
 }
 
@@ -396,7 +398,7 @@ func (v *StringSchema) UUID(options ...TestOption) *StringSchema {
 	for _, opt := range options {
 		opt(&t)
 	}
-	v.tests = append(v.tests, t)
+	v.tests = internals.AddTest(v.tests, t, v.isNot)
 	return v
 }
 
@@ -417,6 +419,12 @@ func (v *StringSchema) Match(regex *regexp.Regexp, options ...TestOption) *Strin
 	for _, opt := range options {
 		opt(&t)
 	}
-	v.tests = append(v.tests, t)
+	v.tests = internals.AddTest(v.tests, t, v.isNot)
+	return v
+}
+
+// Test: nots the current fn
+func (v *StringSchema) Not() *StringSchema {
+	v.isNot = !v.isNot
 	return v
 }
