@@ -44,7 +44,7 @@ func main() {
     "firstname": "Zog", // Note we are using "firstname" here as specified in the struct tag
     "age": "", // won't return an error because fields are optional by default
   }
-  errsMap := schema.Parse(m, &u)
+  errsMap := userSchema.Parse(m, &u)
   if errsMap != nil {
     // handle errors -> see Errors section
   }
@@ -62,7 +62,7 @@ func main() {
   Name: "Zog",
   Age: 1,
   }
-  errsMap := schema.Validate(&u)
+  errsMap := userSchema.Validate(&u)
   if errsMap != nil {
     // handle errors -> see Errors section
   }
