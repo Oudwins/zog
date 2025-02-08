@@ -19,7 +19,8 @@ schema.PreTransform(fn) // adds a pre-transformation function to the schema
 schema.PostTransform(fn) // adds a post-transformation function to the schema
 
 // VALIDATION METHODS
-schema.Parse(data, dest) // parses the data into the destination
+schema.Parse(data, destPtr) // parses the data into the destination
+schema.Validate(dataPtr) // validates the data structure directly. This is a pointer to a struct, slice, string, int, etc...
 ```
 
 ## Schema Types
@@ -37,7 +38,7 @@ z.Struct(z.Schema{
   "name": z.String(),
 })
 z.Slice(z.String())
-z.Ptr(z.String()) // validates pointer to string
+z.Ptr(z.String()) // pointer to string
 ```
 
 ## Primtive Types
@@ -97,7 +98,7 @@ z.Time().Before(time.Now()) // validates time is before now
 z.Time().Is(time.Now()) // validates time is equal to now
 
 // Schema Options
-z.Time(z.Time.Format(time.RFC3339)) // If input is a string, it will be parsed as a time.Time using the provided layout. time.RFC3339 is the default
+z.Time(z.Time.Format(time.RFC3339)) // If input is a string, it will be parsed as a time.Time using the provided layout. time.RFC3339 is the default. Keep in mind this coercion only works when using Parse()
 ```
 
 ## Complex Types
@@ -141,5 +142,5 @@ z.Ptr(z.String()) // validates pointer to string
 z.Ptr(z.Slice(z.String())) // validates pointer to slice of strings
 
 // Tests / Validators
-z.Ptr(z.String()).NotNil() // Validates pointer is not nil
+z.Ptr(z.String()).NotNil() // Validates pointer is not nil. This is equivalent to Required() for other types
 ```

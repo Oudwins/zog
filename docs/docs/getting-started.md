@@ -50,6 +50,7 @@ func main() {
   }
   u.Name // "Zog"
   // note that this might look weird but we didn't say age was required so Zog just skiped the empty string and we are left with the uninitialized int
+  // If we need 0 to be a valid value for age we can use a pointer to an int which will be nil if the value was not present in the input data
   u.Age // 0
 }
 ```

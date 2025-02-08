@@ -10,14 +10,15 @@ Killer Features:
 
 - Concise yet expressive schema interface, equipped to model simple to complex data models
 - **[Zod](https://github.com/colinhacks/zod)-like API**, use method chaining to build schemas in a typesafe manner
-- **Extensible**: add your own validators, schemas and data providers
-- Rich error details, make debugging a breeze
-- Almost no reflection when using primitive types
+- **Extensible**: add your own validators and schemas
+- **Rich errors** with detailed context, make debugging a breeze
+- **Fast**: No reflection when using primitive types
 - **Built-in coercion** support for most types
 - Zero dependencies!
-- **Three Helper Packages**
+- **Four Helper Packages**
   - **zenv**: parse environment variables
   - **zhttp**: parse http forms & query params
+  - **zjson**: parse json
   - **i18n**: Opinionated solution to good i18n zog errors
 
 > **API Stability:**
