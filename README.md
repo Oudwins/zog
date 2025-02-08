@@ -171,7 +171,6 @@ These are some of the things I want to add to zog before v1.0.0
 - Support for schema.Clone()
 - support for catch & default for structs & slices
 - Struct generation from the schemas
-- Validate method that will not parse but rather just validate a struct against the schema
 
 ## Support
 
