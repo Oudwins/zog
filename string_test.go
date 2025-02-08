@@ -395,11 +395,64 @@ func TestStringNot(t *testing.T) {
 			strVal: "test",
 			expectedErrMap: internals.ZogErrList{
 				&internals.ZogErr{
-					C:       "len",
+					C:       "not_len",
 					ParamsM: map[string]any{"len": 4},
 					Typ:     "string",
 					Val:     "test",
+					Msg:     "string must not be exactly 4 character(s)",
+					Err:     nil,
+				},
+			},
+		},
+		"double not success": {
+			schema:         String().Not().Not().Len(4),
+			strVal:         "test",
+			expectedErrMap: nil,
+		},
+		"double not fail": {
+			schema: String().Not().Not().Len(4),
+			strVal: "testing",
+			expectedErrMap: internals.ZogErrList{
+				&internals.ZogErr{
+					C:       "len",
+					ParamsM: map[string]any{"len": 4},
+					Typ:     "string",
+					Val:     "testing",
 					Msg:     "string must be exactly 4 character(s)",
+					Err:     nil,
+				},
+			},
+		},
+		"not email": {
+			schema:         String().Not().Email(),
+			strVal:         "not-an-email",
+			expectedErrMap: nil,
+		},
+
+		"not email failure": {
+			schema: String().Not().Email(),
+			strVal: "test@test.com",
+			expectedErrMap: internals.ZogErrList{
+				&internals.ZogErr{
+					C:       "not_email",
+					ParamsM: nil,
+					Typ:     "string",
+					Val:     "test@test.com",
+					Msg:     "must not be a valid email",
+					Err:     nil,
+				},
+			},
+		},
+		"not with empty": {
+			schema: String().Not().Len(1),
+			strVal: "a",
+			expectedErrMap: internals.ZogErrList{
+				&internals.ZogErr{
+					C:       "not_len",
+					ParamsM: map[string]any{"len": 1},
+					Typ:     "string",
+					Val:     "a",
+					Msg:     "string must not be exactly 1 character(s)",
 					Err:     nil,
 				},
 			},
