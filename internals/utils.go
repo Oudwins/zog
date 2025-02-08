@@ -2,6 +2,9 @@ package internals
 
 import (
 	"fmt"
+	"strings"
+
+	"github.com/Oudwins/zog/zconst"
 )
 
 func SafeString(x any) string {
@@ -27,6 +30,14 @@ func AddTest(testArr []Test, t Test, isNot bool) []Test {
 	t.ValidateFunc = func(val any, ctx ParseCtx) bool {
 		return !oldFn(val, ctx)
 	}
+	t.ErrCode = NotErrCode(t.ErrCode)
 
 	return append(testArr, t)
+}
+
+func NotErrCode(e zconst.ZogErrCode) string {
+	if strings.HasPrefix(e, "not_") {
+		return zconst.ZogErrCode(strings.TrimPrefix(e, "not_"))
+	}
+	return zconst.ZogErrCode(fmt.Sprintf("not_%s", e))
 }
