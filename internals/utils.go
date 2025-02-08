@@ -19,10 +19,13 @@ func SafeError(x error) string {
 }
 
 func AddTest(testArr []Test, t Test, isNot bool) []Test {
-	if isNot {
-		t.ValidateFunc = func(val any, ctx ParseCtx) bool {
-			return !t.ValidateFunc(val, ctx)
-		}
+	if !isNot {
+		return append(testArr, t)
+	}
+
+	oldFn := t.ValidateFunc
+	t.ValidateFunc = func(val any, ctx ParseCtx) bool {
+		return !oldFn(val, ctx)
 	}
 
 	return append(testArr, t)

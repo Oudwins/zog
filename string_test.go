@@ -4,6 +4,7 @@ import (
 	"regexp"
 	"testing"
 
+	"github.com/Oudwins/zog/internals"
 	"github.com/Oudwins/zog/zconst"
 	"github.com/stretchr/testify/assert"
 )
@@ -376,4 +377,40 @@ func TestStringSchemaOption(t *testing.T) {
 func TestStringGetType(t *testing.T) {
 	s := String()
 	assert.Equal(t, zconst.TypeString, s.getType())
+}
+
+func TestStringNot(t *testing.T) {
+	tests := map[string]struct {
+		schema         *StringSchema
+		strVal         string
+		expectedErrMap internals.ZogErrList
+	}{
+		"not len success": {
+			schema:         String().Not().Len(10).Contains("test"),
+			strVal:         "test",
+			expectedErrMap: nil,
+		},
+		"not len fail": {
+			schema: String().Not().Len(4).Contains("t"),
+			strVal: "test",
+			expectedErrMap: internals.ZogErrList{
+				&internals.ZogErr{
+					C:       "len",
+					ParamsM: map[string]any{"len": 4},
+					Typ:     "string",
+					Val:     "test",
+					Msg:     "string must be exactly 4 character(s)",
+					Err:     nil,
+				},
+			},
+		},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			var dest string
+			errMap := tc.schema.Parse(tc.strVal, &dest)
+			assert.Equal(t, tc.expectedErrMap, errMap)
+		})
+	}
 }

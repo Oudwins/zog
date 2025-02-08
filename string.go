@@ -159,8 +159,7 @@ func (v *StringSchema) Test(t p.Test, opts ...TestOption) *StringSchema {
 	for _, opt := range opts {
 		opt(&t)
 	}
-	v.tests = internals.AddTest(v.tests, t, v.isNot)
-	return v
+	return v.addTest(t)
 }
 
 // Test: checks that the value is one of the enum values
@@ -169,8 +168,7 @@ func (v *StringSchema) OneOf(enum []string, options ...TestOption) *StringSchema
 	for _, opt := range options {
 		opt(&t)
 	}
-	v.tests = internals.AddTest(v.tests, t, v.isNot)
-	return v
+	return v.addTest(t)
 }
 
 // Test: checks that the value is at least n characters long
@@ -179,8 +177,7 @@ func (v *StringSchema) Min(n int, options ...TestOption) *StringSchema {
 	for _, opt := range options {
 		opt(&t)
 	}
-	v.tests = internals.AddTest(v.tests, t, v.isNot)
-	return v
+	return v.addTest(t)
 }
 
 // Test: checks that the value is at most n characters long
@@ -189,8 +186,7 @@ func (v *StringSchema) Max(n int, options ...TestOption) *StringSchema {
 	for _, opt := range options {
 		opt(&t)
 	}
-	v.tests = internals.AddTest(v.tests, t, v.isNot)
-	return v
+	return v.addTest(t)
 }
 
 // Test: checks that the value is exactly n characters long
@@ -199,8 +195,7 @@ func (v *StringSchema) Len(n int, options ...TestOption) *StringSchema {
 	for _, opt := range options {
 		opt(&t)
 	}
-	v.tests = internals.AddTest(v.tests, t, v.isNot)
-	return v
+	return v.addTest(t)
 }
 
 // Test: checks that the value is a valid email address
@@ -218,8 +213,7 @@ func (v *StringSchema) Email(options ...TestOption) *StringSchema {
 	for _, opt := range options {
 		opt(&t)
 	}
-	v.tests = internals.AddTest(v.tests, t, v.isNot)
-	return v
+	return v.addTest(t)
 }
 
 // Test: checks that the value is a valid URL
@@ -238,8 +232,7 @@ func (v *StringSchema) URL(options ...TestOption) *StringSchema {
 	for _, opt := range options {
 		opt(&t)
 	}
-	v.tests = internals.AddTest(v.tests, t, v.isNot)
-	return v
+	return v.addTest(t)
 }
 
 // Test: checks that the value has the prefix
@@ -259,8 +252,7 @@ func (v *StringSchema) HasPrefix(s string, options ...TestOption) *StringSchema 
 	for _, opt := range options {
 		opt(&t)
 	}
-	v.tests = internals.AddTest(v.tests, t, v.isNot)
-	return v
+	return v.addTest(t)
 }
 
 // Test: checks that the value has the suffix
@@ -280,8 +272,7 @@ func (v *StringSchema) HasSuffix(s string, options ...TestOption) *StringSchema 
 	for _, opt := range options {
 		opt(&t)
 	}
-	v.tests = internals.AddTest(v.tests, t, v.isNot)
-	return v
+	return v.addTest(t)
 }
 
 // Test: checks that the value contains the substring
@@ -301,8 +292,7 @@ func (v *StringSchema) Contains(sub string, options ...TestOption) *StringSchema
 	for _, opt := range options {
 		opt(&t)
 	}
-	v.tests = internals.AddTest(v.tests, t, v.isNot)
-	return v
+	return v.addTest(t)
 }
 
 // Test: checks that the value contains an uppercase letter
@@ -325,8 +315,7 @@ func (v *StringSchema) ContainsUpper(options ...TestOption) *StringSchema {
 	for _, opt := range options {
 		opt(&t)
 	}
-	v.tests = internals.AddTest(v.tests, t, v.isNot)
-	return v
+	return v.addTest(t)
 }
 
 // Test: checks that the value contains a digit
@@ -351,8 +340,7 @@ func (v *StringSchema) ContainsDigit(options ...TestOption) *StringSchema {
 		opt(&t)
 	}
 
-	v.tests = internals.AddTest(v.tests, t, v.isNot)
-	return v
+	return v.addTest(t)
 }
 
 // Test: checks that the value contains a special character
@@ -379,8 +367,7 @@ func (v *StringSchema) ContainsSpecial(options ...TestOption) *StringSchema {
 	for _, opt := range options {
 		opt(&t)
 	}
-	v.tests = internals.AddTest(v.tests, t, v.isNot)
-	return v
+	return v.addTest(t)
 }
 
 // Test: checks that the value is a valid uuid
@@ -398,8 +385,7 @@ func (v *StringSchema) UUID(options ...TestOption) *StringSchema {
 	for _, opt := range options {
 		opt(&t)
 	}
-	v.tests = internals.AddTest(v.tests, t, v.isNot)
-	return v
+	return v.addTest(t)
 }
 
 // Test: checks that value matches to regex
@@ -419,12 +405,20 @@ func (v *StringSchema) Match(regex *regexp.Regexp, options ...TestOption) *Strin
 	for _, opt := range options {
 		opt(&t)
 	}
-	v.tests = internals.AddTest(v.tests, t, v.isNot)
-	return v
+	return v.addTest(t)
 }
 
 // Test: nots the current fn
 func (v *StringSchema) Not() *StringSchema {
 	v.isNot = !v.isNot
+	return v
+}
+
+func (v *StringSchema) addTest(t internals.Test) *StringSchema {
+	v.tests = internals.AddTest(v.tests, t, v.isNot)
+	if v.isNot {
+		v.isNot = false
+	}
+
 	return v
 }
