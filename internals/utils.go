@@ -26,6 +26,7 @@ func AddTest(testArr []Test, t Test, isNot bool) []Test {
 		return append(testArr, t)
 	}
 
+	// Saving old functions required here to prevent recursive call during assignment.
 	oldFn := t.ValidateFunc
 	t.ValidateFunc = func(val any, ctx ParseCtx) bool {
 		return !oldFn(val, ctx)

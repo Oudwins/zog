@@ -408,7 +408,7 @@ func (v *StringSchema) Match(regex *regexp.Regexp, options ...TestOption) *Strin
 	return v.addTest(t)
 }
 
-// Test: nots the current fn
+// Test: nots the next test fn
 func (v *StringSchema) Not() *StringSchema {
 	v.isNot = !v.isNot
 	return v
