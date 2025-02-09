@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/Oudwins/zog/conf"
-	"github.com/Oudwins/zog/internals"
 	p "github.com/Oudwins/zog/internals"
 	"github.com/Oudwins/zog/zconst"
 )
@@ -414,8 +413,8 @@ func (v *StringSchema) Not() *StringSchema {
 	return v
 }
 
-func (v *StringSchema) addTest(t internals.Test) *StringSchema {
-	v.tests = internals.AddTest(v.tests, t, v.isNot)
+func (v *StringSchema) addTest(t p.Test) *StringSchema {
+	v.tests = p.AddTest(v.tests, t, v.isNot)
 	if v.isNot {
 		v.isNot = false
 	}
