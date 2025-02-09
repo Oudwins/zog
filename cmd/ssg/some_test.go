@@ -1,8 +1,8 @@
-package main_test
+package main
 
 //go:generate go run main.go
 type MyType struct {
-	Field1 string
+	Field1 string `json:"field1"`
 	Field2 int
 }
 
