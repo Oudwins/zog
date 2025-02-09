@@ -198,7 +198,7 @@ func convertFieldTypes(fields []Field) []Field {
 	converted := make([]Field, len(fields))
 	for i, field := range fields {
 		switch field.Type {
-		// todo: this is where type should be mapped to the most narrowly corresponding schema types
+		// todo: this is where types should be mapped to the most narrowly corresponding schema types
 		//
 		// case "string":
 		// 	fields[i].Type = "string"
