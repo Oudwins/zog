@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.15.1](https://github.com/Oudwins/zog/compare/v0.15.0...v0.15.1) (2025-02-09)
+
+
+### Bug Fixes
+
+* ZogErr Value() doesn't return underlying value ([#77](https://github.com/Oudwins/zog/issues/77)) ([1f7d2ff](https://github.com/Oudwins/zog/commit/1f7d2ff58b9d5a02b6bdd5a70c709e8dc40eadc5))
+
 ## [0.15.0](https://github.com/Oudwins/zog/compare/v0.14.1...v0.15.0) (2025-02-03)
 
 
