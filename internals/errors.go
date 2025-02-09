@@ -58,7 +58,7 @@ func (e *ZogErr) Code() zconst.ZogErrCode {
 
 // value that caused the error
 func (e *ZogErr) Value() any {
-	return e.Value
+	return e.Val
 }
 func (e *ZogErr) SValue(v any) ZogError {
 	e.Val = v
