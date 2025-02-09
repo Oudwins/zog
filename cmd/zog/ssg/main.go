@@ -1,5 +1,5 @@
-// package main provides the functionality for the ssg (aka: schema struct generation) command.
-package main
+// package ssg provides the functionality for the ssg (aka: schema struct generation) command.
+package ssg
 
 import (
 	"flag"
@@ -32,7 +32,7 @@ type Field struct {
 	Tags *string
 }
 
-func main() {
+func Run(osArgs []string) {
 	gofile := os.Getenv("GOFILE")
 	if gofile == "" {
 		log.Fatal("GOFILE environment variable is not set")
@@ -44,7 +44,7 @@ func main() {
 
 	fs := flag.NewFlagSet("ssg", flag.ContinueOnError)
 	outputFilename := fs.String("output", filenameWithoutExt+defaultGenFileSuffix, "output file")
-	if err := fs.Parse(os.Args[2:]); err != nil {
+	if err := fs.Parse(osArgs); err != nil {
 		log.Fatalf("could not parse command: %s", err.Error())
 	}
 
