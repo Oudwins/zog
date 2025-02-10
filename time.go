@@ -21,15 +21,6 @@ type TimeSchema struct {
 	coercer        conf.CoercerFunc
 }
 
-// internal processes the data
-func (v *TimeSchema) process(val any, dest any, path p.PathBuilder, ctx ParseCtx) {
-	primitiveProcessor(val, dest, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, v.coercer, p.IsParseZeroValue)
-}
-
-func (v *TimeSchema) validate(val any, path p.PathBuilder, ctx ParseCtx) {
-	primitiveValidator(val, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch)
-}
-
 // Returns the type of the schema
 func (v *TimeSchema) getType() zconst.ZogType {
 	return zconst.TypeTime
@@ -55,7 +46,8 @@ var Time TimeFunc = func(opts ...SchemaOption) *TimeSchema {
 	return t
 }
 
-// Sets the format function for the time schema
+// WARNING ONLY SUPPOORTS Schema.Parse!
+// Sets the format function for the time schema.
 // Usage is:
 //
 //	z.Time(z.Time.FormatFunc(func(data string) (time.Time, error) {
@@ -67,6 +59,7 @@ func (t TimeFunc) FormatFunc(format func(data string) (time.Time, error)) Schema
 	}
 }
 
+// WARNING ONLY SUPPOORTS Schema.Parse!
 // Sets the string format for the  time schema
 // Usage is:
 // z.Time(z.Time.Format(time.RFC3339))
@@ -76,28 +69,39 @@ func (t TimeFunc) Format(format string) SchemaOption {
 	})
 }
 
-// Validates an existing time.Time
-func (v *TimeSchema) Validate(data *time.Time) p.ZogErrList {
-	errs := p.NewErrsList()
-	ctx := p.NewParseCtx(errs, conf.ErrorFormatter)
-	v.validate(data, p.PathBuilder(""), ctx)
-	return errs.List
-}
-
 // Parses the data into the destination time.Time. Returns a list of errors
-func (v *TimeSchema) Parse(data any, dest *time.Time, options ...ParsingOption) p.ZogErrList {
+func (v *TimeSchema) Parse(data any, dest *time.Time, options ...ExecOption) p.ZogErrList {
 	errs := p.NewErrsList()
-	ctx := p.NewParseCtx(errs, conf.ErrorFormatter)
-
+	ctx := p.NewExecCtx(errs, conf.ErrorFormatter)
 	for _, opt := range options {
 		opt(ctx)
 	}
-
 	path := p.PathBuilder("")
 
-	v.process(data, dest, path, ctx)
+	v.process(ctx.NewSchemaCtx(data, dest, path, v.getType()))
 
 	return errs.List
+}
+
+// internal processes the data
+func (v *TimeSchema) process(ctx *p.SchemaCtx) {
+	primitiveProcessor(ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, v.coercer, p.IsParseZeroValue)
+}
+
+// Validates an existing time.Time
+func (v *TimeSchema) Validate(data *time.Time, options ...ExecOption) p.ZogErrList {
+	errs := p.NewErrsList()
+	ctx := p.NewExecCtx(errs, conf.ErrorFormatter)
+	for _, opt := range options {
+		opt(ctx)
+	}
+	v.validate(ctx.NewValidateSchemaCtx(data, p.PathBuilder(""), v.getType()))
+	return errs.List
+}
+
+// Internal function to validate the data
+func (v *TimeSchema) validate(ctx *p.SchemaCtx) {
+	primitiveValidator(ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch)
 }
 
 // Adds pretransform function to schema

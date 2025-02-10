@@ -35,14 +35,14 @@ func TestBoolValidate(t *testing.T) {
 	}
 }
 
-func TestBoolValidateParsingOption(t *testing.T) {
+func TestBoolValidateExecOption(t *testing.T) {
 	t.Run("Parse context is passed to parsing option", func(t *testing.T) {
 		boolProc := Bool()
 		var result bool
 		var contextPassed bool
 
 		// Create a fake parsing option that checks if it receives a ParseCtx
-		fakeOption := func(p *p.ZogParseCtx) {
+		fakeOption := func(p *p.ExecCtx) {
 			if p != nil {
 				contextPassed = true
 			}

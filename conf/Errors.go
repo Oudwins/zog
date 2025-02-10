@@ -16,7 +16,7 @@ import (
 var DefaultErrMsgMap zconst.LangMap = en.Map
 
 func NewDefaultFormatter(m zconst.LangMap) p.ErrFmtFunc {
-	return func(e p.ZogError, p p.ParseCtx) {
+	return func(e p.ZogError, p p.Ctx) {
 		if e.Message() != "" {
 			return
 		}

@@ -30,11 +30,6 @@ func (v *BoolSchema) setCoercer(c conf.CoercerFunc) {
 	v.coercer = c
 }
 
-// Internal function to process the data
-func (v *BoolSchema) process(val any, dest any, path p.PathBuilder, ctx ParseCtx) {
-	primitiveProcessor(val, dest, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, v.coercer, p.IsParseZeroValue)
-}
-
 // ! USER FACING FUNCTIONS
 
 // Returns a new Bool Schema
@@ -49,35 +44,37 @@ func Bool(opts ...SchemaOption) *BoolSchema {
 }
 
 // Parse data into destination pointer
-func (v *BoolSchema) Parse(data any, dest *bool, options ...ParsingOption) p.ZogErrList {
+func (v *BoolSchema) Parse(data any, dest *bool, options ...ExecOption) p.ZogErrList {
 	errs := p.NewErrsList()
-	ctx := p.NewParseCtx(errs, conf.ErrorFormatter)
+	ctx := p.NewExecCtx(errs, conf.ErrorFormatter)
 	for _, opt := range options {
 		opt(ctx)
 	}
-	path := p.PathBuilder("")
-
-	v.process(data, dest, path, ctx)
+	v.process(ctx.NewSchemaCtx(data, dest, p.PathBuilder(""), v.getType()))
 
 	return errs.List
 }
 
+// Internal function to process the data
+func (v *BoolSchema) process(ctx *p.SchemaCtx) {
+	primitiveProcessor(ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, v.coercer, p.IsParseZeroValue)
+}
+
 // Validate data against schema
-func (v *BoolSchema) Validate(val *bool, options ...ParsingOption) p.ZogErrList {
+func (v *BoolSchema) Validate(val *bool, options ...ExecOption) p.ZogErrList {
 	errs := p.NewErrsList()
-	ctx := p.NewParseCtx(errs, conf.ErrorFormatter)
+	ctx := p.NewExecCtx(errs, conf.ErrorFormatter)
 	for _, opt := range options {
 		opt(ctx)
 	}
-	path := p.PathBuilder("")
 
-	v.validate(val, path, ctx)
+	v.validate(ctx.NewSchemaCtx(val, val, p.PathBuilder(""), v.getType()))
 	return errs.List
 }
 
 // Internal function to validate data
-func (v *BoolSchema) validate(val any, path p.PathBuilder, ctx ParseCtx) {
-	primitiveValidator(val, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch)
+func (v *BoolSchema) validate(ctx *p.SchemaCtx) {
+	primitiveValidator(ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch)
 }
 
 // GLOBAL METHODS

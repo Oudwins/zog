@@ -29,16 +29,6 @@ type StringSchema struct {
 
 // ! INTERNALS
 
-// Internal function to process the data
-func (v *StringSchema) process(val any, dest any, path p.PathBuilder, ctx ParseCtx) {
-	primitiveProcessor(val, dest, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, v.coercer, p.IsParseZeroValue)
-}
-
-// Internal function to validate the data
-func (v *StringSchema) validate(val any, path p.PathBuilder, ctx ParseCtx) {
-	primitiveValidator(val, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch)
-}
-
 // Returns the type of the schema
 func (v *StringSchema) getType() zconst.ZogType {
 	return zconst.TypeString
@@ -63,26 +53,40 @@ func String(opts ...SchemaOption) *StringSchema {
 }
 
 // Parses the data into the destination string. Returns a list of errors
-func (v *StringSchema) Parse(data any, dest *string, options ...ParsingOption) p.ZogErrList {
+func (v *StringSchema) Parse(data any, dest *string, options ...ExecOption) p.ZogErrList {
 	errs := p.NewErrsList()
-	ctx := p.NewParseCtx(errs, conf.ErrorFormatter)
+
+	path := p.PathBuilder("")
+	ctx := p.NewExecCtx(errs, conf.ErrorFormatter)
 	for _, opt := range options {
 		opt(ctx)
 	}
-	path := p.PathBuilder("")
 
-	v.process(data, dest, path, ctx)
+	v.process(ctx.NewSchemaCtx(data, dest, path, v.getType()))
 
 	return errs.List
 }
 
-// Validate Given string
-func (v *StringSchema) Validate(data *string) p.ZogErrList {
-	errs := p.NewErrsList()
-	ctx := p.NewParseCtx(errs, conf.ErrorFormatter)
+// Internal function to process the data
+func (v *StringSchema) process(ctx *p.SchemaCtx) {
+	primitiveProcessor(ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, v.coercer, p.IsParseZeroValue)
+}
 
-	v.validate(data, p.PathBuilder(""), ctx)
+// Validate Given string
+func (v *StringSchema) Validate(data *string, options ...ExecOption) p.ZogErrList {
+	errs := p.NewErrsList()
+	ctx := p.NewExecCtx(errs, conf.ErrorFormatter)
+	for _, opt := range options {
+		opt(ctx)
+	}
+
+	v.validate(ctx.NewSchemaCtx(data, data, p.PathBuilder(""), v.getType()))
 	return errs.List
+}
+
+// Internal function to validate the data
+func (v *StringSchema) validate(ctx *p.SchemaCtx) {
+	primitiveValidator(ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch)
 }
 
 // Adds pretransform function to schema
@@ -96,11 +100,8 @@ func (v *StringSchema) PreTransform(transform p.PreTransform) *StringSchema {
 
 // PreTransform: trims the input data of whitespace if it is a string
 func (v *StringSchema) Trim() *StringSchema {
-	v.preTransforms = append(v.preTransforms, func(val any, ctx ParseCtx) (any, error) {
+	v.preTransforms = append(v.preTransforms, func(val any, ctx Ctx) (any, error) {
 		switch v := val.(type) {
-		case *string:
-			*v = strings.TrimSpace(*v)
-			return v, nil
 		case string:
 			return strings.TrimSpace(v), nil
 		default:

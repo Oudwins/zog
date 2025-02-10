@@ -7,6 +7,29 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestNumberParse(t *testing.T) {
+	dest := 0
+	validator := Int()
+	errs := validator.Parse(5, &dest)
+	if len(errs) > 0 {
+		t.Errorf("Expected no errors, got %v", errs)
+	}
+	assert.Equal(t, 5, dest)
+}
+
+func TestNumberParseFormatter(t *testing.T) {
+	dest := 0
+	fmt := WithErrFormatter(func(e ZogError, ctx Ctx) {
+		e.SetMessage("test2")
+	})
+	validator := Int().GTE(10, Message("test1"))
+	errs := validator.Parse(5, &dest, fmt)
+	assert.Equal(t, "test1", errs[0].Message())
+	validator2 := Int().GTE(10)
+	errs2 := validator2.Parse(5, &dest, fmt)
+	assert.Equal(t, "test2", errs2[0].Message())
+}
+
 func TestIntSchemaOption(t *testing.T) {
 	s := Int(WithCoercer(func(original any) (value any, err error) {
 		return 42, nil
@@ -256,16 +279,6 @@ func TestNumberLte(t *testing.T) {
 	}
 	assert.Equal(t, "custom", errs[0].Message())
 	assert.Equal(t, 6, dest)
-}
-
-func TestNumberParse(t *testing.T) {
-	dest := 0
-	validator := Int()
-	errs := validator.Parse(5, &dest)
-	if len(errs) > 0 {
-		t.Errorf("Expected no errors, got %v", errs)
-	}
-	assert.Equal(t, 5, dest)
 }
 
 func TestNumberCustomTest(t *testing.T) {

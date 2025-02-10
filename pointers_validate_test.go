@@ -3,6 +3,7 @@ package zog
 import (
 	"testing"
 
+	"github.com/Oudwins/zog/zconst"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -20,6 +21,19 @@ func TestValidatePtrPrimitive(t *testing.T) {
 	assert.Panics(t, func() {
 		s.Validate(nil)
 	})
+}
+
+func TestPtrValidateFormatter(t *testing.T) {
+	var dest *int
+	fmt := WithErrFormatter(func(e ZogError, ctx Ctx) {
+		e.SetMessage("test2")
+	})
+	validator := Ptr(Int().GTE(10)).NotNil(Message("test1"))
+	errs := validator.Validate(&dest, fmt)
+	assert.Equal(t, "test1", errs[zconst.ERROR_KEY_ROOT][0].Message())
+	validator2 := Ptr(Int()).NotNil()
+	errs2 := validator2.Validate(&dest, fmt)
+	assert.Equal(t, "test2", errs2[zconst.ERROR_KEY_ROOT][0].Message())
 }
 
 func TestValidatePtrInStruct(t *testing.T) {
@@ -121,7 +135,7 @@ func TestValidatePtrRequired(t *testing.T) {
 	var dest *string
 	errs := schema.Validate(&dest)
 	assert.NotEmpty(t, errs)
-	assert.Equal(t, "Testing", errs[0].Message())
+	assert.Equal(t, "Testing", errs[zconst.ERROR_KEY_ROOT][0].Message())
 
 	str := "test"
 	dest = &str
