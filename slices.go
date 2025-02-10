@@ -49,10 +49,13 @@ func Slice(schema ZogSchema, opts ...SchemaOption) *SliceSchema {
 }
 
 // Validates a pointer pointer
-func (v *SliceSchema) Validate(data any) p.ZogErrMap {
+func (v *SliceSchema) Validate(data any, options ...ExecOption) p.ZogErrMap {
 	errs := p.NewErrsMap()
 
 	ctx := p.NewExecCtx(errs, conf.ErrorFormatter)
+	for _, opt := range options {
+		opt(ctx)
+	}
 
 	v.validate(ctx.NewValidateSchemaCtx(data, p.PathBuilder(""), v.getType()))
 	return errs.M
