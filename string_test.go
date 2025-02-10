@@ -98,11 +98,11 @@ func TestStringRequiredAborts(t *testing.T) {
 	assert.Len(t, errs, 1)
 }
 
-func TestStringUserTests(t *testing.T) {
+func TestStringCustomTest(t *testing.T) {
 
-	field := String().Test(TestFunc("test", func(val any, ctx ParseCtx) bool {
+	field := String().TestFunc(func(val any, ctx ParseCtx) bool {
 		return val == "test"
-	}), Message("Invalid"))
+	}, Message("Invalid"))
 
 	var dest string
 

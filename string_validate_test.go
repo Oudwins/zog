@@ -103,10 +103,10 @@ func TestValidateStringRequiredAborts(t *testing.T) {
 	assert.Len(t, errs, 1)
 }
 
-func TestValidateStringUserTests(t *testing.T) {
-	field := String().Test(TestFunc("test", func(val any, ctx ParseCtx) bool {
+func TestValidateStringCustomTest(t *testing.T) {
+	field := String().TestFunc(func(val any, ctx ParseCtx) bool {
 		return val == "test"
-	}), Message("Invalid"))
+	}, Message("Invalid"))
 
 	var dest string = "test"
 

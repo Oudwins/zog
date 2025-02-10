@@ -150,6 +150,13 @@ func (v *NumberSchema[T]) Test(t p.Test, opts ...TestOption) *NumberSchema[T] {
 	return v
 }
 
+// Create a custom test function for the schema. This is similar to Zod's `.refine()` method.
+func (v *NumberSchema[T]) TestFunc(testFunc p.TestFunc, options ...TestOption) *NumberSchema[T] {
+	test := TestFunc("", testFunc)
+	v.Test(test, options...)
+	return v
+}
+
 // UNIQUE METHODS
 
 // Check that the value is one of the enum values

@@ -79,6 +79,21 @@ func (v *BoolSchema) validate(ctx *p.SchemaCtx) {
 
 // GLOBAL METHODS
 
+func (v *BoolSchema) Test(t p.Test, options ...TestOption) *BoolSchema {
+	for _, opt := range options {
+		opt(&t)
+	}
+	v.tests = append(v.tests, t)
+	return v
+}
+
+// Create a custom test function for the schema. This is similar to Zod's `.refine()` method.
+func (v *BoolSchema) TestFunc(testFunc p.TestFunc, options ...TestOption) *BoolSchema {
+	test := TestFunc("", testFunc)
+	v.Test(test, options...)
+	return v
+}
+
 // Adds pretransform function to schema
 func (v *BoolSchema) PreTransform(transform p.PreTransform) *BoolSchema {
 	if v.preTransforms == nil {

@@ -120,9 +120,9 @@ func TestTimeEQ(t *testing.T) {
 
 func TestTimeCustomTest(t *testing.T) {
 	now := time.Now()
-	schema := Time().Test(TestFunc("custom_test", func(val any, ctx ParseCtx) bool {
+	schema := Time().TestFunc(func(val any, ctx ParseCtx) bool {
 		return val != now
-	}), Message("custom"))
+	}, Message("custom"))
 	errs := schema.Parse(now, &now)
 	assert.NotNil(t, errs)
 	assert.Equal(t, "custom", errs[0].Message())

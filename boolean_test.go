@@ -457,6 +457,20 @@ func TestBoolPostTransform(t *testing.T) {
 	}
 }
 
+func TestBoolCustomTest(t *testing.T) {
+	validator := Bool().TestFunc(func(val any, ctx Ctx) bool {
+		// Custom test logic here
+		assert.Equal(t, true, val)
+		return true
+	}, Message("custom"))
+	dest := false
+	errs := validator.Parse(true, &dest)
+	if len(errs) > 0 {
+		t.Errorf("Expected no errors, got %v", errs)
+	}
+	assert.Equal(t, true, dest)
+}
+
 func TestBoolGetType(t *testing.T) {
 	s := Bool()
 	assert.Equal(t, zconst.TypeBool, s.getType())

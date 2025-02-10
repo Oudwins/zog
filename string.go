@@ -162,6 +162,13 @@ func (v *StringSchema) Test(t p.Test, opts ...TestOption) *StringSchema {
 	return v
 }
 
+// Create a custom test function for the schema. This is similar to Zod's `.refine()` method.
+func (v *StringSchema) TestFunc(testFunc p.TestFunc, options ...TestOption) *StringSchema {
+	test := TestFunc("", testFunc)
+	v.Test(test, options...)
+	return v
+}
+
 // Test: checks that the value is one of the enum values
 func (v *StringSchema) OneOf(enum []string, options ...TestOption) *StringSchema {
 	t := p.In(enum)
