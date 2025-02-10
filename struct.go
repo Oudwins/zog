@@ -293,3 +293,10 @@ func (v *StructSchema) Test(t p.Test, opts ...TestOption) *StructSchema {
 	v.tests = append(v.tests, t)
 	return v
 }
+
+// Create a custom test function for the schema. This is similar to Zod's `.refine()` method.
+func (v *StructSchema) TestFunc(testFunc p.TestFunc, options ...TestOption) *StructSchema {
+	test := TestFunc("", testFunc)
+	v.Test(test, options...)
+	return v
+}

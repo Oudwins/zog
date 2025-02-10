@@ -457,6 +457,43 @@ func TestBoolPostTransform(t *testing.T) {
 	}
 }
 
+func TestBoolCustomTest(t *testing.T) {
+	validator := Bool().TestFunc(func(val any, ctx Ctx) bool {
+		// Custom test logic here
+		return val == true
+	}, Message("custom"))
+	
+	tests := []struct {
+		name      string
+		input     bool
+		expectErr bool
+	}{
+		{
+			name:      "valid true value",
+			input:     true,
+			expectErr: false,
+		},
+		{
+			name:      "invalid false value",
+			input:     false,
+			expectErr: true,
+		},
+	}
+	
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var dest bool
+			errs := validator.Parse(tt.input, &dest)
+			if (len(errs) > 0) != tt.expectErr {
+				t.Errorf("got errors %v, expectErr %v", errs, tt.expectErr)
+			}
+			if !tt.expectErr {
+				assert.Equal(t, tt.input, dest)
+			}
+		})
+	}
+}
+
 func TestBoolGetType(t *testing.T) {
 	s := Bool()
 	assert.Equal(t, zconst.TypeBool, s.getType())

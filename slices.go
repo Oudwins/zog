@@ -277,6 +277,13 @@ func (v *SliceSchema) Test(t p.Test, opts ...TestOption) *SliceSchema {
 	return v
 }
 
+// Create a custom test function for the schema. This is similar to Zod's `.refine()` method.
+func (v *SliceSchema) TestFunc(testFunc p.TestFunc, options ...TestOption) *SliceSchema {
+	test := TestFunc("", testFunc)
+	v.Test(test, options...)
+	return v
+}
+
 // Minimum number of items
 func (v *SliceSchema) Min(n int, options ...TestOption) *SliceSchema {
 	v.tests = append(v.tests,

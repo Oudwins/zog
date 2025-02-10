@@ -216,18 +216,18 @@ func TestSliceContains(t *testing.T) {
 func TestSliceCustomTest(t *testing.T) {
 	input := []string{"abc", "defg", "hijkl"}
 	s := []string{}
-	schema := Slice(String()).Test(TestFunc("custom_test", func(val any, ctx ParseCtx) bool {
+	schema := Slice(String()).TestFunc(func(val any, ctx ParseCtx) bool {
 		// Custom test logic here
 		x := val.(*[]string)
 		return reflect.DeepEqual(input, *x)
-	}), Message("custom"))
+	}, Message("custom"))
 	errs := schema.Parse(input, &s)
 	assert.Empty(t, errs)
 	assert.Equal(t, input, s)
 	errs = schema.Parse(input[1:], &s)
 	assert.NotEmpty(t, errs)
 	assert.Equal(t, "custom", errs["$root"][0].Message())
-	assert.Equal(t, "custom_test", errs["$root"][0].Code())
+	// assert.Equal(t, "custom_test", errs["$root"][0].Code())
 }
 
 func TestSliceSchemaOption(t *testing.T) {

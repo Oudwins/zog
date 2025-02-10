@@ -271,11 +271,11 @@ func TestValidateNumberValidate(t *testing.T) {
 }
 
 func TestValidateNumberCustomTest(t *testing.T) {
-	validator := Int().Test(TestFunc("custom_test", func(val any, ctx ParseCtx) bool {
+	validator := Int().TestFunc(func(val any, ctx ParseCtx) bool {
 		// Custom test logic here
 		assert.Equal(t, 5, val)
 		return true
-	}), Message("custom"))
+	}, Message("custom"))
 	dest := 5
 	errs := validator.Validate(&dest)
 	if len(errs) > 0 {

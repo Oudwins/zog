@@ -163,6 +163,13 @@ func (v *TimeSchema) Test(t p.Test, opts ...TestOption) *TimeSchema {
 	return v
 }
 
+// Create a custom test function for the schema. This is similar to Zod's `.refine()` method.
+func (v *TimeSchema) TestFunc(testFunc p.TestFunc, options ...TestOption) *TimeSchema {
+	test := TestFunc("", testFunc)
+	v.Test(test, options...)
+	return v
+}
+
 // UNIQUE METHODS
 
 // Checks that the value is after the given time
