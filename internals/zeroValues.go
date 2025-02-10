@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-type IsZeroValueFunc = func(val any, ctx ParseCtx) bool
+type IsZeroValueFunc = func(val any, ctx Ctx) bool
 
 // checks that the value is the zero value for its type
 func IsZeroValue(x any) bool {
@@ -24,7 +24,7 @@ func IsZeroValue(x any) bool {
 }
 
 // checks if the value is the zero value but only for parsing purposes (i.e the parse function)
-func IsParseZeroValue(val any, ctx ParseCtx) bool {
+func IsParseZeroValue(val any, ctx Ctx) bool {
 	if val == nil {
 		return true
 	}

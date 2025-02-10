@@ -37,29 +37,28 @@ func Ptr(schema ZogSchema) *PointerSchema {
 }
 
 // Parse the data into the destination pointer
-func (v *PointerSchema) Parse(data any, dest any, options ...ParsingOption) p.ZogErrMap {
+func (v *PointerSchema) Parse(data any, dest any, options ...ExecOption) p.ZogErrMap {
 	errs := p.NewErrsMap()
-	ctx := p.NewParseCtx(errs, conf.ErrorFormatter)
+	ctx := p.NewExecCtx(errs, conf.ErrorFormatter)
 	for _, opt := range options {
 		opt(ctx)
 	}
 	path := p.PathBuilder("")
 
-	v.process(data, dest, path, ctx)
+	v.process(ctx.NewSchemaCtx(data, dest, path, v.getType()))
 
 	return errs.M
 }
 
-func (v *PointerSchema) process(data any, dest any, path p.PathBuilder, ctx ParseCtx) {
-	isZero := p.IsParseZeroValue(data, ctx)
+func (v *PointerSchema) process(ctx *p.SchemaCtx) {
+	isZero := p.IsParseZeroValue(ctx.Val, ctx)
 	if isZero {
 		if v.required != nil {
-			// ctx.AddError(v.required)
-			ctx.NewError(path, Errors.FromTest(data, v.schema.getType(), v.required, ctx))
+			ctx.AddIssue(ctx.IssueFromTest(v.required, ctx.Val))
 		}
 		return
 	}
-	rv := reflect.ValueOf(dest)
+	rv := reflect.ValueOf(ctx.DestPtr)
 	destPtr := rv.Elem()
 	if destPtr.IsNil() {
 		// this sets the primitive also
@@ -69,29 +68,33 @@ func (v *PointerSchema) process(data any, dest any, path p.PathBuilder, ctx Pars
 		destPtr.Set(newVal)
 	}
 	di := destPtr.Interface()
-	v.schema.process(data, di, path, ctx)
+	ctx.DestPtr = di
+	v.schema.process(ctx)
 }
 
 // Validates a pointer pointer
-func (v *PointerSchema) Validate(data any) p.ZogErrList {
-	errs := p.NewErrsList()
-	ctx := p.NewParseCtx(errs, conf.ErrorFormatter)
-	v.validate(data, p.PathBuilder(""), ctx)
-	return errs.List
+func (v *PointerSchema) Validate(data any, options ...ExecOption) p.ZogErrMap {
+	errs := p.NewErrsMap()
+	ctx := p.NewExecCtx(errs, conf.ErrorFormatter)
+	for _, opt := range options {
+		opt(ctx)
+	}
+	v.validate(ctx.NewValidateSchemaCtx(data, p.PathBuilder(""), v.getType()))
+	return errs.M
 }
 
-func (v *PointerSchema) validate(val any, path p.PathBuilder, ctx ParseCtx) {
-	rv := reflect.ValueOf(val)
+func (v *PointerSchema) validate(ctx *p.SchemaCtx) {
+	rv := reflect.ValueOf(ctx.Val)
 	destPtr := rv.Elem()
 	if !destPtr.IsValid() || destPtr.IsNil() {
 		if v.required != nil {
-			// ctx.AddError(v.required)
-			ctx.NewError(path, Errors.FromTest(val, v.schema.getType(), v.required, ctx))
+			ctx.AddIssue(ctx.IssueFromTest(v.required, ctx.Val))
 		}
 		return
 	}
 	di := destPtr.Interface()
-	v.schema.validate(di, path, ctx)
+	ctx.Val = di
+	v.schema.validate(ctx)
 }
 
 // Validate Existing Pointer

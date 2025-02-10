@@ -9,14 +9,16 @@ import (
 
 // Deprecated: Use z.Ctx instead.
 // ParseCtx will be removed in the future since it is used for both validation and parsing and is a confusing name.
-type ParseCtx = p.ParseCtx
+type ParseCtx = p.Ctx
 
 // This is the context that is passed through an entire execution of `schema.Parse()` or `schema.Validate()`.
 // You can use it to pass a key/value for a specific execution. More about context in the [docs](https://zog.dev/context)
-type Ctx = p.ParseCtx
+type Ctx = p.Ctx
 
 // This is a type for the ZogError interface. It is the interface that all errors returned from zog implement.
 type ZogError = p.ZogError
+
+type ZogIssue = p.ZogError
 
 // This is a type for the ZogErrList type. It is a list of ZogErrors returned from parsing primitive schemas. The type is []ZogError
 type ZogErrList = p.ZogErrList
@@ -58,12 +60,15 @@ func TestFunc(errCode zconst.ZogErrCode, validateFunc p.TestFunc) p.Test {
 }
 
 // ! ERRORS
+// Deprecated: This will be removed in the future.
 type errHelpers struct {
 }
 
+// Deprecated: This will be removed in the future.
 // Helper struct for dealing with zog errors. Beware this API may change
 var Errors = errHelpers{}
 
+// Deprecated: This will be removed in the future.
 // Create error from (originValue any, destinationValue any, test *p.Test)
 func (e *errHelpers) FromTest(o any, destType zconst.ZogType, t *p.Test, p ParseCtx) p.ZogError {
 	er := e.New(t.ErrCode, o, destType, t.Params, "", nil)
@@ -73,11 +78,13 @@ func (e *errHelpers) FromTest(o any, destType zconst.ZogType, t *p.Test, p Parse
 	return er
 }
 
+// Deprecated: This will be removed in the future.
 // Create error from
 func (e *errHelpers) FromErr(o any, destType zconst.ZogType, err error) p.ZogError {
 	return e.New(zconst.ErrCodeCustom, o, destType, nil, "", err)
 }
 
+// Deprecated: This will be removed in the future.
 func (e *errHelpers) WrapUnknown(o any, destType zconst.ZogType, err error) p.ZogError {
 	zerr, ok := err.(p.ZogError)
 	if !ok {
@@ -86,6 +93,7 @@ func (e *errHelpers) WrapUnknown(o any, destType zconst.ZogType, err error) p.Zo
 	return zerr
 }
 
+// Deprecated: This will be removed in the future.
 func (e *errHelpers) New(code zconst.ZogErrCode, o any, destType zconst.ZogType, params map[string]any, msg string, err error) p.ZogError {
 	return &p.ZogErr{
 		C:       code,

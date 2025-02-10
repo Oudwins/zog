@@ -34,11 +34,6 @@ func (v *NumberSchema[T]) setCoercer(c conf.CoercerFunc) {
 	v.coercer = c
 }
 
-// Internal function to process the data
-func (v *NumberSchema[T]) process(val any, dest any, path p.PathBuilder, ctx ParseCtx) {
-	primitiveProcessor(val, dest, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, v.coercer, p.IsParseZeroValue)
-}
-
 // ! USER FACING FUNCTIONS
 
 // creates a new float64 schema
@@ -64,31 +59,37 @@ func Int(opts ...SchemaOption) *NumberSchema[int] {
 }
 
 // parses the value and stores it in the destination
-func (v *NumberSchema[T]) Parse(data any, dest *T, options ...ParsingOption) p.ZogErrList {
+func (v *NumberSchema[T]) Parse(data any, dest *T, options ...ExecOption) p.ZogErrList {
 	errs := p.NewErrsList()
-	ctx := p.NewParseCtx(errs, conf.ErrorFormatter)
+	ctx := p.NewExecCtx(errs, conf.ErrorFormatter)
 	for _, opt := range options {
 		opt(ctx)
 	}
 
-	path := p.PathBuilder("")
-
-	v.process(data, dest, path, ctx)
+	v.process(ctx.NewSchemaCtx(data, dest, p.PathBuilder(""), v.getType()))
 
 	return errs.List
+}
+
+// Internal function to process the data
+func (v *NumberSchema[T]) process(ctx *p.SchemaCtx) {
+	primitiveProcessor(ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, v.coercer, p.IsParseZeroValue)
 }
 
 // Validates a number pointer
-func (v *NumberSchema[T]) Validate(data *T) p.ZogErrList {
+func (v *NumberSchema[T]) Validate(data *T, options ...ExecOption) p.ZogErrList {
 	errs := p.NewErrsList()
-	ctx := p.NewParseCtx(errs, conf.ErrorFormatter)
+	ctx := p.NewExecCtx(errs, conf.ErrorFormatter)
+	for _, opt := range options {
+		opt(ctx)
+	}
 
-	v.validate(data, p.PathBuilder(""), ctx)
+	v.validate(ctx.NewSchemaCtx(data, data, p.PathBuilder(""), v.getType()))
 	return errs.List
 }
 
-func (v *NumberSchema[T]) validate(val any, path p.PathBuilder, ctx ParseCtx) {
-	primitiveValidator(val, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch)
+func (v *NumberSchema[T]) validate(ctx *p.SchemaCtx) {
+	primitiveValidator(ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch)
 }
 
 // GLOBAL METHODS

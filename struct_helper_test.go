@@ -3,7 +3,6 @@ package zog
 import (
 	"testing"
 
-	p "github.com/Oudwins/zog/internals"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -54,14 +53,14 @@ func TestStructMergeWithPostTransforms(t *testing.T) {
 	}
 	var nameSchema = Struct(Schema{
 		"name": String().Contains("hello").Required(),
-	}).PostTransform(func(data any, ctx p.ParseCtx) error {
+	}).PostTransform(func(data any, ctx Ctx) error {
 		u := data.(*User)
 		u.Name = u.Name + "_post"
 		return nil
 	})
 	var ageSchema = Struct(Schema{
 		"age": Int().GT(18).Required(),
-	}).PostTransform(func(data any, ctx p.ParseCtx) error {
+	}).PostTransform(func(data any, ctx Ctx) error {
 		u := data.(*User)
 		u.Age = u.Age + 10
 		return nil
@@ -83,14 +82,14 @@ func TestStructMergeWithPreTransforms(t *testing.T) {
 	}
 	var nameSchema = Struct(Schema{
 		"name": String().Contains("hello").Required(),
-	}).PreTransform(func(data any, ctx p.ParseCtx) (any, error) {
+	}).PreTransform(func(data any, ctx Ctx) (any, error) {
 		m := data.(map[string]any)
 		m["name"] = m["name"].(string) + "_pre"
 		return m, nil
 	})
 	var ageSchema = Struct(Schema{
 		"age": Int().GT(18).Required(),
-	}).PreTransform(func(data any, ctx p.ParseCtx) (any, error) {
+	}).PreTransform(func(data any, ctx Ctx) (any, error) {
 		m := data.(map[string]any)
 		m["age"] = m["age"].(int) + 5
 		return m, nil
@@ -200,7 +199,7 @@ func TestStructPickWithTransforms(t *testing.T) {
 	var schema = Struct(Schema{
 		"name": String().Contains("hello").Required(),
 		"age":  Int().GT(18).Required(),
-	}).PostTransform(func(data any, ctx p.ParseCtx) error {
+	}).PostTransform(func(data any, ctx Ctx) error {
 		u := data.(*User)
 		u.Name = u.Name + "_post"
 		return nil
@@ -230,7 +229,7 @@ func TestStructOmitWithTransforms(t *testing.T) {
 	var schema = Struct(Schema{
 		"name": String().Contains("hello").Required(),
 		"age":  Int().GT(18).Required(),
-	}).PostTransform(func(data any, ctx p.ParseCtx) error {
+	}).PostTransform(func(data any, ctx Ctx) error {
 		u := data.(*User)
 		u.Name = u.Name + "_post"
 		return nil
@@ -311,4 +310,40 @@ func TestStructOmitIgnoresFalseKeys(t *testing.T) {
 	assert.Equal(t, o.Name, "hello")
 	assert.Equal(t, o.Email, "test@test.com") // Email should be processed since omit was false
 	assert.Equal(t, o.Age, 0)                 // Age should be zero since it was omitted
+}
+
+func TestStructExtend(t *testing.T) {
+
+	type User struct {
+		Name  string
+		Age   int
+		Email string
+	}
+
+	var schema = Struct(Schema{
+		"name": String().Contains("hello").Required(),
+	})
+
+	extendedSchema := schema.Extend(Schema{
+		"name": String().Contains("world").Required(),
+		"age":  Int().GT(18).Required(),
+	})
+
+	var o User
+	errs := extendedSchema.Parse(map[string]any{
+		"name": "hello",
+		"age":  20,
+	}, &o)
+
+	assert.NotNil(t, errs)
+	assert.NotEmpty(t, errs["name"])
+
+	errs = extendedSchema.Parse(map[string]any{
+		"name": "world",
+		"age":  20,
+	}, &o)
+
+	assert.Nil(t, errs)
+	assert.Equal(t, o.Name, "world")
+	assert.Equal(t, o.Age, 20)
 }

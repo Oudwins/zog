@@ -1,6 +1,34 @@
 package zconst
 
 const (
+	// Key for a list of one error that contains the first error that occurred in a schema
+	ERROR_KEY_FIRST = "$first"
+	// Key for a list of all errors that occurred in a schema at the root level for complex schemas. For example
+	/*
+			> Given this schema:
+			z.Struct(....).TestFunc(func (v any, ctx z.Ctx) {
+			   return false
+			}, z.Message("test"))
+			> And any input data. The output will contain:
+			{
+				"$root": [
+					{
+				     "message": "test"
+					 restOfErrorFields..
+					}
+				]
+			}
+		    > This is also true for slices and even for pointers to primitive types.
+	*/
+	ERROR_KEY_ROOT = "$root"
+)
+
+const (
+	// Tag used for unmarshaling and finding the data to parse into a struct. Usage:
+	// type TestStruct struct {
+	// 	Value *int `zog:"value"`
+	// }
+	// Similar to `json` tag. But works with all input data sources at once (i.e query params, form data, json etc)
 	ZogTag = "zog"
 )
 

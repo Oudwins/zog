@@ -63,14 +63,14 @@ func TestBoolSchemaOption(t *testing.T) {
 	assert.Equal(t, true, result)
 }
 
-func TestParsingOption(t *testing.T) {
+func TestExecOption(t *testing.T) {
 	t.Run("Parse context is passed to parsing option", func(t *testing.T) {
 		boolProc := Bool()
 		var result bool
 		var contextPassed bool
 
 		// Create a fake parsing option that checks if it receives a ParseCtx
-		fakeOption := func(p *p.ZogParseCtx) {
+		fakeOption := func(p *p.ExecCtx) {
 			if p != nil {
 				contextPassed = true
 			}
@@ -112,7 +112,7 @@ func TestBoolRequired(t *testing.T) {
 		},
 	}
 
-	boolProc := Bool().Required()
+	boolProc := Bool().Required(Message("test"))
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
@@ -121,6 +121,10 @@ func TestBoolRequired(t *testing.T) {
 
 			if (len(errs) > 0) != test.expectErr {
 				t.Errorf("On Run %s -> Expected error: %v, got: %v", test.name, test.expectErr, errs)
+			}
+
+			if test.expectErr && errs[0].Message() != "test" {
+				t.Errorf("On Run %s -> Expected error: %v, got: %v", test.name, "test", errs[0].Message())
 			}
 
 			if !test.expectErr && result != test.expected {

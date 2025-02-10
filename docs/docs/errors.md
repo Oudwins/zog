@@ -155,7 +155,7 @@ err := z.String().Min(5, z.MessageFunc(func(e z.ZogError, p z.Ctx) {
 // err = []ZogError{{Message: "string must be at least 5 characters long"}}
 ```
 
-#### **3. Using the WithErrFormatter() ParsingOption**
+#### **3. Using the WithErrFormatter() ExecOption**
 
 This allows you to set a custom error formatter for the entire parsing operation. Beware you must handle all error codes & types or you may get unexpected messages.
 

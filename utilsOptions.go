@@ -34,16 +34,19 @@ func WithCoercer(c conf.CoercerFunc) SchemaOption {
 }
 
 // Options that can be passed to a `schema.Parse()` call
-type ParsingOption = func(p *p.ZogParseCtx)
+type ExecOption = func(p *p.ExecCtx)
 
-func WithErrFormatter(fmter p.ErrFmtFunc) ParsingOption {
-	return func(p *p.ZogParseCtx) {
+// Deprecated: use ExecOption instead
+type ParsingOption = ExecOption
+
+func WithErrFormatter(fmter p.ErrFmtFunc) ExecOption {
+	return func(p *p.ExecCtx) {
 		p.SetErrFormatter(fmter)
 	}
 }
 
-func WithCtxValue(key string, val any) ParsingOption {
-	return func(p *p.ZogParseCtx) {
+func WithCtxValue(key string, val any) ExecOption {
+	return func(p *p.ExecCtx) {
 		p.Set(key, val)
 	}
 }
