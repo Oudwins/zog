@@ -13,9 +13,9 @@ func TestWithCtxValue(t *testing.T) {
 	assert.Equal(t, "bar", ctx.Get("foo"))
 }
 
-func TestWithErrFormatter(t *testing.T) {
+func TestWithIssueFormatter(t *testing.T) {
 	var ctx = p.NewExecCtx(p.NewErrsList(), nil)
-	WithErrFormatter(func(e p.ZogIssue, p ParseCtx) {
+	WithIssueFormatter(func(e p.ZogIssue, p ParseCtx) {
 		e.SetMessage("foo")
 	})(ctx)
 

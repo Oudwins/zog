@@ -45,7 +45,7 @@ func Struct(schema Schema) *StructSchema {
 }
 
 // Parses val into destPtr and validates each field based on the schema. Only supports val = map[string]any & dest = &struct
-func (v *StructSchema) Parse(data any, destPtr any, options ...ExecOption) p.ZogErrMap {
+func (v *StructSchema) Parse(data any, destPtr any, options ...ExecOption) p.ZogIssueMap {
 	errs := p.NewErrsMap()
 	ctx := p.NewExecCtx(errs, conf.IssueFormatter)
 	for _, opt := range options {
@@ -154,7 +154,7 @@ func (v *StructSchema) process(ctx *p.SchemaCtx) {
 
 // Validate a struct pointer given the struct schema. Usage:
 // userSchema.Validate(&User, ...options)
-func (v *StructSchema) Validate(dataPtr any, options ...ExecOption) p.ZogErrMap {
+func (v *StructSchema) Validate(dataPtr any, options ...ExecOption) p.ZogIssueMap {
 	errs := p.NewErrsMap()
 	ctx := p.NewExecCtx(errs, conf.IssueFormatter)
 	for _, opt := range options {

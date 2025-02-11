@@ -70,7 +70,7 @@ func (t TimeFunc) Format(format string) SchemaOption {
 }
 
 // Parses the data into the destination time.Time. Returns a list of errors
-func (v *TimeSchema) Parse(data any, dest *time.Time, options ...ExecOption) p.ZogErrList {
+func (v *TimeSchema) Parse(data any, dest *time.Time, options ...ExecOption) p.ZogIssueList {
 	errs := p.NewErrsList()
 	ctx := p.NewExecCtx(errs, conf.IssueFormatter)
 	for _, opt := range options {
@@ -89,7 +89,7 @@ func (v *TimeSchema) process(ctx *p.SchemaCtx) {
 }
 
 // Validates an existing time.Time
-func (v *TimeSchema) Validate(data *time.Time, options ...ExecOption) p.ZogErrList {
+func (v *TimeSchema) Validate(data *time.Time, options ...ExecOption) p.ZogIssueList {
 	errs := p.NewErrsList()
 	ctx := p.NewExecCtx(errs, conf.IssueFormatter)
 	for _, opt := range options {

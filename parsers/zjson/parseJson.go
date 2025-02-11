@@ -25,7 +25,7 @@ import (
 
 // Decodes JSON data. Does not support json arrays or primitives
 /*
-- "null" -> nil -> Not accepted by zhttp -> errs["$root"]-> required error
+- "null" -> nil -> Not accepted by zhttp -> errs["$root"]-> required issue
 - "{}" -> okay -> map[]{}
 - "" -> parsing error -> errs["$root"]-> parsing error
 - "1213" -> zhttp -> plain value

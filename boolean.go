@@ -44,7 +44,7 @@ func Bool(opts ...SchemaOption) *BoolSchema {
 }
 
 // Parse data into destination pointer
-func (v *BoolSchema) Parse(data any, dest *bool, options ...ExecOption) p.ZogErrList {
+func (v *BoolSchema) Parse(data any, dest *bool, options ...ExecOption) p.ZogIssueList {
 	errs := p.NewErrsList()
 	ctx := p.NewExecCtx(errs, conf.IssueFormatter)
 	for _, opt := range options {
@@ -61,7 +61,7 @@ func (v *BoolSchema) process(ctx *p.SchemaCtx) {
 }
 
 // Validate data against schema
-func (v *BoolSchema) Validate(val *bool, options ...ExecOption) p.ZogErrList {
+func (v *BoolSchema) Validate(val *bool, options ...ExecOption) p.ZogIssueList {
 	errs := p.NewErrsList()
 	ctx := p.NewExecCtx(errs, conf.IssueFormatter)
 	for _, opt := range options {

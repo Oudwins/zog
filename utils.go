@@ -23,11 +23,11 @@ type ZogError = p.ZogError
 type ZogIssue = p.ZogError
 
 // Deprecated: This will be removed in the future. Use z.ZogIssueList instead
-// This is a type for the ZogErrList type. It is a list of ZogErrors returned from parsing primitive schemas. The type is []ZogError
-type ZogErrList = p.ZogErrList
+// This is a type for the ZogErrList type. It is a list of ZogIssues returned from parsing primitive schemas. The type is []ZogError
+type ZogErrList = p.ZogIssueList
 
 // This is a type for the ZogErrList type. It is a list of ZogIssues returned from parsing primitive schemas. The type is []ZogIssue
-type ZogIssueList = p.ZogErrList
+type ZogIssueList = p.ZogIssueList
 
 // Deprecated: This will be removed in the future. Use z.ZogIssueMap instead
 // This is a type for the ZogErrMap type. It is a map[string][]ZogError returned from parsing complex schemas. The type is map[string][]ZogError
@@ -46,7 +46,7 @@ errors = map[string][]ZogError{
 }
 
 */
-type ZogErrMap = p.ZogErrMap
+type ZogErrMap = p.ZogIssueMap
 
 // This is a type for the ZogIssueMap type. It is a map[string][]ZogIssue returned from parsing complex schemas. The type is map[string][]ZogIssue
 // All errors are returned in a flat map, not matter how deep the schema is. For example:
@@ -63,7 +63,7 @@ errors = map[string][]ZogIssue{
   "fields[0]": []ZogIssue{...}, // error for the first field in the slice
 }
 */
-type ZogIssueMap = p.ZogErrMap
+type ZogIssueMap = p.ZogIssueMap
 
 // ! TESTS
 
@@ -83,12 +83,34 @@ func TestFunc(IssueCode zconst.ZogIssueCode, validateFunc p.TestFunc) p.Test {
 	return t
 }
 
-// ! ERRORS
+type issueHelpers struct {
+}
+
+var Issues = issueHelpers{}
+
+func (i *issueHelpers) SanitizeMap(m ZogIssueMap) map[string][]string {
+	errs := make(map[string][]string, len(m))
+	for k, v := range m {
+		errs[k] = i.SanitizeList(v)
+	}
+	return errs
+}
+
+func (i *issueHelpers) SanitizeList(l ZogIssueList) []string {
+	errs := make([]string, len(l))
+	for i, err := range l {
+		errs[i] = err.Message()
+	}
+	return errs
+}
+
+// ! ERRORS -> Deprecated
 // Deprecated: This will be removed in the future.
 type errHelpers struct {
 }
 
 // Deprecated: This will be removed in the future.
+// Use z.Issues instead
 // Helper struct for dealing with zog errors. Beware this API may change
 var Errors = errHelpers{}
 
@@ -129,20 +151,14 @@ func (e *errHelpers) New(code zconst.ZogIssueCode, o any, destType zconst.ZogTyp
 	}
 }
 
-func (e *errHelpers) SanitizeMap(m p.ZogErrMap) map[string][]string {
-	errs := make(map[string][]string, len(m))
-	for k, v := range m {
-		errs[k] = e.SanitizeList(v)
-	}
-	return errs
+// Deprecated: This will be removed in the future. Use z.Issues.SanitizeMap instead
+func (e *errHelpers) SanitizeMap(m p.ZogIssueMap) map[string][]string {
+	return Issues.SanitizeMap(m)
 }
 
-func (e *errHelpers) SanitizeList(l p.ZogErrList) []string {
-	errs := make([]string, len(l))
-	for i, err := range l {
-		errs[i] = err.Message()
-	}
-	return errs
+// Deprecated: This will be removed in the future. Use z.Issues.SanitizeList instead
+func (e *errHelpers) SanitizeList(l p.ZogIssueList) []string {
+	return Issues.SanitizeList(l)
 }
 
 // ! Data Providers

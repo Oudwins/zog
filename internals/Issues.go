@@ -164,20 +164,20 @@ func (e *ZogErr) String() string {
 }
 
 // list of errors. This is returned by processors for simple types (e.g. strings, numbers, booleans)
-type ZogErrList = []ZogError
+type ZogIssueList = []ZogError
 
 // map of errors. This is returned by processors for complex types (e.g. maps, slices, structs)
-type ZogErrMap = map[string][]ZogError
+type ZogIssueMap = map[string][]ZogError
 
 // INTERNAL ONLY: Interface used to add errors during parsing & validation. It represents a group of errors (map or slice)
-type ZogErrors interface {
+type ZogIssues interface {
 	Add(path string, err ZogError)
 	IsEmpty() bool
 }
 
 // internal only
 type ErrsList struct {
-	List ZogErrList
+	List ZogIssueList
 }
 
 // internal only
@@ -187,7 +187,7 @@ func NewErrsList() *ErrsList {
 
 func (e *ErrsList) Add(path string, err ZogError) {
 	if e.List == nil {
-		e.List = make(ZogErrList, 0, 2)
+		e.List = make(ZogIssueList, 0, 2)
 	}
 	e.List = append(e.List, err)
 }
@@ -198,7 +198,7 @@ func (e *ErrsList) IsEmpty() bool {
 
 // map implementation of Errs
 type ErrsMap struct {
-	M ZogErrMap
+	M ZogIssueMap
 }
 
 // Factory for errsMap
@@ -209,13 +209,13 @@ func NewErrsMap() *ErrsMap {
 func (s *ErrsMap) Add(p string, err ZogError) {
 	// checking if its the first error
 	if s.M == nil {
-		s.M = ZogErrMap{}
-		s.M[zconst.ERROR_KEY_FIRST] = []ZogError{err}
+		s.M = ZogIssueMap{}
+		s.M[zconst.ISSUE_KEY_FIRST] = []ZogError{err}
 	}
 
 	path := p
 	if path == "" {
-		path = zconst.ERROR_KEY_ROOT
+		path = zconst.ISSUE_KEY_ROOT
 	}
 	if _, ok := s.M[path]; !ok {
 		s.M[path] = []ZogError{}

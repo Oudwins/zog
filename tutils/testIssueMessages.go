@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func VerifyDefaultIssueMessages(t *testing.T, errs internals.ZogErrList) {
+func VerifyDefaultIssueMessages(t *testing.T, errs internals.ZogIssueList) {
 	for _, err := range errs {
 		c := err.Code()
 		m, ok := en.Map[err.Dtype()][c]
@@ -31,7 +31,7 @@ func VerifyDefaultIssueMessages(t *testing.T, errs internals.ZogErrList) {
 	}
 }
 
-func VerifyDefaultIssueMessagesMap(t *testing.T, errs internals.ZogErrMap) {
+func VerifyDefaultIssueMessagesMap(t *testing.T, errs internals.ZogIssueMap) {
 	for _, errList := range errs {
 		VerifyDefaultIssueMessages(t, errList)
 	}

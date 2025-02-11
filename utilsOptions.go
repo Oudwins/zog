@@ -53,9 +53,7 @@ type ParsingOption = ExecOption
 // Deprecated: use WithIssueFormatter instead
 // Deprecated for naming consistency
 func WithErrFormatter(fmter p.IssueFmtFunc) ExecOption {
-	return func(p *p.ExecCtx) {
-		p.SetIssueFormatter(fmter)
-	}
+	return WithIssueFormatter(fmter)
 }
 
 // Sets the issue formatter for the execution context. This is used to format the issues messages during execution.

@@ -49,7 +49,7 @@ func Slice(schema ZogSchema, opts ...SchemaOption) *SliceSchema {
 }
 
 // Validates a pointer pointer
-func (v *SliceSchema) Validate(data any, options ...ExecOption) p.ZogErrMap {
+func (v *SliceSchema) Validate(data any, options ...ExecOption) p.ZogIssueMap {
 	errs := p.NewErrsMap()
 
 	ctx := p.NewExecCtx(errs, conf.IssueFormatter)
@@ -129,7 +129,7 @@ func (v *SliceSchema) validate(ctx *p.SchemaCtx) {
 }
 
 // Only supports parsing from data=slice[any] to a dest =&slice[] (this can be typed. Doesn't have to be any)
-func (v *SliceSchema) Parse(data any, dest any, options ...ExecOption) p.ZogErrMap {
+func (v *SliceSchema) Parse(data any, dest any, options ...ExecOption) p.ZogIssueMap {
 	errs := p.NewErrsMap()
 	ctx := p.NewExecCtx(errs, conf.IssueFormatter)
 	for _, opt := range options {
