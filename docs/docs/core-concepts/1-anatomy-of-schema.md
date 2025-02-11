@@ -7,8 +7,8 @@ sidebar_position: 1
 A zog schema is an interface implemented by multiple custom structs that represent a set of `validation` and `transformation` logic for a variable of a given type. For example:
 
 ```go
-stringSchema := z.String().Min(3).Required().Trim() // A zod schema that represents a required string string of minimum 3 characters and will be trimmed for white space
-userSchema := z.Struct(z.Schema{"name": stringSchema}) // a zod schema that represents a user struct. Also yes I know that z.Schema might be confusing but think of it as the schema for the struct not a ZogSchema
+stringSchema := z.String().Min(3).Required().Trim() // A zog schema that represents a required string of minimum 3 characters and will be trimmed for white space
+userSchema := z.Struct(z.Schema{"name": stringSchema}) // a zog schema that represents a user struct. Also yes I know that z.Schema might be confusing but think of it as the schema for the struct not a ZogSchema
 ```
 
 **The string schema, for example, looks something like this:**
@@ -26,7 +26,7 @@ type stringSchema struct {
 
 ## PreTransforms
 
-Pretransforms is a list of function that are applied to the data before the [tests](#tests) are run. You can think of it like a `pipeline` if transformations for a specific schema. **PreTransforms are PURE functions**. They take in data and return new data. This is the function signature:
+Pretransforms is a list of function that are applied to the data before the [tests](#tests) are run. You can think of it like a `pipeline` of transformations for a specific schema. **PreTransforms are PURE functions**. They take in data and return new data. This is the function signature:
 
 ```go
 // takes the data as input and returns the new data which will then be passed onto the next functions.
@@ -56,7 +56,7 @@ z.Slice(z.String()).PreTransform(func(data any, ctx Ctx) (any, error) {
 
 ## Tests
 
-> A test is what zod calls a "validator". It is a struct that represents an individual validation. For example for the String schema `z.String()` the method `Min(3)` generates a test that checks if the string is at least 3 characters long. You can view all the default tests that come with each [schema type here.](/zog-schemas)
+> A test is what zog calls a "validator". It is a struct that represents an individual validation. For example for the String schema `z.String()` the method `Min(3)` generates a test that checks if the string is at least 3 characters long. You can view all the default tests that come with each [schema type here.](/zog-schemas)
 
 
 ### Test Options
@@ -75,7 +75,7 @@ You are also free to create custom tests and pass them to the `schema.Test()` an
 
 ## PostTransforms
 
-PostTransforms is a list of function that are applied to the data after the [tests](#tests) are run. You can think of it like a `pipeline` if transformations for a specific schema. This is the function signature:
+PostTransforms is a list of function that are applied to the data after the [tests](#tests) are run. You can think of it like a `pipeline` of transformations for a specific schema. This is the function signature:
 
 ```go
 // type for functions called after validation & parsing is done

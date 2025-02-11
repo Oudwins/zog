@@ -37,4 +37,4 @@ func ParseJson(json []byte) {
 
 ## Behaviour on unmarshal errors
 
-if the json is not valid, a top level `ZogIssue` will be generated with the `IssueCode` `IssueCodeInvalidJSON` and the schema will not be run.
+If the json is not valid, a top level `ZogIssue` will be generated with the `IssueCode` `IssueCodeInvalidJSON` and the schema will not be run.

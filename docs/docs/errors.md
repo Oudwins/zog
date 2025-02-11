@@ -177,7 +177,7 @@ See how our issue messages were overridden? Be careful when using this!
 
 ```go
 errs := userSchema.Parse(data, &user)
-msgs := formatZogIssues(errs)
+msgs := FormatZogIssues(errs)
 
 func FormatZogIssues(errs z.ZogIssueMap) map[string][]string {
   // iterate over issues and create custom messages based on the issue code, the params and destination type
@@ -195,7 +195,7 @@ import (
 )
 
 // override specific issue messages
-// For this I recommend you import `zod/zconst` which contains zog constants but you can just use strings if you prefer
+// For this I recommend you import `zog/zconst` which contains zog constants but you can just use strings if you prefer
 conf.DefaultIssueMessageMap[zconst.TypeString]["my_custom_issue_code"] = "my custom issue message"
 conf.DefaultIssueMessageMap[zconst.TypeString][zconst.IssueCodeRequired] = "Now all required issues will get this message"
 ```

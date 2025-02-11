@@ -52,7 +52,7 @@
 
 ### Bug Fixes
 
-* Schemas are now public. New complex & primtive schema interfaces ([#64](https://github.com/Oudwins/zog/issues/64)) ([9e659e5](https://github.com/Oudwins/zog/commit/9e659e50b508418c1faaeccf7cc57b7c3b1cbb98))
+* Schemas are now public. New complex & primitive schema interfaces ([#64](https://github.com/Oudwins/zog/issues/64)) ([9e659e5](https://github.com/Oudwins/zog/commit/9e659e50b508418c1faaeccf7cc57b7c3b1cbb98))
 
 ## [0.14.0](https://github.com/Oudwins/zog/compare/v0.13.0...v0.14.0) (2025-01-02)
 
