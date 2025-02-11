@@ -6,6 +6,7 @@ import (
 	"time"
 
 	p "github.com/Oudwins/zog/internals"
+	"github.com/Oudwins/zog/tutils"
 	"github.com/Oudwins/zog/zconst"
 	"github.com/stretchr/testify/assert"
 )
@@ -154,10 +155,15 @@ func TestStructCustomTestInSchema(t *testing.T) {
 	var obj CustomStruct
 	data := map[string]any{
 		"str": "hello",
-		"num": 10,
+		"num": -1,
 	}
 
 	errs := schema.Parse(data, &obj)
+	assert.NotNil(t, errs)
+	tutils.VerifyDefaultIssueMessagesMap(t, errs)
+
+	data["num"] = 10
+	errs = schema.Parse(data, &obj)
 	assert.Nil(t, errs)
 	assert.Equal(t, obj.Str, "hello")
 	assert.Equal(t, obj.Num, 10)
@@ -209,13 +215,20 @@ func TestStructFromIssue(t *testing.T) {
 		Password string `zog:"password"`
 	}
 	schema := Struct(Schema{
-		"nombre":   String().Required(Message("this doesn't display even if validation fails")),
+		"nombre":   String().Required(),
 		"apellido": String().Required(),
 		"email":    String().Required(),
 		"aluID":    Int().Required(),
 		"password": String().Required(),
 	})
-	errs := schema.Parse(data, &output)
+
+	// Test with missing fields
+	errs := schema.Parse(map[string]any{}, &output)
+	assert.NotNil(t, errs)
+	tutils.VerifyDefaultIssueMessagesMap(t, errs)
+
+	// Test with valid data
+	errs = schema.Parse(data, &output)
 	assert.Nil(t, errs)
 	assert.Equal(t, "Juan", output.Nombre)
 	assert.Equal(t, "Perez", output.Apellido)

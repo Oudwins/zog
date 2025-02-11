@@ -3,6 +3,7 @@ package zog
 import (
 	"testing"
 
+	"github.com/Oudwins/zog/tutils"
 	"github.com/Oudwins/zog/zconst"
 	"github.com/stretchr/testify/assert"
 )
@@ -17,6 +18,7 @@ func TestPtrPrimitive(t *testing.T) {
 
 	err = s.Parse("not_empty", &out)
 	assert.NotNil(t, err)
+	tutils.VerifyDefaultIssueMessagesMap(t, err)
 	assert.Equal(t, 0, *out)
 
 	err = s.Parse(10, &out)
@@ -36,10 +38,10 @@ func TestPtrParseFormatter(t *testing.T) {
 	})
 	validator := Ptr(Int().GTE(10)).NotNil(Message("test1"))
 	errs := validator.Parse(nil, &dest, fmt)
-	assert.Equal(t, "test1", errs[zconst.ERROR_KEY_ROOT][0].Message())
+	assert.Equal(t, "test1", errs[zconst.ISSUE_KEY_ROOT][0].Message())
 	validator2 := Ptr(Int()).NotNil()
 	errs2 := validator2.Parse(nil, &dest, fmt)
-	assert.Equal(t, "test2", errs2[zconst.ERROR_KEY_ROOT][0].Message())
+	assert.Equal(t, "test2", errs2[zconst.ISSUE_KEY_ROOT][0].Message())
 }
 
 func TestPtrParseSetCoercerPassThrough(t *testing.T) {
@@ -182,7 +184,7 @@ func TestPtrRequired(t *testing.T) {
 		err := schema.Parse(test.Val, &dest)
 		if test.ExpectedErr {
 			assert.NotNil(t, err)
-			assert.Equal(t, "Testing", err[zconst.ERROR_KEY_ROOT][0].Message())
+			assert.Equal(t, "Testing", err[zconst.ISSUE_KEY_ROOT][0].Message())
 		} else {
 			assert.Nil(t, err)
 		}
@@ -209,7 +211,6 @@ func TestPtrToStruct(t *testing.T) {
 }
 
 func TestPtrToSlice(t *testing.T) {
-
 	var dest *[]*int
 	s := Ptr(Slice(Ptr(Int())))
 	err := s.Parse([]any{10, 20, 30}, &dest)

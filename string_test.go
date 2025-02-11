@@ -4,6 +4,7 @@ import (
 	"regexp"
 	"testing"
 
+	"github.com/Oudwins/zog/tutils"
 	"github.com/Oudwins/zog/zconst"
 	"github.com/stretchr/testify/assert"
 )
@@ -21,9 +22,9 @@ func TestStringOptionalByDefault(t *testing.T) {
 
 	errs = field.Parse("", &dest)
 	assert.NotEmpty(t, errs)
+	tutils.VerifyDefaultIssueMessages(t, errs)
 
 	field.Required().Optional()
-
 }
 
 func TestStringOptional(t *testing.T) {
@@ -86,6 +87,7 @@ func TestStringPostTransform(t *testing.T) {
 
 	errs = field.Parse("short", &dest)
 	assert.NotEmpty(t, errs)
+	tutils.VerifyDefaultIssueMessages(t, errs)
 	assert.NotEqual(t, "short_transformed", dest)
 }
 
@@ -96,6 +98,7 @@ func TestStringRequiredAborts(t *testing.T) {
 	errs := field.Parse("", &dest)
 	assert.NotEmpty(t, errs)
 	assert.Len(t, errs, 1)
+	tutils.VerifyDefaultIssueMessages(t, errs)
 }
 
 func TestStringCustomTest(t *testing.T) {
@@ -164,7 +167,7 @@ func TestStringCatch(t *testing.T) {
 // VALIDATORS / Tests / Validators
 
 func TestStringLength(t *testing.T) {
-	field := String().Len(3, Message("custom length"))
+	field := String().Len(3)
 	var dest string
 
 	errs := field.Parse("foo", &dest)
@@ -174,16 +177,16 @@ func TestStringLength(t *testing.T) {
 
 	errs = field.Parse("foobar", &dest)
 	assert.NotEmpty(t, errs)
-	assert.Equal(t, "custom length", errs[0].Message())
+	tutils.VerifyDefaultIssueMessages(t, errs)
 
-	field = String().Min(5, Message("custom min")).Max(7, Message("custom max"))
+	field = String().Min(5).Max(7)
 	errs = field.Parse("123456789", &dest)
 	assert.NotEmpty(t, errs)
-	assert.Equal(t, "custom max", errs[0].Message())
+	tutils.VerifyDefaultIssueMessages(t, errs)
 
 	assert.Equal(t, "123456789", dest)
 
-	field = String().Min(5, Message("custom min")).Max(7, Message("custom max"))
+	field = String().Min(5).Max(7)
 	errs = field.Parse("1234567", &dest)
 	assert.Empty(t, errs)
 
@@ -191,12 +194,12 @@ func TestStringLength(t *testing.T) {
 }
 
 func TestStringEmail(t *testing.T) {
-	field := String().Email(Message("custom email"))
+	field := String().Email()
 	var dest string
 
 	errs := field.Parse("not an email", &dest)
 	assert.NotEmpty(t, errs)
-	assert.Equal(t, "custom email", errs[0].Message())
+	tutils.VerifyDefaultIssueMessages(t, errs)
 
 	errs = field.Parse("test@example.com", &dest)
 	assert.Empty(t, errs)
@@ -205,12 +208,12 @@ func TestStringEmail(t *testing.T) {
 }
 
 func TestStringURL(t *testing.T) {
-	field := String().URL(Message("custom url"))
+	field := String().URL()
 	var dest string
 
 	errs := field.Parse("not a url", &dest)
 	assert.NotEmpty(t, errs)
-	assert.Equal(t, "custom url", errs[0].Message())
+	tutils.VerifyDefaultIssueMessages(t, errs)
 
 	errs = field.Parse("http://example.com", &dest)
 	assert.Empty(t, errs)
@@ -219,12 +222,12 @@ func TestStringURL(t *testing.T) {
 }
 
 func TestStringHasPrefix(t *testing.T) {
-	field := String().HasPrefix("pre", Message("custom prefix"))
+	field := String().HasPrefix("pre")
 	var dest string
 
 	errs := field.Parse("not prefixed", &dest)
 	assert.NotEmpty(t, errs)
-	assert.Equal(t, "custom prefix", errs[0].Message())
+	tutils.VerifyDefaultIssueMessages(t, errs)
 
 	errs = field.Parse("prefix", &dest)
 	assert.Empty(t, errs)
@@ -233,12 +236,12 @@ func TestStringHasPrefix(t *testing.T) {
 }
 
 func TestStringHasPostfix(t *testing.T) {
-	field := String().HasSuffix("fix", Message("custom suffix"))
+	field := String().HasSuffix("fix")
 	var dest string
 
 	errs := field.Parse("not postfixed", &dest)
 	assert.NotEmpty(t, errs)
-	assert.Equal(t, "custom suffix", errs[0].Message())
+	tutils.VerifyDefaultIssueMessages(t, errs)
 
 	errs = field.Parse("postfix", &dest)
 	assert.Empty(t, errs)
@@ -247,17 +250,17 @@ func TestStringHasPostfix(t *testing.T) {
 }
 
 func TestStringContains(t *testing.T) {
-	field := String().Contains("contains", Message("custom contains"))
+	field := String().Contains("contains")
 	var dest string
 
-	errs := field.Parse("does not contain", &dest)
+	errs := field.Parse("not containing", &dest)
 	assert.NotEmpty(t, errs)
-	assert.Equal(t, "custom contains", errs[0].Message())
+	tutils.VerifyDefaultIssueMessages(t, errs)
 
-	errs = field.Parse("contains", &dest)
+	errs = field.Parse("this contains that", &dest)
 	assert.Empty(t, errs)
 
-	assert.Equal(t, "contains", dest)
+	assert.Equal(t, "this contains that", dest)
 }
 
 func TestStringContainsDigit(t *testing.T) {

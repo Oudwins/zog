@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	p "github.com/Oudwins/zog/internals"
+	"github.com/Oudwins/zog/tutils"
 	"github.com/Oudwins/zog/zconst"
 	"github.com/stretchr/testify/assert"
 )
@@ -43,6 +44,9 @@ func TestBoolParse(t *testing.T) {
 
 			if len(errs) > 0 && !test.expectErr {
 				t.Errorf("Unexpected errors i = %d: %v", i, errs)
+			}
+			if len(errs) > 0 {
+				tutils.VerifyDefaultIssueMessages(t, errs)
 			}
 
 			if result != test.expected {
@@ -169,6 +173,10 @@ func TestBoolOptional(t *testing.T) {
 				t.Errorf("Expected error: %v, got: %v", test.expectErr, errs)
 			}
 
+			if len(errs) > 0 {
+				tutils.VerifyDefaultIssueMessages(t, errs)
+			}
+
 			if result != test.expected {
 				t.Errorf("Expected %v, but got %v", test.expected, result)
 			}
@@ -218,6 +226,10 @@ func TestBoolDefault(t *testing.T) {
 
 			if (len(errs) > 0) != test.expectErr {
 				t.Errorf("%s -> Expected error: %v, got: %v", test.name, test.expectErr, errs)
+			}
+
+			if len(errs) > 0 {
+				tutils.VerifyDefaultIssueMessages(t, errs)
 			}
 
 			if result != test.expected {
@@ -273,6 +285,10 @@ func TestBoolCatch(t *testing.T) {
 				t.Errorf("%s -> Expected error: %v, got: %v", test.name, test.expectErr, errs)
 			}
 
+			if len(errs) > 0 {
+				tutils.VerifyDefaultIssueMessages(t, errs)
+			}
+
 			if result != test.expected {
 				t.Errorf("%s -> Expected %v, but got %v", test.name, test.expected, result)
 			}
@@ -311,6 +327,10 @@ func TestBoolTrue(t *testing.T) {
 				t.Errorf("Expected error: %v, got: %v", test.expectErr, errs)
 			}
 
+			if len(errs) > 0 {
+				tutils.VerifyDefaultIssueMessages(t, errs)
+			}
+
 			if result != test.expected {
 				t.Errorf("Expected %v, but got %v", test.expected, result)
 			}
@@ -347,6 +367,10 @@ func TestBoolFalse(t *testing.T) {
 
 			if (len(errs) > 0) != test.expectErr {
 				t.Errorf("Expected error: %v, got: %v", test.expectErr, errs)
+			}
+
+			if len(errs) > 0 {
+				tutils.VerifyDefaultIssueMessages(t, errs)
 			}
 
 			if result != test.expected {
@@ -393,6 +417,10 @@ func TestBoolPreTransform(t *testing.T) {
 
 			if (len(errs) > 0) != test.expectErr {
 				t.Errorf("Expected error: %v, got: %v", test.expectErr, errs)
+			}
+
+			if len(errs) > 0 {
+				tutils.VerifyDefaultIssueMessages(t, errs)
 			}
 
 			if result != test.expected {
@@ -450,6 +478,10 @@ func TestBoolPostTransform(t *testing.T) {
 				t.Errorf("Expected error: %v, got: %v", test.expectErr, errs)
 			}
 
+			if len(errs) > 0 {
+				tutils.VerifyDefaultIssueMessages(t, errs)
+			}
+
 			if result != test.expected {
 				t.Errorf("Expected %v, but got %v", test.expected, result)
 			}
@@ -462,7 +494,7 @@ func TestBoolCustomTest(t *testing.T) {
 		// Custom test logic here
 		return val == true
 	}, Message("custom"))
-	
+
 	tests := []struct {
 		name      string
 		input     bool
@@ -479,7 +511,7 @@ func TestBoolCustomTest(t *testing.T) {
 			expectErr: true,
 		},
 	}
-	
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			var dest bool
