@@ -33,3 +33,8 @@ func ParseJson(json []byte) {
 ```
 
 > **WARNING** The `zjson` package does NOT currently support parsing into any data type that is NOT a struct.
+
+
+## Behaviour on unmarshal errors
+
+if the json is not valid, a top level `ZogIssue` will be generated with the `IssueCode` `IssueCodeInvalidJSON` and the schema will not be run.
