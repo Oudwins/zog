@@ -39,8 +39,8 @@ Killer Features:
 > **API Stability:**
 >
 > - I will consider the API stable when we reach v1.0.0
-> - However, I believe very little API changes will happen from the current implementation. The APIs most likely to change are the **data providers** (please don't make your own if possible use the helpers whose APIs will not change meaningfully) and the ParseCtx most other APIs should remain the same
-> - Zog will not respect semver until v1.0.0 is released. Expect breaking changes (mainly in non basic apis) until then.
+> - However, I believe very little API changes will happen from the current implementation. The APIs most likely to change are the **data providers** (please don't make your own if possible use the helpers whose APIs will not change meaningfully) and the z.Ctx most other APIs should remain the same. I could be wrong but I don't expect many breaking changes.
+> - Zog will not respect semver until v1.0.0 is released. Consider each minor version to potentially have breaking changes until then.
 
 
 ## Introduction
