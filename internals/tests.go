@@ -12,16 +12,16 @@ type TestFunc = func(val any, ctx Ctx) bool
 
 // Test is a struct that represents an individual validation. For example `z.String().Min(3)` is a test that checks if the string is at least 3 characters long.
 type Test struct {
-	ErrCode      zconst.ZogErrCode
+	IssueCode    zconst.ZogIssueCode
 	Params       map[string]any
-	ErrFmt       ErrFmtFunc
+	IssueFmtFunc IssueFmtFunc
 	ValidateFunc TestFunc
 }
 
 // returns a required test to be used for processor.Required() method
 func Required() Test {
 	t := Test{
-		ErrCode: zconst.ErrCodeRequired,
+		IssueCode: zconst.IssueCodeRequired,
 		// this is not an accident. required is only a test because it makes it easier to handle error messages. But the function to check if the value is a zero value is out of the scope of this test.
 		ValidateFunc: nil,
 	}
@@ -34,21 +34,21 @@ type LengthCapable[K any] interface {
 
 func LenMin[T LengthCapable[any]](n int) Test {
 	t := Test{
-		ErrCode: zconst.ErrCodeMin,
-		Params:  make(map[string]any, 1),
+		IssueCode: zconst.IssueCodeMin,
+		Params:    make(map[string]any, 1),
 		ValidateFunc: func(val any, ctx Ctx) bool {
 			x := val.(T)
 			return len(x) >= n
 		},
 	}
-	t.Params[zconst.ErrCodeMin] = n
+	t.Params[zconst.IssueCodeMin] = n
 	return t
 }
 
 func LenMax[T LengthCapable[any]](n int) Test {
 	t := Test{
-		ErrCode: zconst.ErrCodeMax,
-		Params:  make(map[string]any, 1),
+		IssueCode: zconst.IssueCodeMax,
+		Params:    make(map[string]any, 1),
 		ValidateFunc: func(v any, ctx Ctx) bool {
 			val, ok := v.(T)
 			if !ok {
@@ -57,14 +57,14 @@ func LenMax[T LengthCapable[any]](n int) Test {
 			return len(val) <= n
 		},
 	}
-	t.Params[zconst.ErrCodeMax] = n
+	t.Params[zconst.IssueCodeMax] = n
 	return t
 }
 
 func Len[T LengthCapable[any]](n int) Test {
 	t := Test{
-		ErrCode: zconst.ErrCodeLen,
-		Params:  make(map[string]any, 1),
+		IssueCode: zconst.IssueCodeLen,
+		Params:    make(map[string]any, 1),
 		ValidateFunc: func(v any, ctx Ctx) bool {
 			val, ok := v.(T)
 			if !ok {
@@ -73,14 +73,14 @@ func Len[T LengthCapable[any]](n int) Test {
 			return len(val) == n
 		},
 	}
-	t.Params[zconst.ErrCodeLen] = n
+	t.Params[zconst.IssueCodeLen] = n
 	return t
 }
 
 func In[T any](values []T) Test {
 	t := Test{
-		ErrCode: zconst.ErrCodeOneOf,
-		Params:  make(map[string]any, 1),
+		IssueCode: zconst.IssueCodeOneOf,
+		Params:    make(map[string]any, 1),
 		ValidateFunc: func(val any, ctx Ctx) bool {
 			for _, value := range values {
 				v := val.(T)
@@ -91,14 +91,14 @@ func In[T any](values []T) Test {
 			return false
 		},
 	}
-	t.Params[zconst.ErrCodeOneOf] = values
+	t.Params[zconst.IssueCodeOneOf] = values
 	return t
 }
 
 func EQ[T comparable](n T) Test {
 	t := Test{
-		ErrCode: zconst.ErrCodeEQ,
-		Params:  make(map[string]any, 1),
+		IssueCode: zconst.IssueCodeEQ,
+		Params:    make(map[string]any, 1),
 		ValidateFunc: func(val any, ctx Ctx) bool {
 			v, ok := val.(T)
 			if !ok {
@@ -107,14 +107,14 @@ func EQ[T comparable](n T) Test {
 			return v == n
 		},
 	}
-	t.Params[zconst.ErrCodeEQ] = n
+	t.Params[zconst.IssueCodeEQ] = n
 	return t
 }
 
 func LTE[T constraints.Ordered](n T) Test {
 	t := Test{
-		ErrCode: zconst.ErrCodeLTE,
-		Params:  make(map[string]any, 1),
+		IssueCode: zconst.IssueCodeLTE,
+		Params:    make(map[string]any, 1),
 		ValidateFunc: func(val any, ctx Ctx) bool {
 			v, ok := val.(T)
 			if !ok {
@@ -123,14 +123,14 @@ func LTE[T constraints.Ordered](n T) Test {
 			return v <= n
 		},
 	}
-	t.Params[zconst.ErrCodeLTE] = n
+	t.Params[zconst.IssueCodeLTE] = n
 	return t
 }
 
 func GTE[T constraints.Ordered](n T) Test {
 	t := Test{
-		ErrCode: zconst.ErrCodeGTE,
-		Params:  make(map[string]any, 1),
+		IssueCode: zconst.IssueCodeGTE,
+		Params:    make(map[string]any, 1),
 		ValidateFunc: func(val any, ctx Ctx) bool {
 			v, ok := val.(T)
 			if !ok {
@@ -139,14 +139,14 @@ func GTE[T constraints.Ordered](n T) Test {
 			return v >= n
 		},
 	}
-	t.Params[zconst.ErrCodeGTE] = n
+	t.Params[zconst.IssueCodeGTE] = n
 	return t
 }
 
 func LT[T constraints.Ordered](n T) Test {
 	t := Test{
-		ErrCode: zconst.ErrCodeLT,
-		Params:  make(map[string]any, 1),
+		IssueCode: zconst.IssueCodeLT,
+		Params:    make(map[string]any, 1),
 		ValidateFunc: func(val any, ctx Ctx) bool {
 			v, ok := val.(T)
 			if !ok {
@@ -155,14 +155,14 @@ func LT[T constraints.Ordered](n T) Test {
 			return v < n
 		},
 	}
-	t.Params[zconst.ErrCodeLT] = n
+	t.Params[zconst.IssueCodeLT] = n
 	return t
 }
 
 func GT[T constraints.Ordered](n T) Test {
 	t := Test{
-		ErrCode: zconst.ErrCodeGT,
-		Params:  make(map[string]any, 1),
+		IssueCode: zconst.IssueCodeGT,
+		Params:    make(map[string]any, 1),
 		ValidateFunc: func(val any, ctx Ctx) bool {
 			v, ok := val.(T)
 			if !ok {
@@ -171,6 +171,6 @@ func GT[T constraints.Ordered](n T) Test {
 			return v > n
 		},
 	}
-	t.Params[zconst.ErrCodeGT] = n
+	t.Params[zconst.IssueCodeGT] = n
 	return t
 }

@@ -5,6 +5,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Oudwins/zog/tutils"
 	"github.com/Oudwins/zog/zconst"
 	"github.com/stretchr/testify/assert"
 )
@@ -57,6 +58,7 @@ func TestSliceOfStructs(t *testing.T) {
 
 	assert.Len(t, errsMap["users[0].name"], 1)
 	assert.Len(t, errsMap["users[1].name"], 1)
+	tutils.VerifyDefaultIssueMessagesMap(t, errsMap)
 }
 
 func TestSliceOptionalSlice(t *testing.T) {
@@ -131,6 +133,7 @@ func TestSliceErrors(t *testing.T) {
 	assert.NotEmpty(t, errs["[0]"])
 	assert.NotEmpty(t, errs["[1]"])
 	assert.Empty(t, errs["[2]"])
+	tutils.VerifyDefaultIssueMessagesMap(t, errs)
 }
 
 func TestSlicePostTransform(t *testing.T) {
@@ -174,27 +177,27 @@ func TestSliceLen(t *testing.T) {
 	s := []string{}
 
 	els := []string{"a", "b", "c", "d", "e"}
-	schema := Slice(String().Required()).Len(2, Message("custom"))
+	schema := Slice(String().Required()).Len(2)
 	errs := schema.Parse(els[:2], &s)
 	assert.Len(t, s, 2)
 	assert.Nil(t, errs)
 	errs = schema.Parse(els[:1], &s)
 	assert.NotEmpty(t, errs)
-	assert.Equal(t, "custom", errs["$root"][0].Message())
+	tutils.VerifyDefaultIssueMessagesMap(t, errs)
 	// min
-	schema = Slice(String().Required()).Min(2, Message("custom"))
+	schema = Slice(String().Required()).Min(2)
 	errs = schema.Parse(els[:4], &s)
 	assert.Nil(t, errs)
 	errs = schema.Parse(els[:1], &s)
 	assert.NotEmpty(t, errs)
-	assert.Equal(t, "custom", errs["$root"][0].Message())
+	tutils.VerifyDefaultIssueMessagesMap(t, errs)
 	// max
-	schema = Slice(String().Required()).Max(3, Message("custom"))
+	schema = Slice(String().Required()).Max(3)
 	errs = schema.Parse(els[:1], &s)
 	assert.Nil(t, errs)
 	errs = schema.Parse(els[:4], &s)
 	assert.NotNil(t, errs)
-	assert.Equal(t, "custom", errs["$root"][0].Message())
+	tutils.VerifyDefaultIssueMessagesMap(t, errs)
 }
 
 func TestSliceContains(t *testing.T) {
@@ -207,10 +210,10 @@ func TestSliceContains(t *testing.T) {
 	assert.Nil(t, errs)
 	assert.Len(t, s, 3)
 
-	schema = Slice(String()).Contains("d", Message("custom"))
+	schema = Slice(String()).Contains("d")
 	errs = schema.Parse(items, &s)
 	assert.NotEmpty(t, errs)
-	assert.Equal(t, "custom", errs["$root"][0].Message())
+	tutils.VerifyDefaultIssueMessagesMap(t, errs)
 }
 
 func TestSliceCustomTest(t *testing.T) {

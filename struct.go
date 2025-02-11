@@ -45,9 +45,9 @@ func Struct(schema Schema) *StructSchema {
 }
 
 // Parses val into destPtr and validates each field based on the schema. Only supports val = map[string]any & dest = &struct
-func (v *StructSchema) Parse(data any, destPtr any, options ...ExecOption) p.ZogErrMap {
+func (v *StructSchema) Parse(data any, destPtr any, options ...ExecOption) p.ZogIssueMap {
 	errs := p.NewErrsMap()
-	ctx := p.NewExecCtx(errs, conf.ErrorFormatter)
+	ctx := p.NewExecCtx(errs, conf.IssueFormatter)
 	for _, opt := range options {
 		opt(ctx)
 	}
@@ -100,7 +100,7 @@ func (v *StructSchema) process(ctx *p.SchemaCtx) {
 	if err != nil {
 		code := err.Code()
 		// This means its optional and we got an error coercing the value to a DataProvider, so we can ignore it
-		if v.required == nil && code == zconst.ErrCodeCoerce {
+		if v.required == nil && code == zconst.IssueCodeCoerce {
 			return
 		}
 
@@ -110,7 +110,7 @@ func (v *StructSchema) process(ctx *p.SchemaCtx) {
 		}
 
 		// This means that its required but we got an error coercing the value or a factory errored with required
-		if code == zconst.ErrCodeCoerce || code == zconst.ErrCodeRequired {
+		if code == zconst.IssueCodeCoerce || code == zconst.IssueCodeRequired {
 			ctx.AddIssue(ctx.IssueFromTest(v.required, ctx.Val))
 		}
 	}
@@ -154,9 +154,9 @@ func (v *StructSchema) process(ctx *p.SchemaCtx) {
 
 // Validate a struct pointer given the struct schema. Usage:
 // userSchema.Validate(&User, ...options)
-func (v *StructSchema) Validate(dataPtr any, options ...ExecOption) p.ZogErrMap {
+func (v *StructSchema) Validate(dataPtr any, options ...ExecOption) p.ZogIssueMap {
 	errs := p.NewErrsMap()
-	ctx := p.NewExecCtx(errs, conf.ErrorFormatter)
+	ctx := p.NewExecCtx(errs, conf.IssueFormatter)
 	for _, opt := range options {
 		opt(ctx)
 	}

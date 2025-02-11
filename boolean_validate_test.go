@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	p "github.com/Oudwins/zog/internals"
+	"github.com/Oudwins/zog/tutils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -87,6 +88,7 @@ func TestBoolValidateRequired(t *testing.T) {
 			errs := boolProc.Validate(&test.data)
 			if test.expectErr {
 				assert.NotEmpty(t, errs)
+				tutils.VerifyDefaultIssueMessages(t, errs)
 			} else {
 				assert.Empty(t, errs)
 			}
@@ -128,6 +130,7 @@ func TestBoolValidateOptional(t *testing.T) {
 			errs := test.proc.Validate(&test.data)
 			if test.expectErr {
 				assert.NotEmpty(t, errs)
+				tutils.VerifyDefaultIssueMessages(t, errs)
 			}
 
 			assert.Equal(t, test.data, test.expected)
@@ -165,6 +168,7 @@ func TestBoolValidateDefault(t *testing.T) {
 
 			if test.expectErr {
 				assert.NotEmpty(t, errs)
+				tutils.VerifyDefaultIssueMessages(t, errs)
 			} else {
 				assert.Empty(t, errs)
 			}
@@ -204,7 +208,10 @@ func TestBoolValidateCatch(t *testing.T) {
 				}
 				return val, nil
 			})
-			_ = boolProc.Validate(&test.data)
+			errs := boolProc.Validate(&test.data)
+			if len(errs) > 0 {
+				tutils.VerifyDefaultIssueMessages(t, errs)
+			}
 
 			if test.data != test.expected {
 				t.Errorf("%s -> Expected %v, but got %v", test.name, test.expected, test.data)
@@ -237,6 +244,7 @@ func TestBoolValidateTrue(t *testing.T) {
 			errs := boolProc.Validate(&test.data)
 			if test.expectErr {
 				assert.NotEmpty(t, errs)
+				tutils.VerifyDefaultIssueMessages(t, errs)
 			} else {
 				assert.Empty(t, errs)
 			}
@@ -270,7 +278,9 @@ func TestBoolValidateFalse(t *testing.T) {
 			if (len(errs) > 0) != test.expectErr {
 				t.Errorf("Expected error: %v, got: %v", test.expectErr, errs)
 			}
-
+			if len(errs) > 0 {
+				tutils.VerifyDefaultIssueMessages(t, errs)
+			}
 		})
 	}
 }
@@ -312,6 +322,9 @@ func TestBoolValidatePreTransform(t *testing.T) {
 
 			if (len(errs) > 0) != test.expectErr {
 				t.Errorf("Expected error: %v, got: %v", test.expectErr, errs)
+			}
+			if len(errs) > 0 {
+				tutils.VerifyDefaultIssueMessages(t, errs)
 			}
 
 			if test.data != test.expected {
@@ -366,6 +379,9 @@ func TestBoolValidatePostTransform(t *testing.T) {
 
 			if (len(errs) > 0) != test.expectErr {
 				t.Errorf("Expected error: %v, got: %v", test.expectErr, errs)
+			}
+			if len(errs) > 0 {
+				tutils.VerifyDefaultIssueMessages(t, errs)
 			}
 
 			if test.data != test.expected {

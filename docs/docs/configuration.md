@@ -32,4 +32,4 @@ conf.Coercers.Float64 = func(data any) (any, error) {
 
 ## Error Formatting
 
-For information on configurating error formatting globally please refer to the [errors page](/errors#5-configure-error-messages-globally).
+For information on configurating error formatting globally please refer to the [errors page](/errors#5-configure-issue-messages-globally).

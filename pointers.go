@@ -37,9 +37,9 @@ func Ptr(schema ZogSchema) *PointerSchema {
 }
 
 // Parse the data into the destination pointer
-func (v *PointerSchema) Parse(data any, dest any, options ...ExecOption) p.ZogErrMap {
+func (v *PointerSchema) Parse(data any, dest any, options ...ExecOption) p.ZogIssueMap {
 	errs := p.NewErrsMap()
-	ctx := p.NewExecCtx(errs, conf.ErrorFormatter)
+	ctx := p.NewExecCtx(errs, conf.IssueFormatter)
 	for _, opt := range options {
 		opt(ctx)
 	}
@@ -54,7 +54,8 @@ func (v *PointerSchema) process(ctx *p.SchemaCtx) {
 	isZero := p.IsParseZeroValue(ctx.Val, ctx)
 	if isZero {
 		if v.required != nil {
-			ctx.AddIssue(ctx.IssueFromTest(v.required, ctx.Val))
+			// We set the destination type to the schema type because pointer doesn't have any issue messages. They pass through to the schema type
+			ctx.AddIssue(ctx.IssueFromTest(v.required, ctx.Val).SetDType(v.schema.getType()))
 		}
 		return
 	}
@@ -68,14 +69,13 @@ func (v *PointerSchema) process(ctx *p.SchemaCtx) {
 		destPtr.Set(newVal)
 	}
 	di := destPtr.Interface()
-	ctx.DestPtr = di
-	v.schema.process(ctx)
+	v.schema.process(ctx.NewSchemaCtx(ctx.Val, di, ctx.Path, v.schema.getType()))
 }
 
 // Validates a pointer pointer
-func (v *PointerSchema) Validate(data any, options ...ExecOption) p.ZogErrMap {
+func (v *PointerSchema) Validate(data any, options ...ExecOption) p.ZogIssueMap {
 	errs := p.NewErrsMap()
-	ctx := p.NewExecCtx(errs, conf.ErrorFormatter)
+	ctx := p.NewExecCtx(errs, conf.IssueFormatter)
 	for _, opt := range options {
 		opt(ctx)
 	}
@@ -88,20 +88,21 @@ func (v *PointerSchema) validate(ctx *p.SchemaCtx) {
 	destPtr := rv.Elem()
 	if !destPtr.IsValid() || destPtr.IsNil() {
 		if v.required != nil {
-			ctx.AddIssue(ctx.IssueFromTest(v.required, ctx.Val))
+			// We set the destination type to the schema type because pointer doesn't have any issue messages. They pass through to the schema type
+			ctx.AddIssue(ctx.IssueFromTest(v.required, ctx.Val).SetDType(v.schema.getType()))
 		}
 		return
 	}
 	di := destPtr.Interface()
 	ctx.Val = di
-	v.schema.validate(ctx)
+	v.schema.validate(ctx.NewValidateSchemaCtx(di, ctx.Path, v.schema.getType()))
 }
 
 // Validate Existing Pointer
 
 func (v *PointerSchema) NotNil(options ...TestOption) *PointerSchema {
 	r := p.Test{
-		ErrCode: zconst.ErrCodeNotNil,
+		IssueCode: zconst.IssueCodeNotNil,
 	}
 	for _, opt := range options {
 		opt(&r)

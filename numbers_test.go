@@ -19,7 +19,7 @@ func TestNumberParse(t *testing.T) {
 
 func TestNumberParseFormatter(t *testing.T) {
 	dest := 0
-	fmt := WithErrFormatter(func(e ZogError, ctx Ctx) {
+	fmt := WithIssueFormatter(func(e ZogIssue, ctx Ctx) {
 		e.SetMessage("test2")
 	})
 	validator := Int().GTE(10, Message("test1"))

@@ -47,19 +47,19 @@ z.String(z.WithCoercer(func(data any) (any, error) {
 ![Zog Schema Parsign Execution Structure](./img/parsing-workflow.png)
 
 1. Pretransforms
-   - On error all parsing and validation stops and error is returned.
+   - On error all parsing and validation stops and [ZogIssues](/errors) are returned.
    - Can be caught by catch
 2. Default Check -> Assigns default value if the value is nil value
 3. Optional Check -> Stops validation if the value is nil value
 4. Casting -> Attempts to cast the value to the correct type
-   - On error all parsing and validation stops and error is returned
+   - On error all parsing and validation stops and [ZogIssues](/errors) are returned
    - Can be caught by catch
 5. Required check ->
-   - On error: aborts if the value is its nil value and returns required error.
+   - On error: aborts if the value is its nil value and returns a required [ZogIssue](/errors).
    - Can be caught by catch
 6. Tests -> Run all tests on the value (including required)
-   - On error: validation errors are added to the errors. All validation functions are run even if one of them fails.
+   - On error: validation [ZogIssues](/errors) are added to the [ZogIssueList](/errors#zogissuelist) or [ZogIssueMap](/errors#zogissuelist). All validation functions are run even if one of them fails.
    - Can be caught by catch
 7. PostTransforms -> Run all postTransforms on the value.
-   - On error you return: aborts and adds your error to the list of errors
-   - Only run on valid values. Won't run if an error was created before the postTransforms
+   - On error you return: aborts and adds your error to the list of [ZogIssues](/errors)
+   - Only run on valid values. Won't run if a [ZogIssue](/errors) was created before the postTransforms
