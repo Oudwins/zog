@@ -88,8 +88,9 @@ func TestPtrPtrInStruct(t *testing.T) {
 	}
 	var out TestStruct
 	// empty input
-	err := s.Parse("", &out)
-	assert.Empty(t, err)
+	err := s.Parse(nil, &out)
+	assert.NotNil(t, err)
+	assert.Equal(t, zconst.IssueCodeCoerce, err[zconst.ISSUE_KEY_ROOT][0].Code())
 	assert.Nil(t, out.Value)
 
 	// good input

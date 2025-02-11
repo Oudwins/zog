@@ -5,7 +5,6 @@ import (
 	"testing"
 	"time"
 
-	p "github.com/Oudwins/zog/internals"
 	"github.com/Oudwins/zog/tutils"
 	"github.com/Oudwins/zog/zconst"
 	"github.com/stretchr/testify/assert"
@@ -117,19 +116,16 @@ func TestStructOptional(t *testing.T) {
 		Tim time.Time
 	}
 
-	var objSchema = Struct(Schema{
+	var objSchema = Ptr(Struct(Schema{
 		"str": String().Required(),
 		"in":  Int().Required(),
 		"fl":  Float().Required(),
 		"bol": Bool().Required(),
 		"tim": Time().Required(),
-	}).Required().Optional() // should override required
+	}))
 
 	var o TestStruct
-	var m = map[string]any{}
-	dp := p.NewMapDataProvider(m)
-	dp = dp.GetNestedProvider("str")
-	errs := objSchema.Parse(dp, &o)
+	errs := objSchema.Parse(nil, &o)
 	assert.Nil(t, errs)
 }
 
@@ -309,14 +305,14 @@ func TestStructPostTransforms(t *testing.T) {
 	assert.Equal(t, "post_original", output.Value)
 }
 
-func TestStructRequired(t *testing.T) {
+func TestStructPassThroughRequired(t *testing.T) {
 	type TestStruct struct {
 		Somefield string
 	}
 
 	schema := Struct(Schema{
 		"somefield": String().Required(),
-	}).Required(Message("custom_required"))
+	})
 
 	var output TestStruct
 	data := map[string]any{
@@ -329,8 +325,9 @@ func TestStructRequired(t *testing.T) {
 	var output2 TestStruct
 	errs = schema.Parse(nil, &output2)
 	assert.NotNil(t, errs)
+	tutils.VerifyDefaultIssueMessagesMap(t, errs)
 	assert.NotEmpty(t, errs["$root"])
-	assert.Equal(t, "custom_required", errs["$root"][0].Message())
+	assert.NotEmpty(t, errs["somefield"])
 }
 
 type Custom int
