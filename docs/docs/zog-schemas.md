@@ -138,6 +138,7 @@ z.Time(z.Time.Format(time.RFC3339)) // If input is a string, it will be parsed a
 ## Complex Types
 
 ### Structs
+> Note structs cannot be required or optional. They just pass through to the underlying ZogSchemas for their fields. If you need to express that a struct might exist and if it does it must be valid, you can use a pointer. i.e `z.Ptr(z.Struct(z.Schema{...}))`
 
 ```go
 // usage
