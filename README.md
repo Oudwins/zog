@@ -89,7 +89,7 @@ func main() {
     // handle errors -> see Errors section
   }
   u.Name // "Zog"
-  // note that this might look weird but we didn't say age was required so Zog just skiped the empty string and we are left with the uninitialized int
+  // note that this might look weird but we didn't say age was required so Zog just skipped the empty string and we are left with the uninitialized int
   u.Age // 0
 }
 ```
@@ -152,12 +152,12 @@ errsList := Time().Required().Parse("2020-01-01T00:00:00Z", &t)
 ```go
 var dest []string
 Slice(String().Email().Required()).PreTransform(func(data any, ctx z.Ctx) (any, error) {
-  s := val.(string)
+  s := data.(string)
   return strings.Split(s, ","), nil
 }).PostTransform(func(destPtr any, ctx z.Ctx) error {
-  s := val.(*[]string)
-  for i, v := range s {
-    s[i] = strings.TrimSpace(v)
+  s := destPtr.(*[]string)
+  for i, v := range *s {
+    (*s)[i] = strings.TrimSpace(v)
   }
   return nil
 }).Parse("foo@bar.com,bar@foo.com", &dest) // dest = [foo@bar.com bar@foo.com]
