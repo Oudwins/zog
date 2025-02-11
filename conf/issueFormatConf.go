@@ -11,9 +11,14 @@ import (
 	"github.com/Oudwins/zog/zconst"
 )
 
+// Deprecated: Use DefaultIssueMsgMap instead
 // Default error messages for all schemas. Replace the text with your own messages to customize the error messages for all zog schemas
 // As a general rule of thumb, if an error message only has one parameter, the parameter name will be the same as the error code
 var DefaultErrMsgMap zconst.LangMap = en.Map
+
+// Default error messages for all schemas. Replace the text with your own messages to customize the error messages for all zog schemas
+// As a general rule of thumb, if an error message only has one parameter, the parameter name will be the same as the error code
+var DefaultIssueMessageMap zconst.LangMap = en.Map
 
 func NewDefaultFormatter(m zconst.LangMap) p.IssueFmtFunc {
 	return func(e p.ZogIssue, p p.Ctx) {
@@ -38,7 +43,7 @@ func NewDefaultFormatter(m zconst.LangMap) p.IssueFmtFunc {
 }
 
 // Default Issue Message formatter it uses the errors above. Please override the `IssueFormatter` variable instead of this one to customize the error messages for all zog schemas
-var DefaultIssueFormatter p.IssueFmtFunc = NewDefaultFormatter(DefaultErrMsgMap)
+var DefaultIssueFormatter p.IssueFmtFunc = NewDefaultFormatter(DefaultIssueMessageMap)
 
 // Override this. This is the function use across all Zog schemas to format issue messages
 /*
