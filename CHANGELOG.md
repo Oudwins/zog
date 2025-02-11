@@ -1,5 +1,33 @@
 # Changelog
 
+## [0.16.0](https://github.com/Oudwins/zog/compare/v0.15.1...v0.16.0) (2025-02-11)
+
+
+### ⚠ BREAKING CHANGES
+
+* structs can no longer be required or optional. Define this in the fields instead. If you need to model a struct that might exist use a pointer to a struct. This should not affect most users as now it works how everyone intuitively thought it worked. ([#88](https://github.com/Oudwins/zog/issues/88))
+* renamed ZogError to ZogIssue to be more aligned with Zod. Deprecated a bunch of APIs for naming consistency. conf.ErrorFormatter removed in favor of conf.IssueFormatter ([#86](https://github.com/Oudwins/zog/issues/86))
+
+### Features
+
+* new test option to set the issue path for issues generated from that test ([#87](https://github.com/Oudwins/zog/issues/87)) ([47d24a1](https://github.com/Oudwins/zog/commit/47d24a115fd94198447fed8df04690bf019f305c))
+* testFunc method on schemas for easier custom tests ([#82](https://github.com/Oudwins/zog/issues/82)) ([52a90eb](https://github.com/Oudwins/zog/commit/52a90eb197b5380499319c1e29cf61ae1665e3e1))
+
+
+### Bug Fixes
+
+* structs can no longer be required or optional. Define this in the fields instead. If you need to model a struct that might exist use a pointer to a struct. This should not affect most users as now it works how everyone intuitively thought it worked. ([#88](https://github.com/Oudwins/zog/issues/88)) ([9681ebb](https://github.com/Oudwins/zog/commit/9681ebb691a2cfa188f0fc539024cec2cacfcaa3))
+
+
+### Miscellaneous Chores
+
+* release 0.16.0 ([3a222d0](https://github.com/Oudwins/zog/commit/3a222d06fc3ff463aa958165dd23b0cf612ec9a3))
+
+
+### Code Refactoring
+
+* renamed ZogError to ZogIssue to be more aligned with Zod. Deprecated a bunch of APIs for naming consistency. conf.ErrorFormatter removed in favor of conf.IssueFormatter ([#86](https://github.com/Oudwins/zog/issues/86)) ([49f01e3](https://github.com/Oudwins/zog/commit/49f01e3b6d522da9edb44bb076f4bd9baa7957f4))
+
 ## [0.15.1](https://github.com/Oudwins/zog/compare/v0.15.0...v0.15.1) (2025-02-09)
 
 
