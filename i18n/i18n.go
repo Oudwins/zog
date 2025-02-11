@@ -23,7 +23,7 @@ func SetLanguagesErrsMap(m map[string]zconst.LangMap, defaultLang string, opts .
 		op(&langKey)
 	}
 
-	conf.ErrorFormatter = func(e internals.ZogIssue, ctx internals.Ctx) {
+	conf.IssueFormatter = func(e internals.ZogIssue, ctx internals.Ctx) {
 		lang := ctx.Get(langKey)
 		if lang != nil {
 			langM, ok := m[lang.(string)]

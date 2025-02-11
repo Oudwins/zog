@@ -52,7 +52,7 @@ func Slice(schema ZogSchema, opts ...SchemaOption) *SliceSchema {
 func (v *SliceSchema) Validate(data any, options ...ExecOption) p.ZogErrMap {
 	errs := p.NewErrsMap()
 
-	ctx := p.NewExecCtx(errs, conf.ErrorFormatter)
+	ctx := p.NewExecCtx(errs, conf.IssueFormatter)
 	for _, opt := range options {
 		opt(ctx)
 	}
@@ -131,7 +131,7 @@ func (v *SliceSchema) validate(ctx *p.SchemaCtx) {
 // Only supports parsing from data=slice[any] to a dest =&slice[] (this can be typed. Doesn't have to be any)
 func (v *SliceSchema) Parse(data any, dest any, options ...ExecOption) p.ZogErrMap {
 	errs := p.NewErrsMap()
-	ctx := p.NewExecCtx(errs, conf.ErrorFormatter)
+	ctx := p.NewExecCtx(errs, conf.IssueFormatter)
 	for _, opt := range options {
 		opt(ctx)
 	}

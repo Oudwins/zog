@@ -37,8 +37,21 @@ func NewDefaultFormatter(m zconst.LangMap) p.IssueFmtFunc {
 
 }
 
-// Default error formatter it uses the errors above. Please override the `ErrorFormatter` variable instead of this one to customize the error messages for all zog schemas
-var DefaultErrorFormatter p.IssueFmtFunc = NewDefaultFormatter(DefaultErrMsgMap)
+// Default Issue Message formatter it uses the errors above. Please override the `IssueFormatter` variable instead of this one to customize the error messages for all zog schemas
+var DefaultIssueFormatter p.IssueFmtFunc = NewDefaultFormatter(DefaultErrMsgMap)
 
-// Override this
-var ErrorFormatter = DefaultErrorFormatter
+// Override this. This is the function use across all Zog schemas to format issue messages
+/*
+Usage:
+```go
+conf.IssueFormatter = func(e p.ZogIssue, c z.Ctx) {
+     switch e.Code() {
+     case zconst.IssueCodeCustom:
+          e.SetMessage("Custom message")
+	 default:
+		conf.DefaultIssueFormatter(e, c) // fallback to default formatter
+     }
+}
+```
+*/
+var IssueFormatter = DefaultIssueFormatter

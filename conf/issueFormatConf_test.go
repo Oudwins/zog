@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestDefaultErrorFormatter(t *testing.T) {
+func TestDefaultIssueFormatter(t *testing.T) {
 	tests := []struct {
 		input p.ZogIssue
 		want  string
@@ -19,7 +19,7 @@ func TestDefaultErrorFormatter(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		ErrorFormatter(test.input, nil)
+		IssueFormatter(test.input, nil)
 		assert.Equal(t, test.want, test.input.Message())
 	}
 }
