@@ -56,38 +56,22 @@ z.Slice(z.String()).PreTransform(func(data any, ctx Ctx) (any, error) {
 
 ## Tests
 
-A test is what zod calls a "validator". It is a struct that represents an individual validation. For example `z.String().Min(3)` is a test that checks if the string is at least 3 characters long.
+> A test is what zod calls a "validator". It is a struct that represents an individual validation. For example for the String schema `z.String()` the method `Min(3)` generates a test that checks if the string is at least 3 characters long. You can view all the default tests that come with each [schema type here.](/zog-schemas)
 
-A test is a struct that looks something like this:
 
-```go
-type Test struct {
-	IssueCode      zconst.ZogIssueCode // the issue code to use if the validation fails. This helps identify the type of issue, for example IssueCodeMin identifies the Min() test
-	ValidateFunc TestFunc // a function that takes the data as input and returns a boolean indicating if it is valid or not
-}
-type TestFunc = func(val any, ctx Ctx) bool
-```
-
-You can view all the default tests that come with each [schema type here.](/zog-schemas)
-
-##### Creating Custom Tests
-
-There are two ways to create custom tests:
+### Test Options
+You can configure tests with `TestOptions` which modify a test in some manner. Here are some examples:
 
 ```go
-// 1. Using the `z.TestFunc()` function:
-z.String().TestFunc(func(data any, ctx z.Ctx) bool {
-  return data == "test"
-}))
-// 2. Using the `z.Test` struct directly:
-// Warning this API is very likely to change
-z.String().Test(z.Test{
-  IssueCode: "my_custom_issue_code",
-  ValidateFunc: func(data any, ctx z.Ctx) bool {
-    return data == "test"
-  },
-})
+z.String().Min(3, z.Message("String must be at least 3 characters long")) // This sets the message that Zogissues will have if the validation fails
+z.String().Min(3, z.IssueCode("min_3")) // This sets the issue code that Zogissues will have if the validation fails
+z.String().Min(3, z.IssuePath("name")) // This sets the issue path that Zogissues will have if the validation fails
 ```
+
+### Creating Custom Tests
+
+You are also free to create custom tests and pass them to the `schema.Test()` and `schema.TestFunc()` methods. For more details on this checkout the [Creating Custom Tests](/custom-tests) page.
+
 
 ## PostTransforms
 

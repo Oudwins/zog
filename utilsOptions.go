@@ -35,6 +35,23 @@ func IssueCode(code zconst.ZogIssueCode) TestOption {
 	}
 }
 
+// IssuePath is a function that allows you to set a custom issue path for the test.
+// Beware with using this as it is not typesafe and can lead to unexpected behavior if you change the schema or have a typo.
+// Usage:
+/*
+z.Struct(
+z.Schema {
+    "Name": z.String().Required(z.IssuePath("fullname")),
+	"Fullname": z.String(),
+}
+)
+*/
+func IssuePath(path string) TestOption {
+	return func(test *p.Test) {
+		test.IssuePath = path
+	}
+}
+
 // Options that can be passed to a `schema.New()` call
 type SchemaOption = func(s ZogSchema)
 

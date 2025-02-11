@@ -13,6 +13,7 @@ type TestFunc = func(val any, ctx Ctx) bool
 // Test is a struct that represents an individual validation. For example `z.String().Min(3)` is a test that checks if the string is at least 3 characters long.
 type Test struct {
 	IssueCode    zconst.ZogIssueCode
+	IssuePath    string
 	Params       map[string]any
 	IssueFmtFunc IssueFmtFunc
 	ValidateFunc TestFunc
