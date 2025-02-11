@@ -33,7 +33,7 @@ func TestPtrPrimitive(t *testing.T) {
 
 func TestPtrParseFormatter(t *testing.T) {
 	var dest *int
-	fmt := WithErrFormatter(func(e ZogIssue, ctx Ctx) {
+	fmt := WithIssueFormatter(func(e ZogIssue, ctx Ctx) {
 		e.SetMessage("test2")
 	})
 	validator := Ptr(Int().GTE(10)).NotNil(Message("test1"))

@@ -19,7 +19,7 @@ func TestNumberValidate(t *testing.T) {
 
 func TestNumberValidateFormatter(t *testing.T) {
 	dest := 1
-	fmt := WithErrFormatter(func(e ZogIssue, ctx Ctx) {
+	fmt := WithIssueFormatter(func(e ZogIssue, ctx Ctx) {
 		e.SetMessage("test2")
 	})
 	validator := Int().GTE(10, Message("test1")).Required()
