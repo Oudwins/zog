@@ -65,19 +65,13 @@ func TestValidateStructNestedStructs(t *testing.T) {
 
 	v2 := struct {
 		Str    string
-		I      int
 		Schema struct {
 			Str string
-			I   int
 		}
 	}{
-		I: 10,
 		Schema: struct {
 			Str string
-			I   int
-		}{
-			I: 10,
-		},
+		}{},
 	}
 
 	errs = validateNestedSchema.Validate(&v2)
@@ -93,15 +87,15 @@ func TestValidateStructOptional(t *testing.T) {
 		Tim time.Time
 	}
 
-	var validateOptionalSchema = Struct(Schema{
+	var validateOptionalSchema = Ptr(Struct(Schema{
 		"str": String().Required(),
 		"in":  Int().Required(),
 		"fl":  Float().Required(),
 		"bol": Bool().Required(),
 		"tim": Time().Required(),
-	}).Required().Optional() // should override required
+	}))
 
-	var o TestStruct
+	var o *TestStruct
 	errs := validateOptionalSchema.Validate(&o)
 	assert.Empty(t, errs)
 }
@@ -218,14 +212,14 @@ func TestValidateStructPostTransforms(t *testing.T) {
 	assert.Equal(t, "post_original", output.Value)
 }
 
-func TestValidateStructRequired(t *testing.T) {
+func TestValidateStructPassThroughRequired(t *testing.T) {
 	type TestStruct struct {
 		Somefield string
 	}
 
 	schema := Struct(Schema{
 		"somefield": String().Required(),
-	}).Required(Message("custom_required"))
+	})
 
 	output := TestStruct{
 		Somefield: "someValue",
@@ -238,8 +232,7 @@ func TestValidateStructRequired(t *testing.T) {
 	var output2 TestStruct
 	errs = schema.Validate(&output2)
 	assert.NotEmpty(t, errs)
-	assert.NotEmpty(t, errs["$root"])
-	assert.Equal(t, "custom_required", errs["$root"][0].Message())
+	assert.Equal(t, zconst.IssueCodeRequired, errs["somefield"][0].Code())
 }
 
 func TestValidateStructGetType(t *testing.T) {

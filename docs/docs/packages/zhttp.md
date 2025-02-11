@@ -36,6 +36,11 @@ func handlePostRequest(w http.ResponseWriter, r *http.Request) {
 
 > **WARNING** The `zhttp` package does NOT currently support parsing into any data type that is NOT a struct.
 
+
+## Behaviour on unmarshal errors
+
+if the json, form or query params are not valid, a top level `ZogIssue` will be generated with the `IssueCode` `IssueCodeInvalidJSON` or `IssueCodeZHTTPInvalidForm` or `IssueCodeZHTTPInvalidQuery` and the schema will not be run.
+
 ## Complex Forms
 
 If you need to parse complex forms or query params such as those parsed by packages like [qs](https://www.npmjs.com/package/qs), for example:

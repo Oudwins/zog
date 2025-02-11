@@ -221,7 +221,58 @@ func TestParseJsonWithEmptyObject(t *testing.T) {
 
 	dp, err := Config.Parsers.JSON(req)()
 	assert.Nil(t, err)
-	assert.Equal(t, map[string]any{}, dp.GetUnderlying())
+	assert.Nil(t, dp)
+}
+
+func TestParseDeeplyNestedJson(t *testing.T) {
+	schema := z.Struct(z.Schema{
+		"name": z.String().Required(),
+		"nested1": z.Struct(z.Schema{
+			"name": z.String().Required(),
+			"nested3": z.Ptr(z.Struct(z.Schema{
+				"name": z.String().Required(),
+			})),
+		}),
+	})
+	type User struct {
+		Name    string `json:"name"`
+		Nested1 struct {
+			Name    string `json:"name"`
+			Nested3 *struct {
+				Name string `json:"name"`
+			} `json:"nested3"`
+		} `json:"nested1"`
+	}
+
+	jsonData := `{"name":"John","nested1":{"name":"nested1"}}`
+	req, _ := http.NewRequest("POST", "/test", strings.NewReader(jsonData))
+	req.Header.Set("Content-Type", "application/json")
+
+	user := User{}
+	errs := schema.Parse(Request(req), &user)
+	assert.Nil(t, errs)
+	assert.Equal(t, "John", user.Name)
+	assert.Equal(t, "nested1", user.Nested1.Name)
+	assert.Nil(t, user.Nested1.Nested3)
+
+}
+
+func TestTopLevelOptionalStruct(t *testing.T) {
+	schema := z.Ptr(z.Struct(z.Schema{
+		"name": z.String().Required(),
+	}))
+
+	type User struct {
+		Name string `json:"name"`
+	}
+
+	jsonData := `{}`
+	req, _ := http.NewRequest("POST", "/test", strings.NewReader(jsonData))
+	req.Header.Set("Content-Type", "application/json")
+
+	user := &User{}
+	errs := schema.Parse(Request(req), &user)
+	assert.Nil(t, errs)
 }
 
 func TestForm(t *testing.T) {

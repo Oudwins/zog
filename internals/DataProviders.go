@@ -1,11 +1,8 @@
 package internals
 
 import (
-	"errors"
 	"fmt"
 	"reflect"
-
-	"github.com/Oudwins/zog/zconst"
 )
 
 type DpFactory = func() (DataProvider, ZogIssue)
@@ -38,12 +35,19 @@ func (m *MapDataProvider[T]) GetUnderlying() any {
 }
 
 func NewMapDataProvider[T any](m map[string]T) DataProvider {
-	if m == nil {
-		return &EmptyDataProvider{}
+	if len(m) == 0 {
+		return nil
 	}
 	return &MapDataProvider[T]{
 		M: m,
 	}
+}
+
+func NewSafeMapDataProvider[T any](m map[string]T) DataProvider {
+	if len(m) == 0 {
+		return &EmptyDataProvider{}
+	}
+	return NewMapDataProvider(m)
 }
 
 type EmptyDataProvider struct {
@@ -55,21 +59,17 @@ func (e *EmptyDataProvider) Get(key string) any {
 }
 
 func (e *EmptyDataProvider) GetNestedProvider(key string) DataProvider {
-	return e
+	return nil
 }
 
 func (e *EmptyDataProvider) GetUnderlying() any {
 	return e.Underlying
 }
 
-func TryNewAnyDataProvider(val any) (DataProvider, ZogError) {
+func TryNewAnyDataProvider(val any) (DataProvider, error) {
 	dp, ok := val.(DataProvider)
 	if ok {
 		return dp, nil
-	}
-	factory, ok := val.(DpFactory)
-	if ok {
-		return factory()
 	}
 	x := reflect.ValueOf(val)
 	switch x.Kind() {
@@ -77,45 +77,33 @@ func TryNewAnyDataProvider(val any) (DataProvider, ZogError) {
 		keyTyp := x.Type().Key()
 
 		if keyTyp.Kind() != reflect.String {
-			return &EmptyDataProvider{Underlying: val}, &ZogErr{
-				C:   zconst.IssueCodeCoerce,
-				Err: fmt.Errorf("could not convert map[%s]any to a data provider", keyTyp.String()),
-			}
+			return &EmptyDataProvider{Underlying: val}, fmt.Errorf("could not convert map[%s]any to a data provider", keyTyp.String())
 		}
 
 		valTyp := x.Type().Elem()
 
 		switch valTyp.Kind() { // TODO: add more types
 		case reflect.String:
-			return NewMapDataProvider(x.Interface().(map[string]string)), nil
+			return NewSafeMapDataProvider(x.Interface().(map[string]string)), nil
 		case reflect.Int:
-			return NewMapDataProvider(x.Interface().(map[string]int)), nil
+			return NewSafeMapDataProvider(x.Interface().(map[string]int)), nil
 		case reflect.Float64:
-			return NewMapDataProvider(x.Interface().(map[string]float64)), nil
+			return NewSafeMapDataProvider(x.Interface().(map[string]float64)), nil
 		case reflect.Bool:
-			return NewMapDataProvider(x.Interface().(map[string]bool)), nil
+			return NewSafeMapDataProvider(x.Interface().(map[string]bool)), nil
 		case reflect.Interface:
-			return NewMapDataProvider(x.Interface().(map[string]any)), nil
+			return NewSafeMapDataProvider(x.Interface().(map[string]any)), nil
 		default:
-			return &EmptyDataProvider{Underlying: val}, &ZogErr{
-				C:   zconst.IssueCodeCoerce,
-				Err: fmt.Errorf("could not convert map[string]%s to a data provider", valTyp.String()),
-			}
+			return &EmptyDataProvider{Underlying: val}, fmt.Errorf("could not convert map[string]%s to a data provider", valTyp.String())
 		}
 
 	case reflect.Pointer:
 		if x.IsNil() {
-			return &EmptyDataProvider{}, &ZogErr{
-				C:   zconst.IssueCodeCoerce,
-				Err: errors.New("could not convert pointer to a data provider"),
-			}
+			return &EmptyDataProvider{}, fmt.Errorf("could not convert pointer to a data provider")
 		}
 		return TryNewAnyDataProvider(x.Elem().Interface())
 
 	default:
-		return &EmptyDataProvider{Underlying: val}, &ZogErr{
-			C:   zconst.IssueCodeCoerce,
-			Err: fmt.Errorf("could not convert type %s to a data provider. unsupported type", x.Kind().String()),
-		}
+		return &EmptyDataProvider{Underlying: val}, fmt.Errorf("could not convert type %s to a data provider. unsupported type", x.Kind().String())
 	}
 }
