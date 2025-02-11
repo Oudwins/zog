@@ -85,39 +85,26 @@ func (v *StructSchema) process(ctx *p.SchemaCtx) {
 		}
 	}()
 
+	var dataProv p.DataProvider
+	var err error
 	// 2. cast data as DataProvider
-	_, isEmpty := ctx.Val.(*p.EmptyDataProvider)
-	if isEmpty {
-		if v.required != nil {
-			ctx.AddIssue(ctx.IssueFromTest(v.required, ctx.Val))
+	if factory, ok := ctx.Val.(p.DpFactory); ok {
+		dataProv, err = factory()
+		// This is a little bit hacky. But we want to exit here because the error came from zhttp. Meaning we had an error trying to parse the request.
+		// I'm not sure if this is the best behaviour? Do we want to exit here or do we want to continue processing (ofc we add the error always)
+		if err != nil {
+			ctx.AddIssue(ctx.IssueFromUnknownError(err))
 			return
 		}
-		return
-	}
-	dataProv, err := p.TryNewAnyDataProvider(ctx.Val)
-
-	// 2.5 check for required & errors
-	if err != nil {
-		code := err.Code()
-		// This means its optional and we got an error coercing the value to a DataProvider, so we can ignore it
-		if v.required == nil && code == zconst.IssueCodeCoerce {
-			return
-		}
-
-		// Some other error happened. Coercion error. We don't know the cause
-		if v.required == nil {
-			ctx.AddIssue(ctx.Issue())
-		}
-
-		// This means that its required but we got an error coercing the value or a factory errored with required
-		if code == zconst.IssueCodeCoerce || code == zconst.IssueCodeRequired {
-			ctx.AddIssue(ctx.IssueFromTest(v.required, ctx.Val))
+	} else {
+		dataProv, err = p.TryNewAnyDataProvider(ctx.Val)
+		if err != nil {
+			ctx.AddIssue(ctx.IssueFromCoerce(err))
 		}
 	}
 
 	// 3. Process / validate struct fields
 	structVal := reflect.ValueOf(ctx.DestPtr).Elem()
-	//
 
 	for key, processor := range v.schema {
 		fieldKey := key
@@ -196,18 +183,6 @@ func (v *StructSchema) validate(ctx *p.SchemaCtx) {
 	}
 
 	// 2. cast data to string & handle default/required
-	x := refVal.Interface()
-	isZeroVal := p.IsZeroValue(x)
-
-	if isZeroVal {
-		if v.required == nil {
-			return
-		} else {
-			// REQUIRED & ZERO VALUE
-			ctx.AddIssue(ctx.IssueFromTest(v.required, ctx.Val))
-			return
-		}
-	}
 
 	// 3.1 tests for struct fields
 	for key, schema := range v.schema {
@@ -256,19 +231,16 @@ func (v *StructSchema) PostTransform(transform p.PostTransform) *StructSchema {
 
 // ! MODIFIERS
 
+// Deprecated: structs are not required or optional. They pass through to the fields. If you want to say that an entire struct may not exist you should use z.Ptr(z.Struct(...))
+// This now is a noop. But I believe most people expect it to work how it does now.
 // marks field as required
 func (v *StructSchema) Required(options ...TestOption) *StructSchema {
-	r := p.Required()
-	for _, opt := range options {
-		opt(&r)
-	}
-	v.required = &r
 	return v
 }
 
+// Deprecated: structs are not required or optional. They pass through to the fields. If you want to say that an entire struct may not exist you should use z.Ptr(z.Struct(...))
 // marks field as optional
 func (v *StructSchema) Optional() *StructSchema {
-	v.required = nil
 	return v
 }
 
