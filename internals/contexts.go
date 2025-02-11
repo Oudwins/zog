@@ -121,6 +121,9 @@ func (c *SchemaCtx) IssueFromTest(test *Test, val any) ZogIssue {
 	if test.IssueFmtFunc != nil {
 		test.IssueFmtFunc(e, c)
 	}
+	if test.IssuePath != "" {
+		e.EPath = test.IssuePath
+	}
 	return e
 }
 
