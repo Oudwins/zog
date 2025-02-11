@@ -58,7 +58,7 @@ z.String(z.WithCoercer(func(data any) (any, error) {
    - On error: aborts if the value is its nil value and returns a required [ZogIssue](/errors).
    - Can be caught by catch
 6. Tests -> Run all tests on the value (including required)
-   - On error: validation [ZogIssues](/errors) are added to the [ZogIssueList](/errors#zogissuelist) or [ZogIssueMap](errors#zogissuelist). All validation functions are run even if one of them fails.
+   - On error: validation [ZogIssues](/errors) are added to the [ZogIssueList](/errors#zogissuelist) or [ZogIssueMap](/errors#zogissuelist). All validation functions are run even if one of them fails.
    - Can be caught by catch
 7. PostTransforms -> Run all postTransforms on the value.
    - On error you return: aborts and adds your error to the list of [ZogIssues](/errors)
