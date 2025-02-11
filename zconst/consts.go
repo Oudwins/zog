@@ -33,7 +33,7 @@ const (
 )
 
 // Map used to format errors in Zog. Both ZogType & ZogErrCode are just strings
-type LangMap = map[ZogType]map[ZogErrCode]string
+type LangMap = map[ZogType]map[ZogIssueCode]string
 
 type ZogType = string
 

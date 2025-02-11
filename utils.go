@@ -15,14 +15,21 @@ type ParseCtx = p.Ctx
 // You can use it to pass a key/value for a specific execution. More about context in the [docs](https://zog.dev/context)
 type Ctx = p.Ctx
 
+// Deprecated: This will be removed in the future. Use z.ZogIssue instead
 // This is a type for the ZogError interface. It is the interface that all errors returned from zog implement.
 type ZogError = p.ZogError
 
+// This is a type for the ZogIssue= interface. It is the interface that all errors returned from zog implement.
 type ZogIssue = p.ZogError
 
+// Deprecated: This will be removed in the future. Use z.ZogIssueList instead
 // This is a type for the ZogErrList type. It is a list of ZogErrors returned from parsing primitive schemas. The type is []ZogError
 type ZogErrList = p.ZogErrList
 
+// This is a type for the ZogErrList type. It is a list of ZogIssues returned from parsing primitive schemas. The type is []ZogIssue
+type ZogIssueList = p.ZogErrList
+
+// Deprecated: This will be removed in the future. Use z.ZogIssueMap instead
 // This is a type for the ZogErrMap type. It is a map[string][]ZogError returned from parsing complex schemas. The type is map[string][]ZogError
 // All errors are returned in a flat map, not matter how deep the schema is. For example:
 /*
@@ -41,6 +48,23 @@ errors = map[string][]ZogError{
 */
 type ZogErrMap = p.ZogErrMap
 
+// This is a type for the ZogIssueMap type. It is a map[string][]ZogIssue returned from parsing complex schemas. The type is map[string][]ZogIssue
+// All errors are returned in a flat map, not matter how deep the schema is. For example:
+/*
+schema := z.Struct(z.Schema{
+  "address": z.Struct(z.Schema{
+    "street": z.String().Min(3).Max(10),
+    "city": z.String().Min(3).Max(10),
+  }),
+  "fields": z.Slice(z.String().Min(3).Max(10)),
+})
+errors = map[string][]ZogIssue{
+  "address.street": []ZogIssue{....}, // error for the street field in the address struct
+  "fields[0]": []ZogIssue{...}, // error for the first field in the slice
+}
+*/
+type ZogIssueMap = p.ZogErrMap
+
 // ! TESTS
 
 // Test is the test object. It is the struct that represents an individual validation. For example `z.String().Min(3)` is a test that checks if the string is at least 3 characters long.
@@ -48,12 +72,12 @@ type Test = p.Test
 
 // TestFunc is a helper function to define a custom test. It takes the error code which will be used for the error message and a validate function. Usage:
 //
-//	schema.Test(z.TestFunc(zconst.ErrCodeCustom, func(val any, ctx ParseCtx) bool {
+//	schema.Test(z.TestFunc(zconst.IssueCodeCustom, func(val any, ctx ParseCtx) bool {
 //		return val == "hello"
 //	}))
-func TestFunc(errCode zconst.ZogErrCode, validateFunc p.TestFunc) p.Test {
+func TestFunc(IssueCode zconst.ZogIssueCode, validateFunc p.TestFunc) p.Test {
 	t := p.Test{
-		ErrCode:      errCode,
+		IssueCode:    IssueCode,
 		ValidateFunc: validateFunc,
 	}
 	return t
@@ -70,23 +94,23 @@ var Errors = errHelpers{}
 
 // Deprecated: This will be removed in the future.
 // Create error from (originValue any, destinationValue any, test *p.Test)
-func (e *errHelpers) FromTest(o any, destType zconst.ZogType, t *p.Test, p ParseCtx) p.ZogError {
-	er := e.New(t.ErrCode, o, destType, t.Params, "", nil)
-	if t.ErrFmt != nil {
-		t.ErrFmt(er, p)
+func (e *errHelpers) FromTest(o any, destType zconst.ZogType, t *p.Test, p ParseCtx) ZogIssue {
+	er := e.New(t.IssueCode, o, destType, t.Params, "", nil)
+	if t.IssueFmtFunc != nil {
+		t.IssueFmtFunc(er, p)
 	}
 	return er
 }
 
 // Deprecated: This will be removed in the future.
 // Create error from
-func (e *errHelpers) FromErr(o any, destType zconst.ZogType, err error) p.ZogError {
-	return e.New(zconst.ErrCodeCustom, o, destType, nil, "", err)
+func (e *errHelpers) FromErr(o any, destType zconst.ZogType, err error) ZogIssue {
+	return e.New(zconst.IssueCodeCustom, o, destType, nil, "", err)
 }
 
 // Deprecated: This will be removed in the future.
-func (e *errHelpers) WrapUnknown(o any, destType zconst.ZogType, err error) p.ZogError {
-	zerr, ok := err.(p.ZogError)
+func (e *errHelpers) WrapUnknown(o any, destType zconst.ZogType, err error) ZogIssue {
+	zerr, ok := err.(ZogIssue)
 	if !ok {
 		return e.FromErr(o, destType, err)
 	}
@@ -94,7 +118,7 @@ func (e *errHelpers) WrapUnknown(o any, destType zconst.ZogType, err error) p.Zo
 }
 
 // Deprecated: This will be removed in the future.
-func (e *errHelpers) New(code zconst.ZogErrCode, o any, destType zconst.ZogType, params map[string]any, msg string, err error) p.ZogError {
+func (e *errHelpers) New(code zconst.ZogIssueCode, o any, destType zconst.ZogType, params map[string]any, msg string, err error) p.ZogError {
 	return &p.ZogErr{
 		C:       code,
 		ParamsM: params,

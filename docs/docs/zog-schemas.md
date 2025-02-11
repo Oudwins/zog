@@ -26,14 +26,14 @@ schema.Validate(dataPtr) // validates the data structure directly. This is a poi
 ## Schema Types
 
 ```go
-// Primtives. Calling .Parse() on these will return []ZogError
+// Primtives. Calling .Parse() on these will return []ZogIssue
 z.String()
 z.Int()
 z.Float()
 z.Bool()
 z.Time()
 
-// Complex Types. Calling .Parse() on these will return map[string][]ZogError. Where the key is the field path ("user.email") & $root is the list of complex type level errors not the specific field errors
+// Complex Types. Calling .Parse() on these will return map[string][]ZogIssue. Where the key is the field path ("user.email") & $root is the list of complex type level errors not the specific field errors
 z.Struct(z.Schema{
   "name": z.String(),
 })

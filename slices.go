@@ -322,8 +322,8 @@ func (v *SliceSchema) Len(n int, options ...TestOption) *SliceSchema {
 func (v *SliceSchema) Contains(value any, options ...TestOption) *SliceSchema {
 	v.tests = append(v.tests,
 		p.Test{
-			ErrCode: zconst.ErrCodeContains,
-			Params:  make(map[string]any, 1),
+			IssueCode: zconst.IssueCodeContains,
+			Params:    make(map[string]any, 1),
 			ValidateFunc: func(val any, ctx ParseCtx) bool {
 				rv := reflect.ValueOf(val).Elem()
 				if rv.Kind() != reflect.Slice {
@@ -341,7 +341,7 @@ func (v *SliceSchema) Contains(value any, options ...TestOption) *SliceSchema {
 			},
 		},
 	)
-	v.tests[len(v.tests)-1].Params[zconst.ErrCodeContains] = value
+	v.tests[len(v.tests)-1].Params[zconst.IssueCodeContains] = value
 	for _, opt := range options {
 		opt(&v.tests[len(v.tests)-1])
 	}
@@ -350,8 +350,8 @@ func (v *SliceSchema) Contains(value any, options ...TestOption) *SliceSchema {
 
 func sliceMin(n int) p.Test {
 	t := p.Test{
-		ErrCode: zconst.ErrCodeMin,
-		Params:  make(map[string]any, 1),
+		IssueCode: zconst.IssueCodeMin,
+		Params:    make(map[string]any, 1),
 		ValidateFunc: func(val any, ctx ParseCtx) bool {
 			rv := reflect.ValueOf(val).Elem()
 			if rv.Kind() != reflect.Slice {
@@ -360,13 +360,13 @@ func sliceMin(n int) p.Test {
 			return rv.Len() >= n
 		},
 	}
-	t.Params[zconst.ErrCodeMin] = n
+	t.Params[zconst.IssueCodeMin] = n
 	return t
 }
 func sliceMax(n int) p.Test {
 	t := p.Test{
-		ErrCode: zconst.ErrCodeMax,
-		Params:  make(map[string]any, 1),
+		IssueCode: zconst.IssueCodeMax,
+		Params:    make(map[string]any, 1),
 		ValidateFunc: func(val any, ctx ParseCtx) bool {
 			rv := reflect.ValueOf(val).Elem()
 			if rv.Kind() != reflect.Slice {
@@ -375,13 +375,13 @@ func sliceMax(n int) p.Test {
 			return rv.Len() <= n
 		},
 	}
-	t.Params[zconst.ErrCodeMax] = n
+	t.Params[zconst.IssueCodeMax] = n
 	return t
 }
 func sliceLength(n int) p.Test {
 	t := p.Test{
-		ErrCode: zconst.ErrCodeLen,
-		Params:  make(map[string]any, 1),
+		IssueCode: zconst.IssueCodeLen,
+		Params:    make(map[string]any, 1),
 		ValidateFunc: func(val any, ctx ParseCtx) bool {
 			rv := reflect.ValueOf(val).Elem()
 			if rv.Kind() != reflect.Slice {
@@ -390,6 +390,6 @@ func sliceLength(n int) p.Test {
 			return rv.Len() == n
 		},
 	}
-	t.Params[zconst.ErrCodeLen] = n
+	t.Params[zconst.IssueCodeLen] = n
 	return t
 }

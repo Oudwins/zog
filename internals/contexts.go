@@ -8,14 +8,14 @@ type Ctx interface {
 	Get(key string) any
 	// Deprecated: Use Ctx.AddIssue() instead
 	// Please don't depend on this interface it may change
-	NewError(p PathBuilder, e ZogError)
+	NewError(p PathBuilder, e ZogIssue)
 	// Adds an issue to the schema execution.
-	AddIssue(e ZogError)
+	AddIssue(e ZogIssue)
 	// Please don't depend on this interface it may change
 	HasErrored() bool
 }
 
-func NewExecCtx(errs ZogErrors, fmter ErrFmtFunc) *ExecCtx {
+func NewExecCtx(errs ZogErrors, fmter IssueFmtFunc) *ExecCtx {
 	return &ExecCtx{
 		Fmter:  fmter,
 		Errors: errs,
@@ -23,7 +23,7 @@ func NewExecCtx(errs ZogErrors, fmter ErrFmtFunc) *ExecCtx {
 }
 
 type ExecCtx struct {
-	Fmter  ErrFmtFunc
+	Fmter  IssueFmtFunc
 	Errors ZogErrors
 	m      map[string]any
 }
@@ -32,7 +32,7 @@ func (c *ExecCtx) HasErrored() bool {
 	return !c.Errors.IsEmpty()
 }
 
-func (c *ExecCtx) SetErrFormatter(fmter ErrFmtFunc) {
+func (c *ExecCtx) SetIssueFormatter(fmter IssueFmtFunc) {
 	c.Fmter = fmter
 }
 
@@ -47,8 +47,8 @@ func (c *ExecCtx) Get(key string) any {
 	return c.m[key]
 }
 
-// Adds a ZogError to the execution context.
-func (c *ExecCtx) AddIssue(e ZogError) {
+// Adds a ZogIssue to the execution context.
+func (c *ExecCtx) AddIssue(e ZogIssue) {
 	if e.Message() == "" {
 		c.Fmter(e, c)
 	}
@@ -57,12 +57,12 @@ func (c *ExecCtx) AddIssue(e ZogError) {
 
 // Deprecated: Use Ctx.AddIssue() instead
 // This is old interface. It will be removed soon
-func (c *ExecCtx) NewError(path PathBuilder, e ZogError) {
+func (c *ExecCtx) NewError(path PathBuilder, e ZogIssue) {
 	c.Errors.Add(path.String(), e)
 }
 
 // Internal. Used to format errors
-func (c *ExecCtx) FmtErr(e ZogError) {
+func (c *ExecCtx) FmtErr(e ZogIssue) {
 	if e.Message() != "" {
 		return
 	}
@@ -100,7 +100,7 @@ type TestCtx struct {
 	Test *Test
 }
 
-func (c *SchemaCtx) Issue() ZogError {
+func (c *SchemaCtx) Issue() ZogIssue {
 	// TODO handle catch here
 	return &ZogErr{
 		EPath: c.Path.String(),
@@ -110,24 +110,24 @@ func (c *SchemaCtx) Issue() ZogError {
 }
 
 // Please don't depend on this method it may change
-func (c *SchemaCtx) IssueFromTest(test *Test, val any) ZogError {
+func (c *SchemaCtx) IssueFromTest(test *Test, val any) ZogIssue {
 	e := &ZogErr{
 		EPath:   c.Path.String(),
 		Typ:     c.DType,
 		Val:     val,
-		C:       test.ErrCode,
+		C:       test.IssueCode,
 		ParamsM: test.Params,
 	}
-	if test.ErrFmt != nil {
-		test.ErrFmt(e, c)
+	if test.IssueFmtFunc != nil {
+		test.IssueFmtFunc(e, c)
 	}
 	return e
 }
 
 // Please don't depend on this method it may change
-func (c *SchemaCtx) IssueFromCoerce(err error) ZogError {
+func (c *SchemaCtx) IssueFromCoerce(err error) ZogIssue {
 	return &ZogErr{
-		C:     zconst.ErrCodeCoerce,
+		C:     zconst.IssueCodeCoerce,
 		EPath: c.Path.String(),
 		Typ:   c.DType,
 		Val:   c.Val,
@@ -136,40 +136,40 @@ func (c *SchemaCtx) IssueFromCoerce(err error) ZogError {
 }
 
 // Please don't depend on this method it may change
-// Wraps an error in a ZogError if it is not already a ZogError
-func (c *SchemaCtx) IssueFromUnknownError(err error) ZogError {
-	zerr, ok := err.(ZogError)
+// Wraps an error in a ZogIssue if it is not already a ZogIssue
+func (c *SchemaCtx) IssueFromUnknownError(err error) ZogIssue {
+	zerr, ok := err.(ZogIssue)
 	if !ok {
 		return c.Issue().SetError(err)
 	}
 	return zerr
 }
 
-func (c *TestCtx) Issue() ZogError {
+func (c *TestCtx) Issue() ZogIssue {
 	// TODO handle catch here
 	return &ZogErr{
 		EPath:   c.Path.String(),
 		Typ:     c.DType,
 		Val:     c.Val,
-		C:       c.Test.ErrCode,
+		C:       c.Test.IssueCode,
 		ParamsM: c.Test.Params,
 	}
 }
 
-func (c *TestCtx) FmtErr(e ZogError) {
+func (c *TestCtx) FmtErr(e ZogIssue) {
 	if e.Message() != "" {
 		return
 	}
 
-	if c.Test.ErrFmt != nil {
-		c.Test.ErrFmt(e, c)
+	if c.Test.IssueFmtFunc != nil {
+		c.Test.IssueFmtFunc(e, c)
 		return
 	}
 
 	c.SchemaCtx.FmtErr(e)
 }
 
-func (c *TestCtx) AddIssue(e ZogError) {
+func (c *TestCtx) AddIssue(e ZogIssue) {
 	c.FmtErr(e)
 	c.Errors.Add(c.Path.String(), e)
 }

@@ -100,7 +100,7 @@ func (v *StructSchema) process(ctx *p.SchemaCtx) {
 	if err != nil {
 		code := err.Code()
 		// This means its optional and we got an error coercing the value to a DataProvider, so we can ignore it
-		if v.required == nil && code == zconst.ErrCodeCoerce {
+		if v.required == nil && code == zconst.IssueCodeCoerce {
 			return
 		}
 
@@ -110,7 +110,7 @@ func (v *StructSchema) process(ctx *p.SchemaCtx) {
 		}
 
 		// This means that its required but we got an error coercing the value or a factory errored with required
-		if code == zconst.ErrCodeCoerce || code == zconst.ErrCodeRequired {
+		if code == zconst.IssueCodeCoerce || code == zconst.IssueCodeRequired {
 			ctx.AddIssue(ctx.IssueFromTest(v.required, ctx.Val))
 		}
 	}

@@ -175,8 +175,8 @@ func (v *TimeSchema) TestFunc(testFunc p.TestFunc, options ...TestOption) *TimeS
 // Checks that the value is after the given time
 func (v *TimeSchema) After(t time.Time, opts ...TestOption) *TimeSchema {
 	r := p.Test{
-		ErrCode: zconst.ErrCodeAfter,
-		Params:  make(map[string]any, 1),
+		IssueCode: zconst.IssueCodeAfter,
+		Params:    make(map[string]any, 1),
 		ValidateFunc: func(v any, ctx ParseCtx) bool {
 			val, ok := v.(time.Time)
 			if !ok {
@@ -185,12 +185,9 @@ func (v *TimeSchema) After(t time.Time, opts ...TestOption) *TimeSchema {
 			return val.After(t)
 		},
 	}
-	r.Params[zconst.ErrCodeAfter] = t
+	r.Params[zconst.IssueCodeAfter] = t
 	for _, opt := range opts {
 		opt(&r)
-	}
-	for _, opt := range v.tests {
-		r.ErrFmt = opt.ErrFmt
 	}
 	v.tests = append(v.tests, r)
 	return v
@@ -200,8 +197,8 @@ func (v *TimeSchema) After(t time.Time, opts ...TestOption) *TimeSchema {
 func (v *TimeSchema) Before(t time.Time, opts ...TestOption) *TimeSchema {
 	r :=
 		p.Test{
-			ErrCode: zconst.ErrCodeBefore,
-			Params:  make(map[string]any, 1),
+			IssueCode: zconst.IssueCodeBefore,
+			Params:    make(map[string]any, 1),
 			ValidateFunc: func(v any, ctx ParseCtx) bool {
 				val, ok := v.(time.Time)
 				if !ok {
@@ -210,7 +207,7 @@ func (v *TimeSchema) Before(t time.Time, opts ...TestOption) *TimeSchema {
 				return val.Before(t)
 			},
 		}
-	r.Params[zconst.ErrCodeBefore] = t
+	r.Params[zconst.IssueCodeBefore] = t
 	for _, opt := range opts {
 		opt(&r)
 	}
@@ -222,8 +219,8 @@ func (v *TimeSchema) Before(t time.Time, opts ...TestOption) *TimeSchema {
 // Checks that the value is equal to the given time
 func (v *TimeSchema) EQ(t time.Time, opts ...TestOption) *TimeSchema {
 	r := p.Test{
-		ErrCode: zconst.ErrCodeEQ,
-		Params:  make(map[string]any, 1),
+		IssueCode: zconst.IssueCodeEQ,
+		Params:    make(map[string]any, 1),
 		ValidateFunc: func(v any, ctx ParseCtx) bool {
 			val, ok := v.(time.Time)
 			if !ok {
@@ -232,7 +229,7 @@ func (v *TimeSchema) EQ(t time.Time, opts ...TestOption) *TimeSchema {
 			return val.Equal(t)
 		},
 	}
-	r.Params[zconst.ErrCodeEQ] = t
+	r.Params[zconst.IssueCodeEQ] = t
 	for _, opt := range opts {
 		opt(&r)
 	}

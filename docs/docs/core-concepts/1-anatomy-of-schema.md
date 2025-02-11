@@ -61,7 +61,7 @@ A test is a struct that looks something like this:
 
 ```go
 type Test struct {
-	ErrCode      zconst.ZogIssueCode // the error code to use if the validation fails. This helps identify the type of error, for example ErrCodeMin identifies the Min() test
+	IssueCode      zconst.ZogIssueCode // the error code to use if the validation fails. This helps identify the type of error, for example IssueCodeMin identifies the Min() test
 	ValidateFunc TestFunc // a function that takes the data as input and returns a boolean indicating if it is valid or not
 }
 type TestFunc = func(val any, ctx Ctx) bool
@@ -81,7 +81,7 @@ z.String().TestFunc(func(data any, ctx z.Ctx) bool {
 // 2. Using the `z.Test` struct directly:
 // Warning this API is very likely to change
 z.String().Test(z.Test{
-  ErrCode: "my_custom_error_code",
+  IssueCode: "my_custom_error_code",
   ValidateFunc: func(data any, ctx z.Ctx) bool {
     return data == "test"
   },

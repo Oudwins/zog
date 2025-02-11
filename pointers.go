@@ -101,7 +101,7 @@ func (v *PointerSchema) validate(ctx *p.SchemaCtx) {
 
 func (v *PointerSchema) NotNil(options ...TestOption) *PointerSchema {
 	r := p.Test{
-		ErrCode: zconst.ErrCodeNotNil,
+		IssueCode: zconst.IssueCodeNotNil,
 	}
 	for _, opt := range options {
 		opt(&r)

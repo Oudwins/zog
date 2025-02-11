@@ -27,16 +27,16 @@ var Config = struct {
 			return zjson.Decode(r.Body)
 		},
 		Form: func(r *http.Request) p.DpFactory {
-			return func() (p.DataProvider, p.ZogError) {
+			return func() (p.DataProvider, p.ZogIssue) {
 				err := r.ParseForm()
 				if err != nil {
-					return nil, &p.ZogErr{C: zconst.ErrCodeZHTTPInvalidForm, Err: err}
+					return nil, &p.ZogErr{C: zconst.IssueCodeZHTTPInvalidForm, Err: err}
 				}
 				return form(r.Form), nil
 			}
 		},
 		Query: func(r *http.Request) p.DpFactory {
-			return func() (p.DataProvider, p.ZogError) {
+			return func() (p.DataProvider, p.ZogIssue) {
 				// This handles generic GET request from browser. We treat it as url.Values
 				return form(r.URL.Query()), nil
 			}

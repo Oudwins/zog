@@ -15,8 +15,8 @@ import (
 // As a general rule of thumb, if an error message only has one parameter, the parameter name will be the same as the error code
 var DefaultErrMsgMap zconst.LangMap = en.Map
 
-func NewDefaultFormatter(m zconst.LangMap) p.ErrFmtFunc {
-	return func(e p.ZogError, p p.Ctx) {
+func NewDefaultFormatter(m zconst.LangMap) p.IssueFmtFunc {
+	return func(e p.ZogIssue, p p.Ctx) {
 		if e.Message() != "" {
 			return
 		}
@@ -24,7 +24,7 @@ func NewDefaultFormatter(m zconst.LangMap) p.ErrFmtFunc {
 		t := e.Dtype()
 		msg, ok := m[t][e.Code()]
 		if !ok {
-			e.SetMessage(m[t][zconst.ErrCodeFallback])
+			e.SetMessage(m[t][zconst.IssueCodeFallback])
 			return
 		}
 		for k, v := range e.Params() {
@@ -38,7 +38,7 @@ func NewDefaultFormatter(m zconst.LangMap) p.ErrFmtFunc {
 }
 
 // Default error formatter it uses the errors above. Please override the `ErrorFormatter` variable instead of this one to customize the error messages for all zog schemas
-var DefaultErrorFormatter p.ErrFmtFunc = NewDefaultFormatter(DefaultErrMsgMap)
+var DefaultErrorFormatter p.IssueFmtFunc = NewDefaultFormatter(DefaultErrMsgMap)
 
 // Override this
 var ErrorFormatter = DefaultErrorFormatter

@@ -10,14 +10,14 @@ import (
 )
 
 // func Unmarshal(data []byte) p.DpFactory {
-// 	return func() (p.DataProvider, p.ZogError) {
+// 	return func() (p.DataProvider, p.ZogIssue) {
 // 		var m map[string]any
 // 		err := json.Unmarshal(data, &m)
 // 		if err != nil {
-// 			return nil, &p.ZogErr{C: zconst.ErrCodeInvalidJSON, Err: err}
+// 			return nil, &p.ZogErr{C: zconst.IssueCodeInvalidJSON, Err: err}
 // 		}
 // 		if m == nil {
-// 			return nil, &p.ZogErr{C: zconst.ErrCodeInvalidJSON, Err: errors.New("nill json body")}
+// 			return nil, &p.ZogErr{C: zconst.IssueCodeInvalidJSON, Err: errors.New("nill json body")}
 // 		}
 // 		return p.NewMapDataProvider(m), nil
 // 	}
@@ -33,7 +33,7 @@ import (
   - "string is not an object"
 */
 func Decode(r io.Reader) p.DpFactory {
-	return func() (p.DataProvider, p.ZogError) {
+	return func() (p.DataProvider, p.ZogIssue) {
 		closer, ok := r.(io.Closer)
 		if ok {
 			defer closer.Close()
@@ -42,10 +42,10 @@ func Decode(r io.Reader) p.DpFactory {
 		decod := json.NewDecoder(r)
 		err := decod.Decode(&m)
 		if err != nil {
-			return nil, &p.ZogErr{C: zconst.ErrCodeInvalidJSON, Err: err}
+			return nil, &p.ZogErr{C: zconst.IssueCodeInvalidJSON, Err: err}
 		}
 		if m == nil {
-			return nil, &p.ZogErr{C: zconst.ErrCodeInvalidJSON, Err: errors.New("nill json body")}
+			return nil, &p.ZogErr{C: zconst.IssueCodeInvalidJSON, Err: errors.New("nill json body")}
 		}
 		return p.NewMapDataProvider(m), nil
 	}

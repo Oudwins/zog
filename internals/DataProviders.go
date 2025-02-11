@@ -8,7 +8,7 @@ import (
 	"github.com/Oudwins/zog/zconst"
 )
 
-type DpFactory = func() (DataProvider, ZogError)
+type DpFactory = func() (DataProvider, ZogIssue)
 
 // This is used for parsing structs & maps
 type DataProvider interface {
@@ -78,7 +78,7 @@ func TryNewAnyDataProvider(val any) (DataProvider, ZogError) {
 
 		if keyTyp.Kind() != reflect.String {
 			return &EmptyDataProvider{Underlying: val}, &ZogErr{
-				C:   zconst.ErrCodeCoerce,
+				C:   zconst.IssueCodeCoerce,
 				Err: fmt.Errorf("could not convert map[%s]any to a data provider", keyTyp.String()),
 			}
 		}
@@ -98,7 +98,7 @@ func TryNewAnyDataProvider(val any) (DataProvider, ZogError) {
 			return NewMapDataProvider(x.Interface().(map[string]any)), nil
 		default:
 			return &EmptyDataProvider{Underlying: val}, &ZogErr{
-				C:   zconst.ErrCodeCoerce,
+				C:   zconst.IssueCodeCoerce,
 				Err: fmt.Errorf("could not convert map[string]%s to a data provider", valTyp.String()),
 			}
 		}
@@ -106,7 +106,7 @@ func TryNewAnyDataProvider(val any) (DataProvider, ZogError) {
 	case reflect.Pointer:
 		if x.IsNil() {
 			return &EmptyDataProvider{}, &ZogErr{
-				C:   zconst.ErrCodeCoerce,
+				C:   zconst.IssueCodeCoerce,
 				Err: errors.New("could not convert pointer to a data provider"),
 			}
 		}
@@ -114,7 +114,7 @@ func TryNewAnyDataProvider(val any) (DataProvider, ZogError) {
 
 	default:
 		return &EmptyDataProvider{Underlying: val}, &ZogErr{
-			C:   zconst.ErrCodeCoerce,
+			C:   zconst.IssueCodeCoerce,
 			Err: fmt.Errorf("could not convert type %s to a data provider. unsupported type", x.Kind().String()),
 		}
 	}

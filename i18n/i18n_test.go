@@ -11,12 +11,12 @@ import (
 // Define test language maps
 var enMap = zconst.LangMap{
 	zconst.TypeString: {
-		zconst.ErrCodeRequired: "is required",
+		zconst.IssueCodeRequired: "is required",
 	},
 }
 var esMap = zconst.LangMap{
 	zconst.TypeString: {
-		zconst.ErrCodeRequired: "es requerido",
+		zconst.IssueCodeRequired: "es requerido",
 	},
 }
 
