@@ -38,9 +38,9 @@ To fix this you can use a pointer:
 
 ```go
 var data *int
-z.Ptr(z.Int()).NotNil().Validate(&data) // Error: pointer is nil
+z.Ptr(z.Int()).NotNil().Validate(&data) // will return a not nil issue
 *data = 0
-z.Ptr(z.Int()).NotNil().Validate(&data) // No error
+z.Ptr(z.Int()).NotNil().Validate(&data) // No issues will be returned
 ```
 
 ## Struct Validation Pattern
@@ -56,7 +56,7 @@ var userSchema = z.Struct(z.Schema{
 	"name": z.String().Required(),
 })
 
-func (u *User) Validate() z.ZogErrMap {
+func (u *User) Validate() z.ZogIssueMap {
 	return userSchema.Validate(u)
 }
 

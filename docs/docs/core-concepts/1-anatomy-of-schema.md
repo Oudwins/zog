@@ -29,7 +29,8 @@ type stringSchema struct {
 Pretransforms is a list of function that are applied to the data before the [tests](#tests) are run. You can think of it like a `pipeline` if transformations for a specific schema. **PreTransforms are PURE functions**. They take in data and return new data. This is the function signature:
 
 ```go
-// takes the data as input and returns the new data which will then be passed onto the next functions. If the function returns an error all validation will be skipped & the error will be returned
+// takes the data as input and returns the new data which will then be passed onto the next functions.
+// The function may return an error or a ZogIssue. In this case all validation will be skipped and the error will be wrapped into a ZogIssue and entire execution will return.
 type PreTransform = func(data any, ctx Ctx) (out any, err error)
 ```
 
@@ -47,11 +48,11 @@ z.Slice(z.String()).PreTransform(func(data any, ctx Ctx) (any, error) {
 
 ## Required, Default and Catch
 
-`schema.Required()` is a boolean that indicates if the field is required. If it is required and the data is a zero value the schema will return an error.
+`schema.Required()` is a boolean that indicates if the field is required. If it is required and the data is a zero value the schema will return a [ZogIssue](/errors).
 
 `schema.Default(value)` sets a default value for the field. If the data is a zero value it will be replaced with this value, this takes priority over required. Tests will still run on this value.
 
-`schema.Catch(value)` sets a catch value. If this is set it will "catch" any errors with the catch value. Meaning it will set the destination value to the catch value and exit. When this is triggered, no matter what error triggers it code will automatically jump to the [PostTransforms](#posttransforms). For more information checkout the [parsing execution structure](/core-concepts/parsing#parsing-execution-structure).
+`schema.Catch(value)` sets a catch value. If this is set it will "catch" any errors or ZogIssues with the catch value. Meaning it will set the destination value to the catch value and exit. When this is triggered, no matter what error triggers it code will automatically jump to the [PostTransforms](#posttransforms). For more information checkout the [parsing execution structure](/core-concepts/parsing#parsing-execution-structure).
 
 ## Tests
 
@@ -61,7 +62,7 @@ A test is a struct that looks something like this:
 
 ```go
 type Test struct {
-	IssueCode      zconst.ZogIssueCode // the error code to use if the validation fails. This helps identify the type of error, for example IssueCodeMin identifies the Min() test
+	IssueCode      zconst.ZogIssueCode // the issue code to use if the validation fails. This helps identify the type of issue, for example IssueCodeMin identifies the Min() test
 	ValidateFunc TestFunc // a function that takes the data as input and returns a boolean indicating if it is valid or not
 }
 type TestFunc = func(val any, ctx Ctx) bool
@@ -81,7 +82,7 @@ z.String().TestFunc(func(data any, ctx z.Ctx) bool {
 // 2. Using the `z.Test` struct directly:
 // Warning this API is very likely to change
 z.String().Test(z.Test{
-  IssueCode: "my_custom_error_code",
+  IssueCode: "my_custom_issue_code",
   ValidateFunc: func(data any, ctx z.Ctx) bool {
     return data == "test"
   },

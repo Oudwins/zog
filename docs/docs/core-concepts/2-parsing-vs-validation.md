@@ -6,8 +6,8 @@ sidebar_position: 2
 
 
 Zog supports two main ways of processing data, both of which support the exact same schemas and can be used interchangeably without modifying the schema:
-- [`Schema.Parse(data, &dest, ...options)`](/core-concepts/parsing) - Parses the data into the destination pointer and returns a list of errors if any.
-- [`Schema.Validate(&data, ...options)`](/core-concepts/validate) - Validates the data and returns a list of errors if any.
+- [`Schema.Parse(data, &dest, ...options)`](/core-concepts/parsing) - Parses the data into the destination pointer and returns a [ZogIssueList](/errors#zogissuelist) if any.
+- [`Schema.Validate(&data, ...options)`](/core-concepts/validate) - Validates the data and returns a [ZogIssueList](/errors#zogissuelist) if any.
 
 
 > **You are probably wondering**
@@ -38,13 +38,13 @@ It also means that Validate cannot know if a value was provided by the user or i
 var dest int
 z.Int().Required().Parse(0, &dest) // dest will be 0
 val := 0
-z.Int().Required().Validate(&val) // will return a required error
+z.Int().Required().Validate(&val) // will return a required issue
 
 // To fix this you can use a pointer:
 var valPtr *int
-z.Ptr(z.Int()).NotNil().Validate(&valPtr) // Error pointer is nil
+z.Ptr(z.Int()).NotNil().Validate(&valPtr) // will return a not nil issue
 *valPtr = 0
-z.Ptr(z.Int()).NotNil().Validate(&valPtr) // No error
+z.Ptr(z.Int()).NotNil().Validate(&valPtr) // No issues will be returned
 ```
 
 
