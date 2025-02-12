@@ -39,7 +39,7 @@ func handlePostRequest(w http.ResponseWriter, r *http.Request) {
 
 ## Behaviour on unmarshal errors
 
-if the json, form or query params are not valid, a top level `ZogIssue` will be generated with the `IssueCode` `IssueCodeInvalidJSON` or `IssueCodeZHTTPInvalidForm` or `IssueCodeZHTTPInvalidQuery` and the schema will not be run.
+If the json, form or query params are not valid, a top level `ZogIssue` will be generated with the `IssueCode` `IssueCodeInvalidJSON` or `IssueCodeZHTTPInvalidForm` or `IssueCodeZHTTPInvalidQuery` and the schema will not be run.
 
 ## Complex Forms
 
@@ -53,6 +53,6 @@ assert.deepEqual(qs.parse("foo[bar]=baz"), {
 });
 ```
 
-zhttp does not currently support this types of forms (see [issue #8](https://github.com/Oudwins/zog/issues/8)). However I suggest you try using the [form go package](https://github.com/go-playground/form) which supports this type of parsing. You can integrate the library with zhttp by overriding the `zhttp.Config.Parsers.Form` function.
+zhttp does not currently support these types of forms (see [issue #8](https://github.com/Oudwins/zog/issues/8)). However I suggest you try using the [form go package](https://github.com/go-playground/form) which supports this type of parsing. You can integrate the library with zhttp by overriding the `zhttp.Config.Parsers.Form` function.
 
-> **WARNING**: This is depends on `DataProviders` which are not yet documented and may change in the future. I encourage you to avoid doing this unless you really need to.
+> **WARNING**: This depends on `DataProviders` which are not yet documented and may change in the future. I encourage you to avoid doing this unless you really need to.

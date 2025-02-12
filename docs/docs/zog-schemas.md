@@ -60,7 +60,7 @@ z.WithCtxValue(key, val) // sets a value in the execution context. This is usefu
 ## Schema Types
 
 ```go
-// Primtives. Calling .Parse() on these will return []ZogIssue
+// Primitives. Calling .Parse() on these will return []ZogIssue
 z.String()
 z.Int()
 z.Float()
@@ -75,7 +75,7 @@ z.Slice(z.String())
 z.Ptr(z.String()) // pointer to string
 ```
 
-## Primtive Types
+## Primitive Types
 
 ### String
 
@@ -149,7 +149,7 @@ s := z.Struct(z.Schema{
 
 // UTILITIES
 schema.Pick("key1", map[string]bool{"a": true, "b": false}) // creates a new shallow copy of the schema with only the specified fields. It supports both string keys and map[string]bool
-schema.Omit("key1", map[string]bool{"a": true, "b": false}) // creates a new shallow copy of the schema omiting the specified fields. It supports both string keys and map[string]bool
+schema.Omit("key1", map[string]bool{"a": true, "b": false}) // creates a new shallow copy of the schema omitting the specified fields. It supports both string keys and map[string]bool
 
 schema.Extend(z.Schema{"a": z.String()}) // creates a new shallow copy of the schema with the additional fields
 schema.Merge(otherSchema, otherSchema2) // merges two or more schemas into a new schema. Last schema takes precedence for conflicting keys

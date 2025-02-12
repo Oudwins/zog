@@ -11,8 +11,8 @@ Zog supports two main ways of processing data, both of which support the exact s
 
 
 > **You are probably wondering**
-> [What is the difference?](#What is the difference?)
-> [Which should I use?](#Which should I use?)
+> [What is the difference?](#what-is-the-difference)
+> [Which should I use?](#which-should-i-use)
 
 
 ## What is the difference?
