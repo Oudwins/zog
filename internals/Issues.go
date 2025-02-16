@@ -173,6 +173,7 @@ type ZogIssueMap = map[string][]ZogError
 type ZogIssues interface {
 	Add(path string, err ZogError)
 	IsEmpty() bool
+	Free()
 }
 
 // internal only
@@ -182,7 +183,9 @@ type ErrsList struct {
 
 // internal only
 func NewErrsList() *ErrsList {
-	return &ErrsList{}
+	l := InternalIssueListPool.Get().(*ErrsList)
+	l.List = nil
+	return l
 }
 
 func (e *ErrsList) Add(path string, err ZogError) {
@@ -196,6 +199,10 @@ func (e *ErrsList) IsEmpty() bool {
 	return e.List == nil
 }
 
+func (e *ErrsList) Free() {
+	InternalIssueListPool.Put(e)
+}
+
 // map implementation of Errs
 type ErrsMap struct {
 	M ZogIssueMap
@@ -203,7 +210,9 @@ type ErrsMap struct {
 
 // Factory for errsMap
 func NewErrsMap() *ErrsMap {
-	return &ErrsMap{}
+	m := InternalIssueMapPool.Get().(*ErrsMap)
+	m.M = nil
+	return m
 }
 
 func (s *ErrsMap) Add(p string, err ZogError) {
@@ -223,6 +232,10 @@ func (s *ErrsMap) Add(p string, err ZogError) {
 	s.M[path] = append(s.M[path], err)
 }
 
-func (s ErrsMap) IsEmpty() bool {
+func (s *ErrsMap) IsEmpty() bool {
 	return s.M == nil
+}
+
+func (s *ErrsMap) Free() {
+	InternalIssueMapPool.Put(s)
 }

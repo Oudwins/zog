@@ -61,7 +61,9 @@ func Int(opts ...SchemaOption) *NumberSchema[int] {
 // parses the value and stores it in the destination
 func (v *NumberSchema[T]) Parse(data any, dest *T, options ...ExecOption) p.ZogIssueList {
 	errs := p.NewErrsList()
+	defer errs.Free()
 	ctx := p.NewExecCtx(errs, conf.IssueFormatter)
+	defer ctx.Free()
 	for _, opt := range options {
 		opt(ctx)
 	}
@@ -79,7 +81,9 @@ func (v *NumberSchema[T]) process(ctx *p.SchemaCtx) {
 // Validates a number pointer
 func (v *NumberSchema[T]) Validate(data *T, options ...ExecOption) p.ZogIssueList {
 	errs := p.NewErrsList()
+	defer errs.Free()
 	ctx := p.NewExecCtx(errs, conf.IssueFormatter)
+	defer ctx.Free()
 	for _, opt := range options {
 		opt(ctx)
 	}

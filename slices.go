@@ -51,8 +51,10 @@ func Slice(schema ZogSchema, opts ...SchemaOption) *SliceSchema {
 // Validates a pointer pointer
 func (v *SliceSchema) Validate(data any, options ...ExecOption) p.ZogIssueMap {
 	errs := p.NewErrsMap()
+	defer errs.Free()
 
 	ctx := p.NewExecCtx(errs, conf.IssueFormatter)
+	defer ctx.Free()
 	for _, opt := range options {
 		opt(ctx)
 	}
@@ -63,6 +65,7 @@ func (v *SliceSchema) Validate(data any, options ...ExecOption) p.ZogIssueMap {
 
 // Internal function to validate the data
 func (v *SliceSchema) validate(ctx *p.SchemaCtx) {
+	defer ctx.Free()
 	// 4. postTransforms
 	defer func() {
 		// only run posttransforms on success
@@ -79,16 +82,14 @@ func (v *SliceSchema) validate(ctx *p.SchemaCtx) {
 
 	refVal := reflect.ValueOf(ctx.Val).Elem() // we use this to set the value to the ptr. But we still reference the ptr everywhere. This is correct even if it seems confusing.
 	// 1. preTransforms
-	if v.preTransforms != nil {
-		for _, fn := range v.preTransforms {
-			nVal, err := fn(refVal.Interface(), ctx)
-			// bail if error in preTransform
-			if err != nil {
-				ctx.AddIssue(ctx.IssueFromUnknownError(err))
-				return
-			}
-			refVal.Set(reflect.ValueOf(nVal))
+	for _, fn := range v.preTransforms {
+		nVal, err := fn(refVal.Interface(), ctx)
+		// bail if error in preTransform
+		if err != nil {
+			ctx.AddIssue(ctx.IssueFromUnknownError(err))
+			return
 		}
+		refVal.Set(reflect.ValueOf(nVal))
 	}
 
 	// 2. cast data to string & handle default/required
@@ -131,7 +132,9 @@ func (v *SliceSchema) validate(ctx *p.SchemaCtx) {
 // Only supports parsing from data=slice[any] to a dest =&slice[] (this can be typed. Doesn't have to be any)
 func (v *SliceSchema) Parse(data any, dest any, options ...ExecOption) p.ZogIssueMap {
 	errs := p.NewErrsMap()
+	defer errs.Free()
 	ctx := p.NewExecCtx(errs, conf.IssueFormatter)
+	defer ctx.Free()
 	for _, opt := range options {
 		opt(ctx)
 	}
@@ -143,17 +146,16 @@ func (v *SliceSchema) Parse(data any, dest any, options ...ExecOption) p.ZogIssu
 
 // Internal function to process the data
 func (v *SliceSchema) process(ctx *p.SchemaCtx) {
+	defer ctx.Free()
 	// 1. preTransforms
-	if v.preTransforms != nil {
-		for _, fn := range v.preTransforms {
-			nVal, err := fn(ctx.Val, ctx)
-			// bail if error in preTransform
-			if err != nil {
-				ctx.AddIssue(ctx.IssueFromUnknownError(err))
-				return
-			}
-			ctx.Val = nVal
+	for _, fn := range v.preTransforms {
+		nVal, err := fn(ctx.Val, ctx)
+		// bail if error in preTransform
+		if err != nil {
+			ctx.AddIssue(ctx.IssueFromUnknownError(err))
+			return
 		}
+		ctx.Val = nVal
 	}
 
 	// 4. postTransforms
@@ -198,14 +200,12 @@ func (v *SliceSchema) process(ctx *p.SchemaCtx) {
 	destVal.Set(reflect.MakeSlice(destVal.Type(), refVal.Len(), refVal.Len()))
 
 	// 3.1 tests for slice items
-	if v.schema != nil {
-		for idx := 0; idx < refVal.Len(); idx++ {
-			item := refVal.Index(idx).Interface()
-			ptr := destVal.Index(idx).Addr().Interface()
-			path := ctx.Path.Push(fmt.Sprintf("[%d]", idx))
+	for idx := 0; idx < refVal.Len(); idx++ {
+		item := refVal.Index(idx).Interface()
+		ptr := destVal.Index(idx).Addr().Interface()
+		path := ctx.Path.Push(fmt.Sprintf("[%d]", idx))
 
-			v.schema.process(ctx.NewSchemaCtx(item, ptr, path, v.schema.getType()))
-		}
+		v.schema.process(ctx.NewSchemaCtx(item, ptr, path, v.schema.getType()))
 	}
 
 	// 3. tests for slice

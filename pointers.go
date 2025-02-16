@@ -39,7 +39,9 @@ func Ptr(schema ZogSchema) *PointerSchema {
 // Parse the data into the destination pointer
 func (v *PointerSchema) Parse(data any, dest any, options ...ExecOption) p.ZogIssueMap {
 	errs := p.NewErrsMap()
+	defer errs.Free()
 	ctx := p.NewExecCtx(errs, conf.IssueFormatter)
+	defer ctx.Free()
 	for _, opt := range options {
 		opt(ctx)
 	}
@@ -90,7 +92,9 @@ func (v *PointerSchema) process(ctx *p.SchemaCtx) {
 // Validates a pointer pointer
 func (v *PointerSchema) Validate(data any, options ...ExecOption) p.ZogIssueMap {
 	errs := p.NewErrsMap()
+	defer errs.Free()
 	ctx := p.NewExecCtx(errs, conf.IssueFormatter)
+	defer ctx.Free()
 	for _, opt := range options {
 		opt(ctx)
 	}
