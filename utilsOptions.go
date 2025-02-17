@@ -52,6 +52,14 @@ func IssuePath(path string) TestOption {
 	}
 }
 
+// Params is a function that allows you to set a custom params for the test.
+// You may then access these values when formatting test errors in the IssueFmtFunc
+func Params(params map[string]any) TestOption {
+	return func(test *p.Test) {
+		test.Params = params
+	}
+}
+
 // Options that can be passed to a `schema.New()` call
 type SchemaOption = func(s ZogSchema)
 
