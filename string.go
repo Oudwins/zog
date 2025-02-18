@@ -55,9 +55,11 @@ func String(opts ...SchemaOption) *StringSchema {
 // Parses the data into the destination string. Returns a list of ZogIssues
 func (v *StringSchema) Parse(data any, dest *string, options ...ExecOption) p.ZogIssueList {
 	errs := p.NewErrsList()
+	defer errs.Free()
 
 	path := p.PathBuilder("")
 	ctx := p.NewExecCtx(errs, conf.IssueFormatter)
+	defer ctx.Free()
 	for _, opt := range options {
 		opt(ctx)
 	}
@@ -75,7 +77,9 @@ func (v *StringSchema) process(ctx *p.SchemaCtx) {
 // Validate Given string
 func (v *StringSchema) Validate(data *string, options ...ExecOption) p.ZogIssueList {
 	errs := p.NewErrsList()
+	defer errs.Free()
 	ctx := p.NewExecCtx(errs, conf.IssueFormatter)
+	defer ctx.Free()
 	for _, opt := range options {
 		opt(ctx)
 	}

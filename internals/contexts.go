@@ -1,6 +1,8 @@
 package internals
 
-import zconst "github.com/Oudwins/zog/zconst"
+import (
+	zconst "github.com/Oudwins/zog/zconst"
+)
 
 // Zog Context interface. This is the interface that is passed to schema tests, pre and post transforms
 type Ctx interface {
@@ -16,10 +18,10 @@ type Ctx interface {
 }
 
 func NewExecCtx(errs ZogIssues, fmter IssueFmtFunc) *ExecCtx {
-	return &ExecCtx{
-		Fmter:  fmter,
-		Errors: errs,
-	}
+	c := ExecCtxPool.Get().(*ExecCtx)
+	c.Fmter = fmter
+	c.Errors = errs
+	return c
 }
 
 type ExecCtx struct {
@@ -70,22 +72,27 @@ func (c *ExecCtx) FmtErr(e ZogIssue) {
 }
 
 func (c *ExecCtx) NewSchemaCtx(val any, destPtr any, path PathBuilder, dtype zconst.ZogType) *SchemaCtx {
-	return &SchemaCtx{
-		ExecCtx: c,
-		Val:     val,
-		DestPtr: destPtr,
-		Path:    path,
-		DType:   dtype,
-	}
+	c2 := SchemaCtxPool.Get().(*SchemaCtx)
+	c2.ExecCtx = c
+	c2.Val = val
+	c2.DestPtr = destPtr
+	c2.Path = path
+	c2.DType = dtype
+	return c2
 }
 
 func (c *ExecCtx) NewValidateSchemaCtx(valPtr any, path PathBuilder, dtype zconst.ZogType) *SchemaCtx {
-	return &SchemaCtx{
-		ExecCtx: c,
-		Val:     valPtr,
-		Path:    path,
-		DType:   dtype,
-	}
+	c2 := SchemaCtxPool.Get().(*SchemaCtx)
+	c2.ExecCtx = c
+	c2.Val = valPtr
+	c2.DestPtr = nil
+	c2.Path = path
+	c2.DType = dtype
+	return c2
+}
+
+func (c *ExecCtx) Free() {
+	ExecCtxPool.Put(c)
 }
 
 type SchemaCtx struct {
@@ -146,6 +153,11 @@ func (c *SchemaCtx) IssueFromUnknownError(err error) ZogIssue {
 		return c.Issue().SetError(err)
 	}
 	return zerr
+}
+
+// Frees the context to be reused
+func (c *SchemaCtx) Free() {
+	SchemaCtxPool.Put(c)
 }
 
 func (c *TestCtx) Issue() ZogIssue {

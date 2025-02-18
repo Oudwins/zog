@@ -47,7 +47,9 @@ func Struct(schema Schema) *StructSchema {
 // Parses val into destPtr and validates each field based on the schema. Only supports val = map[string]any & dest = &struct
 func (v *StructSchema) Parse(data any, destPtr any, options ...ExecOption) p.ZogIssueMap {
 	errs := p.NewErrsMap()
+	defer errs.Free()
 	ctx := p.NewExecCtx(errs, conf.IssueFormatter)
+	defer ctx.Free()
 	for _, opt := range options {
 		opt(ctx)
 	}
@@ -58,6 +60,7 @@ func (v *StructSchema) Parse(data any, destPtr any, options ...ExecOption) p.Zog
 }
 
 func (v *StructSchema) process(ctx *p.SchemaCtx) {
+	defer ctx.Free()
 	// 1. preTransforms
 	if v.preTransforms != nil {
 		for _, fn := range v.preTransforms {
@@ -143,7 +146,9 @@ func (v *StructSchema) process(ctx *p.SchemaCtx) {
 // userSchema.Validate(&User, ...options)
 func (v *StructSchema) Validate(dataPtr any, options ...ExecOption) p.ZogIssueMap {
 	errs := p.NewErrsMap()
+	defer errs.Free()
 	ctx := p.NewExecCtx(errs, conf.IssueFormatter)
+	defer ctx.Free()
 	for _, opt := range options {
 		opt(ctx)
 	}
@@ -155,6 +160,7 @@ func (v *StructSchema) Validate(dataPtr any, options ...ExecOption) p.ZogIssueMa
 
 // Internal function to validate the data
 func (v *StructSchema) validate(ctx *p.SchemaCtx) {
+	defer ctx.Free()
 	// 4. postTransforms
 	defer func() {
 		// only run posttransforms on success
