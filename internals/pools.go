@@ -1,6 +1,9 @@
 package internals
 
-import "sync"
+import (
+	"strings"
+	"sync"
+)
 
 var ExecCtxPool = sync.Pool{
 	New: func() any {
@@ -30,6 +33,22 @@ var ZogIssuePool = sync.Pool{
 	New: func() any {
 		return &ZogErr{}
 	},
+}
+
+var StringBuilderPool = sync.Pool{
+	New: func() any {
+		return &strings.Builder{}
+	},
+}
+
+func NewStringBuilder() *strings.Builder {
+	b := StringBuilderPool.Get().(*strings.Builder)
+	b.Reset()
+	return b
+}
+
+func FreeStringBuilder(b *strings.Builder) {
+	StringBuilderPool.Put(b)
 }
 
 func ClearPools() {

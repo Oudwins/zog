@@ -20,8 +20,10 @@ var DefaultErrMsgMap zconst.LangMap = en.Map
 // As a general rule of thumb, if an error message only has one parameter, the parameter name will be the same as the error code
 var DefaultIssueMessageMap zconst.LangMap = en.Map
 
+const valuePlaceholder = "{{value}}"
+
 func NewDefaultFormatter(m zconst.LangMap) p.IssueFmtFunc {
-	return func(e p.ZogIssue, p p.Ctx) {
+	return func(e p.ZogIssue, c p.Ctx) {
 		if e.Message() != "" {
 			return
 		}
@@ -32,11 +34,16 @@ func NewDefaultFormatter(m zconst.LangMap) p.IssueFmtFunc {
 			e.SetMessage(m[t][zconst.IssueCodeFallback])
 			return
 		}
+		b := p.NewStringBuilder()
+		defer p.FreeStringBuilder(b)
 		for k, v := range e.Params() {
-			// TODO replace this with a string builder
-			msg = strings.ReplaceAll(msg, "{{"+k+"}}", fmt.Sprintf("%v", v))
+			b.WriteString("{{")
+			b.WriteString(k)
+			b.WriteString("}}")
+			msg = strings.ReplaceAll(msg, b.String(), fmt.Sprintf("%v", v))
+			b.Reset()
 		}
-		msg = strings.ReplaceAll(msg, "{{value}}", fmt.Sprintf("%v", e.Value()))
+		msg = strings.ReplaceAll(msg, valuePlaceholder, fmt.Sprintf("%v", e.Value()))
 		e.SetMessage(msg)
 	}
 
