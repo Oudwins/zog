@@ -163,6 +163,10 @@ func (e *ZogErr) String() string {
 	return fmt.Sprintf("ZogError{Code: %v, Params: %v, Type: %v, Value: %v, Message: '%v', Error: %v}", SafeString(e.C), SafeString(e.ParamsM), SafeString(e.Typ), SafeString(e.Val), SafeString(e.Msg), SafeError(e.Err))
 }
 
+func (e *ZogErr) Free() {
+	ZogIssuePool.Put(e)
+}
+
 // list of errors. This is returned by processors for simple types (e.g. strings, numbers, booleans)
 type ZogIssueList = []ZogError
 

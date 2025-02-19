@@ -96,12 +96,38 @@ func (i *issueHelpers) SanitizeMap(m ZogIssueMap) map[string][]string {
 	return errs
 }
 
+func (i issueHelpers) SanitizeMapAndCollect(m ZogIssueMap) map[string][]string {
+	errs := i.SanitizeMap(m)
+	i.CollectMap(m)
+	return errs
+}
+
 func (i *issueHelpers) SanitizeList(l ZogIssueList) []string {
 	errs := make([]string, len(l))
 	for i, err := range l {
 		errs[i] = err.Message()
 	}
 	return errs
+}
+
+func (i *issueHelpers) SanitizeListAndCollect(l ZogIssueList) []string {
+	errs := i.SanitizeList(l)
+	i.CollectList(l)
+	return errs
+}
+
+func (i *issueHelpers) CollectMap(issues ZogIssueMap) {
+	for _, list := range issues {
+		i.CollectList(list)
+	}
+}
+
+func (i *issueHelpers) CollectList(issues ZogIssueList) {
+	for _, err := range issues {
+		if err, ok := err.(*p.ZogErr); ok {
+			err.Free()
+		}
+	}
 }
 
 // ! ERRORS -> Deprecated
