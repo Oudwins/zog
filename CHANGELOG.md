@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.16.2](https://github.com/Oudwins/zog/compare/v0.16.1...v0.16.2) (2025-02-19)
+
+
+### Performance Improvements
+
+* issues syncpool and issues.Collect function to collect issues into sync pool ([#93](https://github.com/Oudwins/zog/issues/93)) ([91d6b3e](https://github.com/Oudwins/zog/commit/91d6b3e49bf11af4cfcbd97c0a02be5da478504f))
+
 ## [0.16.1](https://github.com/Oudwins/zog/compare/v0.16.0...v0.16.1) (2025-02-19)
 
 
