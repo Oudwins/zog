@@ -109,22 +109,21 @@ type TestCtx struct {
 
 func (c *SchemaCtx) Issue() ZogIssue {
 	// TODO handle catch here
-	return &ZogErr{
-		EPath: c.Path.String(),
-		Typ:   c.DType,
-		Val:   c.Val,
-	}
+	e := ZogIssuePool.Get().(*ZogErr)
+	e.EPath = c.Path.String()
+	e.Typ = c.DType
+	e.Val = c.Val
+	return e
 }
 
 // Please don't depend on this method it may change
 func (c *SchemaCtx) IssueFromTest(test *Test, val any) ZogIssue {
-	e := &ZogErr{
-		EPath:   c.Path.String(),
-		Typ:     c.DType,
-		Val:     val,
-		C:       test.IssueCode,
-		ParamsM: test.Params,
-	}
+	e := ZogIssuePool.Get().(*ZogErr)
+	e.C = test.IssueCode
+	e.EPath = c.Path.String()
+	e.Typ = c.DType
+	e.Val = val
+	e.ParamsM = test.Params
 	if test.IssueFmtFunc != nil {
 		test.IssueFmtFunc(e, c)
 	}
@@ -136,13 +135,13 @@ func (c *SchemaCtx) IssueFromTest(test *Test, val any) ZogIssue {
 
 // Please don't depend on this method it may change
 func (c *SchemaCtx) IssueFromCoerce(err error) ZogIssue {
-	return &ZogErr{
-		C:     zconst.IssueCodeCoerce,
-		EPath: c.Path.String(),
-		Typ:   c.DType,
-		Val:   c.Val,
-		Err:   err,
-	}
+	e := ZogIssuePool.Get().(*ZogErr)
+	e.C = zconst.IssueCodeCoerce
+	e.EPath = c.Path.String()
+	e.Typ = c.DType
+	e.Val = c.Val
+	e.Err = err
+	return e
 }
 
 // Please don't depend on this method it may change
@@ -162,13 +161,15 @@ func (c *SchemaCtx) Free() {
 
 func (c *TestCtx) Issue() ZogIssue {
 	// TODO handle catch here
-	return &ZogErr{
-		EPath:   c.Path.String(),
-		Typ:     c.DType,
-		Val:     c.Val,
-		C:       c.Test.IssueCode,
-		ParamsM: c.Test.Params,
-	}
+	zerr := ZogIssuePool.Get().(*ZogErr)
+	zerr.C = c.Test.IssueCode
+	zerr.EPath = c.Path.String()
+	zerr.Err = nil
+	zerr.Msg = ""
+	zerr.ParamsM = c.Test.Params
+	zerr.Typ = c.DType
+	zerr.Val = c.Val
+	return zerr
 }
 
 func (c *TestCtx) FmtErr(e ZogIssue) {

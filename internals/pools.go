@@ -26,6 +26,12 @@ var InternalIssueMapPool = sync.Pool{
 	},
 }
 
+var ZogIssuePool = sync.Pool{
+	New: func() any {
+		return &ZogErr{}
+	},
+}
+
 func ClearPools() {
 	ExecCtxPool = sync.Pool{
 		New: func() any {
@@ -45,6 +51,11 @@ func ClearPools() {
 	InternalIssueMapPool = sync.Pool{
 		New: func() any {
 			return &ErrsMap{}
+		},
+	}
+	ZogIssuePool = sync.Pool{
+		New: func() any {
+			return &ZogErr{}
 		},
 	}
 
