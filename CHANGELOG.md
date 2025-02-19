@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.16.1](https://github.com/Oudwins/zog/compare/v0.16.0...v0.16.1) (2025-02-19)
+
+
+### Features
+
+* Params Option ([#90](https://github.com/Oudwins/zog/issues/90)) ([05823ab](https://github.com/Oudwins/zog/commit/05823abb1658ae70921b294efb2d498afb913278))
+
+
+### Performance Improvements
+
+* implemented syncpool for internal structures ([#91](https://github.com/Oudwins/zog/issues/91)) ([f1717f6](https://github.com/Oudwins/zog/commit/f1717f62ad5a9ad4f27c9e8de4f194460dd3f3a5))
+
+
+### Miscellaneous Chores
+
+* release 0.16.1 ([6d416fa](https://github.com/Oudwins/zog/commit/6d416faac3d86c1ddd62743cfc6323fe915b51a1))
+
 ## [0.16.0](https://github.com/Oudwins/zog/compare/v0.15.1...v0.16.0) (2025-02-11)
 
 
