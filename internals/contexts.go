@@ -110,7 +110,11 @@ type TestCtx struct {
 func (c *SchemaCtx) Issue() ZogIssue {
 	// TODO handle catch here
 	e := ZogIssuePool.Get().(*ZogErr)
+	e.C = ""
 	e.EPath = c.Path.String()
+	e.Err = nil
+	e.Msg = ""
+	e.ParamsM = nil
 	e.Typ = c.DType
 	e.Val = c.Val
 	return e
@@ -121,6 +125,8 @@ func (c *SchemaCtx) IssueFromTest(test *Test, val any) ZogIssue {
 	e := ZogIssuePool.Get().(*ZogErr)
 	e.C = test.IssueCode
 	e.EPath = c.Path.String()
+	e.Err = nil
+	e.Msg = ""
 	e.Typ = c.DType
 	e.Val = val
 	e.ParamsM = test.Params
@@ -138,6 +144,8 @@ func (c *SchemaCtx) IssueFromCoerce(err error) ZogIssue {
 	e := ZogIssuePool.Get().(*ZogErr)
 	e.C = zconst.IssueCodeCoerce
 	e.EPath = c.Path.String()
+	e.Err = nil
+	e.Msg = ""
 	e.Typ = c.DType
 	e.Val = c.Val
 	e.Err = err
