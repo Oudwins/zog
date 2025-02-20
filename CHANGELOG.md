@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.16.3](https://github.com/Oudwins/zog/compare/v0.16.2...v0.16.3) (2025-02-20)
+
+
+### Performance Improvements
+
+* internal tests for primitive values now use pointers. User tests are unaffected ([#97](https://github.com/Oudwins/zog/issues/97)) ([6d3a234](https://github.com/Oudwins/zog/commit/6d3a2345b49461b6b089e4f91366760940afec05))
+
 ## [0.16.2](https://github.com/Oudwins/zog/compare/v0.16.1...v0.16.2) (2025-02-19)
 
 
