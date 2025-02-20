@@ -77,7 +77,11 @@ func ClearPools() {
 			return &ZogErr{}
 		},
 	}
-
+	StringBuilderPool = sync.Pool{
+		New: func() any {
+			return &strings.Builder{}
+		},
+	}
 }
 
 func Clear() {
