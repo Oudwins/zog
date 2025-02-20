@@ -192,6 +192,17 @@ func TestParseJsonValid(t *testing.T) {
 	assert.Equal(t, float64(30), dp.Get("age"))
 }
 
+func TestParseJsonWithComplexContentType(t *testing.T) {
+	jsonData := `{"name":"John","age":30}`
+	req, _ := http.NewRequest("POST", "/test", strings.NewReader(jsonData))
+	req.Header.Set("Content-Type", "application/json; charset=utf-8")
+
+	dp, err := Config.Parsers.JSON(req)()
+	assert.Nil(t, err)
+	assert.Equal(t, "John", dp.Get("name"))
+	assert.Equal(t, float64(30), dp.Get("age"))
+}
+
 func TestParseJsonInvalid(t *testing.T) {
 	invalidJSON := `{"name":"John","age":30`
 	req, _ := http.NewRequest("POST", "/test", strings.NewReader(invalidJSON))

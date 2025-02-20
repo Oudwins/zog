@@ -3,6 +3,7 @@ package zhttp
 import (
 	"net/http"
 	"net/url"
+	"strings"
 
 	p "github.com/Oudwins/zog/internals"
 	"github.com/Oudwins/zog/parsers/zjson"
@@ -75,7 +76,9 @@ func (u urlDataProvider) GetUnderlying() any {
 // schema.Parse(zhttp.Request(r), &dest)
 // WARNING: FOR JSON PARSING DOES NOT SUPPORT JSON ARRAYS OR PRIMITIVES
 func Request(r *http.Request) p.DpFactory {
-	switch r.Header.Get("Content-Type") {
+	// Content-Type follows this format: Content-Type: <media-type> [; parameter=value]
+	typ, _, _ := strings.Cut(r.Header.Get("Content-Type"), ";")
+	switch typ {
 	case "application/json":
 		return Config.Parsers.JSON(r)
 	case "application/x-www-form-urlencoded":
