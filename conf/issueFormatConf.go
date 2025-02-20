@@ -34,14 +34,8 @@ func NewDefaultFormatter(m zconst.LangMap) p.IssueFmtFunc {
 			e.SetMessage(m[t][zconst.IssueCodeFallback])
 			return
 		}
-		b := p.NewStringBuilder()
-		defer p.FreeStringBuilder(b)
 		for k, v := range e.Params() {
-			b.WriteString("{{")
-			b.WriteString(k)
-			b.WriteString("}}")
-			msg = strings.ReplaceAll(msg, b.String(), fmt.Sprintf("%v", v))
-			b.Reset()
+			msg = strings.ReplaceAll(msg, "{{"+k+"}}", fmt.Sprintf("%v", v))
 		}
 		msg = strings.ReplaceAll(msg, valuePlaceholder, fmt.Sprintf("%v", e.Value()))
 		e.SetMessage(msg)
