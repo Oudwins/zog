@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.16.4](https://github.com/Oudwins/zog/compare/v0.16.3...v0.16.4) (2025-02-20)
+
+
+### Bug Fixes
+
+* panic on single letter query param zhttp ([#101](https://github.com/Oudwins/zog/issues/101)) ([cd8d172](https://github.com/Oudwins/zog/commit/cd8d172d30723dafd18167d598e8c6f70417e3e9))
+* zhttp supports more complex content type strings ([#99](https://github.com/Oudwins/zog/issues/99)) ([9460ea2](https://github.com/Oudwins/zog/commit/9460ea285d91dc50a973d7a4d83bcf754559c0b3))
+
+
+### Performance Improvements
+
+* string builder for default langmap replaceble placeholders ([#102](https://github.com/Oudwins/zog/issues/102)) ([8f3c881](https://github.com/Oudwins/zog/commit/8f3c881530995960d98132e1f96a2d582f742b58))
+
 ## [0.16.3](https://github.com/Oudwins/zog/compare/v0.16.2...v0.16.3) (2025-02-20)
 
 
