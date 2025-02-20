@@ -56,7 +56,7 @@ func TestRequest(t *testing.T) {
 }
 
 func TestRequestParams(t *testing.T) {
-	formData := "name=JohnDoe&email=john@doe.com&age=30&isMarried=true&lights=on&cash=10.5&swagger=doweird&swagger=swagger"
+	formData := "name=JohnDoe&email=john@doe.com&age=30&isMarried=true&lights=on&cash=10.5&swagger=doweird&swagger=swagger&q=test"
 
 	// Create a fake HTTP request with form data
 	req, err := http.NewRequest("POST", "/submit?"+formData, nil)
@@ -72,6 +72,7 @@ func TestRequestParams(t *testing.T) {
 		Lights    bool     `param:"lights"`
 		Cash      float64  `param:"cash"`
 		Swagger   []string `param:"swagger"`
+		Q         string   `zog:"q"`
 	}
 
 	schema := z.Struct(z.Schema{
@@ -83,6 +84,7 @@ func TestRequestParams(t *testing.T) {
 		"cash":      z.Float().GT(10.0),
 		"swagger": z.Slice(
 			z.String().Min(1)).Min(2),
+		"q": z.String().Required(),
 	})
 	u := User{}
 	dp := Request(req)
@@ -96,6 +98,7 @@ func TestRequestParams(t *testing.T) {
 	assert.True(t, u.Lights)
 	assert.Equal(t, 10.5, u.Cash)
 	assert.Equal(t, u.Swagger, []string{"doweird", "swagger"})
+	assert.Equal(t, "test", u.Q)
 	assert.Empty(t, errs)
 }
 
