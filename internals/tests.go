@@ -38,8 +38,8 @@ func LenMin[T LengthCapable[any]](n int) Test {
 		IssueCode: zconst.IssueCodeMin,
 		Params:    make(map[string]any, 1),
 		ValidateFunc: func(val any, ctx Ctx) bool {
-			x := val.(T)
-			return len(x) >= n
+			x := val.(*T)
+			return len(*x) >= n
 		},
 	}
 	t.Params[zconst.IssueCodeMin] = n
@@ -51,11 +51,11 @@ func LenMax[T LengthCapable[any]](n int) Test {
 		IssueCode: zconst.IssueCodeMax,
 		Params:    make(map[string]any, 1),
 		ValidateFunc: func(v any, ctx Ctx) bool {
-			val, ok := v.(T)
+			val, ok := v.(*T)
 			if !ok {
 				return false
 			}
-			return len(val) <= n
+			return len(*val) <= n
 		},
 	}
 	t.Params[zconst.IssueCodeMax] = n
@@ -67,11 +67,11 @@ func Len[T LengthCapable[any]](n int) Test {
 		IssueCode: zconst.IssueCodeLen,
 		Params:    make(map[string]any, 1),
 		ValidateFunc: func(v any, ctx Ctx) bool {
-			val, ok := v.(T)
+			val, ok := v.(*T)
 			if !ok {
 				return false
 			}
-			return len(val) == n
+			return len(*val) == n
 		},
 	}
 	t.Params[zconst.IssueCodeLen] = n
@@ -84,8 +84,8 @@ func In[T any](values []T) Test {
 		Params:    make(map[string]any, 1),
 		ValidateFunc: func(val any, ctx Ctx) bool {
 			for _, value := range values {
-				v := val.(T)
-				if reflect.DeepEqual(v, value) {
+				v := val.(*T)
+				if reflect.DeepEqual(*v, value) {
 					return true
 				}
 			}
@@ -101,11 +101,11 @@ func EQ[T comparable](n T) Test {
 		IssueCode: zconst.IssueCodeEQ,
 		Params:    make(map[string]any, 1),
 		ValidateFunc: func(val any, ctx Ctx) bool {
-			v, ok := val.(T)
+			v, ok := val.(*T)
 			if !ok {
 				return false
 			}
-			return v == n
+			return *v == n
 		},
 	}
 	t.Params[zconst.IssueCodeEQ] = n
@@ -117,11 +117,11 @@ func LTE[T constraints.Ordered](n T) Test {
 		IssueCode: zconst.IssueCodeLTE,
 		Params:    make(map[string]any, 1),
 		ValidateFunc: func(val any, ctx Ctx) bool {
-			v, ok := val.(T)
+			v, ok := val.(*T)
 			if !ok {
 				return false
 			}
-			return v <= n
+			return *v <= n
 		},
 	}
 	t.Params[zconst.IssueCodeLTE] = n
@@ -133,11 +133,11 @@ func GTE[T constraints.Ordered](n T) Test {
 		IssueCode: zconst.IssueCodeGTE,
 		Params:    make(map[string]any, 1),
 		ValidateFunc: func(val any, ctx Ctx) bool {
-			v, ok := val.(T)
+			v, ok := val.(*T)
 			if !ok {
 				return false
 			}
-			return v >= n
+			return *v >= n
 		},
 	}
 	t.Params[zconst.IssueCodeGTE] = n
@@ -149,11 +149,11 @@ func LT[T constraints.Ordered](n T) Test {
 		IssueCode: zconst.IssueCodeLT,
 		Params:    make(map[string]any, 1),
 		ValidateFunc: func(val any, ctx Ctx) bool {
-			v, ok := val.(T)
+			v, ok := val.(*T)
 			if !ok {
 				return false
 			}
-			return v < n
+			return *v < n
 		},
 	}
 	t.Params[zconst.IssueCodeLT] = n
@@ -165,11 +165,11 @@ func GT[T constraints.Ordered](n T) Test {
 		IssueCode: zconst.IssueCodeGT,
 		Params:    make(map[string]any, 1),
 		ValidateFunc: func(val any, ctx Ctx) bool {
-			v, ok := val.(T)
+			v, ok := val.(*T)
 			if !ok {
 				return false
 			}
-			return v > n
+			return *v > n
 		},
 	}
 	t.Params[zconst.IssueCodeGT] = n

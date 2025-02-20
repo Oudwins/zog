@@ -150,6 +150,7 @@ func (v *NumberSchema[T]) Test(t p.Test, opts ...TestOption) *NumberSchema[T] {
 	for _, opt := range opts {
 		opt(&t)
 	}
+	t.ValidateFunc = customTestBackwardsCompatWrapper(t.ValidateFunc)
 	v.tests = append(v.tests, t)
 	return v
 }
