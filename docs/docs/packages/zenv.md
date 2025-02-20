@@ -44,7 +44,7 @@ func Parse() env {
 	errs := envSchema.Parse(zenv.NewDataProvider(), &e)
 	if errs != nil {
 		fmt.Println("FAILURE TO PARSE ENV VARIABLES")
-		log.Fatal(z.Errors.SanitizeMap(errs))
+		log.Fatal(z.Issues.SanitizeMap(errs))
 	}
 	return e
 }
