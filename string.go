@@ -162,6 +162,7 @@ func (v *StringSchema) Test(t p.Test, opts ...TestOption) *StringSchema {
 	for _, opt := range opts {
 		opt(&t)
 	}
+	t.ValidateFunc = customTestBackwardsCompatWrapper(t.ValidateFunc)
 	v.tests = append(v.tests, t)
 	return v
 }
@@ -218,11 +219,11 @@ func (v *StringSchema) Email(options ...TestOption) *StringSchema {
 	t := p.Test{
 		IssueCode: zconst.IssueCodeEmail,
 		ValidateFunc: func(v any, ctx ParseCtx) bool {
-			email, ok := v.(string)
+			email, ok := v.(*string)
 			if !ok {
 				return false
 			}
-			return emailRegex.MatchString(email)
+			return emailRegex.MatchString(*email)
 		},
 	}
 	for _, opt := range options {
@@ -237,11 +238,11 @@ func (v *StringSchema) URL(options ...TestOption) *StringSchema {
 	t := p.Test{
 		IssueCode: zconst.IssueCodeURL,
 		ValidateFunc: func(v any, ctx ParseCtx) bool {
-			s, ok := v.(string)
+			s, ok := v.(*string)
 			if !ok {
 				return false
 			}
-			u, err := url.Parse(s)
+			u, err := url.Parse(*s)
 			return err == nil && u.Scheme != "" && u.Host != ""
 		},
 	}
@@ -258,11 +259,11 @@ func (v *StringSchema) HasPrefix(s string, options ...TestOption) *StringSchema 
 		IssueCode: zconst.IssueCodeHasPrefix,
 		Params:    make(map[string]any, 1),
 		ValidateFunc: func(v any, ctx ParseCtx) bool {
-			val, ok := v.(string)
+			val, ok := v.(*string)
 			if !ok {
 				return false
 			}
-			return strings.HasPrefix(val, s)
+			return strings.HasPrefix(*val, s)
 		},
 	}
 	t.Params[zconst.IssueCodeHasPrefix] = s
@@ -279,11 +280,11 @@ func (v *StringSchema) HasSuffix(s string, options ...TestOption) *StringSchema 
 		IssueCode: zconst.IssueCodeHasSuffix,
 		Params:    make(map[string]any, 1),
 		ValidateFunc: func(v any, ctx ParseCtx) bool {
-			val, ok := v.(string)
+			val, ok := v.(*string)
 			if !ok {
 				return false
 			}
-			return strings.HasSuffix(val, s)
+			return strings.HasSuffix(*val, s)
 		},
 	}
 	t.Params[zconst.IssueCodeHasSuffix] = s
@@ -300,11 +301,11 @@ func (v *StringSchema) Contains(sub string, options ...TestOption) *StringSchema
 		IssueCode: zconst.IssueCodeContains,
 		Params:    make(map[string]any, 1),
 		ValidateFunc: func(v any, ctx ParseCtx) bool {
-			val, ok := v.(string)
+			val, ok := v.(*string)
 			if !ok {
 				return false
 			}
-			return strings.Contains(val, sub)
+			return strings.Contains(*val, sub)
 		},
 	}
 	t.Params[zconst.IssueCodeContains] = sub
@@ -320,11 +321,11 @@ func (v *StringSchema) ContainsUpper(options ...TestOption) *StringSchema {
 	t := p.Test{
 		IssueCode: zconst.IssueCodeContainsUpper,
 		ValidateFunc: func(v any, ctx ParseCtx) bool {
-			val, ok := v.(string)
+			val, ok := v.(*string)
 			if !ok {
 				return false
 			}
-			for _, r := range val {
+			for _, r := range *val {
 				if r >= 'A' && r <= 'Z' {
 					return true
 				}
@@ -344,11 +345,11 @@ func (v *StringSchema) ContainsDigit(options ...TestOption) *StringSchema {
 	t := p.Test{
 		IssueCode: zconst.IssueCodeContainsDigit,
 		ValidateFunc: func(v any, ctx ParseCtx) bool {
-			val, ok := v.(string)
+			val, ok := v.(*string)
 			if !ok {
 				return false
 			}
-			for _, r := range val {
+			for _, r := range *val {
 				if r >= '0' && r <= '9' {
 					return true
 				}
@@ -371,11 +372,11 @@ func (v *StringSchema) ContainsSpecial(options ...TestOption) *StringSchema {
 		p.Test{
 			IssueCode: zconst.IssueCodeContainsSpecial,
 			ValidateFunc: func(v any, ctx ParseCtx) bool {
-				val, ok := v.(string)
+				val, ok := v.(*string)
 				if !ok {
 					return false
 				}
-				for _, r := range val {
+				for _, r := range *val {
 					if (r >= '!' && r <= '/') ||
 						(r >= ':' && r <= '@') ||
 						(r >= '[' && r <= '`') ||
@@ -398,11 +399,11 @@ func (v *StringSchema) UUID(options ...TestOption) *StringSchema {
 	t := p.Test{
 		IssueCode: zconst.IssueCodeUUID,
 		ValidateFunc: func(v any, ctx ParseCtx) bool {
-			uuid, ok := v.(string)
+			uuid, ok := v.(*string)
 			if !ok {
 				return false
 			}
-			return uuidRegex.MatchString(uuid)
+			return uuidRegex.MatchString(*uuid)
 		},
 	}
 	for _, opt := range options {
@@ -418,11 +419,11 @@ func (v *StringSchema) Match(regex *regexp.Regexp, options ...TestOption) *Strin
 		IssueCode: zconst.IssueCodeMatch,
 		Params:    make(map[string]any, 1),
 		ValidateFunc: func(v any, ctx ParseCtx) bool {
-			s, ok := v.(string)
+			s, ok := v.(*string)
 			if !ok {
 				return false
 			}
-			return regex.MatchString(s)
+			return regex.MatchString(*s)
 		},
 	}
 	t.Params[zconst.IssueCodeMatch] = regex.String()

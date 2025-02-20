@@ -1,6 +1,8 @@
 package zog
 
 import (
+	"reflect"
+
 	p "github.com/Oudwins/zog/internals"
 	"github.com/Oudwins/zog/zconst"
 )
@@ -195,4 +197,13 @@ func (e *errHelpers) SanitizeList(l p.ZogIssueList) []string {
 // new: schema.Parse(m, &dest)
 func NewMapDataProvider[T any](m map[string]T) p.DataProvider {
 	return p.NewMapDataProvider(m)
+}
+
+// Backwards Compatibility
+
+func customTestBackwardsCompatWrapper(testFunc p.TestFunc) func(val any, ctx Ctx) bool {
+	return func(val any, ctx Ctx) bool {
+		refVal := reflect.ValueOf(val).Elem()
+		return testFunc(refVal.Interface(), ctx)
+	}
 }

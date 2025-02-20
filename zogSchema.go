@@ -110,7 +110,7 @@ func primitiveProcessor[T p.ZogPrimitive](ctx *p.SchemaCtx, preTransforms []p.Pr
 	}
 	// 3. tests
 	for _, test := range tests {
-		if !test.ValidateFunc(*destPtr, ctx) {
+		if !test.ValidateFunc(destPtr, ctx) {
 			// catching the first error if catch is set
 			if catch != nil {
 				*destPtr = *catch
@@ -182,7 +182,7 @@ func primitiveValidator[T p.ZogPrimitive](ctx *p.SchemaCtx, preTransforms []p.Pr
 	}
 	// 3. tests
 	for _, test := range tests {
-		if !test.ValidateFunc(*valPtr, ctx) {
+		if !test.ValidateFunc(valPtr, ctx) {
 			// catching the first error if catch is set
 			if canCatch {
 				*valPtr = *catch

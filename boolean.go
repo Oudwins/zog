@@ -87,6 +87,7 @@ func (v *BoolSchema) Test(t p.Test, options ...TestOption) *BoolSchema {
 	for _, opt := range options {
 		opt(&t)
 	}
+	t.ValidateFunc = customTestBackwardsCompatWrapper(t.ValidateFunc)
 	v.tests = append(v.tests, t)
 	return v
 }

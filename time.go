@@ -163,6 +163,7 @@ func (v *TimeSchema) Test(t p.Test, opts ...TestOption) *TimeSchema {
 	for _, opt := range opts {
 		opt(&t)
 	}
+	t.ValidateFunc = customTestBackwardsCompatWrapper(t.ValidateFunc)
 	v.tests = append(v.tests, t)
 	return v
 }
@@ -182,7 +183,7 @@ func (v *TimeSchema) After(t time.Time, opts ...TestOption) *TimeSchema {
 		IssueCode: zconst.IssueCodeAfter,
 		Params:    make(map[string]any, 1),
 		ValidateFunc: func(v any, ctx ParseCtx) bool {
-			val, ok := v.(time.Time)
+			val, ok := v.(*time.Time)
 			if !ok {
 				return false
 			}
@@ -204,7 +205,7 @@ func (v *TimeSchema) Before(t time.Time, opts ...TestOption) *TimeSchema {
 			IssueCode: zconst.IssueCodeBefore,
 			Params:    make(map[string]any, 1),
 			ValidateFunc: func(v any, ctx ParseCtx) bool {
-				val, ok := v.(time.Time)
+				val, ok := v.(*time.Time)
 				if !ok {
 					return false
 				}
@@ -226,7 +227,7 @@ func (v *TimeSchema) EQ(t time.Time, opts ...TestOption) *TimeSchema {
 		IssueCode: zconst.IssueCodeEQ,
 		Params:    make(map[string]any, 1),
 		ValidateFunc: func(v any, ctx ParseCtx) bool {
-			val, ok := v.(time.Time)
+			val, ok := v.(*time.Time)
 			if !ok {
 				return false
 			}
