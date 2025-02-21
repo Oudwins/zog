@@ -50,6 +50,9 @@ func (p *PathBuilder) Push(path *string) *PathBuilder {
 }
 
 func (p *PathBuilder) Pop() {
+	if len(*p) == 0 {
+		return
+	}
 	*p = (*p)[:len(*p)-1]
 }
 
