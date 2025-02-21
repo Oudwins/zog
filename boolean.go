@@ -52,7 +52,9 @@ func (v *BoolSchema) Parse(data any, dest *bool, options ...ExecOption) p.ZogIss
 	for _, opt := range options {
 		opt(ctx)
 	}
-	v.process(ctx.NewSchemaCtx(data, dest, p.PathBuilder(""), v.getType()))
+	path := p.NewPathBuilder()
+	defer path.Free()
+	v.process(ctx.NewSchemaCtx(data, dest, path, v.getType()))
 
 	return errs.List
 }
@@ -72,7 +74,9 @@ func (v *BoolSchema) Validate(val *bool, options ...ExecOption) p.ZogIssueList {
 		opt(ctx)
 	}
 
-	v.validate(ctx.NewSchemaCtx(val, val, p.PathBuilder(""), v.getType()))
+	path := p.NewPathBuilder()
+	defer path.Free()
+	v.validate(ctx.NewSchemaCtx(val, val, path, v.getType()))
 	return errs.List
 }
 

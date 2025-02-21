@@ -57,13 +57,14 @@ func (v *StringSchema) Parse(data any, dest *string, options ...ExecOption) p.Zo
 	errs := p.NewErrsList()
 	defer errs.Free()
 
-	path := p.PathBuilder("")
 	ctx := p.NewExecCtx(errs, conf.IssueFormatter)
 	defer ctx.Free()
 	for _, opt := range options {
 		opt(ctx)
 	}
 
+	path := p.NewPathBuilder()
+	defer path.Free()
 	v.process(ctx.NewSchemaCtx(data, dest, path, v.getType()))
 
 	return errs.List
@@ -84,7 +85,9 @@ func (v *StringSchema) Validate(data *string, options ...ExecOption) p.ZogIssueL
 		opt(ctx)
 	}
 
-	v.validate(ctx.NewSchemaCtx(data, data, p.PathBuilder(""), v.getType()))
+	path := p.NewPathBuilder()
+	defer path.Free()
+	v.validate(ctx.NewSchemaCtx(data, data, path, v.getType()))
 	return errs.List
 }
 
