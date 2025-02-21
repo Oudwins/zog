@@ -150,6 +150,54 @@ func TestRequestParamsOnJsonContentType(t *testing.T) {
 	assert.Empty(t, errs)
 }
 
+func TestRequestParamsOnDeleteMethodWithJsonContentType(t *testing.T) {
+	formData := "name=JohnDoe&email=john@doe.com&age=30&isMarried=true&lights=on&cash=10.5&swagger=doweird&swagger=swagger&q=test"
+
+	// Create a fake HTTP request with form data
+	req, err := http.NewRequest("DELETE", "/submit?"+formData, nil)
+	req.Header.Set("Content-Type", "application/json")
+	if err != nil {
+		t.Fatalf("Error creating request: %v", err)
+	}
+
+	type User struct {
+		Email     string   `param:"email"`
+		Name      string   `param:"name"`
+		Age       int      `param:"age"`
+		IsMarried bool     `param:"isMarried"`
+		Lights    bool     `param:"lights"`
+		Cash      float64  `param:"cash"`
+		Swagger   []string `param:"swagger"`
+		Q         string   `zog:"q"`
+	}
+
+	schema := z.Struct(z.Schema{
+		"email":     z.String().Email(),
+		"name":      z.String().Min(3).Max(10),
+		"age":       z.Int().GT(18),
+		"isMarried": z.Bool().True(),
+		"lights":    z.Bool().True(),
+		"cash":      z.Float().GT(10.0),
+		"swagger": z.Slice(
+			z.String().Min(1)).Min(2),
+		"q": z.String().Required(),
+	})
+	u := User{}
+	dp := Request(req)
+	assert.Nil(t, err)
+	errs := schema.Parse(dp, &u)
+
+	assert.Equal(t, "john@doe.com", u.Email)
+	assert.Equal(t, "JohnDoe", u.Name)
+	assert.Equal(t, 30, u.Age)
+	assert.True(t, u.IsMarried)
+	assert.True(t, u.Lights)
+	assert.Equal(t, 10.5, u.Cash)
+	assert.Equal(t, u.Swagger, []string{"doweird", "swagger"})
+	assert.Equal(t, "test", u.Q)
+	assert.Empty(t, errs)
+}
+
 // Unit tests for url data provider
 func TestUrlDataProviderGet(t *testing.T) {
 	data := url.Values{

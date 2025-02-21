@@ -81,6 +81,8 @@ func Request(r *http.Request) p.DpFactory {
 		return Config.Parsers.Query(r)
 	case "HEAD":
 		return Config.Parsers.Query(r)
+	case "DELETE":
+		return Config.Parsers.Query(r)
 	default:
 		// Content-Type follows this format: Content-Type: <media-type> [; parameter=value]
 		typ, _, _ := strings.Cut(r.Header.Get("Content-Type"), ";")
