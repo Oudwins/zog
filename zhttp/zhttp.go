@@ -76,15 +76,22 @@ func (u urlDataProvider) GetUnderlying() any {
 // schema.Parse(zhttp.Request(r), &dest)
 // WARNING: FOR JSON PARSING DOES NOT SUPPORT JSON ARRAYS OR PRIMITIVES
 func Request(r *http.Request) p.DpFactory {
-	// Content-Type follows this format: Content-Type: <media-type> [; parameter=value]
-	typ, _, _ := strings.Cut(r.Header.Get("Content-Type"), ";")
-	switch typ {
-	case "application/json":
-		return Config.Parsers.JSON(r)
-	case "application/x-www-form-urlencoded":
-		return Config.Parsers.Form(r)
-	default:
+	switch r.Method {
+	case "GET":
 		return Config.Parsers.Query(r)
+	case "HEAD":
+		return Config.Parsers.Query(r)
+	default:
+		// Content-Type follows this format: Content-Type: <media-type> [; parameter=value]
+		typ, _, _ := strings.Cut(r.Header.Get("Content-Type"), ";")
+		switch typ {
+		case "application/json":
+			return Config.Parsers.JSON(r)
+		case "application/x-www-form-urlencoded":
+			return Config.Parsers.Form(r)
+		default:
+			return Config.Parsers.Query(r)
+		}
 	}
 }
 
