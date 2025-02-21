@@ -48,7 +48,7 @@ func Slice(schema ZogSchema, opts ...SchemaOption) *SliceSchema {
 	return s
 }
 
-// Validates a pointer pointer
+// Validates a slice
 func (v *SliceSchema) Validate(data any, options ...ExecOption) p.ZogIssueMap {
 	errs := p.NewErrsMap()
 	defer errs.Free()
@@ -58,8 +58,9 @@ func (v *SliceSchema) Validate(data any, options ...ExecOption) p.ZogIssueMap {
 	for _, opt := range options {
 		opt(ctx)
 	}
-
-	v.validate(ctx.NewValidateSchemaCtx(data, p.PathBuilder(""), v.getType()))
+	path := p.NewPathBuilder()
+	defer path.Free()
+	v.validate(ctx.NewValidateSchemaCtx(data, path, v.getType()))
 	return errs.M
 }
 
@@ -110,8 +111,10 @@ func (v *SliceSchema) validate(ctx *p.SchemaCtx) {
 	// 3.1 tests for slice items
 	for idx := 0; idx < refVal.Len(); idx++ {
 		item := refVal.Index(idx).Addr().Interface()
-		path := ctx.Path.Push(fmt.Sprintf("[%d]", idx))
+		k := fmt.Sprintf("[%d]", idx)
+		path := ctx.Path.Push(&k)
 		v.schema.validate(ctx.NewValidateSchemaCtx(item, path, v.schema.getType()))
+		path.Pop()
 	}
 
 	// 3. tests for slice
@@ -138,7 +141,8 @@ func (v *SliceSchema) Parse(data any, dest any, options ...ExecOption) p.ZogIssu
 	for _, opt := range options {
 		opt(ctx)
 	}
-	path := p.PathBuilder("")
+	path := p.NewPathBuilder()
+	defer path.Free()
 	v.process(ctx.NewSchemaCtx(data, dest, path, v.getType()))
 
 	return errs.M
@@ -203,9 +207,10 @@ func (v *SliceSchema) process(ctx *p.SchemaCtx) {
 	for idx := 0; idx < refVal.Len(); idx++ {
 		item := refVal.Index(idx).Interface()
 		ptr := destVal.Index(idx).Addr().Interface()
-		path := ctx.Path.Push(fmt.Sprintf("[%d]", idx))
-
+		k := fmt.Sprintf("[%d]", idx)
+		path := ctx.Path.Push(&k)
 		v.schema.process(ctx.NewSchemaCtx(item, ptr, path, v.schema.getType()))
+		path.Pop()
 	}
 
 	// 3. tests for slice

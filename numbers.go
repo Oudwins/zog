@@ -68,7 +68,9 @@ func (v *NumberSchema[T]) Parse(data any, dest *T, options ...ExecOption) p.ZogI
 		opt(ctx)
 	}
 
-	v.process(ctx.NewSchemaCtx(data, dest, p.PathBuilder(""), v.getType()))
+	path := p.NewPathBuilder()
+	defer path.Free()
+	v.process(ctx.NewSchemaCtx(data, dest, path, v.getType()))
 
 	return errs.List
 }
@@ -88,7 +90,9 @@ func (v *NumberSchema[T]) Validate(data *T, options ...ExecOption) p.ZogIssueLis
 		opt(ctx)
 	}
 
-	v.validate(ctx.NewSchemaCtx(data, data, p.PathBuilder(""), v.getType()))
+	path := p.NewPathBuilder()
+	defer path.Free()
+	v.validate(ctx.NewSchemaCtx(data, data, path, v.getType()))
 	return errs.List
 }
 

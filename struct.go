@@ -53,8 +53,9 @@ func (v *StructSchema) Parse(data any, destPtr any, options ...ExecOption) p.Zog
 	for _, opt := range options {
 		opt(ctx)
 	}
-
-	v.process(ctx.NewSchemaCtx(data, destPtr, p.PathBuilder(""), v.getType()))
+	path := p.NewPathBuilder()
+	defer path.Free()
+	v.process(ctx.NewSchemaCtx(data, destPtr, path, v.getType()))
 
 	return errs.M
 }
@@ -126,11 +127,11 @@ func (v *StructSchema) process(ctx *p.SchemaCtx) {
 
 		switch schema := processor.(type) {
 		case *StructSchema:
-			schema.process(ctx.NewSchemaCtx(dataProv.GetNestedProvider(fieldKey), destPtr, ctx.Path.Push(fieldKey), schema.getType()))
+			schema.process(ctx.NewSchemaCtx(dataProv.GetNestedProvider(fieldKey), destPtr, ctx.Path.Push(&fieldKey), schema.getType()))
 		default:
-			schema.process(ctx.NewSchemaCtx(dataProv.Get(fieldKey), destPtr, ctx.Path.Push(fieldKey), schema.getType()))
+			schema.process(ctx.NewSchemaCtx(dataProv.Get(fieldKey), destPtr, ctx.Path.Push(&fieldKey), schema.getType()))
 		}
-
+		ctx.Path.Pop()
 	}
 
 	// 3. Tests for struct
@@ -152,8 +153,10 @@ func (v *StructSchema) Validate(dataPtr any, options ...ExecOption) p.ZogIssueMa
 	for _, opt := range options {
 		opt(ctx)
 	}
+	path := p.NewPathBuilder()
+	defer path.Free()
 
-	v.validate(ctx.NewValidateSchemaCtx(dataPtr, p.PathBuilder(""), v.getType()))
+	v.validate(ctx.NewValidateSchemaCtx(dataPtr, path, v.getType()))
 
 	return errs.M
 }
@@ -205,7 +208,8 @@ func (v *StructSchema) validate(ctx *p.SchemaCtx) {
 		if ok {
 			fieldKey = fieldTag
 		}
-		schema.validate(ctx.NewValidateSchemaCtx(destPtr, ctx.Path.Push(fieldKey), schema.getType()))
+		schema.validate(ctx.NewValidateSchemaCtx(destPtr, ctx.Path.Push(&fieldKey), schema.getType()))
+		ctx.Path.Pop()
 	}
 
 	// 3. tests for slice

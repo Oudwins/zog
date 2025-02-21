@@ -10,7 +10,7 @@ type Ctx interface {
 	Get(key string) any
 	// Deprecated: Use Ctx.AddIssue() instead
 	// Please don't depend on this interface it may change
-	NewError(p PathBuilder, e ZogIssue)
+	NewError(p *PathBuilder, e ZogIssue)
 	// Adds an issue to the schema execution.
 	AddIssue(e ZogIssue)
 	// Please don't depend on this interface it may change
@@ -59,7 +59,7 @@ func (c *ExecCtx) AddIssue(e ZogIssue) {
 
 // Deprecated: Use Ctx.AddIssue() instead
 // This is old interface. It will be removed soon
-func (c *ExecCtx) NewError(path PathBuilder, e ZogIssue) {
+func (c *ExecCtx) NewError(path *PathBuilder, e ZogIssue) {
 	c.Errors.Add(path.String(), e)
 }
 
@@ -71,23 +71,27 @@ func (c *ExecCtx) FmtErr(e ZogIssue) {
 	c.Fmter(e, c)
 }
 
-func (c *ExecCtx) NewSchemaCtx(val any, destPtr any, path PathBuilder, dtype zconst.ZogType) *SchemaCtx {
+func (c *ExecCtx) NewSchemaCtx(val any, destPtr any, path *PathBuilder, dtype zconst.ZogType) *SchemaCtx {
 	c2 := SchemaCtxPool.Get().(*SchemaCtx)
 	c2.ExecCtx = c
 	c2.Val = val
 	c2.DestPtr = destPtr
 	c2.Path = path
 	c2.DType = dtype
+	c2.CanCatch = false
+	c2.HasCaught = false
 	return c2
 }
 
-func (c *ExecCtx) NewValidateSchemaCtx(valPtr any, path PathBuilder, dtype zconst.ZogType) *SchemaCtx {
+func (c *ExecCtx) NewValidateSchemaCtx(valPtr any, path *PathBuilder, dtype zconst.ZogType) *SchemaCtx {
 	c2 := SchemaCtxPool.Get().(*SchemaCtx)
 	c2.ExecCtx = c
 	c2.Val = valPtr
 	c2.DestPtr = nil
 	c2.Path = path
 	c2.DType = dtype
+	c2.CanCatch = false
+	c2.HasCaught = false
 	return c2
 }
 
@@ -97,10 +101,12 @@ func (c *ExecCtx) Free() {
 
 type SchemaCtx struct {
 	*ExecCtx
-	Val     any
-	DestPtr any
-	Path    PathBuilder
-	DType   zconst.ZogType
+	Val       any
+	DestPtr   any
+	Path      *PathBuilder
+	DType     zconst.ZogType
+	CanCatch  bool
+	HasCaught bool
 }
 type TestCtx struct {
 	*SchemaCtx

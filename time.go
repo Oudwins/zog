@@ -78,8 +78,8 @@ func (v *TimeSchema) Parse(data any, dest *time.Time, options ...ExecOption) p.Z
 	for _, opt := range options {
 		opt(ctx)
 	}
-	path := p.PathBuilder("")
-
+	path := p.NewPathBuilder()
+	defer path.Free()
 	v.process(ctx.NewSchemaCtx(data, dest, path, v.getType()))
 
 	return errs.List
@@ -99,7 +99,9 @@ func (v *TimeSchema) Validate(data *time.Time, options ...ExecOption) p.ZogIssue
 	for _, opt := range options {
 		opt(ctx)
 	}
-	v.validate(ctx.NewValidateSchemaCtx(data, p.PathBuilder(""), v.getType()))
+	path := p.NewPathBuilder()
+	defer path.Free()
+	v.validate(ctx.NewValidateSchemaCtx(data, path, v.getType()))
 	return errs.List
 }
 
