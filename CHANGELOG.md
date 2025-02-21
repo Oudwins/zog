@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.16.5](https://github.com/Oudwins/zog/compare/v0.16.4...v0.16.5) (2025-02-20)
+
+
+### Performance Improvements
+
+* removed string sync pool since it has worse performance ([#103](https://github.com/Oudwins/zog/issues/103)) ([602c146](https://github.com/Oudwins/zog/commit/602c14657bc683ffc920f830d7b6092b29bd2efd))
+
 ## [0.16.4](https://github.com/Oudwins/zog/compare/v0.16.3...v0.16.4) (2025-02-20)
 
 
