@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.16.6](https://github.com/Oudwins/zog/compare/v0.16.5...v0.16.6) (2025-02-21)
+
+
+### Bug Fixes
+
+* delete method also only allows for parsing of query params just like GET and HEAD with zhttp ([6bc7636](https://github.com/Oudwins/zog/commit/6bc763695061683acb51fbf81c1ae965e2d43546))
+* zhttp GET request with json or form content type still fetches from params ([867cd06](https://github.com/Oudwins/zog/commit/867cd063414e622e0561a2e302a34999e621adab))
+
+
+### Performance Improvements
+
+* slice pathbuilder for fewer allocations ([a20f5e2](https://github.com/Oudwins/zog/commit/a20f5e2678007b20832f4d38e1e3683ca49d95e9))
+* slice pathbuilder for fewer allocations ([a20f5e2](https://github.com/Oudwins/zog/commit/a20f5e2678007b20832f4d38e1e3683ca49d95e9))
+
 ## [0.16.5](https://github.com/Oudwins/zog/compare/v0.16.4...v0.16.5) (2025-02-20)
 
 
