@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.17.0](https://github.com/Oudwins/zog/compare/v0.16.6...v0.17.0) (2025-02-22)
+
+
+### Features
+
+* new schemas, float32, int64, int32 ([#108](https://github.com/Oudwins/zog/issues/108)) ([0e57a5b](https://github.com/Oudwins/zog/commit/0e57a5b7ef591ebf251176c6532490abcf3b78e1))
+* number schema now supports any number ([#110](https://github.com/Oudwins/zog/issues/110)) ([6af9605](https://github.com/Oudwins/zog/commit/6af96054200e26bb18077dc3bd384be813296d3c))
+
 ## [0.16.6](https://github.com/Oudwins/zog/compare/v0.16.5...v0.16.6) (2025-02-21)
 
 
