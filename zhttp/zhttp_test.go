@@ -35,7 +35,7 @@ func TestRequest(t *testing.T) {
 		"age":       z.Int().GT(18),
 		"isMarried": z.Bool().True(),
 		"lights":    z.Bool().True(),
-		"cash":      z.Float().GT(10.0),
+		"cash":      z.Float64().GT(10.0),
 		"swagger": z.String().Test(z.TestFunc("swagger", func(val any, ctx z.Ctx) bool {
 			return val.(string) == "doweird"
 		})),
@@ -81,7 +81,7 @@ func TestRequestParams(t *testing.T) {
 		"age":       z.Int().GT(18),
 		"isMarried": z.Bool().True(),
 		"lights":    z.Bool().True(),
-		"cash":      z.Float().GT(10.0),
+		"cash":      z.Float64().GT(10.0),
 		"swagger": z.Slice(
 			z.String().Min(1)).Min(2),
 		"q": z.String().Required(),
@@ -129,7 +129,7 @@ func TestRequestParamsOnJsonContentType(t *testing.T) {
 		"age":       z.Int().GT(18),
 		"isMarried": z.Bool().True(),
 		"lights":    z.Bool().True(),
-		"cash":      z.Float().GT(10.0),
+		"cash":      z.Float64().GT(10.0),
 		"swagger": z.Slice(
 			z.String().Min(1)).Min(2),
 		"q": z.String().Required(),
