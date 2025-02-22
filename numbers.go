@@ -4,11 +4,10 @@ import (
 	"github.com/Oudwins/zog/conf"
 	p "github.com/Oudwins/zog/internals"
 	"github.com/Oudwins/zog/zconst"
+	"golang.org/x/exp/constraints"
 )
 
-type Numeric interface {
-	~int | ~int64 | ~int32 | ~float64 | ~float32
-}
+type Numeric = constraints.Ordered
 
 var _ PrimitiveZogSchema[int] = &NumberSchema[int]{}
 
