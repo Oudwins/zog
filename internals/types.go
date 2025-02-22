@@ -10,5 +10,5 @@ type PostTransform = func(dataPtr any, ctx Ctx) error
 
 // Primitive types that can be used in Zod schemas
 type ZogPrimitive interface {
-	~string | ~int | ~float64 | ~bool | time.Time
+	~string | ~int | ~int64 | ~int32 | ~float64 | ~float32 | ~bool | time.Time
 }

@@ -7,7 +7,7 @@ import (
 )
 
 type Numeric interface {
-	~int | ~float64
+	~int | ~int64 | ~int32 | ~float64 | ~float32
 }
 
 var _ PrimitiveZogSchema[int] = &NumberSchema[int]{}
@@ -36,10 +36,34 @@ func (v *NumberSchema[T]) setCoercer(c conf.CoercerFunc) {
 
 // ! USER FACING FUNCTIONS
 
+// Deprecated: Use Float64 instead
 // creates a new float64 schema
 func Float(opts ...SchemaOption) *NumberSchema[float64] {
+	return Float64(opts...)
+}
+
+func Float64(opts ...SchemaOption) *NumberSchema[float64] {
 	s := &NumberSchema[float64]{
 		coercer: conf.Coercers.Float64,
+	}
+	for _, opt := range opts {
+		opt(s)
+	}
+	return s
+}
+
+func Float32(opts ...SchemaOption) *NumberSchema[float32] {
+	s := &NumberSchema[float32]{
+		coercer: func(data any) (any, error) {
+			x, err := conf.Coercers.Float64(data)
+			if err != nil {
+				return nil, err
+			}
+			if n, ok := x.(float64); ok {
+				return float32(n), nil
+			}
+			return x, nil
+		},
 	}
 	for _, opt := range opts {
 		opt(s)
@@ -51,6 +75,44 @@ func Float(opts ...SchemaOption) *NumberSchema[float64] {
 func Int(opts ...SchemaOption) *NumberSchema[int] {
 	s := &NumberSchema[int]{
 		coercer: conf.Coercers.Int,
+	}
+	for _, opt := range opts {
+		opt(s)
+	}
+	return s
+}
+
+func Int64(opts ...SchemaOption) *NumberSchema[int64] {
+	s := &NumberSchema[int64]{
+		coercer: func(data any) (any, error) {
+			x, err := conf.Coercers.Int(data)
+			if err != nil {
+				return nil, err
+			}
+			if n, ok := x.(int); ok {
+				return int64(n), nil
+			}
+			return x, nil
+		},
+	}
+	for _, opt := range opts {
+		opt(s)
+	}
+	return s
+}
+
+func Int32(opts ...SchemaOption) *NumberSchema[int32] {
+	s := &NumberSchema[int32]{
+		coercer: func(data any) (any, error) {
+			x, err := conf.Coercers.Int(data)
+			if err != nil {
+				return nil, err
+			}
+			if n, ok := x.(int); ok {
+				return int32(n), nil
+			}
+			return x, nil
+		},
 	}
 	for _, opt := range opts {
 		opt(s)
