@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.17.1](https://github.com/Oudwins/zog/compare/v0.17.0...v0.17.1) (2025-02-28)
+
+
+### Performance Improvements
+
+* removed one allocation per schema ([14f3511](https://github.com/Oudwins/zog/commit/14f3511bb2a18750d429133c77504c05e09d2777))
+
 ## [0.17.0](https://github.com/Oudwins/zog/compare/v0.16.6...v0.17.0) (2025-02-22)
 
 
