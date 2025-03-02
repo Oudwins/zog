@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.17.2](https://github.com/Oudwins/zog/compare/v0.17.1...v0.17.2) (2025-03-02)
+
+
+### Performance Improvements
+
+* removed allocation for struct schemas ([4cd379c](https://github.com/Oudwins/zog/commit/4cd379c114877200105193a00fd76d08197b4236))
+
 ## [0.17.1](https://github.com/Oudwins/zog/compare/v0.17.0...v0.17.1) (2025-02-28)
 
 
