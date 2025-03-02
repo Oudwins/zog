@@ -196,7 +196,12 @@ func (v *StructSchema) validate(ctx *p.SchemaCtx) {
 	// 3.1 tests for struct fields
 	for key, schema := range v.schema {
 		fieldKey := key
-		key = strings.ToUpper(string(key[0])) + key[1:]
+		if key[0] >= 'a' && key[0] <= 'z' {
+			var b [32]byte // Use a size that fits your max key length
+			copy(b[:], key)
+			b[0] -= 32
+			key = string(b[:len(key)])
+		}
 
 		fieldMeta, ok := refVal.Type().FieldByName(key)
 		if !ok {
