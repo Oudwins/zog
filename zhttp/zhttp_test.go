@@ -177,7 +177,7 @@ func TestRequestParamsOnDeleteMethodWithJsonContentType(t *testing.T) {
 		"age":       z.Int().GT(18),
 		"isMarried": z.Bool().True(),
 		"lights":    z.Bool().True(),
-		"cash":      z.Float().GT(10.0),
+		"cash":      z.Float64().GT(10.0),
 		"swagger": z.Slice(
 			z.String().Min(1)).Min(2),
 		"q": z.String().Required(),
