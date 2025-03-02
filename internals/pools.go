@@ -1,6 +1,7 @@
 package internals
 
 import (
+	"strings"
 	"sync"
 )
 
@@ -34,6 +35,30 @@ var ZogIssuePool = sync.Pool{
 	},
 }
 
+var PathBuilderPool = sync.Pool{
+	New: func() any {
+		pb := make(PathBuilder, 0, 5)
+		return &pb
+	},
+}
+
+var StringBuilderPool = sync.Pool{
+	New: func() any {
+		sb := strings.Builder{}
+		return &sb
+	},
+}
+
+func NewStringBuilder() *strings.Builder {
+	sb := StringBuilderPool.Get().(*strings.Builder)
+	sb.Reset()
+	return sb
+}
+
+func FreeStringBuilder(sb *strings.Builder) {
+	StringBuilderPool.Put(sb)
+}
+
 func ClearPools() {
 	ExecCtxPool = sync.Pool{
 		New: func() any {
@@ -58,6 +83,18 @@ func ClearPools() {
 	ZogIssuePool = sync.Pool{
 		New: func() any {
 			return &ZogErr{}
+		},
+	}
+	PathBuilderPool = sync.Pool{
+		New: func() any {
+			pb := make(PathBuilder, 0, 5)
+			return &pb
+		},
+	}
+	StringBuilderPool = sync.Pool{
+		New: func() any {
+			sb := strings.Builder{}
+			return &sb
 		},
 	}
 }

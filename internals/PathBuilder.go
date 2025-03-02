@@ -1,10 +1,5 @@
 package internals
 
-import (
-	"strings"
-	"sync"
-)
-
 // type PathBuilder string
 
 // func (p PathBuilder) Push(path string) PathBuilder {
@@ -21,24 +16,9 @@ import (
 // 	return string(p)
 // }
 
-var PathBuilderPool = sync.Pool{
-	New: func() any {
-		pb := make(PathBuilder, 0, 5)
-		return &pb
-	},
-}
-
-var StringBuilderPool = sync.Pool{
-	New: func() any {
-		sb := strings.Builder{}
-		return &sb
-	},
-}
-
 func NewPathBuilder() *PathBuilder {
 	pb := PathBuilderPool.Get().(*PathBuilder)
-	*pb = (*pb)[:0]
-	*pb = append(*pb, "")
+	*pb = (*pb)[:1]
 	return pb
 }
 
@@ -57,9 +37,8 @@ func (p *PathBuilder) Pop() {
 }
 
 func (p *PathBuilder) String() string {
-	sb := StringBuilderPool.Get().(*strings.Builder)
-	sb.Reset()
-	defer StringBuilderPool.Put(sb)
+	sb := NewStringBuilder()
+	defer FreeStringBuilder(sb)
 	for i, v := range *p {
 		if i > 0 && (*p)[i-1] != "" && v[0] != '[' {
 			sb.WriteString(".")
