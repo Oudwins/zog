@@ -10,9 +10,9 @@ Killer Features:
 
 - Concise yet expressive schema interface, equipped to model simple to complex data models
 - **[Zod](https://github.com/colinhacks/zod)-like API**, use method chaining to build schemas in a typesafe manner
-- **Extensible**: add your own validators and schemas
+- **Extensible**: add your own Tests and Schemas
 - **Rich errors** with detailed context, make debugging a breeze
-- **Fast**: No reflection when using primitive types
+- **Fast**: Zog is one of the fastest Go validation libraries. We are just behind the goplayground/validator for most of the [govalidbench](https://github.com/Oudwins/govalidbench/tree/master) benchmarks.
 - **Built-in coercion** support for most types
 - Zero dependencies!
 - **Four Helper Packages**
