@@ -29,7 +29,7 @@ type User struct {
 var userSchema = z.Struct(z.Schema{
   // its very important that schema keys like "name" match the struct field name NOT the input data
   "name": z.String().Min(3, z.Message("Override default message")).Max(10),
-  "age": z.Int().GT(18).Required(z.Message("is required")),
+  "age": z.Int().GT(18)
 })
 ```
 
@@ -61,7 +61,7 @@ func main() {
 func main() {
   u := User{
   Name: "Zog",
-  Age: 1,
+  Age: 0, // wont return an error because fields are optional by default otherwise it will error
   }
   errsMap := userSchema.Validate(&u)
   if errsMap != nil {
