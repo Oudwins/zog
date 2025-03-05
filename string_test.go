@@ -404,25 +404,6 @@ func TestStringNot(t *testing.T) {
 				},
 			},
 		},
-		"double not success": {
-			schema:         String().Not().Not().Len(4),
-			strVal:         "test",
-			expectedErrMap: nil,
-		},
-		"double not fail": {
-			schema: String().Not().Not().Len(4),
-			strVal: "testing",
-			expectedErrMap: internals.ZogErrList{
-				&internals.ZogErr{
-					C:       "len",
-					ParamsM: map[string]any{"len": 4},
-					Typ:     "string",
-					Val:     "testing",
-					Msg:     "string must be exactly 4 character(s)",
-					Err:     nil,
-				},
-			},
-		},
 		"not email": {
 			schema:         String().Not().Email(),
 			strVal:         "not-an-email",

@@ -10,12 +10,33 @@ import (
 	"github.com/Oudwins/zog/zconst"
 )
 
-var _ PrimitiveZogSchema[string] = &StringSchema{}
+var (
+	_ PrimitiveZogSchema[string] = (*StringSchema)(nil)
+	_ NotStringSchema            = (*StringSchema)(nil)
+)
 
 var (
 	emailRegex = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
 	uuidRegex  = regexp.MustCompile(`^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$`)
 )
+
+type NotStringSchema interface {
+	Test(t p.Test, opts ...TestOption) *StringSchema
+	OneOf(enum []string, options ...TestOption) *StringSchema
+	Min(n int, options ...TestOption) *StringSchema
+	Max(n int, options ...TestOption) *StringSchema
+	Len(n int, options ...TestOption) *StringSchema
+	Email(options ...TestOption) *StringSchema
+	URL(options ...TestOption) *StringSchema
+	HasPrefix(s string, options ...TestOption) *StringSchema
+	HasSuffix(s string, options ...TestOption) *StringSchema
+	Contains(sub string, options ...TestOption) *StringSchema
+	ContainsUpper(options ...TestOption) *StringSchema
+	ContainsDigit(options ...TestOption) *StringSchema
+	ContainsSpecial(options ...TestOption) *StringSchema
+	UUID(options ...TestOption) *StringSchema
+	Match(regex *regexp.Regexp, options ...TestOption) *StringSchema
+}
 
 type StringSchema struct {
 	preTransforms  []p.PreTransform
@@ -408,7 +429,7 @@ func (v *StringSchema) Match(regex *regexp.Regexp, options ...TestOption) *Strin
 }
 
 // Test: nots the next test fn
-func (v *StringSchema) Not() *StringSchema {
+func (v *StringSchema) Not() NotStringSchema {
 	v.isNot = !v.isNot
 	return v
 }
