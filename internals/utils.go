@@ -28,17 +28,17 @@ func AddTest(testArr []Test, t Test, isNot bool) []Test {
 
 	// Saving old functions required here to prevent recursive call during assignment.
 	oldFn := t.ValidateFunc
-	t.ValidateFunc = func(val any, ctx ParseCtx) bool {
+	t.ValidateFunc = func(val any, ctx Ctx) bool {
 		return !oldFn(val, ctx)
 	}
-	t.ErrCode = NotErrCode(t.ErrCode)
+	t.IssueCode = NotIssueCode(t.IssueCode)
 
 	return append(testArr, t)
 }
 
-func NotErrCode(e zconst.ZogErrCode) string {
+func NotIssueCode(e zconst.ZogIssueCode) string {
 	if strings.HasPrefix(e, "not_") {
-		return zconst.ZogErrCode(strings.TrimPrefix(e, "not_"))
+		return zconst.ZogIssueCode(strings.TrimPrefix(e, "not_"))
 	}
-	return zconst.ZogErrCode(fmt.Sprintf("not_%s", e))
+	return zconst.ZogIssueCode(fmt.Sprintf("not_%s", e))
 }
