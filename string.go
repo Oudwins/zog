@@ -36,6 +36,8 @@ type NotStringSchema interface {
 	ContainsSpecial(options ...TestOption) *StringSchema
 	UUID(options ...TestOption) *StringSchema
 	Match(regex *regexp.Regexp, options ...TestOption) *StringSchema
+
+	// `Not` method is missing here as we do not want the user to do `Not` chaining.
 }
 
 type StringSchema struct {
