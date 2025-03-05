@@ -33,7 +33,7 @@ import (
   - "string is not an object"
 */
 func Decode(r io.Reader) p.DpFactory {
-	return func() (p.DataProvider, p.ZogIssue) {
+	return func() (p.DataProvider, *p.ZogIssue) {
 		closer, ok := r.(io.Closer)
 		if ok {
 			defer closer.Close()
@@ -42,10 +42,10 @@ func Decode(r io.Reader) p.DpFactory {
 		decod := json.NewDecoder(r)
 		err := decod.Decode(&m)
 		if err != nil {
-			return nil, &p.ZogErr{C: zconst.IssueCodeInvalidJSON, Err: err}
+			return nil, &p.ZogIssue{Code: zconst.IssueCodeInvalidJSON, Err: err}
 		}
 		if m == nil {
-			return nil, &p.ZogErr{C: zconst.IssueCodeInvalidJSON, Err: errors.New("nill json body")}
+			return nil, &p.ZogIssue{Code: zconst.IssueCodeInvalidJSON, Err: errors.New("nill json body")}
 		}
 		return p.NewMapDataProvider(m), nil
 	}

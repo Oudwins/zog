@@ -13,12 +13,12 @@ import (
 
 func VerifyDefaultIssueMessages(t *testing.T, errs internals.ZogIssueList) {
 	for _, err := range errs {
-		c := err.Code()
-		m, ok := en.Map[err.Dtype()][c]
+		c := err.Code
+		m, ok := en.Map[err.Dtype][c]
 		if !ok {
-			m, ok = en.Map[err.Dtype()][zconst.IssueCodeFallback]
+			m, ok = en.Map[err.Dtype][zconst.IssueCodeFallback]
 			if !ok {
-				panic(fmt.Sprintf("no fallback message for type %s", err.Dtype()))
+				panic(fmt.Sprintf("no fallback message for type %s", err.Dtype))
 			}
 		}
 		prefix := strings.Split(m, "{{")[0]
@@ -26,8 +26,8 @@ func VerifyDefaultIssueMessages(t *testing.T, errs internals.ZogIssueList) {
 		if strings.Contains(m, "}}") {
 			postfix = strings.Split(m, "}}")[1]
 		}
-		assert.True(t, strings.HasPrefix(err.Message(), prefix))
-		assert.True(t, strings.HasSuffix(err.Message(), postfix))
+		assert.True(t, strings.HasPrefix(err.Message, prefix))
+		assert.True(t, strings.HasSuffix(err.Message, postfix))
 	}
 }
 

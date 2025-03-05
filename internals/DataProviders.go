@@ -5,7 +5,7 @@ import (
 	"reflect"
 )
 
-type DpFactory = func() (DataProvider, ZogIssue)
+type DpFactory = func() (DataProvider, *ZogIssue)
 
 // This is used for parsing structs & maps
 type DataProvider interface {
@@ -71,6 +71,9 @@ func TryNewAnyDataProvider(val any) (DataProvider, error) {
 	if ok {
 		return dp, nil
 	}
+	if val == nil {
+		return &EmptyDataProvider{Underlying: val}, nil
+	}
 	x := reflect.ValueOf(val)
 	switch x.Kind() {
 	case reflect.Map:
@@ -99,7 +102,7 @@ func TryNewAnyDataProvider(val any) (DataProvider, error) {
 
 	case reflect.Pointer:
 		if x.IsNil() {
-			return &EmptyDataProvider{}, fmt.Errorf("could not convert pointer to a data provider")
+			return &EmptyDataProvider{}, nil
 		}
 		return TryNewAnyDataProvider(x.Elem().Interface())
 

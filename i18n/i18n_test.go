@@ -93,12 +93,12 @@ func TestSetLanguagesErrsMap(t *testing.T) {
 				nameErrs, ok := errs["name"]
 				assert.True(t, ok, "Expected errors for 'name' field")
 				assert.NotEmpty(t, nameErrs, "Expected at least one error for 'name' field")
-				assert.Equal(t, tc.expected, nameErrs[0].Message(), "Unexpected error message")
+				assert.Equal(t, tc.expected, nameErrs[0].Message, "Unexpected error message")
 
 				nameErrs2, ok2 := errs2["name"]
 				assert.True(t, ok2, "Expected errors for 'name' field")
 				assert.NotEmpty(t, nameErrs2, "Expected at least one error for 'name' field")
-				assert.Equal(t, tc.expected, nameErrs2[0].Message(), "Unexpected error message")
+				assert.Equal(t, tc.expected, nameErrs2[0].Message, "Unexpected error message")
 			} else {
 				assert.Nil(t, errs, "Expected no errors, got: %v", errs)
 			}
@@ -120,5 +120,5 @@ func TestLangErrsMapWithLangKey(t *testing.T) {
 	errs := destSchema.Parse("", &dest, zog.WithCtxValue("customLangKey", "es"))
 
 	assert.NotNil(t, errs, "Expected errors, got nil")
-	assert.Equal(t, "es requerido", errs[0].Message(), "Unexpected error message")
+	assert.Equal(t, "es requerido", errs[0].Message, "Unexpected error message")
 }

@@ -311,7 +311,7 @@ func TestParseJsonInvalid(t *testing.T) {
 
 	assert.Error(t, err)
 	assert.Nil(t, dp)
-	assert.Equal(t, zconst.IssueCodeInvalidJSON, err.Code())
+	assert.Equal(t, zconst.IssueCodeInvalidJSON, err.Code)
 }
 
 func TestParseJsonWithNilValue(t *testing.T) {

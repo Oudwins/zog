@@ -83,7 +83,7 @@ func TestSliceRequired(t *testing.T) {
 	// Test with nil value
 	errs := schema.Parse(nil, &s)
 	assert.NotNil(t, errs)
-	assert.Equal(t, customMsg, errs["$root"][0].Message())
+	assert.Equal(t, customMsg, errs["$root"][0].Message)
 
 	// Test with empty slice
 	errs = schema.Parse([]string{}, &s)
@@ -229,7 +229,7 @@ func TestSliceCustomTest(t *testing.T) {
 	assert.Equal(t, input, s)
 	errs = schema.Parse(input[1:], &s)
 	assert.NotEmpty(t, errs)
-	assert.Equal(t, "custom", errs["$root"][0].Message())
+	assert.Equal(t, "custom", errs["$root"][0].Message)
 	// assert.Equal(t, "custom_test", errs["$root"][0].Code())
 }
 

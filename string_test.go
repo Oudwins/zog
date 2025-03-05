@@ -116,7 +116,7 @@ func TestStringCustomTest(t *testing.T) {
 
 	errs = field.Parse("not test", &dest)
 	assert.NotEmpty(t, errs)
-	assert.Equal(t, "Invalid", errs[0].Message())
+	assert.Equal(t, "Invalid", errs[0].Message)
 
 }
 
@@ -126,7 +126,7 @@ func TestStringRequired(t *testing.T) {
 
 	errs := field.Parse("", &dest)
 	assert.NotEmpty(t, errs)
-	assert.Equal(t, errs[0].Message(), "a")
+	assert.Equal(t, errs[0].Message, "a")
 
 	errs = field.Parse("foo", &dest)
 	assert.Empty(t, errs)
@@ -269,7 +269,7 @@ func TestStringContainsDigit(t *testing.T) {
 
 	errs := field.Parse("no digit here", &dest)
 	assert.NotEmpty(t, errs)
-	assert.Equal(t, "custom digit", errs[0].Message())
+	assert.Equal(t, "custom digit", errs[0].Message)
 
 	errs = field.Parse("1234", &dest)
 	assert.Empty(t, errs)
@@ -283,7 +283,7 @@ func TestStringContainsUpper(t *testing.T) {
 
 	errs := field.Parse("no uppercase here", &dest)
 	assert.NotEmpty(t, errs)
-	assert.Equal(t, "custom upper", errs[0].Message())
+	assert.Equal(t, "custom upper", errs[0].Message)
 
 	errs = field.Parse("UPPERCASE", &dest)
 	assert.Empty(t, errs)
@@ -297,7 +297,7 @@ func TestStringContainsSpecial(t *testing.T) {
 
 	errs := field.Parse("no special character here", &dest)
 	assert.NotEmpty(t, errs)
-	assert.Equal(t, "custom special", errs[0].Message())
+	assert.Equal(t, "custom special", errs[0].Message)
 
 	errs = field.Parse("!@#$%", &dest)
 	assert.Empty(t, errs)
@@ -311,7 +311,7 @@ func TestStringOneOf(t *testing.T) {
 
 	errs := field.Parse("orange", &dest)
 	assert.NotEmpty(t, errs)
-	assert.Equal(t, "custom one of", errs[0].Message())
+	assert.Equal(t, "custom one of", errs[0].Message)
 
 	errs = field.Parse("banana", &dest)
 	assert.Empty(t, errs)
@@ -321,17 +321,17 @@ func TestStringOneOf(t *testing.T) {
 	// Test with non-string input
 	errs = field.Parse(123, &dest)
 	assert.NotEmpty(t, errs)
-	assert.Equal(t, "custom one of", errs[0].Message())
+	assert.Equal(t, "custom one of", errs[0].Message)
 
 	// Test with empty string
 	errs = field.Parse("", &dest)
 	assert.NotEmpty(t, errs)
-	assert.Equal(t, "custom required", errs[0].Message())
+	assert.Equal(t, "custom required", errs[0].Message)
 
 	// Test with nil
 	errs = field.Parse(nil, &dest)
 	assert.NotEmpty(t, errs)
-	assert.Equal(t, "custom required", errs[0].Message())
+	assert.Equal(t, "custom required", errs[0].Message)
 }
 
 func TestStringUUID(t *testing.T) {
@@ -340,7 +340,7 @@ func TestStringUUID(t *testing.T) {
 
 	errs := field.Parse("f81d4fae-7dec-11d0-a765-00a0c91e", &dest)
 	assert.NotEmpty(t, errs)
-	assert.Equal(t, "custom uuid msg", errs[0].Message())
+	assert.Equal(t, "custom uuid msg", errs[0].Message)
 
 	errs = field.Parse("f81d4fae-7dec-11d0-a765-00a0c91e6bf6", &dest)
 	assert.Empty(t, errs)
@@ -358,7 +358,7 @@ func TestStringRegex(t *testing.T) {
 
 	errs := field.Parse("f81d4fae-7dec-11d0-a765-00a0c91e", &dest)
 	assert.NotEmpty(t, errs)
-	assert.Equal(t, "custom regex msg", errs[0].Message())
+	assert.Equal(t, "custom regex msg", errs[0].Message)
 
 	errs = field.Parse("00", &dest)
 	assert.Empty(t, errs)

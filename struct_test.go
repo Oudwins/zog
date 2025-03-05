@@ -185,7 +185,7 @@ func TestStructCustomTest(t *testing.T) {
 	errs := schema.Parse(data, &obj)
 	assert.NotNil(t, errs)
 	// assert.Equal(t, "customTest", errs["$root"][0].Code())
-	assert.Equal(t, "customTest", errs["$root"][0].Message())
+	assert.Equal(t, "customTest", errs["$root"][0].Message)
 	data["str"] = "valid"
 	errs = schema.Parse(data, &obj)
 	assert.Nil(t, errs)
@@ -326,7 +326,6 @@ func TestStructPassThroughRequired(t *testing.T) {
 	errs = schema.Parse(nil, &output2)
 	assert.NotNil(t, errs)
 	tutils.VerifyDefaultIssueMessagesMap(t, errs)
-	assert.NotEmpty(t, errs["$root"])
 	assert.NotEmpty(t, errs["somefield"])
 }
 

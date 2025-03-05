@@ -19,15 +19,15 @@ func TestInt64Parse(t *testing.T) {
 
 func TestInt64ParseFormatter(t *testing.T) {
 	dest := int64(0)
-	fmt := WithIssueFormatter(func(e ZogIssue, ctx Ctx) {
+	fmt := WithIssueFormatter(func(e *ZogIssue, ctx Ctx) {
 		e.SetMessage("test2")
 	})
 	validator := Int64().GTE(10, Message("test1"))
 	errs := validator.Parse(int64(5), &dest, fmt)
-	assert.Equal(t, "test1", errs[0].Message())
+	assert.Equal(t, "test1", errs[0].Message)
 	validator2 := Int64().GTE(10)
 	errs2 := validator2.Parse(int64(5), &dest, fmt)
-	assert.Equal(t, "test2", errs2[0].Message())
+	assert.Equal(t, "test2", errs2[0].Message)
 }
 
 func TestInt64SchemaOption(t *testing.T) {
@@ -54,19 +54,19 @@ func TestInt64Required(t *testing.T) {
 	if len(errs) == 0 {
 		t.Errorf("Expected errors, got none")
 	}
-	assert.Equal(t, "custom", errs[0].Message())
+	assert.Equal(t, "custom", errs[0].Message)
 
 	errs = validator.Parse("     ", &dest)
 	if len(errs) == 0 {
 		t.Errorf("Expected errors, got none")
 	}
-	assert.Equal(t, "custom", errs[0].Message())
+	assert.Equal(t, "custom", errs[0].Message)
 
 	errs = validator.Parse(nil, &dest)
 	if len(errs) == 0 {
 		t.Errorf("Expected errors, got none")
 	}
-	assert.Equal(t, "custom", errs[0].Message())
+	assert.Equal(t, "custom", errs[0].Message)
 }
 
 func TestInt64Optional(t *testing.T) {
@@ -172,7 +172,7 @@ func TestInt64OneOf(t *testing.T) {
 	if len(errs) == 0 {
 		t.Errorf("Expected errors, got none")
 	}
-	assert.Equal(t, "custom", errs[0].Message())
+	assert.Equal(t, "custom", errs[0].Message)
 	assert.Equal(t, int64(4), dest)
 }
 
@@ -187,7 +187,7 @@ func TestInt64Eq(t *testing.T) {
 	if len(errs) == 0 {
 		t.Errorf("Expected errors, got none")
 	}
-	assert.Equal(t, "custom", errs[0].Message())
+	assert.Equal(t, "custom", errs[0].Message)
 	assert.Equal(t, int64(4), dest)
 }
 
@@ -202,12 +202,12 @@ func TestInt64Gt(t *testing.T) {
 	if len(errs) == 0 {
 		t.Errorf("Expected errors, got none")
 	}
-	assert.Equal(t, "custom", errs[0].Message())
+	assert.Equal(t, "custom", errs[0].Message)
 	errs = validator.Parse(int64(4), &dest)
 	if len(errs) == 0 {
 		t.Errorf("Expected errors, got none")
 	}
-	assert.Equal(t, "custom", errs[0].Message())
+	assert.Equal(t, "custom", errs[0].Message)
 	assert.Equal(t, int64(4), dest)
 }
 
@@ -226,7 +226,7 @@ func TestInt64Gte(t *testing.T) {
 	if len(errs) == 0 {
 		t.Errorf("Expected errors, got none")
 	}
-	assert.Equal(t, "custom", errs[0].Message())
+	assert.Equal(t, "custom", errs[0].Message)
 	assert.Equal(t, int64(4), dest)
 }
 
@@ -241,12 +241,12 @@ func TestInt64Lt(t *testing.T) {
 	if len(errs) == 0 {
 		t.Errorf("Expected errors, got none")
 	}
-	assert.Equal(t, "custom", errs[0].Message())
+	assert.Equal(t, "custom", errs[0].Message)
 	errs = validator.Parse(int64(6), &dest)
 	if len(errs) == 0 {
 		t.Errorf("Expected errors, got none")
 	}
-	assert.Equal(t, "custom", errs[0].Message())
+	assert.Equal(t, "custom", errs[0].Message)
 	assert.Equal(t, int64(6), dest)
 }
 
@@ -265,7 +265,7 @@ func TestInt64Lte(t *testing.T) {
 	if len(errs) == 0 {
 		t.Errorf("Expected errors, got none")
 	}
-	assert.Equal(t, "custom", errs[0].Message())
+	assert.Equal(t, "custom", errs[0].Message)
 	assert.Equal(t, int64(6), dest)
 }
 

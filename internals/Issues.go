@@ -6,176 +6,78 @@ import (
 	zconst "github.com/Oudwins/zog/zconst"
 )
 
-type ZogIssue interface {
-	// returns the error code for the error. This is a unique identifier for the Issue. Generally also the ID for the Test that caused the error.
-	Code() zconst.ZogIssueCode
-
-	// Sets the error code for the Issue. This is a unique identifier for the Issue. Generally also the ID for the Test that caused the error.
-	SetCode(zconst.ZogIssueCode) ZogIssue
-
-	// returns the path of the Issue. This is the path of the value that caused the Issue.
-	Path() string
-
-	// Sets the path of the Issue. This is the path of the value that caused the Issue.
-	SetPath(string) ZogIssue
-
-	// returns the data value that caused the Issue.
-	// if using Schema.Parse(data, dest) then this will be the value of data.
-	Value() any
-
-	// Deprecated: Use SetValue() instead
-	// Sets the data value that caused the Issue.
-	// if using Schema.Parse(data, dest) then this will be the value of data.
-	SValue(any) ZogIssue
-
-	// Sets the data value that caused the Issue.
-	// if using Schema.Parse(data, dest) then this will be the value of data.
-	SetValue(any) ZogIssue
-
-	// Returns destination type. i.e The zconst.ZogType of the value that was validated.
-	// if Using Schema.Parse(data, dest) then this will be the type of dest.
-	Dtype() string
-
-	// Deprecated: Use SetDType() instead
-	// Sets destination type. i.e The zconst.ZogType of the value that was validated.
-	// if Using Schema.Parse(data, dest) then this will be the type of dest.
-	SDType(zconst.ZogType) ZogIssue
-
-	// Sets destination type. i.e The zconst.ZogType of the value that was validated.
-	// if Using Schema.Parse(data, dest) then this will be the type of dest.
-	SetDType(zconst.ZogType) ZogIssue
-
-	// returns the params map for the error. Taken from the Test that caused the error. This may be nil if Test has no params.
-	Params() map[string]any
-
-	// Deprecated: Use SetParams() instead
-	// Sets the params map for the error. Taken from the Test that caused the error. This may be nil if Test has no params.
-	SParams(map[string]any) ZogIssue
-	// Sets the params map for the error. Taken from the Test that caused the error. This may be nil if Test has no params.
-	SetParams(map[string]any) ZogIssue
-	// returns the human readable, user-friendly message for the error. This is safe to expose to the user.
-	Message() string
-	// sets the human readable, user-friendly message for the error. This is safe to expose to the user.
-	SetMessage(string)
-	// returns the string representation of the ZogIssue (same as String())
-	Error() string
-	// Sets the wrapped error.
-	SetError(error) ZogIssue
-	// returns the wrapped error or nil if none
-	Unwrap() error
-	// returns the string representation of the ZogIssue (same as Error())
-	String() string
-}
-
-// Error interface returned from all processors
-type ZogError = ZogIssue
-
 // this is the function that formats the error message given a zog error
-type IssueFmtFunc = func(e ZogError, p Ctx)
+type IssueFmtFunc = func(e *ZogIssue, p Ctx)
 
-// INTERNAL ONLY: Error implementation
-type ZogErr struct {
-	C       zconst.ZogIssueCode // error code
-	EPath   string              // path of the value that caused the error
-	ParamsM map[string]any      // params for the error (e.g. min, max, len, etc)
-	Typ     string              // destination type
-	Val     any                 // value that caused the error
-	Msg     string              // human readable message
-	Err     error               // the underlying error
-}
-
-// error code, err uuid
-func (e *ZogErr) Code() zconst.ZogIssueCode {
-	return e.C
-}
-func (e *ZogErr) SetCode(c zconst.ZogIssueCode) ZogError {
-	e.C = c
-	return e
+type ZogIssue struct {
+	Code    zconst.ZogIssueCode
+	Path    string
+	Value   any
+	Dtype   string
+	Params  map[string]any
+	Message string
+	Err     error
 }
 
-func (e *ZogErr) Path() string {
-	return e.EPath
-}
-func (e *ZogErr) SetPath(p string) ZogError {
-	e.EPath = p
-	return e
+func (i *ZogIssue) SetCode(c zconst.ZogIssueCode) *ZogIssue {
+	i.Code = c
+	return i
 }
 
-// value that caused the error
-func (e *ZogErr) Value() any {
-	return e.Val
-}
-func (e *ZogErr) SValue(v any) ZogError {
-	e.Val = v
-	return e
+func (i *ZogIssue) SetPath(p string) *ZogIssue {
+	i.Path = p
+	return i
 }
 
-func (e *ZogErr) SetValue(v any) ZogError {
-	e.Val = v
-	return e
+func (i *ZogIssue) SetValue(v any) *ZogIssue {
+	i.Value = v
+	return i
 }
 
-// destination type TODO
-func (e *ZogErr) Dtype() string {
-	return e.Typ
-}
-func (e *ZogErr) SDType(t zconst.ZogType) ZogError {
-	e.Typ = t
-	return e
+func (i *ZogIssue) SetDType(t string) *ZogIssue {
+	i.Dtype = t
+	return i
 }
 
-func (e *ZogErr) SetDType(t zconst.ZogType) ZogError {
-	e.Typ = t
-	return e
+func (i *ZogIssue) SetParams(p map[string]any) *ZogIssue {
+	i.Params = p
+	return i
 }
 
-func (e *ZogErr) Params() map[string]any {
-	return e.ParamsM
+func (i *ZogIssue) SetMessage(m string) *ZogIssue {
+	i.Message = m
+	return i
 }
 
-func (e *ZogErr) SParams(p map[string]any) ZogError {
-	e.ParamsM = p
-	return e
+func (i *ZogIssue) SetError(e error) *ZogIssue {
+	i.Err = e
+	return i
 }
 
-func (e *ZogErr) SetParams(p map[string]any) ZogError {
-	e.ParamsM = p
-	return e
+func (i *ZogIssue) Unwrap() error {
+	return i.Err
 }
-func (e *ZogErr) Message() string {
-	return e.Msg
-}
-func (e *ZogErr) SetMessage(msg string) {
-	e.Msg = msg
-}
-func (e *ZogErr) Error() string {
-	return e.String()
-}
-func (e *ZogErr) SetError(err error) ZogError {
-	e.Err = err
-	return e
-}
-func (e *ZogErr) Unwrap() error {
-	return e.Err
+func (i *ZogIssue) Error() string {
+	return i.String()
 }
 
-func (e *ZogErr) String() string {
-	return fmt.Sprintf("ZogError{Code: %v, Params: %v, Type: %v, Value: %v, Message: '%v', Error: %v}", SafeString(e.C), SafeString(e.ParamsM), SafeString(e.Typ), SafeString(e.Val), SafeString(e.Msg), SafeError(e.Err))
+func (i *ZogIssue) String() string {
+	return fmt.Sprintf("ZogIssue{Code: %v, Params: %v, Type: %v, Value: %v, Message: '%v', Error: %v}", SafeString(i.Code), SafeString(i.Params), SafeString(i.Dtype), SafeString(i.Value), SafeString(i.Message), SafeError(i.Err))
 }
 
-func (e *ZogErr) Free() {
-	ZogIssuePool.Put(e)
+func (i *ZogIssue) Free() {
+	ZogIssuePool.Put(i)
 }
 
 // list of errors. This is returned by processors for simple types (e.g. strings, numbers, booleans)
-type ZogIssueList = []ZogError
+type ZogIssueList = []*ZogIssue
 
 // map of errors. This is returned by processors for complex types (e.g. maps, slices, structs)
-type ZogIssueMap = map[string][]ZogError
+type ZogIssueMap = map[string][]*ZogIssue
 
 // INTERNAL ONLY: Interface used to add errors during parsing & validation. It represents a group of errors (map or slice)
 type ZogIssues interface {
-	Add(path string, err ZogError)
+	Add(path string, err *ZogIssue)
 	IsEmpty() bool
 	Free()
 }
@@ -192,7 +94,7 @@ func NewErrsList() *ErrsList {
 	return l
 }
 
-func (e *ErrsList) Add(path string, err ZogError) {
+func (e *ErrsList) Add(path string, err *ZogIssue) {
 	if e.List == nil {
 		e.List = make(ZogIssueList, 0, 2)
 	}
@@ -219,11 +121,11 @@ func NewErrsMap() *ErrsMap {
 	return m
 }
 
-func (s *ErrsMap) Add(p string, err ZogError) {
+func (s *ErrsMap) Add(p string, err *ZogIssue) {
 	// checking if its the first error
 	if s.M == nil {
 		s.M = ZogIssueMap{}
-		s.M[zconst.ISSUE_KEY_FIRST] = []ZogError{err}
+		s.M[zconst.ISSUE_KEY_FIRST] = []*ZogIssue{err}
 	}
 
 	path := p
@@ -231,7 +133,7 @@ func (s *ErrsMap) Add(p string, err ZogError) {
 		path = zconst.ISSUE_KEY_ROOT
 	}
 	if _, ok := s.M[path]; !ok {
-		s.M[path] = []ZogError{}
+		s.M[path] = []*ZogIssue{}
 	}
 	s.M[path] = append(s.M[path], err)
 }
