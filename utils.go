@@ -17,12 +17,8 @@ type ParseCtx = p.Ctx
 // You can use it to pass a key/value for a specific execution. More about context in the [docs](https://zog.dev/context)
 type Ctx = p.Ctx
 
-// Deprecated: This will be removed in the future. Use z.ZogIssue instead
-// This is a type for the ZogError interface. It is the interface that all errors returned from zog implement.
-type ZogError = p.ZogError
-
-// This is a type for the ZogIssue= interface. It is the interface that all errors returned from zog implement.
-type ZogIssue = p.ZogError
+// This is a type for the ZogIssue type. It is the type of all the errors returned from zog.
+type ZogIssue = p.ZogIssue
 
 // Deprecated: This will be removed in the future. Use z.ZogIssueList instead
 // This is a type for the ZogErrList type. It is a list of ZogIssues returned from parsing primitive schemas. The type is []ZogError
@@ -107,7 +103,7 @@ func (i issueHelpers) SanitizeMapAndCollect(m ZogIssueMap) map[string][]string {
 func (i *issueHelpers) SanitizeList(l ZogIssueList) []string {
 	errs := make([]string, len(l))
 	for i, err := range l {
-		errs[i] = err.Message()
+		errs[i] = err.Message
 	}
 	return errs
 }
@@ -126,67 +122,8 @@ func (i *issueHelpers) CollectMap(issues ZogIssueMap) {
 
 func (i *issueHelpers) CollectList(issues ZogIssueList) {
 	for _, err := range issues {
-		if err, ok := err.(*p.ZogErr); ok {
-			err.Free()
-		}
+		err.Free()
 	}
-}
-
-// ! ERRORS -> Deprecated
-// Deprecated: This will be removed in the future.
-type errHelpers struct {
-}
-
-// Deprecated: This will be removed in the future.
-// Use z.Issues instead
-// Helper struct for dealing with zog errors. Beware this API may change
-var Errors = errHelpers{}
-
-// Deprecated: This will be removed in the future.
-// Create error from (originValue any, destinationValue any, test *p.Test)
-func (e *errHelpers) FromTest(o any, destType zconst.ZogType, t *p.Test, p ParseCtx) ZogIssue {
-	er := e.New(t.IssueCode, o, destType, t.Params, "", nil)
-	if t.IssueFmtFunc != nil {
-		t.IssueFmtFunc(er, p)
-	}
-	return er
-}
-
-// Deprecated: This will be removed in the future.
-// Create error from
-func (e *errHelpers) FromErr(o any, destType zconst.ZogType, err error) ZogIssue {
-	return e.New(zconst.IssueCodeCustom, o, destType, nil, "", err)
-}
-
-// Deprecated: This will be removed in the future.
-func (e *errHelpers) WrapUnknown(o any, destType zconst.ZogType, err error) ZogIssue {
-	zerr, ok := err.(ZogIssue)
-	if !ok {
-		return e.FromErr(o, destType, err)
-	}
-	return zerr
-}
-
-// Deprecated: This will be removed in the future.
-func (e *errHelpers) New(code zconst.ZogIssueCode, o any, destType zconst.ZogType, params map[string]any, msg string, err error) p.ZogError {
-	return &p.ZogErr{
-		C:       code,
-		ParamsM: params,
-		Val:     o,
-		Typ:     destType,
-		Msg:     msg,
-		Err:     err,
-	}
-}
-
-// Deprecated: This will be removed in the future. Use z.Issues.SanitizeMap instead
-func (e *errHelpers) SanitizeMap(m p.ZogIssueMap) map[string][]string {
-	return Issues.SanitizeMap(m)
-}
-
-// Deprecated: This will be removed in the future. Use z.Issues.SanitizeList instead
-func (e *errHelpers) SanitizeList(l p.ZogIssueList) []string {
-	return Issues.SanitizeList(l)
 }
 
 // ! Data Providers
