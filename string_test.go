@@ -412,7 +412,6 @@ func TestStringNot(t *testing.T) {
 			strVal:         "not-an-email",
 			expectedErrMap: nil,
 		},
-
 		"not email failure": {
 			schema: String().Not().Email(),
 			strVal: "test@test.com",
@@ -437,6 +436,43 @@ func TestStringNot(t *testing.T) {
 					Typ:     "string",
 					Val:     "a",
 					Msg:     "string must not be exactly 1 character(s)",
+					Err:     nil,
+				},
+			},
+		},
+		"not url": {
+			schema:         String().Not().URL(),
+			strVal:         "not a url",
+			expectedErrMap: nil,
+		},
+		"not url failure": {
+			schema: String().Not().URL(),
+			strVal: "https://google.com",
+			expectedErrMap: internals.ZogIssueList{
+				&internals.ZogErr{
+					C:   "not_url",
+					Typ: "string",
+					Val: "https://google.com",
+					Msg: "must not be a valid URL",
+					Err: nil,
+				},
+			},
+		},
+		"not has prefix": {
+			schema:         String().Not().HasPrefix("test_"),
+			strVal:         "value",
+			expectedErrMap: nil,
+		},
+		"not has prefix failure": {
+			schema: String().Not().HasPrefix("test_"),
+			strVal: "test_value",
+			expectedErrMap: internals.ZogIssueList{
+				&internals.ZogErr{
+					C:       "not_prefix",
+					ParamsM: map[string]any{"prefix": "test_"},
+					Typ:     "string",
+					Val:     "test_value",
+					Msg:     "string must not start with test_",
 					Err:     nil,
 				},
 			},
