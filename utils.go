@@ -121,9 +121,13 @@ func (i *issueHelpers) CollectMap(issues ZogIssueMap) {
 }
 
 func (i *issueHelpers) CollectList(issues ZogIssueList) {
-	for _, err := range issues {
-		err.Free()
+	for _, iss := range issues {
+		i.Collect(iss)
 	}
+}
+
+func (i *issueHelpers) Collect(issue *ZogIssue) {
+	p.FreeIssue(issue)
 }
 
 // ! Data Providers

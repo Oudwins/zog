@@ -65,7 +65,7 @@ func (i *ZogIssue) String() string {
 	return fmt.Sprintf("ZogIssue{Code: %v, Params: %v, Type: %v, Value: %v, Message: '%v', Error: %v}", SafeString(i.Code), SafeString(i.Params), SafeString(i.Dtype), SafeString(i.Value), SafeString(i.Message), SafeError(i.Err))
 }
 
-func (i *ZogIssue) Free() {
+func FreeIssue(i *ZogIssue) {
 	ZogIssuePool.Put(i)
 }
 
