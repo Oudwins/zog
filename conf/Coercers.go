@@ -84,6 +84,10 @@ var DefaultCoercers = struct {
 		switch v := data.(type) {
 		case int:
 			return v, nil
+		case int64:
+			return int(v), nil
+		case int32:
+			return int(v), nil
 		case string:
 			convVal, err := strconv.Atoi(v)
 			if err != nil {
@@ -114,6 +118,8 @@ var DefaultCoercers = struct {
 			return convVal, nil
 		case float64:
 			return v, nil
+		case float32:
+			return float64(v), nil
 		default:
 			return nil, fmt.Errorf("input data is an unsupported type to coerce to float64: %v", data)
 		}

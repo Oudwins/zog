@@ -30,11 +30,6 @@ func (v *BoolSchema) setCoercer(c conf.CoercerFunc) {
 	v.coercer = c
 }
 
-// Internal function to process the data
-func (v *BoolSchema) process(val any, dest any, path p.PathBuilder, ctx ParseCtx) {
-	primitiveProcessor(val, dest, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, v.coercer, p.IsParseZeroValue)
-}
-
 // ! USER FACING FUNCTIONS
 
 // Returns a new Bool Schema
@@ -49,38 +44,64 @@ func Bool(opts ...SchemaOption) *BoolSchema {
 }
 
 // Parse data into destination pointer
-func (v *BoolSchema) Parse(data any, dest *bool, options ...ParsingOption) p.ZogErrList {
+func (v *BoolSchema) Parse(data any, dest *bool, options ...ExecOption) p.ZogIssueList {
 	errs := p.NewErrsList()
-	ctx := p.NewParseCtx(errs, conf.ErrorFormatter)
+	defer errs.Free()
+	ctx := p.NewExecCtx(errs, conf.IssueFormatter)
+	defer ctx.Free()
 	for _, opt := range options {
 		opt(ctx)
 	}
-	path := p.PathBuilder("")
-
-	v.process(data, dest, path, ctx)
+	path := p.NewPathBuilder()
+	defer path.Free()
+	v.process(ctx.NewSchemaCtx(data, dest, path, v.getType()))
 
 	return errs.List
 }
 
+// Internal function to process the data
+func (v *BoolSchema) process(ctx *p.SchemaCtx) {
+	primitiveProcessor(ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, v.coercer, p.IsParseZeroValue)
+}
+
 // Validate data against schema
-func (v *BoolSchema) Validate(val *bool, options ...ParsingOption) p.ZogErrList {
+func (v *BoolSchema) Validate(val *bool, options ...ExecOption) p.ZogIssueList {
 	errs := p.NewErrsList()
-	ctx := p.NewParseCtx(errs, conf.ErrorFormatter)
+	defer errs.Free()
+	ctx := p.NewExecCtx(errs, conf.IssueFormatter)
+	defer ctx.Free()
 	for _, opt := range options {
 		opt(ctx)
 	}
-	path := p.PathBuilder("")
 
-	v.validate(val, path, ctx)
+	path := p.NewPathBuilder()
+	defer path.Free()
+	v.validate(ctx.NewSchemaCtx(val, val, path, v.getType()))
 	return errs.List
 }
 
 // Internal function to validate data
-func (v *BoolSchema) validate(val any, path p.PathBuilder, ctx ParseCtx) {
-	primitiveValidator(val, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch)
+func (v *BoolSchema) validate(ctx *p.SchemaCtx) {
+	primitiveValidator(ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch)
 }
 
 // GLOBAL METHODS
+
+func (v *BoolSchema) Test(t p.Test, options ...TestOption) *BoolSchema {
+	for _, opt := range options {
+		opt(&t)
+	}
+	t.ValidateFunc = customTestBackwardsCompatWrapper(t.ValidateFunc)
+	v.tests = append(v.tests, t)
+	return v
+}
+
+// Create a custom test function for the schema. This is similar to Zod's `.refine()` method.
+func (v *BoolSchema) TestFunc(testFunc p.TestFunc, options ...TestOption) *BoolSchema {
+	test := TestFunc("", testFunc)
+	v.Test(test, options...)
+	return v
+}
 
 // Adds pretransform function to schema
 func (v *BoolSchema) PreTransform(transform p.PreTransform) *BoolSchema {

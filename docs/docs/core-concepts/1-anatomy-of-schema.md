@@ -7,8 +7,8 @@ sidebar_position: 1
 A zog schema is an interface implemented by multiple custom structs that represent a set of `validation` and `transformation` logic for a variable of a given type. For example:
 
 ```go
-stringSchema := z.String().Min(3).Required().Trim() // A zod schema that represents a required string string of minimum 3 characters and will be trimmed for white space
-userSchema := z.Struct(z.Schema{"name": stringSchema}).Required() // a zod schema that represents a user struct. Also yes I know that z.Schema might be confusing but think of it as the schema for the struct not a ZogSchema
+stringSchema := z.String().Min(3).Required().Trim() // A zog schema that represents a required string of minimum 3 characters and will be trimmed for white space
+userSchema := z.Struct(z.Schema{"name": stringSchema}) // a zog schema that represents a user struct. Also yes I know that z.Schema might be confusing but think of it as the schema for the struct not a ZogSchema
 ```
 
 **The string schema, for example, looks something like this:**
@@ -26,10 +26,11 @@ type stringSchema struct {
 
 ## PreTransforms
 
-Pretransforms is a list of function that are applied to the data before the [tests](#tests) are run. You can think of it like a `pipeline` if transformations for a specific schema. **PreTransforms are PURE functions**. They take in data and return new data. This is the function signature:
+Pretransforms is a list of function that are applied to the data before the [tests](#tests) are run. You can think of it like a `pipeline` of transformations for a specific schema. **PreTransforms are PURE functions**. They take in data and return new data. This is the function signature:
 
 ```go
-// takes the data as input and returns the new data which will then be passed onto the next functions. If the function returns an error all validation will be skipped & the error will be returned
+// takes the data as input and returns the new data which will then be passed onto the next functions.
+// The function may return an error or a ZogIssue. In this case all validation will be skipped and the error will be wrapped into a ZogIssue and entire execution will return.
 type PreTransform = func(data any, ctx Ctx) (out any, err error)
 ```
 
@@ -47,49 +48,34 @@ z.Slice(z.String()).PreTransform(func(data any, ctx Ctx) (any, error) {
 
 ## Required, Default and Catch
 
-`schema.Required()` is a boolean that indicates if the field is required. If it is required and the data is a zero value the schema will return an error.
+`schema.Required()` is a boolean that indicates if the field is required. If it is required and the data is a zero value the schema will return a [ZogIssue](/errors).
 
 `schema.Default(value)` sets a default value for the field. If the data is a zero value it will be replaced with this value, this takes priority over required. Tests will still run on this value.
 
-`schema.Catch(value)` sets a catch value. If this is set it will "catch" any errors with the catch value. Meaning it will set the destination value to the catch value and exit. When this is triggered, no matter what error triggers it code will automatically jump to the [PostTransforms](#posttransforms). For more information checkout the [parsing execution structure](/core-concepts/parsing#parsing-execution-structure).
+`schema.Catch(value)` sets a catch value. If this is set it will "catch" any errors or ZogIssues with the catch value. Meaning it will set the destination value to the catch value and exit. When this is triggered, no matter what error triggers it code will automatically jump to the [PostTransforms](#posttransforms). For more information checkout the [parsing execution structure](/core-concepts/parsing#parsing-execution-structure).
 
 ## Tests
 
-A test is what zod calls a "validator". It is a struct that represents an individual validation. For example `z.String().Min(3)` is a test that checks if the string is at least 3 characters long.
+> A test is what zog calls a "validator". It is a struct that represents an individual validation. For example for the String schema `z.String()` the method `Min(3)` generates a test that checks if the string is at least 3 characters long. You can view all the default tests that come with each [schema type here.](/zog-schemas)
 
-A test is a struct that looks something like this:
 
-```go
-type Test struct {
-	ErrCode      zconst.ZogErrCode // the error code to use if the validation fails. This helps identify the type of error, for example ErrCodeMin identifies the Min() test
-	ValidateFunc TestFunc // a function that takes the data as input and returns a boolean indicating if it is valid or not
-}
-type TestFunc = func(val any, ctx Ctx) bool
-```
-
-You can view all the default tests that come with each [schema type here.](/zog-schemas)
-
-##### Creating Custom Tests
-
-There are two ways to create custom tests:
+### Test Options
+You can configure tests with `TestOptions` which modify a test in some manner. Here are some examples:
 
 ```go
-// 1. Using the `z.TestFunc()` function:
-z.String().Test(z.TestFunc("my_custom_error_code", func(data any, ctx z.Ctx) bool {
-  return data == "test"
-}))
-// 2. Using the `z.Test` struct directly:
-z.String().Test(z.Test{
-  ErrCode: "my_custom_error_code",
-  ValidateFunc: func(data any, ctx z.Ctx) bool {
-    return data == "test"
-  },
-})
+z.String().Min(3, z.Message("String must be at least 3 characters long")) // This sets the message that Zogissues will have if the validation fails
+z.String().Min(3, z.IssueCode("min_3")) // This sets the issue code that Zogissues will have if the validation fails
+z.String().Min(3, z.IssuePath("name")) // This sets the issue path that Zogissues will have if the validation fails
 ```
+
+### Creating Custom Tests
+
+You are also free to create custom tests and pass them to the `schema.Test()` and `schema.TestFunc()` methods. For more details on this checkout the [Creating Custom Tests](/custom-tests) page.
+
 
 ## PostTransforms
 
-PostTransforms is a list of function that are applied to the data after the [tests](#tests) are run. You can think of it like a `pipeline` if transformations for a specific schema. This is the function signature:
+PostTransforms is a list of function that are applied to the data after the [tests](#tests) are run. You can think of it like a `pipeline` of transformations for a specific schema. This is the function signature:
 
 ```go
 // type for functions called after validation & parsing is done

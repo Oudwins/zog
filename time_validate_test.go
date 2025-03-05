@@ -115,9 +115,9 @@ func TestTimeValidateEQ(t *testing.T) {
 
 func TestTimeValidateCustomTest(t *testing.T) {
 	now := time.Now()
-	validator := Time().Test(TestFunc("custom_test", func(val any, ctx ParseCtx) bool {
+	validator := Time().TestFunc(func(val any, ctx ParseCtx) bool {
 		return val != now
-	}), Message("custom"))
+	}, Message("custom"))
 	errs := validator.Validate(&now)
 	assert.NotNil(t, errs)
 	assert.Equal(t, "custom", errs[0].Message())

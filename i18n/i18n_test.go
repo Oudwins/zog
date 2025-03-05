@@ -11,12 +11,12 @@ import (
 // Define test language maps
 var enMap = zconst.LangMap{
 	zconst.TypeString: {
-		zconst.ErrCodeRequired: "is required",
+		zconst.IssueCodeRequired: "is required",
 	},
 }
 var esMap = zconst.LangMap{
 	zconst.TypeString: {
-		zconst.ErrCodeRequired: "es requerido",
+		zconst.IssueCodeRequired: "es requerido",
 	},
 }
 
@@ -76,16 +76,29 @@ func TestSetLanguagesErrsMap(t *testing.T) {
 			var dest struct {
 				Name string
 			}
+			dest2 := struct {
+				Name string
+				Age  int
+			}{
+				Age:  1,
+				Name: tc.input["name"].(string),
+			}
 			errs := schema.Parse(tc.input, &dest, zog.WithCtxValue(LangKey, tc.lang))
+			errs2 := schema.Validate(&dest2, zog.WithCtxValue(LangKey, tc.lang))
 
 			if tc.expectedErr {
 				assert.NotNil(t, errs, "Expected errors, got nil")
+				assert.NotNil(t, errs2, "Expected errors, got nil")
 
 				nameErrs, ok := errs["name"]
 				assert.True(t, ok, "Expected errors for 'name' field")
 				assert.NotEmpty(t, nameErrs, "Expected at least one error for 'name' field")
-
 				assert.Equal(t, tc.expected, nameErrs[0].Message(), "Unexpected error message")
+
+				nameErrs2, ok2 := errs2["name"]
+				assert.True(t, ok2, "Expected errors for 'name' field")
+				assert.NotEmpty(t, nameErrs2, "Expected at least one error for 'name' field")
+				assert.Equal(t, tc.expected, nameErrs2[0].Message(), "Unexpected error message")
 			} else {
 				assert.Nil(t, errs, "Expected no errors, got: %v", errs)
 			}

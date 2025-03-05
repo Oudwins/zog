@@ -10,18 +10,19 @@ Killer Features:
 
 - Concise yet expressive schema interface, equipped to model simple to complex data models
 - **[Zod](https://github.com/colinhacks/zod)-like API**, use method chaining to build schemas in a typesafe manner
-- **Extensible**: add your own validators, schemas and data providers
-- Rich error details, make debugging a breeze
-- Almost no reflection when using primitive types
+- **Extensible**: add your own Tests and Schemas
+- **Rich errors** with detailed context, make debugging a breeze
+- **Fast**: Zog is one of the fastest Go validation libraries. We are just behind the goplayground/validator for most of the [govalidbench](https://github.com/Oudwins/govalidbench/tree/master) benchmarks.
 - **Built-in coercion** support for most types
 - Zero dependencies!
-- **Three Helper Packages**
+- **Four Helper Packages**
   - **zenv**: parse environment variables
   - **zhttp**: parse http forms & query params
+  - **zjson**: parse json
   - **i18n**: Opinionated solution to good i18n zog errors
 
 > **API Stability:**
 >
 > - I will consider the API stable when we reach v1.0.0
-> - However, I believe very little API changes will happen from the current implementation. The APIs are are most likely to change are the **data providers** (please don't make your own if possible use the helpers whose APIs will not change meaningfully) and the Ctx most other APIs should remain the same
-> - Zog will not respect semver until v1.0.0 is released. Expect breaking changes (mainly in non basic apis) until then.
+> - However, I believe very little API changes will happen from the current implementation. The APIs most likely to change are the **data providers** (please don't make your own if possible use the helpers whose APIs will not change meaningfully) and the z.Ctx most other APIs should remain the same. I could be wrong but I don't expect many breaking changes.
+> - Zog will not respect semver until v1.0.0 is released. Consider each minor version to potentially have breaking changes until then.

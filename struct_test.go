@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	p "github.com/Oudwins/zog/internals"
+	"github.com/Oudwins/zog/tutils"
 	"github.com/Oudwins/zog/zconst"
 	"github.com/stretchr/testify/assert"
 )
@@ -116,19 +116,16 @@ func TestStructOptional(t *testing.T) {
 		Tim time.Time
 	}
 
-	var objSchema = Struct(Schema{
+	var objSchema = Ptr(Struct(Schema{
 		"str": String().Required(),
 		"in":  Int().Required(),
 		"fl":  Float().Required(),
 		"bol": Bool().Required(),
 		"tim": Time().Required(),
-	}).Required().Optional() // should override required
+	}))
 
 	var o TestStruct
-	var m = map[string]any{}
-	dp := p.NewMapDataProvider(m)
-	dp = dp.GetNestedProvider("str")
-	errs := objSchema.Parse(dp, &o)
+	errs := objSchema.Parse(nil, &o)
 	assert.Nil(t, errs)
 }
 
@@ -148,16 +145,21 @@ func TestStructCustomTestInSchema(t *testing.T) {
 	// Create a schema with a custom test
 	schema := Struct(Schema{
 		"str": String().Required(),
-		"num": Int().Test(TestFunc("customTest", customTest)),
+		"num": Int().TestFunc(customTest),
 	})
 
 	var obj CustomStruct
 	data := map[string]any{
 		"str": "hello",
-		"num": 10,
+		"num": -1,
 	}
 
 	errs := schema.Parse(data, &obj)
+	assert.NotNil(t, errs)
+	tutils.VerifyDefaultIssueMessagesMap(t, errs)
+
+	data["num"] = 10
+	errs = schema.Parse(data, &obj)
 	assert.Nil(t, errs)
 	assert.Equal(t, obj.Str, "hello")
 	assert.Equal(t, obj.Num, 10)
@@ -170,10 +172,10 @@ func TestStructCustomTest(t *testing.T) {
 
 	schema := Struct(Schema{
 		"str": String(),
-	}).Test(TestFunc("customTest", func(val any, ctx ParseCtx) bool {
+	}).TestFunc(func(val any, ctx ParseCtx) bool {
 		s := val.(*CustomStruct)
 		return s.Str == "valid"
-	}), Message("customTest"))
+	}, Message("customTest"))
 
 	var obj CustomStruct
 	data := map[string]any{
@@ -182,7 +184,7 @@ func TestStructCustomTest(t *testing.T) {
 
 	errs := schema.Parse(data, &obj)
 	assert.NotNil(t, errs)
-	assert.Equal(t, "customTest", errs["$root"][0].Code())
+	// assert.Equal(t, "customTest", errs["$root"][0].Code())
 	assert.Equal(t, "customTest", errs["$root"][0].Message())
 	data["str"] = "valid"
 	errs = schema.Parse(data, &obj)
@@ -209,13 +211,20 @@ func TestStructFromIssue(t *testing.T) {
 		Password string `zog:"password"`
 	}
 	schema := Struct(Schema{
-		"nombre":   String().Required(Message("this doesn't display even if validation fails")),
+		"nombre":   String().Required(),
 		"apellido": String().Required(),
 		"email":    String().Required(),
 		"aluID":    Int().Required(),
 		"password": String().Required(),
 	})
-	errs := schema.Parse(data, &output)
+
+	// Test with missing fields
+	errs := schema.Parse(map[string]any{}, &output)
+	assert.NotNil(t, errs)
+	tutils.VerifyDefaultIssueMessagesMap(t, errs)
+
+	// Test with valid data
+	errs = schema.Parse(data, &output)
 	assert.Nil(t, errs)
 	assert.Equal(t, "Juan", output.Nombre)
 	assert.Equal(t, "Perez", output.Apellido)
@@ -296,14 +305,14 @@ func TestStructPostTransforms(t *testing.T) {
 	assert.Equal(t, "post_original", output.Value)
 }
 
-func TestStructRequired(t *testing.T) {
+func TestStructPassThroughRequired(t *testing.T) {
 	type TestStruct struct {
 		Somefield string
 	}
 
 	schema := Struct(Schema{
 		"somefield": String().Required(),
-	}).Required(Message("custom_required"))
+	})
 
 	var output TestStruct
 	data := map[string]any{
@@ -316,8 +325,9 @@ func TestStructRequired(t *testing.T) {
 	var output2 TestStruct
 	errs = schema.Parse(nil, &output2)
 	assert.NotNil(t, errs)
+	tutils.VerifyDefaultIssueMessagesMap(t, errs)
 	assert.NotEmpty(t, errs["$root"])
-	assert.Equal(t, "custom_required", errs["$root"][0].Message())
+	assert.NotEmpty(t, errs["somefield"])
 }
 
 type Custom int

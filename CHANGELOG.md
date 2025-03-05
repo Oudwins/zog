@@ -1,5 +1,127 @@
 # Changelog
 
+## [0.17.2](https://github.com/Oudwins/zog/compare/v0.17.1...v0.17.2) (2025-03-02)
+
+
+### Performance Improvements
+
+* removed allocation for struct schemas ([4cd379c](https://github.com/Oudwins/zog/commit/4cd379c114877200105193a00fd76d08197b4236))
+
+## [0.17.1](https://github.com/Oudwins/zog/compare/v0.17.0...v0.17.1) (2025-02-28)
+
+
+### Performance Improvements
+
+* removed one allocation per schema ([14f3511](https://github.com/Oudwins/zog/commit/14f3511bb2a18750d429133c77504c05e09d2777))
+
+## [0.17.0](https://github.com/Oudwins/zog/compare/v0.16.6...v0.17.0) (2025-02-22)
+
+
+### Features
+
+* new schemas, float32, int64, int32 ([#108](https://github.com/Oudwins/zog/issues/108)) ([0e57a5b](https://github.com/Oudwins/zog/commit/0e57a5b7ef591ebf251176c6532490abcf3b78e1))
+* number schema now supports any number ([#110](https://github.com/Oudwins/zog/issues/110)) ([6af9605](https://github.com/Oudwins/zog/commit/6af96054200e26bb18077dc3bd384be813296d3c))
+
+## [0.16.6](https://github.com/Oudwins/zog/compare/v0.16.5...v0.16.6) (2025-02-21)
+
+
+### Bug Fixes
+
+* delete method also only allows for parsing of query params just like GET and HEAD with zhttp ([6bc7636](https://github.com/Oudwins/zog/commit/6bc763695061683acb51fbf81c1ae965e2d43546))
+* zhttp GET request with json or form content type still fetches from params ([867cd06](https://github.com/Oudwins/zog/commit/867cd063414e622e0561a2e302a34999e621adab))
+
+
+### Performance Improvements
+
+* slice pathbuilder for fewer allocations ([a20f5e2](https://github.com/Oudwins/zog/commit/a20f5e2678007b20832f4d38e1e3683ca49d95e9))
+* slice pathbuilder for fewer allocations ([a20f5e2](https://github.com/Oudwins/zog/commit/a20f5e2678007b20832f4d38e1e3683ca49d95e9))
+
+## [0.16.5](https://github.com/Oudwins/zog/compare/v0.16.4...v0.16.5) (2025-02-20)
+
+
+### Performance Improvements
+
+* removed string sync pool since it has worse performance ([#103](https://github.com/Oudwins/zog/issues/103)) ([602c146](https://github.com/Oudwins/zog/commit/602c14657bc683ffc920f830d7b6092b29bd2efd))
+
+## [0.16.4](https://github.com/Oudwins/zog/compare/v0.16.3...v0.16.4) (2025-02-20)
+
+
+### Bug Fixes
+
+* panic on single letter query param zhttp ([#101](https://github.com/Oudwins/zog/issues/101)) ([cd8d172](https://github.com/Oudwins/zog/commit/cd8d172d30723dafd18167d598e8c6f70417e3e9))
+* zhttp supports more complex content type strings ([#99](https://github.com/Oudwins/zog/issues/99)) ([9460ea2](https://github.com/Oudwins/zog/commit/9460ea285d91dc50a973d7a4d83bcf754559c0b3))
+
+
+### Performance Improvements
+
+* string builder for default langmap replaceble placeholders ([#102](https://github.com/Oudwins/zog/issues/102)) ([8f3c881](https://github.com/Oudwins/zog/commit/8f3c881530995960d98132e1f96a2d582f742b58))
+
+## [0.16.3](https://github.com/Oudwins/zog/compare/v0.16.2...v0.16.3) (2025-02-20)
+
+
+### Performance Improvements
+
+* internal tests for primitive values now use pointers. User tests are unaffected ([#97](https://github.com/Oudwins/zog/issues/97)) ([6d3a234](https://github.com/Oudwins/zog/commit/6d3a2345b49461b6b089e4f91366760940afec05))
+
+## [0.16.2](https://github.com/Oudwins/zog/compare/v0.16.1...v0.16.2) (2025-02-19)
+
+
+### Performance Improvements
+
+* issues syncpool and issues.Collect function to collect issues into sync pool ([#93](https://github.com/Oudwins/zog/issues/93)) ([91d6b3e](https://github.com/Oudwins/zog/commit/91d6b3e49bf11af4cfcbd97c0a02be5da478504f))
+
+## [0.16.1](https://github.com/Oudwins/zog/compare/v0.16.0...v0.16.1) (2025-02-19)
+
+
+### Features
+
+* Params Option ([#90](https://github.com/Oudwins/zog/issues/90)) ([05823ab](https://github.com/Oudwins/zog/commit/05823abb1658ae70921b294efb2d498afb913278))
+
+
+### Performance Improvements
+
+* implemented syncpool for internal structures ([#91](https://github.com/Oudwins/zog/issues/91)) ([f1717f6](https://github.com/Oudwins/zog/commit/f1717f62ad5a9ad4f27c9e8de4f194460dd3f3a5))
+
+
+### Miscellaneous Chores
+
+* release 0.16.1 ([6d416fa](https://github.com/Oudwins/zog/commit/6d416faac3d86c1ddd62743cfc6323fe915b51a1))
+
+## [0.16.0](https://github.com/Oudwins/zog/compare/v0.15.1...v0.16.0) (2025-02-11)
+
+
+### ⚠ BREAKING CHANGES
+
+* structs can no longer be required or optional. Define this in the fields instead. If you need to model a struct that might exist use a pointer to a struct. This should not affect most users as now it works how everyone intuitively thought it worked. ([#88](https://github.com/Oudwins/zog/issues/88))
+* renamed ZogError to ZogIssue to be more aligned with Zod. Deprecated a bunch of APIs for naming consistency. conf.ErrorFormatter removed in favor of conf.IssueFormatter ([#86](https://github.com/Oudwins/zog/issues/86))
+
+### Features
+
+* new test option to set the issue path for issues generated from that test ([#87](https://github.com/Oudwins/zog/issues/87)) ([47d24a1](https://github.com/Oudwins/zog/commit/47d24a115fd94198447fed8df04690bf019f305c))
+* testFunc method on schemas for easier custom tests ([#82](https://github.com/Oudwins/zog/issues/82)) ([52a90eb](https://github.com/Oudwins/zog/commit/52a90eb197b5380499319c1e29cf61ae1665e3e1))
+
+
+### Bug Fixes
+
+* structs can no longer be required or optional. Define this in the fields instead. If you need to model a struct that might exist use a pointer to a struct. This should not affect most users as now it works how everyone intuitively thought it worked. ([#88](https://github.com/Oudwins/zog/issues/88)) ([9681ebb](https://github.com/Oudwins/zog/commit/9681ebb691a2cfa188f0fc539024cec2cacfcaa3))
+
+
+### Miscellaneous Chores
+
+* release 0.16.0 ([3a222d0](https://github.com/Oudwins/zog/commit/3a222d06fc3ff463aa958165dd23b0cf612ec9a3))
+
+
+### Code Refactoring
+
+* renamed ZogError to ZogIssue to be more aligned with Zod. Deprecated a bunch of APIs for naming consistency. conf.ErrorFormatter removed in favor of conf.IssueFormatter ([#86](https://github.com/Oudwins/zog/issues/86)) ([49f01e3](https://github.com/Oudwins/zog/commit/49f01e3b6d522da9edb44bb076f4bd9baa7957f4))
+
+## [0.15.1](https://github.com/Oudwins/zog/compare/v0.15.0...v0.15.1) (2025-02-09)
+
+
+### Bug Fixes
+
+* ZogErr Value() doesn't return underlying value ([#77](https://github.com/Oudwins/zog/issues/77)) ([1f7d2ff](https://github.com/Oudwins/zog/commit/1f7d2ff58b9d5a02b6bdd5a70c709e8dc40eadc5))
+
 ## [0.15.0](https://github.com/Oudwins/zog/compare/v0.14.1...v0.15.0) (2025-02-03)
 
 
@@ -17,7 +139,7 @@
 
 ### Bug Fixes
 
-* Schemas are now public. New complex & primtive schema interfaces ([#64](https://github.com/Oudwins/zog/issues/64)) ([9e659e5](https://github.com/Oudwins/zog/commit/9e659e50b508418c1faaeccf7cc57b7c3b1cbb98))
+* Schemas are now public. New complex & primitive schema interfaces ([#64](https://github.com/Oudwins/zog/issues/64)) ([9e659e5](https://github.com/Oudwins/zog/commit/9e659e50b508418c1faaeccf7cc57b7c3b1cbb98))
 
 ## [0.14.0](https://github.com/Oudwins/zog/compare/v0.13.0...v0.14.0) (2025-01-02)
 

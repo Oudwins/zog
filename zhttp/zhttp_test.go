@@ -35,7 +35,7 @@ func TestRequest(t *testing.T) {
 		"age":       z.Int().GT(18),
 		"isMarried": z.Bool().True(),
 		"lights":    z.Bool().True(),
-		"cash":      z.Float().GT(10.0),
+		"cash":      z.Float64().GT(10.0),
 		"swagger": z.String().Test(z.TestFunc("swagger", func(val any, ctx z.Ctx) bool {
 			return val.(string) == "doweird"
 		})),
@@ -56,7 +56,7 @@ func TestRequest(t *testing.T) {
 }
 
 func TestRequestParams(t *testing.T) {
-	formData := "name=JohnDoe&email=john@doe.com&age=30&isMarried=true&lights=on&cash=10.5&swagger=doweird&swagger=swagger"
+	formData := "name=JohnDoe&email=john@doe.com&age=30&isMarried=true&lights=on&cash=10.5&swagger=doweird&swagger=swagger&q=test"
 
 	// Create a fake HTTP request with form data
 	req, err := http.NewRequest("POST", "/submit?"+formData, nil)
@@ -72,6 +72,7 @@ func TestRequestParams(t *testing.T) {
 		Lights    bool     `param:"lights"`
 		Cash      float64  `param:"cash"`
 		Swagger   []string `param:"swagger"`
+		Q         string   `zog:"q"`
 	}
 
 	schema := z.Struct(z.Schema{
@@ -80,9 +81,10 @@ func TestRequestParams(t *testing.T) {
 		"age":       z.Int().GT(18),
 		"isMarried": z.Bool().True(),
 		"lights":    z.Bool().True(),
-		"cash":      z.Float().GT(10.0),
+		"cash":      z.Float64().GT(10.0),
 		"swagger": z.Slice(
 			z.String().Min(1)).Min(2),
+		"q": z.String().Required(),
 	})
 	u := User{}
 	dp := Request(req)
@@ -96,6 +98,103 @@ func TestRequestParams(t *testing.T) {
 	assert.True(t, u.Lights)
 	assert.Equal(t, 10.5, u.Cash)
 	assert.Equal(t, u.Swagger, []string{"doweird", "swagger"})
+	assert.Equal(t, "test", u.Q)
+	assert.Empty(t, errs)
+}
+
+func TestRequestParamsOnJsonContentType(t *testing.T) {
+	formData := "name=JohnDoe&email=john@doe.com&age=30&isMarried=true&lights=on&cash=10.5&swagger=doweird&swagger=swagger&q=test"
+
+	// Create a fake HTTP request with form data
+	req, err := http.NewRequest("GET", "/submit?"+formData, nil)
+	req.Header.Set("Content-Type", "application/json")
+	if err != nil {
+		t.Fatalf("Error creating request: %v", err)
+	}
+
+	type User struct {
+		Email     string   `param:"email"`
+		Name      string   `param:"name"`
+		Age       int      `param:"age"`
+		IsMarried bool     `param:"isMarried"`
+		Lights    bool     `param:"lights"`
+		Cash      float64  `param:"cash"`
+		Swagger   []string `param:"swagger"`
+		Q         string   `zog:"q"`
+	}
+
+	schema := z.Struct(z.Schema{
+		"email":     z.String().Email(),
+		"name":      z.String().Min(3).Max(10),
+		"age":       z.Int().GT(18),
+		"isMarried": z.Bool().True(),
+		"lights":    z.Bool().True(),
+		"cash":      z.Float64().GT(10.0),
+		"swagger": z.Slice(
+			z.String().Min(1)).Min(2),
+		"q": z.String().Required(),
+	})
+	u := User{}
+	dp := Request(req)
+	assert.Nil(t, err)
+	errs := schema.Parse(dp, &u)
+
+	assert.Equal(t, "john@doe.com", u.Email)
+	assert.Equal(t, "JohnDoe", u.Name)
+	assert.Equal(t, 30, u.Age)
+	assert.True(t, u.IsMarried)
+	assert.True(t, u.Lights)
+	assert.Equal(t, 10.5, u.Cash)
+	assert.Equal(t, u.Swagger, []string{"doweird", "swagger"})
+	assert.Equal(t, "test", u.Q)
+	assert.Empty(t, errs)
+}
+
+func TestRequestParamsOnDeleteMethodWithJsonContentType(t *testing.T) {
+	formData := "name=JohnDoe&email=john@doe.com&age=30&isMarried=true&lights=on&cash=10.5&swagger=doweird&swagger=swagger&q=test"
+
+	// Create a fake HTTP request with form data
+	req, err := http.NewRequest("DELETE", "/submit?"+formData, nil)
+	req.Header.Set("Content-Type", "application/json")
+	if err != nil {
+		t.Fatalf("Error creating request: %v", err)
+	}
+
+	type User struct {
+		Email     string   `param:"email"`
+		Name      string   `param:"name"`
+		Age       int      `param:"age"`
+		IsMarried bool     `param:"isMarried"`
+		Lights    bool     `param:"lights"`
+		Cash      float64  `param:"cash"`
+		Swagger   []string `param:"swagger"`
+		Q         string   `zog:"q"`
+	}
+
+	schema := z.Struct(z.Schema{
+		"email":     z.String().Email(),
+		"name":      z.String().Min(3).Max(10),
+		"age":       z.Int().GT(18),
+		"isMarried": z.Bool().True(),
+		"lights":    z.Bool().True(),
+		"cash":      z.Float64().GT(10.0),
+		"swagger": z.Slice(
+			z.String().Min(1)).Min(2),
+		"q": z.String().Required(),
+	})
+	u := User{}
+	dp := Request(req)
+	assert.Nil(t, err)
+	errs := schema.Parse(dp, &u)
+
+	assert.Equal(t, "john@doe.com", u.Email)
+	assert.Equal(t, "JohnDoe", u.Name)
+	assert.Equal(t, 30, u.Age)
+	assert.True(t, u.IsMarried)
+	assert.True(t, u.Lights)
+	assert.Equal(t, 10.5, u.Cash)
+	assert.Equal(t, u.Swagger, []string{"doweird", "swagger"})
+	assert.Equal(t, "test", u.Q)
 	assert.Empty(t, errs)
 }
 
@@ -192,6 +291,17 @@ func TestParseJsonValid(t *testing.T) {
 	assert.Equal(t, float64(30), dp.Get("age"))
 }
 
+func TestParseJsonWithComplexContentType(t *testing.T) {
+	jsonData := `{"name":"John","age":30}`
+	req, _ := http.NewRequest("POST", "/test", strings.NewReader(jsonData))
+	req.Header.Set("Content-Type", "application/json; charset=utf-8")
+
+	dp, err := Config.Parsers.JSON(req)()
+	assert.Nil(t, err)
+	assert.Equal(t, "John", dp.Get("name"))
+	assert.Equal(t, float64(30), dp.Get("age"))
+}
+
 func TestParseJsonInvalid(t *testing.T) {
 	invalidJSON := `{"name":"John","age":30`
 	req, _ := http.NewRequest("POST", "/test", strings.NewReader(invalidJSON))
@@ -201,7 +311,7 @@ func TestParseJsonInvalid(t *testing.T) {
 
 	assert.Error(t, err)
 	assert.Nil(t, dp)
-	assert.Equal(t, zconst.ErrCodeInvalidJSON, err.Code())
+	assert.Equal(t, zconst.IssueCodeInvalidJSON, err.Code())
 }
 
 func TestParseJsonWithNilValue(t *testing.T) {
@@ -221,7 +331,58 @@ func TestParseJsonWithEmptyObject(t *testing.T) {
 
 	dp, err := Config.Parsers.JSON(req)()
 	assert.Nil(t, err)
-	assert.Equal(t, map[string]any{}, dp.GetUnderlying())
+	assert.Nil(t, dp)
+}
+
+func TestParseDeeplyNestedJson(t *testing.T) {
+	schema := z.Struct(z.Schema{
+		"name": z.String().Required(),
+		"nested1": z.Struct(z.Schema{
+			"name": z.String().Required(),
+			"nested3": z.Ptr(z.Struct(z.Schema{
+				"name": z.String().Required(),
+			})),
+		}),
+	})
+	type User struct {
+		Name    string `json:"name"`
+		Nested1 struct {
+			Name    string `json:"name"`
+			Nested3 *struct {
+				Name string `json:"name"`
+			} `json:"nested3"`
+		} `json:"nested1"`
+	}
+
+	jsonData := `{"name":"John","nested1":{"name":"nested1"}}`
+	req, _ := http.NewRequest("POST", "/test", strings.NewReader(jsonData))
+	req.Header.Set("Content-Type", "application/json")
+
+	user := User{}
+	errs := schema.Parse(Request(req), &user)
+	assert.Nil(t, errs)
+	assert.Equal(t, "John", user.Name)
+	assert.Equal(t, "nested1", user.Nested1.Name)
+	assert.Nil(t, user.Nested1.Nested3)
+
+}
+
+func TestTopLevelOptionalStruct(t *testing.T) {
+	schema := z.Ptr(z.Struct(z.Schema{
+		"name": z.String().Required(),
+	}))
+
+	type User struct {
+		Name string `json:"name"`
+	}
+
+	jsonData := `{}`
+	req, _ := http.NewRequest("POST", "/test", strings.NewReader(jsonData))
+	req.Header.Set("Content-Type", "application/json")
+
+	user := &User{}
+	errs := schema.Parse(Request(req), &user)
+	assert.Nil(t, errs)
 }
 
 func TestForm(t *testing.T) {

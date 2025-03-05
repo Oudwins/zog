@@ -4,6 +4,7 @@ import (
 	"regexp"
 	"testing"
 
+	"github.com/Oudwins/zog/tutils"
 	"github.com/Oudwins/zog/zconst"
 	"github.com/stretchr/testify/assert"
 )
@@ -21,6 +22,7 @@ func TestValidateStringOptionalByDefault(t *testing.T) {
 
 	errs = field.Validate(&dest)
 	assert.NotEmpty(t, errs)
+	tutils.VerifyDefaultIssueMessages(t, errs)
 
 	field.Required().Optional()
 }
@@ -91,6 +93,7 @@ func TestValidateStringPostTransform(t *testing.T) {
 	dest = "short"
 	errs = field.Validate(&dest)
 	assert.NotEmpty(t, errs)
+	tutils.VerifyDefaultIssueMessages(t, errs)
 	assert.NotEqual(t, "short_transformed", dest)
 }
 
@@ -101,12 +104,13 @@ func TestValidateStringRequiredAborts(t *testing.T) {
 	errs := field.Validate(&dest)
 	assert.NotEmpty(t, errs)
 	assert.Len(t, errs, 1)
+	tutils.VerifyDefaultIssueMessages(t, errs)
 }
 
-func TestValidateStringUserTests(t *testing.T) {
-	field := String().Test(TestFunc("test", func(val any, ctx ParseCtx) bool {
+func TestValidateStringCustomTest(t *testing.T) {
+	field := String().TestFunc(func(val any, ctx ParseCtx) bool {
 		return val == "test"
-	}), Message("Invalid"))
+	}, Message("Invalid"))
 
 	var dest string = "test"
 
@@ -171,7 +175,7 @@ func TestValidateStringCatch(t *testing.T) {
 // VALIDATORS / Tests / Validators
 
 func TestValidateStringLength(t *testing.T) {
-	field := String().Len(3, Message("custom length"))
+	field := String().Len(3)
 	var dest string = "foo"
 
 	errs := field.Validate(&dest)
@@ -182,17 +186,17 @@ func TestValidateStringLength(t *testing.T) {
 	dest = "foobar"
 	errs = field.Validate(&dest)
 	assert.NotEmpty(t, errs)
-	assert.Equal(t, "custom length", errs[0].Message())
+	tutils.VerifyDefaultIssueMessages(t, errs)
 
-	field = String().Min(5, Message("custom min")).Max(7, Message("custom max"))
+	field = String().Min(5).Max(7)
 	dest = "123456789"
 	errs = field.Validate(&dest)
 	assert.NotEmpty(t, errs)
-	assert.Equal(t, "custom max", errs[0].Message())
+	tutils.VerifyDefaultIssueMessages(t, errs)
 
 	assert.Equal(t, "123456789", dest)
 
-	field = String().Min(5, Message("custom min")).Max(7, Message("custom max"))
+	field = String().Min(5).Max(7)
 	dest = "1234567"
 	errs = field.Validate(&dest)
 	assert.Empty(t, errs)
@@ -201,12 +205,12 @@ func TestValidateStringLength(t *testing.T) {
 }
 
 func TestValidateStringEmail(t *testing.T) {
-	field := String().Email(Message("custom email"))
+	field := String().Email()
 	var dest string = "not an email"
 
 	errs := field.Validate(&dest)
 	assert.NotEmpty(t, errs)
-	assert.Equal(t, "custom email", errs[0].Message())
+	tutils.VerifyDefaultIssueMessages(t, errs)
 
 	dest = "test@example.com"
 	errs = field.Validate(&dest)
@@ -216,12 +220,12 @@ func TestValidateStringEmail(t *testing.T) {
 }
 
 func TestValidateStringURL(t *testing.T) {
-	field := String().URL(Message("custom url"))
+	field := String().URL()
 	var dest string = "not a url"
 
 	errs := field.Validate(&dest)
 	assert.NotEmpty(t, errs)
-	assert.Equal(t, "custom url", errs[0].Message())
+	tutils.VerifyDefaultIssueMessages(t, errs)
 
 	dest = "http://example.com"
 	errs = field.Validate(&dest)
@@ -231,12 +235,12 @@ func TestValidateStringURL(t *testing.T) {
 }
 
 func TestValidateStringHasPrefix(t *testing.T) {
-	field := String().HasPrefix("pre", Message("custom prefix"))
+	field := String().HasPrefix("pre")
 	var dest string = "not prefixed"
 
 	errs := field.Validate(&dest)
 	assert.NotEmpty(t, errs)
-	assert.Equal(t, "custom prefix", errs[0].Message())
+	tutils.VerifyDefaultIssueMessages(t, errs)
 
 	dest = "prefix"
 	errs = field.Validate(&dest)
@@ -246,12 +250,12 @@ func TestValidateStringHasPrefix(t *testing.T) {
 }
 
 func TestValidateStringHasPostfix(t *testing.T) {
-	field := String().HasSuffix("fix", Message("custom suffix"))
+	field := String().HasSuffix("fix")
 	var dest string = "not postfixed"
 
 	errs := field.Validate(&dest)
 	assert.NotEmpty(t, errs)
-	assert.Equal(t, "custom suffix", errs[0].Message())
+	tutils.VerifyDefaultIssueMessages(t, errs)
 
 	dest = "postfix"
 	errs = field.Validate(&dest)

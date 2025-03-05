@@ -3,6 +3,8 @@ package zog
 import (
 	"testing"
 
+	"github.com/Oudwins/zog/tutils"
+	"github.com/Oudwins/zog/zconst"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -20,6 +22,19 @@ func TestValidatePtrPrimitive(t *testing.T) {
 	assert.Panics(t, func() {
 		s.Validate(nil)
 	})
+}
+
+func TestPtrValidateFormatter(t *testing.T) {
+	var dest *int
+	fmt := WithIssueFormatter(func(e ZogIssue, ctx Ctx) {
+		e.SetMessage("test2")
+	})
+	validator := Ptr(Int().GTE(10)).NotNil(Message("test1"))
+	errs := validator.Validate(&dest, fmt)
+	assert.Equal(t, "test1", errs[zconst.ISSUE_KEY_ROOT][0].Message())
+	validator2 := Ptr(Int()).NotNil()
+	errs2 := validator2.Validate(&dest, fmt)
+	assert.Equal(t, "test2", errs2[zconst.ISSUE_KEY_ROOT][0].Message())
 }
 
 func TestValidatePtrInStruct(t *testing.T) {
@@ -82,17 +97,17 @@ func TestValidatePtrNestedStructs(t *testing.T) {
 }
 
 func TestValidatePtrInSlice(t *testing.T) {
-	schema := Slice(Ptr(Int()).NotNil(Message("Testing")))
+	schema := Slice(Ptr(Int()).NotNil())
 	v1, v2, v3 := 10, 20, 30
 	var v4 *int
 	out := []*int{&v1, &v2, &v3, v4}
 
 	errs := schema.Validate(&out)
 	assert.NotEmpty(t, errs)
+	tutils.VerifyDefaultIssueMessagesMap(t, errs)
 	assert.Equal(t, 10, *out[0])
 	assert.Equal(t, 20, *out[1])
 	assert.Equal(t, 30, *out[2])
-	assert.Equal(t, "Testing", errs["[3]"][0].Message())
 }
 
 func TestValidatePtrSliceStruct(t *testing.T) {
@@ -117,11 +132,15 @@ func TestValidatePtrSliceStruct(t *testing.T) {
 }
 
 func TestValidatePtrRequired(t *testing.T) {
-	schema := Ptr(String()).NotNil(Message("Testing"))
+	schema := Ptr(String())
 	var dest *string
 	errs := schema.Validate(&dest)
+	assert.Empty(t, errs)
+
+	schema = Ptr(String()).NotNil()
+	errs = schema.Validate(&dest)
 	assert.NotEmpty(t, errs)
-	assert.Equal(t, "Testing", errs[0].Message())
+	tutils.VerifyDefaultIssueMessagesMap(t, errs)
 
 	str := "test"
 	dest = &str

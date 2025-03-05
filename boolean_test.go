@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	p "github.com/Oudwins/zog/internals"
+	"github.com/Oudwins/zog/tutils"
 	"github.com/Oudwins/zog/zconst"
 	"github.com/stretchr/testify/assert"
 )
@@ -44,6 +45,9 @@ func TestBoolParse(t *testing.T) {
 			if len(errs) > 0 && !test.expectErr {
 				t.Errorf("Unexpected errors i = %d: %v", i, errs)
 			}
+			if len(errs) > 0 {
+				tutils.VerifyDefaultIssueMessages(t, errs)
+			}
 
 			if result != test.expected {
 				t.Errorf("Expected %v, but got %v", test.expected, result)
@@ -63,14 +67,14 @@ func TestBoolSchemaOption(t *testing.T) {
 	assert.Equal(t, true, result)
 }
 
-func TestParsingOption(t *testing.T) {
+func TestExecOption(t *testing.T) {
 	t.Run("Parse context is passed to parsing option", func(t *testing.T) {
 		boolProc := Bool()
 		var result bool
 		var contextPassed bool
 
 		// Create a fake parsing option that checks if it receives a ParseCtx
-		fakeOption := func(p *p.ZogParseCtx) {
+		fakeOption := func(p *p.ExecCtx) {
 			if p != nil {
 				contextPassed = true
 			}
@@ -112,7 +116,7 @@ func TestBoolRequired(t *testing.T) {
 		},
 	}
 
-	boolProc := Bool().Required()
+	boolProc := Bool().Required(Message("test"))
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
@@ -121,6 +125,10 @@ func TestBoolRequired(t *testing.T) {
 
 			if (len(errs) > 0) != test.expectErr {
 				t.Errorf("On Run %s -> Expected error: %v, got: %v", test.name, test.expectErr, errs)
+			}
+
+			if test.expectErr && errs[0].Message() != "test" {
+				t.Errorf("On Run %s -> Expected error: %v, got: %v", test.name, "test", errs[0].Message())
 			}
 
 			if !test.expectErr && result != test.expected {
@@ -163,6 +171,10 @@ func TestBoolOptional(t *testing.T) {
 
 			if (len(errs) > 0) != test.expectErr {
 				t.Errorf("Expected error: %v, got: %v", test.expectErr, errs)
+			}
+
+			if len(errs) > 0 {
+				tutils.VerifyDefaultIssueMessages(t, errs)
 			}
 
 			if result != test.expected {
@@ -214,6 +226,10 @@ func TestBoolDefault(t *testing.T) {
 
 			if (len(errs) > 0) != test.expectErr {
 				t.Errorf("%s -> Expected error: %v, got: %v", test.name, test.expectErr, errs)
+			}
+
+			if len(errs) > 0 {
+				tutils.VerifyDefaultIssueMessages(t, errs)
 			}
 
 			if result != test.expected {
@@ -269,6 +285,10 @@ func TestBoolCatch(t *testing.T) {
 				t.Errorf("%s -> Expected error: %v, got: %v", test.name, test.expectErr, errs)
 			}
 
+			if len(errs) > 0 {
+				tutils.VerifyDefaultIssueMessages(t, errs)
+			}
+
 			if result != test.expected {
 				t.Errorf("%s -> Expected %v, but got %v", test.name, test.expected, result)
 			}
@@ -307,6 +327,10 @@ func TestBoolTrue(t *testing.T) {
 				t.Errorf("Expected error: %v, got: %v", test.expectErr, errs)
 			}
 
+			if len(errs) > 0 {
+				tutils.VerifyDefaultIssueMessages(t, errs)
+			}
+
 			if result != test.expected {
 				t.Errorf("Expected %v, but got %v", test.expected, result)
 			}
@@ -343,6 +367,10 @@ func TestBoolFalse(t *testing.T) {
 
 			if (len(errs) > 0) != test.expectErr {
 				t.Errorf("Expected error: %v, got: %v", test.expectErr, errs)
+			}
+
+			if len(errs) > 0 {
+				tutils.VerifyDefaultIssueMessages(t, errs)
 			}
 
 			if result != test.expected {
@@ -389,6 +417,10 @@ func TestBoolPreTransform(t *testing.T) {
 
 			if (len(errs) > 0) != test.expectErr {
 				t.Errorf("Expected error: %v, got: %v", test.expectErr, errs)
+			}
+
+			if len(errs) > 0 {
+				tutils.VerifyDefaultIssueMessages(t, errs)
 			}
 
 			if result != test.expected {
@@ -446,8 +478,49 @@ func TestBoolPostTransform(t *testing.T) {
 				t.Errorf("Expected error: %v, got: %v", test.expectErr, errs)
 			}
 
+			if len(errs) > 0 {
+				tutils.VerifyDefaultIssueMessages(t, errs)
+			}
+
 			if result != test.expected {
 				t.Errorf("Expected %v, but got %v", test.expected, result)
+			}
+		})
+	}
+}
+
+func TestBoolCustomTest(t *testing.T) {
+	validator := Bool().TestFunc(func(val any, ctx Ctx) bool {
+		// Custom test logic here
+		return val == true
+	}, Message("custom"))
+
+	tests := []struct {
+		name      string
+		input     bool
+		expectErr bool
+	}{
+		{
+			name:      "valid true value",
+			input:     true,
+			expectErr: false,
+		},
+		{
+			name:      "invalid false value",
+			input:     false,
+			expectErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var dest bool
+			errs := validator.Parse(tt.input, &dest)
+			if (len(errs) > 0) != tt.expectErr {
+				t.Errorf("got errors %v, expectErr %v", errs, tt.expectErr)
+			}
+			if !tt.expectErr {
+				assert.Equal(t, tt.input, dest)
 			}
 		})
 	}

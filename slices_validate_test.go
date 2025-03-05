@@ -4,11 +4,12 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Oudwins/zog/tutils"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestValidateSliceRequired(t *testing.T) {
-	validator := Slice(String()).Required(Message("custom"))
+	validator := Slice(String())
 	dest := []string{"test"}
 	errs := validator.Validate(&dest)
 	if len(errs) > 0 {
@@ -16,12 +17,13 @@ func TestValidateSliceRequired(t *testing.T) {
 	}
 	assert.Equal(t, []string{"test"}, dest)
 
+	validator = validator.Required()
 	dest = []string{}
 	errs = validator.Validate(&dest)
 	if len(errs) == 0 {
 		t.Errorf("Expected errors, got none")
 	}
-	assert.Equal(t, "custom", errs["$root"][0].Message())
+	tutils.VerifyDefaultIssueMessagesMap(t, errs)
 }
 
 func TestValidateSliceOptional(t *testing.T) {
@@ -90,7 +92,7 @@ func TestValidateSlicePostTransform(t *testing.T) {
 }
 
 func TestValidateSliceLen(t *testing.T) {
-	validator := Slice(String()).Len(2, Message("custom"))
+	validator := Slice(String()).Len(2)
 	dest := []string{"test", "example"}
 	errs := validator.Validate(&dest)
 	if len(errs) > 0 {
@@ -102,11 +104,11 @@ func TestValidateSliceLen(t *testing.T) {
 	if len(errs) == 0 {
 		t.Errorf("Expected errors, got none")
 	}
-	assert.Equal(t, "custom", errs["$root"][0].Message())
+	tutils.VerifyDefaultIssueMessagesMap(t, errs)
 }
 
 func TestValidateSliceMin(t *testing.T) {
-	validator := Slice(String()).Min(2, Message("custom"))
+	validator := Slice(String()).Min(2)
 	dest := []string{"test", "example", "extra"}
 	errs := validator.Validate(&dest)
 	if len(errs) > 0 {
@@ -118,11 +120,11 @@ func TestValidateSliceMin(t *testing.T) {
 	if len(errs) == 0 {
 		t.Errorf("Expected errors, got none")
 	}
-	assert.Equal(t, "custom", errs["$root"][0].Message())
+	tutils.VerifyDefaultIssueMessagesMap(t, errs)
 }
 
 func TestValidateSliceMax(t *testing.T) {
-	validator := Slice(String()).Max(2, Message("custom"))
+	validator := Slice(String()).Max(2)
 	dest := []string{"test", "example"}
 	errs := validator.Validate(&dest)
 	if len(errs) > 0 {
@@ -134,11 +136,11 @@ func TestValidateSliceMax(t *testing.T) {
 	if len(errs) == 0 {
 		t.Errorf("Expected errors, got none")
 	}
-	assert.Equal(t, "custom", errs["$root"][0].Message())
+	tutils.VerifyDefaultIssueMessagesMap(t, errs)
 }
 
 func TestValidateSliceContains(t *testing.T) {
-	validator := Slice(String()).Contains("test", Message("custom"))
+	validator := Slice(String()).Contains("test")
 	dest := []string{"test", "example"}
 	errs := validator.Validate(&dest)
 	if len(errs) > 0 {
@@ -150,16 +152,16 @@ func TestValidateSliceContains(t *testing.T) {
 	if len(errs) == 0 {
 		t.Errorf("Expected errors, got none")
 	}
-	assert.Equal(t, "custom", errs["$root"][0].Message())
+	tutils.VerifyDefaultIssueMessagesMap(t, errs)
 }
 
 func TestValidateSliceCustomTest(t *testing.T) {
-	validator := Slice(String()).Test(TestFunc("custom_test", func(val any, ctx ParseCtx) bool {
+	validator := Slice(String()).TestFunc(func(val any, ctx ParseCtx) bool {
 		if v, ok := val.(*[]string); ok {
 			return len(*v) > 0 && (*v)[0] == "test"
 		}
 		return false
-	}), Message("custom"))
+	}, Message("custom"))
 
 	dest := []string{"test", "example"}
 	errs := validator.Validate(&dest)
@@ -173,7 +175,7 @@ func TestValidateSliceCustomTest(t *testing.T) {
 		t.Errorf("Expected errors, got none")
 	}
 	assert.Equal(t, "custom", errs["$root"][0].Message())
-	assert.Equal(t, "custom_test", errs["$root"][0].Code())
+	// assert.Equal(t, "custom_test", errs["$root"][0].Code())
 }
 
 // TODO not yet supported

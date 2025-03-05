@@ -21,15 +21,6 @@ type TimeSchema struct {
 	coercer        conf.CoercerFunc
 }
 
-// internal processes the data
-func (v *TimeSchema) process(val any, dest any, path p.PathBuilder, ctx ParseCtx) {
-	primitiveProcessor(val, dest, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, v.coercer, p.IsParseZeroValue)
-}
-
-func (v *TimeSchema) validate(val any, path p.PathBuilder, ctx ParseCtx) {
-	primitiveValidator(val, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch)
-}
-
 // Returns the type of the schema
 func (v *TimeSchema) getType() zconst.ZogType {
 	return zconst.TypeTime
@@ -55,7 +46,8 @@ var Time TimeFunc = func(opts ...SchemaOption) *TimeSchema {
 	return t
 }
 
-// Sets the format function for the time schema
+// WARNING ONLY SUPPOORTS Schema.Parse!
+// Sets the format function for the time schema.
 // Usage is:
 //
 //	z.Time(z.Time.FormatFunc(func(data string) (time.Time, error) {
@@ -67,6 +59,7 @@ func (t TimeFunc) FormatFunc(format func(data string) (time.Time, error)) Schema
 	}
 }
 
+// WARNING ONLY SUPPOORTS Schema.Parse!
 // Sets the string format for the  time schema
 // Usage is:
 // z.Time(z.Time.Format(time.RFC3339))
@@ -76,28 +69,45 @@ func (t TimeFunc) Format(format string) SchemaOption {
 	})
 }
 
-// Validates an existing time.Time
-func (v *TimeSchema) Validate(data *time.Time) p.ZogErrList {
-	errs := p.NewErrsList()
-	ctx := p.NewParseCtx(errs, conf.ErrorFormatter)
-	v.validate(data, p.PathBuilder(""), ctx)
-	return errs.List
-}
-
 // Parses the data into the destination time.Time. Returns a list of errors
-func (v *TimeSchema) Parse(data any, dest *time.Time, options ...ParsingOption) p.ZogErrList {
+func (v *TimeSchema) Parse(data any, dest *time.Time, options ...ExecOption) p.ZogIssueList {
 	errs := p.NewErrsList()
-	ctx := p.NewParseCtx(errs, conf.ErrorFormatter)
-
+	defer errs.Free()
+	ctx := p.NewExecCtx(errs, conf.IssueFormatter)
+	defer ctx.Free()
 	for _, opt := range options {
 		opt(ctx)
 	}
-
-	path := p.PathBuilder("")
-
-	v.process(data, dest, path, ctx)
+	path := p.NewPathBuilder()
+	defer path.Free()
+	v.process(ctx.NewSchemaCtx(data, dest, path, v.getType()))
 
 	return errs.List
+}
+
+// internal processes the data
+func (v *TimeSchema) process(ctx *p.SchemaCtx) {
+	primitiveProcessor(ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, v.coercer, p.IsParseZeroValue)
+}
+
+// Validates an existing time.Time
+func (v *TimeSchema) Validate(data *time.Time, options ...ExecOption) p.ZogIssueList {
+	errs := p.NewErrsList()
+	defer errs.Free()
+	ctx := p.NewExecCtx(errs, conf.IssueFormatter)
+	defer ctx.Free()
+	for _, opt := range options {
+		opt(ctx)
+	}
+	path := p.NewPathBuilder()
+	defer path.Free()
+	v.validate(ctx.NewValidateSchemaCtx(data, path, v.getType()))
+	return errs.List
+}
+
+// Internal function to validate the data
+func (v *TimeSchema) validate(ctx *p.SchemaCtx) {
+	primitiveValidator(ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch)
 }
 
 // Adds pretransform function to schema
@@ -155,7 +165,15 @@ func (v *TimeSchema) Test(t p.Test, opts ...TestOption) *TimeSchema {
 	for _, opt := range opts {
 		opt(&t)
 	}
+	t.ValidateFunc = customTestBackwardsCompatWrapper(t.ValidateFunc)
 	v.tests = append(v.tests, t)
+	return v
+}
+
+// Create a custom test function for the schema. This is similar to Zod's `.refine()` method.
+func (v *TimeSchema) TestFunc(testFunc p.TestFunc, options ...TestOption) *TimeSchema {
+	test := TestFunc("", testFunc)
+	v.Test(test, options...)
 	return v
 }
 
@@ -164,22 +182,19 @@ func (v *TimeSchema) Test(t p.Test, opts ...TestOption) *TimeSchema {
 // Checks that the value is after the given time
 func (v *TimeSchema) After(t time.Time, opts ...TestOption) *TimeSchema {
 	r := p.Test{
-		ErrCode: zconst.ErrCodeAfter,
-		Params:  make(map[string]any, 1),
+		IssueCode: zconst.IssueCodeAfter,
+		Params:    make(map[string]any, 1),
 		ValidateFunc: func(v any, ctx ParseCtx) bool {
-			val, ok := v.(time.Time)
+			val, ok := v.(*time.Time)
 			if !ok {
 				return false
 			}
 			return val.After(t)
 		},
 	}
-	r.Params[zconst.ErrCodeAfter] = t
+	r.Params[zconst.IssueCodeAfter] = t
 	for _, opt := range opts {
 		opt(&r)
-	}
-	for _, opt := range v.tests {
-		r.ErrFmt = opt.ErrFmt
 	}
 	v.tests = append(v.tests, r)
 	return v
@@ -189,17 +204,17 @@ func (v *TimeSchema) After(t time.Time, opts ...TestOption) *TimeSchema {
 func (v *TimeSchema) Before(t time.Time, opts ...TestOption) *TimeSchema {
 	r :=
 		p.Test{
-			ErrCode: zconst.ErrCodeBefore,
-			Params:  make(map[string]any, 1),
+			IssueCode: zconst.IssueCodeBefore,
+			Params:    make(map[string]any, 1),
 			ValidateFunc: func(v any, ctx ParseCtx) bool {
-				val, ok := v.(time.Time)
+				val, ok := v.(*time.Time)
 				if !ok {
 					return false
 				}
 				return val.Before(t)
 			},
 		}
-	r.Params[zconst.ErrCodeBefore] = t
+	r.Params[zconst.IssueCodeBefore] = t
 	for _, opt := range opts {
 		opt(&r)
 	}
@@ -211,17 +226,17 @@ func (v *TimeSchema) Before(t time.Time, opts ...TestOption) *TimeSchema {
 // Checks that the value is equal to the given time
 func (v *TimeSchema) EQ(t time.Time, opts ...TestOption) *TimeSchema {
 	r := p.Test{
-		ErrCode: zconst.ErrCodeEQ,
-		Params:  make(map[string]any, 1),
+		IssueCode: zconst.IssueCodeEQ,
+		Params:    make(map[string]any, 1),
 		ValidateFunc: func(v any, ctx ParseCtx) bool {
-			val, ok := v.(time.Time)
+			val, ok := v.(*time.Time)
 			if !ok {
 				return false
 			}
 			return val.Equal(t)
 		},
 	}
-	r.Params[zconst.ErrCodeEQ] = t
+	r.Params[zconst.IssueCodeEQ] = t
 	for _, opt := range opts {
 		opt(&r)
 	}

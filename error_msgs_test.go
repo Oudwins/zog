@@ -27,6 +27,6 @@ func TestErrorMessages(t *testing.T) {
 	var u Msgs
 
 	errs := schema.Parse(map[string]any{"name": "0", "age": 0, "time": "2020-01-01T00:00:00Z", "bool": false, "slice": []string{"x"}}, &u)
-	sanitized := Errors.SanitizeMap(errs)
+	sanitized := Issues.SanitizeMapAndCollect(errs)
 	fmt.Println(sanitized)
 }

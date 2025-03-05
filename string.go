@@ -51,16 +51,6 @@ type StringSchema struct {
 
 // ! INTERNALS
 
-// Internal function to process the data
-func (v *StringSchema) process(val any, dest any, path p.PathBuilder, ctx ParseCtx) {
-	primitiveProcessor(val, dest, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, v.coercer, p.IsParseZeroValue)
-}
-
-// Internal function to validate the data
-func (v *StringSchema) validate(val any, path p.PathBuilder, ctx ParseCtx) {
-	primitiveValidator(val, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch)
-}
-
 // Returns the type of the schema
 func (v *StringSchema) getType() zconst.ZogType {
 	return zconst.TypeString
@@ -84,27 +74,48 @@ func String(opts ...SchemaOption) *StringSchema {
 	return s
 }
 
-// Parses the data into the destination string. Returns a list of errors
-func (v *StringSchema) Parse(data any, dest *string, options ...ParsingOption) p.ZogErrList {
+// Parses the data into the destination string. Returns a list of ZogIssues
+func (v *StringSchema) Parse(data any, dest *string, options ...ExecOption) p.ZogIssueList {
 	errs := p.NewErrsList()
-	ctx := p.NewParseCtx(errs, conf.ErrorFormatter)
+	defer errs.Free()
+
+	ctx := p.NewExecCtx(errs, conf.IssueFormatter)
+	defer ctx.Free()
 	for _, opt := range options {
 		opt(ctx)
 	}
-	path := p.PathBuilder("")
 
-	v.process(data, dest, path, ctx)
+	path := p.NewPathBuilder()
+	defer path.Free()
+	v.process(ctx.NewSchemaCtx(data, dest, path, v.getType()))
 
 	return errs.List
 }
 
-// Validate Given string
-func (v *StringSchema) Validate(data *string) p.ZogErrList {
-	errs := p.NewErrsList()
-	ctx := p.NewParseCtx(errs, conf.ErrorFormatter)
+// Internal function to process the data
+func (v *StringSchema) process(ctx *p.SchemaCtx) {
+	primitiveProcessor(ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, v.coercer, p.IsParseZeroValue)
+}
 
-	v.validate(data, p.PathBuilder(""), ctx)
+// Validate Given string
+func (v *StringSchema) Validate(data *string, options ...ExecOption) p.ZogIssueList {
+	errs := p.NewErrsList()
+	defer errs.Free()
+	ctx := p.NewExecCtx(errs, conf.IssueFormatter)
+	defer ctx.Free()
+	for _, opt := range options {
+		opt(ctx)
+	}
+
+	path := p.NewPathBuilder()
+	defer path.Free()
+	v.validate(ctx.NewSchemaCtx(data, data, path, v.getType()))
 	return errs.List
+}
+
+// Internal function to validate the data
+func (v *StringSchema) validate(ctx *p.SchemaCtx) {
+	primitiveValidator(ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch)
 }
 
 // Adds pretransform function to schema
@@ -118,11 +129,8 @@ func (v *StringSchema) PreTransform(transform p.PreTransform) *StringSchema {
 
 // PreTransform: trims the input data of whitespace if it is a string
 func (v *StringSchema) Trim() *StringSchema {
-	v.preTransforms = append(v.preTransforms, func(val any, ctx ParseCtx) (any, error) {
+	v.preTransforms = append(v.preTransforms, func(val any, ctx Ctx) (any, error) {
 		switch v := val.(type) {
-		case *string:
-			*v = strings.TrimSpace(*v)
-			return v, nil
 		case string:
 			return strings.TrimSpace(v), nil
 		default:
@@ -179,7 +187,16 @@ func (v *StringSchema) Test(t p.Test, opts ...TestOption) *StringSchema {
 	for _, opt := range opts {
 		opt(&t)
 	}
+
+	t.ValidateFunc = customTestBackwardsCompatWrapper(t.ValidateFunc)
 	return v.addTest(t)
+}
+
+// Create a custom test function for the schema. This is similar to Zod's `.refine()` method.
+func (v *StringSchema) TestFunc(testFunc p.TestFunc, options ...TestOption) *StringSchema {
+	test := TestFunc("", testFunc)
+	v.Test(test, options...)
+	return v
 }
 
 // Test: checks that the value is one of the enum values
@@ -221,13 +238,13 @@ func (v *StringSchema) Len(n int, options ...TestOption) *StringSchema {
 // Test: checks that the value is a valid email address
 func (v *StringSchema) Email(options ...TestOption) *StringSchema {
 	t := p.Test{
-		ErrCode: zconst.ErrCodeEmail,
+		IssueCode: zconst.IssueCodeEmail,
 		ValidateFunc: func(v any, ctx ParseCtx) bool {
-			email, ok := v.(string)
+			email, ok := v.(*string)
 			if !ok {
 				return false
 			}
-			return emailRegex.MatchString(email)
+			return emailRegex.MatchString(*email)
 		},
 	}
 	for _, opt := range options {
@@ -239,13 +256,13 @@ func (v *StringSchema) Email(options ...TestOption) *StringSchema {
 // Test: checks that the value is a valid URL
 func (v *StringSchema) URL(options ...TestOption) *StringSchema {
 	t := p.Test{
-		ErrCode: zconst.ErrCodeURL,
+		IssueCode: zconst.IssueCodeURL,
 		ValidateFunc: func(v any, ctx ParseCtx) bool {
-			s, ok := v.(string)
+			s, ok := v.(*string)
 			if !ok {
 				return false
 			}
-			u, err := url.Parse(s)
+			u, err := url.Parse(*s)
 			return err == nil && u.Scheme != "" && u.Host != ""
 		},
 	}
@@ -258,17 +275,17 @@ func (v *StringSchema) URL(options ...TestOption) *StringSchema {
 // Test: checks that the value has the prefix
 func (v *StringSchema) HasPrefix(s string, options ...TestOption) *StringSchema {
 	t := p.Test{
-		ErrCode: zconst.ErrCodeHasPrefix,
-		Params:  make(map[string]any, 1),
+		IssueCode: zconst.IssueCodeHasPrefix,
+		Params:    make(map[string]any, 1),
 		ValidateFunc: func(v any, ctx ParseCtx) bool {
-			val, ok := v.(string)
+			val, ok := v.(*string)
 			if !ok {
 				return false
 			}
-			return strings.HasPrefix(val, s)
+			return strings.HasPrefix(*val, s)
 		},
 	}
-	t.Params[zconst.ErrCodeHasPrefix] = s
+	t.Params[zconst.IssueCodeHasPrefix] = s
 	for _, opt := range options {
 		opt(&t)
 	}
@@ -278,17 +295,17 @@ func (v *StringSchema) HasPrefix(s string, options ...TestOption) *StringSchema 
 // Test: checks that the value has the suffix
 func (v *StringSchema) HasSuffix(s string, options ...TestOption) *StringSchema {
 	t := p.Test{
-		ErrCode: zconst.ErrCodeHasSuffix,
-		Params:  make(map[string]any, 1),
+		IssueCode: zconst.IssueCodeHasSuffix,
+		Params:    make(map[string]any, 1),
 		ValidateFunc: func(v any, ctx ParseCtx) bool {
-			val, ok := v.(string)
+			val, ok := v.(*string)
 			if !ok {
 				return false
 			}
-			return strings.HasSuffix(val, s)
+			return strings.HasSuffix(*val, s)
 		},
 	}
-	t.Params[zconst.ErrCodeHasSuffix] = s
+	t.Params[zconst.IssueCodeHasSuffix] = s
 	for _, opt := range options {
 		opt(&t)
 	}
@@ -298,17 +315,17 @@ func (v *StringSchema) HasSuffix(s string, options ...TestOption) *StringSchema 
 // Test: checks that the value contains the substring
 func (v *StringSchema) Contains(sub string, options ...TestOption) *StringSchema {
 	t := p.Test{
-		ErrCode: zconst.ErrCodeContains,
-		Params:  make(map[string]any, 1),
+		IssueCode: zconst.IssueCodeContains,
+		Params:    make(map[string]any, 1),
 		ValidateFunc: func(v any, ctx ParseCtx) bool {
-			val, ok := v.(string)
+			val, ok := v.(*string)
 			if !ok {
 				return false
 			}
-			return strings.Contains(val, sub)
+			return strings.Contains(*val, sub)
 		},
 	}
-	t.Params[zconst.ErrCodeContains] = sub
+	t.Params[zconst.IssueCodeContains] = sub
 	for _, opt := range options {
 		opt(&t)
 	}
@@ -318,13 +335,13 @@ func (v *StringSchema) Contains(sub string, options ...TestOption) *StringSchema
 // Test: checks that the value contains an uppercase letter
 func (v *StringSchema) ContainsUpper(options ...TestOption) *StringSchema {
 	t := p.Test{
-		ErrCode: zconst.ErrCodeContainsUpper,
+		IssueCode: zconst.IssueCodeContainsUpper,
 		ValidateFunc: func(v any, ctx ParseCtx) bool {
-			val, ok := v.(string)
+			val, ok := v.(*string)
 			if !ok {
 				return false
 			}
-			for _, r := range val {
+			for _, r := range *val {
 				if r >= 'A' && r <= 'Z' {
 					return true
 				}
@@ -341,13 +358,13 @@ func (v *StringSchema) ContainsUpper(options ...TestOption) *StringSchema {
 // Test: checks that the value contains a digit
 func (v *StringSchema) ContainsDigit(options ...TestOption) *StringSchema {
 	t := p.Test{
-		ErrCode: zconst.ErrCodeContainsDigit,
+		IssueCode: zconst.IssueCodeContainsDigit,
 		ValidateFunc: func(v any, ctx ParseCtx) bool {
-			val, ok := v.(string)
+			val, ok := v.(*string)
 			if !ok {
 				return false
 			}
-			for _, r := range val {
+			for _, r := range *val {
 				if r >= '0' && r <= '9' {
 					return true
 				}
@@ -367,13 +384,13 @@ func (v *StringSchema) ContainsDigit(options ...TestOption) *StringSchema {
 func (v *StringSchema) ContainsSpecial(options ...TestOption) *StringSchema {
 	t :=
 		p.Test{
-			ErrCode: zconst.ErrCodeContainsSpecial,
+			IssueCode: zconst.IssueCodeContainsSpecial,
 			ValidateFunc: func(v any, ctx ParseCtx) bool {
-				val, ok := v.(string)
+				val, ok := v.(*string)
 				if !ok {
 					return false
 				}
-				for _, r := range val {
+				for _, r := range *val {
 					if (r >= '!' && r <= '/') ||
 						(r >= ':' && r <= '@') ||
 						(r >= '[' && r <= '`') ||
@@ -393,13 +410,13 @@ func (v *StringSchema) ContainsSpecial(options ...TestOption) *StringSchema {
 // Test: checks that the value is a valid uuid
 func (v *StringSchema) UUID(options ...TestOption) *StringSchema {
 	t := p.Test{
-		ErrCode: zconst.ErrCodeUUID,
+		IssueCode: zconst.IssueCodeUUID,
 		ValidateFunc: func(v any, ctx ParseCtx) bool {
-			uuid, ok := v.(string)
+			uuid, ok := v.(*string)
 			if !ok {
 				return false
 			}
-			return uuidRegex.MatchString(uuid)
+			return uuidRegex.MatchString(*uuid)
 		},
 	}
 	for _, opt := range options {
@@ -411,17 +428,17 @@ func (v *StringSchema) UUID(options ...TestOption) *StringSchema {
 // Test: checks that value matches to regex
 func (v *StringSchema) Match(regex *regexp.Regexp, options ...TestOption) *StringSchema {
 	t := p.Test{
-		ErrCode: zconst.ErrCodeMatch,
-		Params:  make(map[string]any, 1),
+		IssueCode: zconst.IssueCodeMatch,
+		Params:    make(map[string]any, 1),
 		ValidateFunc: func(v any, ctx ParseCtx) bool {
-			s, ok := v.(string)
+			s, ok := v.(*string)
 			if !ok {
 				return false
 			}
-			return regex.MatchString(s)
+			return regex.MatchString(*s)
 		},
 	}
-	t.Params[zconst.ErrCodeMatch] = regex.String()
+	t.Params[zconst.IssueCodeMatch] = regex.String()
 	for _, opt := range options {
 		opt(&t)
 	}

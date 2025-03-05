@@ -4,11 +4,10 @@ import (
 	"github.com/Oudwins/zog/conf"
 	p "github.com/Oudwins/zog/internals"
 	"github.com/Oudwins/zog/zconst"
+	"golang.org/x/exp/constraints"
 )
 
-type Numeric interface {
-	~int | ~float64
-}
+type Numeric = constraints.Ordered
 
 var _ PrimitiveZogSchema[int] = &NumberSchema[int]{}
 
@@ -34,17 +33,36 @@ func (v *NumberSchema[T]) setCoercer(c conf.CoercerFunc) {
 	v.coercer = c
 }
 
-// Internal function to process the data
-func (v *NumberSchema[T]) process(val any, dest any, path p.PathBuilder, ctx ParseCtx) {
-	primitiveProcessor(val, dest, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, v.coercer, p.IsParseZeroValue)
-}
-
 // ! USER FACING FUNCTIONS
 
+// Deprecated: Use Float64 instead
 // creates a new float64 schema
 func Float(opts ...SchemaOption) *NumberSchema[float64] {
+	return Float64(opts...)
+}
+
+func Float64(opts ...SchemaOption) *NumberSchema[float64] {
 	s := &NumberSchema[float64]{
 		coercer: conf.Coercers.Float64,
+	}
+	for _, opt := range opts {
+		opt(s)
+	}
+	return s
+}
+
+func Float32(opts ...SchemaOption) *NumberSchema[float32] {
+	s := &NumberSchema[float32]{
+		coercer: func(data any) (any, error) {
+			x, err := conf.Coercers.Float64(data)
+			if err != nil {
+				return nil, err
+			}
+			if n, ok := x.(float64); ok {
+				return float32(n), nil
+			}
+			return x, nil
+		},
 	}
 	for _, opt := range opts {
 		opt(s)
@@ -63,32 +81,84 @@ func Int(opts ...SchemaOption) *NumberSchema[int] {
 	return s
 }
 
+func Int64(opts ...SchemaOption) *NumberSchema[int64] {
+	s := &NumberSchema[int64]{
+		coercer: func(data any) (any, error) {
+			x, err := conf.Coercers.Int(data)
+			if err != nil {
+				return nil, err
+			}
+			if n, ok := x.(int); ok {
+				return int64(n), nil
+			}
+			return x, nil
+		},
+	}
+	for _, opt := range opts {
+		opt(s)
+	}
+	return s
+}
+
+func Int32(opts ...SchemaOption) *NumberSchema[int32] {
+	s := &NumberSchema[int32]{
+		coercer: func(data any) (any, error) {
+			x, err := conf.Coercers.Int(data)
+			if err != nil {
+				return nil, err
+			}
+			if n, ok := x.(int); ok {
+				return int32(n), nil
+			}
+			return x, nil
+		},
+	}
+	for _, opt := range opts {
+		opt(s)
+	}
+	return s
+}
+
 // parses the value and stores it in the destination
-func (v *NumberSchema[T]) Parse(data any, dest *T, options ...ParsingOption) p.ZogErrList {
+func (v *NumberSchema[T]) Parse(data any, dest *T, options ...ExecOption) p.ZogIssueList {
 	errs := p.NewErrsList()
-	ctx := p.NewParseCtx(errs, conf.ErrorFormatter)
+	defer errs.Free()
+	ctx := p.NewExecCtx(errs, conf.IssueFormatter)
+	defer ctx.Free()
 	for _, opt := range options {
 		opt(ctx)
 	}
 
-	path := p.PathBuilder("")
-
-	v.process(data, dest, path, ctx)
+	path := p.NewPathBuilder()
+	defer path.Free()
+	v.process(ctx.NewSchemaCtx(data, dest, path, v.getType()))
 
 	return errs.List
+}
+
+// Internal function to process the data
+func (v *NumberSchema[T]) process(ctx *p.SchemaCtx) {
+	primitiveProcessor(ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, v.coercer, p.IsParseZeroValue)
 }
 
 // Validates a number pointer
-func (v *NumberSchema[T]) Validate(data *T) p.ZogErrList {
+func (v *NumberSchema[T]) Validate(data *T, options ...ExecOption) p.ZogIssueList {
 	errs := p.NewErrsList()
-	ctx := p.NewParseCtx(errs, conf.ErrorFormatter)
+	defer errs.Free()
+	ctx := p.NewExecCtx(errs, conf.IssueFormatter)
+	defer ctx.Free()
+	for _, opt := range options {
+		opt(ctx)
+	}
 
-	v.validate(data, p.PathBuilder(""), ctx)
+	path := p.NewPathBuilder()
+	defer path.Free()
+	v.validate(ctx.NewSchemaCtx(data, data, path, v.getType()))
 	return errs.List
 }
 
-func (v *NumberSchema[T]) validate(val any, path p.PathBuilder, ctx ParseCtx) {
-	primitiveValidator(val, path, ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch)
+func (v *NumberSchema[T]) validate(ctx *p.SchemaCtx) {
+	primitiveValidator(ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch)
 }
 
 // GLOBAL METHODS
@@ -145,7 +215,15 @@ func (v *NumberSchema[T]) Test(t p.Test, opts ...TestOption) *NumberSchema[T] {
 	for _, opt := range opts {
 		opt(&t)
 	}
+	t.ValidateFunc = customTestBackwardsCompatWrapper(t.ValidateFunc)
 	v.tests = append(v.tests, t)
+	return v
+}
+
+// Create a custom test function for the schema. This is similar to Zod's `.refine()` method.
+func (v *NumberSchema[T]) TestFunc(testFunc p.TestFunc, options ...TestOption) *NumberSchema[T] {
+	test := TestFunc("", testFunc)
+	v.Test(test, options...)
 	return v
 }
 

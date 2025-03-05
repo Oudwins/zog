@@ -19,27 +19,28 @@
 
 [![view - Documentation](https://img.shields.io/badge/view-Documentation-blue?style=for-the-badge)](https://zog.dev)
 
-Zog is a schema builder for runtime value parsing and validation. Define a schema, transform a value to match, assert the shape of an existing value, or both. Zog schemas are extremely expressive and allow modeling complex, interdependent validations, or value transformations. [Checkout the full docs at https://zog.dev](https://zog.dev)
+Zog is a schema builder for runtime value parsing and validation. Define a schema, transform a value to match, assert the shape of an existing value, or both. Zog schemas are extremely expressive and allow modeling complex, interdependent validations, or value transformations.
 
 Killer Features:
 
 - Concise yet expressive schema interface, equipped to model simple to complex data models
 - **[Zod](https://github.com/colinhacks/zod)-like API**, use method chaining to build schemas in a typesafe manner
-- **Extensible**: add your own validators, schemas and data providers
-- Rich error details, make debugging a breeze
-- Almost no reflection when using primitive types
+- **Extensible**: add your own Tests and Schemas
+- **Rich errors** with detailed context, make debugging a breeze
+- **Fast**: Zog is one of the fastest Go validation libraries. We are just behind the goplayground/validator for most of the [govalidbench](https://github.com/Oudwins/govalidbench/tree/master) benchmarks.
 - **Built-in coercion** support for most types
 - Zero dependencies!
-- **Three Helper Packages**
+- **Four Helper Packages**
   - **zenv**: parse environment variables
   - **zhttp**: parse http forms & query params
+  - **zjson**: parse json
   - **i18n**: Opinionated solution to good i18n zog errors
 
 > **API Stability:**
 >
 > - I will consider the API stable when we reach v1.0.0
-> - However, I believe very little API changes will happen from the current implementation. The APIs are are most likely to change are the **data providers** (please don't make your own if possible use the helpers whose APIs will not change meaningfully) and the ParseCtx most other APIs should remain the same
-> - Zog will not respect semver until v1.0.0 is released. Expect breaking changes (mainly in non basic apis) until then.
+> - However, I believe very little API changes will happen from the current implementation. The APIs most likely to change are the **data providers** (please don't make your own if possible use the helpers whose APIs will not change meaningfully) and the z.Ctx most other APIs should remain the same. I could be wrong but I don't expect many breaking changes.
+> - Zog will not respect semver until v1.0.0 is released. Consider each minor version to potentially have breaking changes until then.
 
 ## Introduction
 
@@ -69,7 +70,7 @@ type User struct {
 var userSchema = z.Struct(z.Schema{
   // its very important that schema keys like "name" match the struct field name NOT the input data
   "name": z.String().Min(3, z.Message("Override default message")).Max(10),
-  "age": z.Int().GT(18).Required(z.Message("is required")),
+  "age": z.Int().GT(18)
 })
 ```
 
@@ -89,7 +90,8 @@ func main() {
     // handle errors -> see Errors section
   }
   u.Name // "Zog"
-  // note that this might look weird but we didn't say age was required so Zog just skiped the empty string and we are left with the uninitialized int
+  // note that this might look weird but we didn't say age was required so Zog just skipped the empty string and we are left with the uninitialized int
+  // If we need 0 to be a valid value for age we can use a pointer to an int which will be nil if the value was not present in the input data
   u.Age // 0
 }
 ```
@@ -100,7 +102,7 @@ func main() {
 func main() {
   u := User{
   Name: "Zog",
-  Age: 1,
+  Age: 0, // wont return an error because fields are optional by default otherwise it will error
   }
   errsMap := userSchema.Validate(&u)
   if errsMap != nil {
@@ -152,17 +154,16 @@ errsList := Time().Required().Parse("2020-01-01T00:00:00Z", &t)
 ```go
 var dest []string
 Slice(String().Email().Required()).PreTransform(func(data any, ctx z.Ctx) (any, error) {
-  s := val.(string)
+  s := data.(string)
   return strings.Split(s, ","), nil
 }).PostTransform(func(destPtr any, ctx z.Ctx) error {
-  s := val.(*[]string)
-  for i, v := range s {
-    s[i] = strings.TrimSpace(v)
+  s := destPtr.(*[]string)
+  for i, v := range *s {
+    (*s)[i] = strings.TrimSpace(v)
   }
   return nil
 }).Parse("foo@bar.com,bar@foo.com", &dest) // dest = [foo@bar.com bar@foo.com]
 ```
-
 
 ## Roadmap
 
@@ -171,7 +172,6 @@ These are some of the things I want to add to zog before v1.0.0
 - Support for schema.Clone()
 - support for catch & default for structs & slices
 - Struct generation from the schemas
-- Validate method that will not parse but rather just validate a struct against the schema
 
 ## Support
 

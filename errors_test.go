@@ -8,8 +8,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestZogErrorString(t *testing.T) {
-	var err p.ZogError = &p.ZogErr{
+func TestZogIssueString(t *testing.T) {
+	var err p.ZogIssue = &p.ZogErr{
 		C:       "test",
 		ParamsM: map[string]any{},
 		Typ:     "string",
@@ -20,8 +20,8 @@ func TestZogErrorString(t *testing.T) {
 	assert.Equal(t, err.String(), err.Error())
 }
 
-func TestZogErrorUnwrap(t *testing.T) {
-	var err p.ZogError = &p.ZogErr{
+func TestZogIssueUnwrap(t *testing.T) {
+	var err p.ZogIssue = &p.ZogErr{
 		Err: errors.New("test"),
 	}
 

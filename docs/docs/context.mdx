@@ -1,5 +1,5 @@
 ---
-sidebar_position: 5
+sidebar_position: 6
 ---
 
 # Zog Context
@@ -19,11 +19,11 @@ nameSchema := z.String().Min(3).PreTransform(func(data any, ctx z.Ctx) (any, err
 nameSchema.Parse("Michael Jackson", &dest, z.WithCtxValue("split_by", " "))
 ```
 
-#### Change the error formatter for this execution
+#### Change the issue formatter for this execution
 
 This might be useful for localization, or for changing the error messages for one specific execution.
 
 ```go
 nameSchema := z.String().Min(3)
-nameSchema.Parse(data, &dest, z.WithErrFormatter(MyCustomErrorMessageFormatter))
+nameSchema.Parse(data, &dest, z.WithIssueFormatter(MyCustomErrorMessageFormatter))
 ```

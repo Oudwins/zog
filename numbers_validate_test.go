@@ -7,6 +7,29 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestNumberValidate(t *testing.T) {
+	dest := 5
+	validator := Int()
+	errs := validator.Validate(&dest)
+	if len(errs) > 0 {
+		t.Errorf("Expected no errors, got %v", errs)
+	}
+	assert.Equal(t, 5, dest)
+}
+
+func TestNumberValidateFormatter(t *testing.T) {
+	dest := 1
+	fmt := WithIssueFormatter(func(e ZogIssue, ctx Ctx) {
+		e.SetMessage("test2")
+	})
+	validator := Int().GTE(10, Message("test1")).Required()
+	errs := validator.Validate(&dest, fmt)
+	assert.Equal(t, "test1", errs[0].Message())
+	validator2 := Int().GTE(10)
+	errs2 := validator2.Validate(&dest, fmt)
+	assert.Equal(t, "test2", errs2[0].Message())
+}
+
 func TestValidateNumberRequired(t *testing.T) {
 	validator := Int().Required(Message("custom"))
 	dest := 5
@@ -248,11 +271,11 @@ func TestValidateNumberValidate(t *testing.T) {
 }
 
 func TestValidateNumberCustomTest(t *testing.T) {
-	validator := Int().Test(TestFunc("custom_test", func(val any, ctx ParseCtx) bool {
+	validator := Int().TestFunc(func(val any, ctx ParseCtx) bool {
 		// Custom test logic here
 		assert.Equal(t, 5, val)
 		return true
-	}), Message("custom"))
+	}, Message("custom"))
 	dest := 5
 	errs := validator.Validate(&dest)
 	if len(errs) > 0 {

@@ -3,6 +3,7 @@ package zhttp
 import (
 	"net/http"
 	"net/url"
+	"strings"
 
 	p "github.com/Oudwins/zog/internals"
 	"github.com/Oudwins/zog/parsers/zjson"
@@ -27,16 +28,16 @@ var Config = struct {
 			return zjson.Decode(r.Body)
 		},
 		Form: func(r *http.Request) p.DpFactory {
-			return func() (p.DataProvider, p.ZogError) {
+			return func() (p.DataProvider, p.ZogIssue) {
 				err := r.ParseForm()
 				if err != nil {
-					return nil, &p.ZogErr{C: zconst.ErrCodeZHTTPInvalidForm, Err: err}
+					return nil, &p.ZogErr{C: zconst.IssueCodeZHTTPInvalidForm, Err: err}
 				}
 				return form(r.Form), nil
 			}
 		},
 		Query: func(r *http.Request) p.DpFactory {
-			return func() (p.DataProvider, p.ZogError) {
+			return func() (p.DataProvider, p.ZogIssue) {
 				// This handles generic GET request from browser. We treat it as url.Values
 				return form(r.URL.Query()), nil
 			}
@@ -52,7 +53,7 @@ var _ p.DataProvider = urlDataProvider{}
 
 func (u urlDataProvider) Get(key string) any {
 	// if query param ends with [] its always a slice
-	if key[len(key)-2:] == "[]" {
+	if len(key) > 2 && key[len(key)-2:] == "[]" {
 		return u.Data[key]
 	}
 
@@ -75,13 +76,24 @@ func (u urlDataProvider) GetUnderlying() any {
 // schema.Parse(zhttp.Request(r), &dest)
 // WARNING: FOR JSON PARSING DOES NOT SUPPORT JSON ARRAYS OR PRIMITIVES
 func Request(r *http.Request) p.DpFactory {
-	switch r.Header.Get("Content-Type") {
-	case "application/json":
-		return Config.Parsers.JSON(r)
-	case "application/x-www-form-urlencoded":
-		return Config.Parsers.Form(r)
-	default:
+	switch r.Method {
+	case "GET":
 		return Config.Parsers.Query(r)
+	case "HEAD":
+		return Config.Parsers.Query(r)
+	case "DELETE":
+		return Config.Parsers.Query(r)
+	default:
+		// Content-Type follows this format: Content-Type: <media-type> [; parameter=value]
+		typ, _, _ := strings.Cut(r.Header.Get("Content-Type"), ";")
+		switch typ {
+		case "application/json":
+			return Config.Parsers.JSON(r)
+		case "application/x-www-form-urlencoded":
+			return Config.Parsers.Form(r)
+		default:
+			return Config.Parsers.Query(r)
+		}
 	}
 }
 

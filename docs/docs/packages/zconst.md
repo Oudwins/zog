@@ -12,8 +12,8 @@ const (
 	ZogTag = "zog"
 )
 
-// Map used to format errors in Zog. Both ZogType & ZogErrCode are just strings
-type LangMap = map[ZogType]map[ZogErrCode]string
+// Map used to format errors in Zog. Both ZogType & ZogIssueCode are just strings
+type LangMap = map[ZogType]map[ZogIssueCode]string
 
 type ZogType = string
 
@@ -26,50 +26,50 @@ const (
 	TypeStruct ZogType = "struct"
 )
 
-type ZogErrCode = string
+type ZogIssueCode = string
 
 const (
-	ErrCodeCustom   ZogErrCode = "custom"   // all
-	ErrCodeRequired ZogErrCode = "required" // all
-	ErrCodeNotNil   ZogErrCode = "not_nil"  // all (technically only applies to pointers)
-	ErrCodeCoerce   ZogErrCode = "coerce"   // all
+	IssueCodeCustom   ZogIssueCode = "custom"   // all
+	IssueCodeRequired ZogIssueCode = "required" // all
+	IssueCodeNotNil   ZogIssueCode = "not_nil"  // all (technically only applies to pointers)
+	IssueCodeCoerce   ZogIssueCode = "coerce"   // all
 	// all. Applied when other errror code is not implemented. Required to be implemented for every zog type!
-	ErrCodeFallback ZogErrCode = "fallback"
-	ErrCodeEQ       ZogErrCode = "eq"             // number, time, string
-	ErrCodeOneOf    ZogErrCode = "one_of_options" // string or number
+	IssueCodeFallback ZogIssueCode = "fallback"
+	IssueCodeEQ       ZogIssueCode = "eq"             // number, time, string
+	IssueCodeOneOf    ZogIssueCode = "one_of_options" // string or number
 
-	ErrCodeMin      ZogErrCode = "min"       // string, slice
-	ErrCodeMax      ZogErrCode = "max"       // string, slice
-	ErrCodeLen      ZogErrCode = "len"       // string, slice
-	ErrCodeContains ZogErrCode = "contained" // string, slice
+	IssueCodeMin      ZogIssueCode = "min"       // string, slice
+	IssueCodeMax      ZogIssueCode = "max"       // string, slice
+	IssueCodeLen      ZogIssueCode = "len"       // string, slice
+	IssueCodeContains ZogIssueCode = "contained" // string, slice
 
 	// number only
-	ErrCodeLTE ZogErrCode = "lte" // number
-	ErrCodeLT  ZogErrCode = "lt"  // number
-	ErrCodeGTE ZogErrCode = "gte" // number
-	ErrCodeGT  ZogErrCode = "gt"  // number
+	IssueCodeLTE ZogIssueCode = "lte" // number
+	IssueCodeLT  ZogIssueCode = "lt"  // number
+	IssueCodeGTE ZogIssueCode = "gte" // number
+	IssueCodeGT  ZogIssueCode = "gt"  // number
 
 	// string only
-	ErrCodeEmail           ZogErrCode = "email"
-	ErrCodeUUID            ZogErrCode = "uuid"
-	ErrCodeMatch           ZogErrCode = "match"
-	ErrCodeURL             ZogErrCode = "url"
-	ErrCodeHasPrefix       ZogErrCode = "prefix"
-	ErrCodeHasSuffix       ZogErrCode = "suffix"
-	ErrCodeContainsUpper   ZogErrCode = "contains_upper"
-	ErrCodeContainsLower   ZogErrCode = "contains_lower"
-	ErrCodeContainsDigit   ZogErrCode = "contains_digit"
-	ErrCodeContainsSpecial ZogErrCode = "contains_special"
+	IssueCodeEmail           ZogIssueCode = "email"
+	IssueCodeUUID            ZogIssueCode = "uuid"
+	IssueCodeMatch           ZogIssueCode = "match"
+	IssueCodeURL             ZogIssueCode = "url"
+	IssueCodeHasPrefix       ZogIssueCode = "prefix"
+	IssueCodeHasSuffix       ZogIssueCode = "suffix"
+	IssueCodeContainsUpper   ZogIssueCode = "contains_upper"
+	IssueCodeContainsLower   ZogIssueCode = "contains_lower"
+	IssueCodeContainsDigit   ZogIssueCode = "contains_digit"
+	IssueCodeContainsSpecial ZogIssueCode = "contains_special"
 	// time only
-	ErrCodeAfter  ZogErrCode = "after"
-	ErrCodeBefore ZogErrCode = "before"
+	IssueCodeAfter  ZogIssueCode = "after"
+	IssueCodeBefore ZogIssueCode = "before"
 	// bool only
-	ErrCodeTrue  ZogErrCode = "true"
-	ErrCodeFalse ZogErrCode = "false"
+	IssueCodeTrue  ZogIssueCode = "true"
+	IssueCodeFalse ZogIssueCode = "false"
 
 	// ZHTTP ERRORS
-	ErrCodeZHTTPInvalidJSON  ZogErrCode = "invalid_json"  // invalid json body
-	ErrCodeZHTTPInvalidForm  ZogErrCode = "invalid_form"  // invalid form data
-	ErrCodeZHTTPInvalidQuery ZogErrCode = "invalid_query" // invalid query params
+	IssueCodeZHTTPInvalidJSON  ZogIssueCode = "invalid_json"  // invalid json body
+	IssueCodeZHTTPInvalidForm  ZogIssueCode = "invalid_form"  // invalid form data
+	IssueCodeZHTTPInvalidQuery ZogIssueCode = "invalid_query" // invalid query params
 )
 ```
