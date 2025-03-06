@@ -44,7 +44,7 @@ func TestValidateStringOptional(t *testing.T) {
 }
 
 func TestValidateStringPreTransform(t *testing.T) {
-	field := String().Required().Len(6).PreTransform(func(val any, ctx ParseCtx) (any, error) {
+	field := String().Required().Len(6).PreTransform(func(val any, ctx Ctx) (any, error) {
 		if x, ok := val.(string); ok {
 			return "foo" + x, nil
 		}
@@ -72,7 +72,7 @@ func TestValidateStringTrim(t *testing.T) {
 }
 
 func TestValidateStringPostTransform(t *testing.T) {
-	field := String().Required().PostTransform(func(val any, ctx ParseCtx) error {
+	field := String().Required().PostTransform(func(val any, ctx Ctx) error {
 		s := val.(*string)
 		*s = *s + "_transformed"
 		return nil
@@ -84,7 +84,7 @@ func TestValidateStringPostTransform(t *testing.T) {
 	assert.Equal(t, "hello_transformed", dest)
 
 	// Test that PostTransform is not applied when there's an error
-	field = String().Required().Len(1).PostTransform(func(val any, ctx ParseCtx) error {
+	field = String().Required().Len(1).PostTransform(func(val any, ctx Ctx) error {
 		s := val.(*string)
 		*s = *s + "_transformed"
 		return nil
@@ -108,7 +108,7 @@ func TestValidateStringRequiredAborts(t *testing.T) {
 }
 
 func TestValidateStringCustomTest(t *testing.T) {
-	field := String().TestFunc(func(val any, ctx ParseCtx) bool {
+	field := String().TestFunc(func(val any, ctx Ctx) bool {
 		return val == "test"
 	}, Message("Invalid"))
 

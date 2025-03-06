@@ -51,7 +51,7 @@ func TestValidateSliceDefault(t *testing.T) {
 }
 
 func TestValidateSlicePreTransform(t *testing.T) {
-	preTransform := func(val any, ctx ParseCtx) (any, error) {
+	preTransform := func(val any, ctx Ctx) (any, error) {
 		if v, ok := val.([]string); ok {
 			out := make([]string, len(v))
 			copy(out, v)
@@ -73,7 +73,7 @@ func TestValidateSlicePreTransform(t *testing.T) {
 }
 
 func TestValidateSlicePostTransform(t *testing.T) {
-	postTransform := func(val any, ctx ParseCtx) error {
+	postTransform := func(val any, ctx Ctx) error {
 		if v, ok := val.(*[]string); ok {
 			for i := range *v {
 				(*v)[i] = strings.ToUpper((*v)[i])
@@ -156,7 +156,7 @@ func TestValidateSliceContains(t *testing.T) {
 }
 
 func TestValidateSliceCustomTest(t *testing.T) {
-	validator := Slice(String()).TestFunc(func(val any, ctx ParseCtx) bool {
+	validator := Slice(String()).TestFunc(func(val any, ctx Ctx) bool {
 		if v, ok := val.(*[]string); ok {
 			return len(*v) > 0 && (*v)[0] == "test"
 		}

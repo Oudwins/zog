@@ -50,7 +50,7 @@ func TestTimeValidateCatch(t *testing.T) {
 }
 
 func TestTimeValidatePreTransform(t *testing.T) {
-	validator := Time().PreTransform(func(data any, ctx ParseCtx) (any, error) {
+	validator := Time().PreTransform(func(data any, ctx Ctx) (any, error) {
 		// Add 1 hour to the input time
 		return data.(time.Time).Add(time.Hour), nil
 	})
@@ -63,7 +63,7 @@ func TestTimeValidatePreTransform(t *testing.T) {
 }
 
 func TestTimeValidatePostTransform(t *testing.T) {
-	validator := Time().PostTransform(func(dataPtr any, ctx ParseCtx) error {
+	validator := Time().PostTransform(func(dataPtr any, ctx Ctx) error {
 		// Set the time to noon
 		t := dataPtr.(*time.Time)
 		*t = time.Date(t.Year(), t.Month(), t.Day(), 12, 0, 0, 0, t.Location())
@@ -115,7 +115,7 @@ func TestTimeValidateEQ(t *testing.T) {
 
 func TestTimeValidateCustomTest(t *testing.T) {
 	now := time.Now()
-	validator := Time().TestFunc(func(val any, ctx ParseCtx) bool {
+	validator := Time().TestFunc(func(val any, ctx Ctx) bool {
 		return val != now
 	}, Message("custom"))
 	errs := validator.Validate(&now)

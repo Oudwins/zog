@@ -12,7 +12,7 @@ type TestOption = func(test *p.Test)
 // Message is a function that allows you to set a custom message for the test.
 func Message(msg string) TestOption {
 	return func(test *p.Test) {
-		test.IssueFmtFunc = func(e *ZogIssue, p ParseCtx) {
+		test.IssueFmtFunc = func(e *ZogIssue, p Ctx) {
 			e.SetMessage(msg)
 		}
 	}

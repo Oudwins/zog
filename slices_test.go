@@ -138,7 +138,7 @@ func TestSliceErrors(t *testing.T) {
 
 func TestSlicePostTransform(t *testing.T) {
 	s := []string{}
-	schema := Slice(String()).PostTransform(func(dataPtr any, ctx ParseCtx) error {
+	schema := Slice(String()).PostTransform(func(dataPtr any, ctx Ctx) error {
 		s := dataPtr.(*[]string)
 		for i := 0; i < len(*s); i++ {
 			(*s)[i] = strings.ToUpper((*s)[i])
@@ -155,7 +155,7 @@ func TestSlicePostTransform(t *testing.T) {
 
 func TestSlicePreTransform(t *testing.T) {
 	s := []string{}
-	schema := Slice(String()).PreTransform(func(data any, ctx ParseCtx) (any, error) {
+	schema := Slice(String()).PreTransform(func(data any, ctx Ctx) (any, error) {
 		s := data.([]string)
 		for i := 0; i < len(s); i++ {
 			s[i] = strings.ToUpper(s[i])
@@ -219,7 +219,7 @@ func TestSliceContains(t *testing.T) {
 func TestSliceCustomTest(t *testing.T) {
 	input := []string{"abc", "defg", "hijkl"}
 	s := []string{}
-	schema := Slice(String()).TestFunc(func(val any, ctx ParseCtx) bool {
+	schema := Slice(String()).TestFunc(func(val any, ctx Ctx) bool {
 		// Custom test logic here
 		x := val.(*[]string)
 		return reflect.DeepEqual(input, *x)

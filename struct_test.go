@@ -136,7 +136,7 @@ func TestStructCustomTestInSchema(t *testing.T) {
 	}
 
 	// Create a custom test function
-	customTest := func(val any, ctx ParseCtx) bool {
+	customTest := func(val any, ctx Ctx) bool {
 		// Custom test logic here
 		num := val.(int)
 		return num > 0
@@ -172,7 +172,7 @@ func TestStructCustomTest(t *testing.T) {
 
 	schema := Struct(Schema{
 		"str": String(),
-	}).TestFunc(func(val any, ctx ParseCtx) bool {
+	}).TestFunc(func(val any, ctx Ctx) bool {
 		s := val.(*CustomStruct)
 		return s.Str == "valid"
 	}, Message("customTest"))
@@ -261,7 +261,7 @@ func TestStructPreTransforms(t *testing.T) {
 		Value string
 	}
 
-	preTransform := func(val any, ctx ParseCtx) (any, error) {
+	preTransform := func(val any, ctx Ctx) (any, error) {
 		if m, ok := val.(map[string]any); ok {
 			m["value"] = "transformed"
 			return m, nil
@@ -286,7 +286,7 @@ func TestStructPostTransforms(t *testing.T) {
 		Value string
 	}
 
-	postTransform := func(val any, ctx ParseCtx) error {
+	postTransform := func(val any, ctx Ctx) error {
 		if s, ok := val.(*TestStruct); ok {
 			s.Value = "post_" + s.Value
 		}

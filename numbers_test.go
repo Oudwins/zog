@@ -115,7 +115,7 @@ func TestNumberCatch(t *testing.T) {
 }
 
 func TestNumberPreTransform(t *testing.T) {
-	preTransform := func(val any, ctx ParseCtx) (any, error) {
+	preTransform := func(val any, ctx Ctx) (any, error) {
 		if v, ok := val.(int); ok {
 			return v * 2, nil
 		}
@@ -132,7 +132,7 @@ func TestNumberPreTransform(t *testing.T) {
 }
 
 func TestNumberPostTransform(t *testing.T) {
-	postTransform := func(val any, ctx ParseCtx) error {
+	postTransform := func(val any, ctx Ctx) error {
 		if v, ok := val.(*int); ok {
 			*v += 1
 		}
@@ -149,14 +149,14 @@ func TestNumberPostTransform(t *testing.T) {
 }
 
 func TestNumberMultipleTransforms(t *testing.T) {
-	preTransform := func(val any, ctx ParseCtx) (any, error) {
+	preTransform := func(val any, ctx Ctx) (any, error) {
 		if v, ok := val.(int); ok {
 			return v * 2, nil
 		}
 		return val, nil
 	}
 
-	postTransform := func(val any, ctx ParseCtx) error {
+	postTransform := func(val any, ctx Ctx) error {
 		if v, ok := val.(*int); ok {
 			*v += 1
 		}

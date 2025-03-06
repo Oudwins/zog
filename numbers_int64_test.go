@@ -104,7 +104,7 @@ func TestInt64Catch(t *testing.T) {
 }
 
 func TestInt64PreTransform(t *testing.T) {
-	preTransform := func(val any, ctx ParseCtx) (any, error) {
+	preTransform := func(val any, ctx Ctx) (any, error) {
 		if v, ok := val.(int64); ok {
 			return v * 2, nil
 		}
@@ -121,7 +121,7 @@ func TestInt64PreTransform(t *testing.T) {
 }
 
 func TestInt64PostTransform(t *testing.T) {
-	postTransform := func(val any, ctx ParseCtx) error {
+	postTransform := func(val any, ctx Ctx) error {
 		if v, ok := val.(*int64); ok {
 			*v += 1
 		}
@@ -138,14 +138,14 @@ func TestInt64PostTransform(t *testing.T) {
 }
 
 func TestInt64MultipleTransforms(t *testing.T) {
-	preTransform := func(val any, ctx ParseCtx) (any, error) {
+	preTransform := func(val any, ctx Ctx) (any, error) {
 		if v, ok := val.(int64); ok {
 			return v * 2, nil
 		}
 		return val, nil
 	}
 
-	postTransform := func(val any, ctx ParseCtx) error {
+	postTransform := func(val any, ctx Ctx) error {
 		if v, ok := val.(*int64); ok {
 			*v += 1
 		}

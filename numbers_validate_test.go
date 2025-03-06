@@ -83,7 +83,7 @@ func TestValidateNumberCatch(t *testing.T) {
 }
 
 func TestValidateNumberPreTransform(t *testing.T) {
-	preTransform := func(val any, ctx ParseCtx) (any, error) {
+	preTransform := func(val any, ctx Ctx) (any, error) {
 		if v, ok := val.(int); ok {
 			out := v * 2
 			return out, nil
@@ -101,7 +101,7 @@ func TestValidateNumberPreTransform(t *testing.T) {
 }
 
 func TestValidateNumberPostTransform(t *testing.T) {
-	postTransform := func(val any, ctx ParseCtx) error {
+	postTransform := func(val any, ctx Ctx) error {
 		if v, ok := val.(*int); ok {
 			*v += 1
 		}
@@ -118,7 +118,7 @@ func TestValidateNumberPostTransform(t *testing.T) {
 }
 
 func TestValidateNumberMultipleTransforms(t *testing.T) {
-	preTransform := func(val any, ctx ParseCtx) (any, error) {
+	preTransform := func(val any, ctx Ctx) (any, error) {
 		if v, ok := val.(int); ok {
 			out := v * 2
 			return out, nil
@@ -126,7 +126,7 @@ func TestValidateNumberMultipleTransforms(t *testing.T) {
 		return val, nil
 	}
 
-	postTransform := func(val any, ctx ParseCtx) error {
+	postTransform := func(val any, ctx Ctx) error {
 		if v, ok := val.(*int); ok {
 			*v += 1
 		}
@@ -271,7 +271,7 @@ func TestValidateNumberValidate(t *testing.T) {
 }
 
 func TestValidateNumberCustomTest(t *testing.T) {
-	validator := Int().TestFunc(func(val any, ctx ParseCtx) bool {
+	validator := Int().TestFunc(func(val any, ctx Ctx) bool {
 		// Custom test logic here
 		assert.Equal(t, 5, val)
 		return true

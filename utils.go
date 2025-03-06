@@ -9,10 +9,6 @@ import (
 
 // ! Passing Types through
 
-// Deprecated: Use z.Ctx instead.
-// ParseCtx will be removed in the future since it is used for both validation and parsing and is a confusing name.
-type ParseCtx = p.Ctx
-
 // This is the context that is passed through an entire execution of `schema.Parse()` or `schema.Validate()`.
 // You can use it to pass a key/value for a specific execution. More about context in the [docs](https://zog.dev/context)
 type Ctx = p.Ctx
@@ -48,7 +44,7 @@ type Test = p.Test
 // WARNING: Use z.schema.TestFunc instead. This may be removed in the future
 // TestFunc is a helper function to define a custom test. It takes the error code which will be used for the error message and a validate function. Usage:
 //
-//	schema.Test(z.TestFunc(zconst.IssueCodeCustom, func(val any, ctx ParseCtx) bool {
+//	schema.Test(z.TestFunc(zconst.IssueCodeCustom, func(val any, ctx Ctx) bool {
 //		return val == "hello"
 //	}))
 func TestFunc(IssueCode zconst.ZogIssueCode, validateFunc p.TestFunc) p.Test {
