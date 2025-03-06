@@ -16,7 +16,7 @@ func TestTimeRequired(t *testing.T) {
 	now = time.Time{}
 	errs = schema.Parse(nil, &now)
 	assert.Len(t, errs, 1)
-	assert.Equal(t, "custom", errs[0].Message())
+	assert.Equal(t, "custom", errs[0].Message)
 }
 
 func TestTimeOptional(t *testing.T) {
@@ -94,7 +94,7 @@ func TestTimeAfter(t *testing.T) {
 	now = time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)
 	errs = schema.Parse(now, &now)
 	assert.Len(t, errs, 1)
-	assert.Equal(t, "custom", errs[0].Message())
+	assert.Equal(t, "custom", errs[0].Message)
 }
 func TestTimeBefore(t *testing.T) {
 	now := time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)
@@ -104,7 +104,7 @@ func TestTimeBefore(t *testing.T) {
 	now = time.Date(2022, 1, 1, 0, 0, 0, 0, time.UTC)
 	errs = schema.Parse(now, &now)
 	assert.Len(t, errs, 1)
-	assert.Equal(t, "custom", errs[0].Message())
+	assert.Equal(t, "custom", errs[0].Message)
 }
 
 func TestTimeEQ(t *testing.T) {
@@ -115,7 +115,7 @@ func TestTimeEQ(t *testing.T) {
 	now = time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)
 	errs = schema.Parse(now, &now)
 	assert.Len(t, errs, 1)
-	assert.Equal(t, "custom", errs[0].Message())
+	assert.Equal(t, "custom", errs[0].Message)
 }
 
 func TestTimeCustomTest(t *testing.T) {
@@ -125,7 +125,7 @@ func TestTimeCustomTest(t *testing.T) {
 	}, Message("custom"))
 	errs := schema.Parse(now, &now)
 	assert.NotNil(t, errs)
-	assert.Equal(t, "custom", errs[0].Message())
+	assert.Equal(t, "custom", errs[0].Message)
 }
 
 func TestTimeSchemaOption(t *testing.T) {

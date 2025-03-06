@@ -19,15 +19,15 @@ func TestNumberParse(t *testing.T) {
 
 func TestNumberParseFormatter(t *testing.T) {
 	dest := 0
-	fmt := WithIssueFormatter(func(e ZogIssue, ctx Ctx) {
+	fmt := WithIssueFormatter(func(e *ZogIssue, ctx Ctx) {
 		e.SetMessage("test2")
 	})
 	validator := Int().GTE(10, Message("test1"))
 	errs := validator.Parse(5, &dest, fmt)
-	assert.Equal(t, "test1", errs[0].Message())
+	assert.Equal(t, "test1", errs[0].Message)
 	validator2 := Int().GTE(10)
 	errs2 := validator2.Parse(5, &dest, fmt)
-	assert.Equal(t, "test2", errs2[0].Message())
+	assert.Equal(t, "test2", errs2[0].Message)
 }
 
 func TestIntSchemaOption(t *testing.T) {
@@ -65,19 +65,19 @@ func TestNumberRequired(t *testing.T) {
 	if len(errs) == 0 {
 		t.Errorf("Expected errors, got none")
 	}
-	assert.Equal(t, "custom", errs[0].Message())
+	assert.Equal(t, "custom", errs[0].Message)
 
 	errs = validator.Parse("     ", &dest)
 	if len(errs) == 0 {
 		t.Errorf("Expected errors, got none")
 	}
-	assert.Equal(t, "custom", errs[0].Message())
+	assert.Equal(t, "custom", errs[0].Message)
 
 	errs = validator.Parse(nil, &dest)
 	if len(errs) == 0 {
 		t.Errorf("Expected errors, got none")
 	}
-	assert.Equal(t, "custom", errs[0].Message())
+	assert.Equal(t, "custom", errs[0].Message)
 }
 
 func TestNumberOptional(t *testing.T) {
@@ -184,7 +184,7 @@ func TestNumberOneOf(t *testing.T) {
 	if len(errs) == 0 {
 		t.Errorf("Expected errors, got none")
 	}
-	assert.Equal(t, "custom", errs[0].Message())
+	assert.Equal(t, "custom", errs[0].Message)
 	assert.Equal(t, 4, dest)
 }
 
@@ -199,7 +199,7 @@ func TestNumberEq(t *testing.T) {
 	if len(errs) == 0 {
 		t.Errorf("Expected errors, got none")
 	}
-	assert.Equal(t, "custom", errs[0].Message())
+	assert.Equal(t, "custom", errs[0].Message)
 	assert.Equal(t, 4, dest)
 }
 
@@ -214,12 +214,12 @@ func TestNumberGt(t *testing.T) {
 	if len(errs) == 0 {
 		t.Errorf("Expected errors, got none")
 	}
-	assert.Equal(t, "custom", errs[0].Message())
+	assert.Equal(t, "custom", errs[0].Message)
 	errs = validator.Parse(4, &dest)
 	if len(errs) == 0 {
 		t.Errorf("Expected errors, got none")
 	}
-	assert.Equal(t, "custom", errs[0].Message())
+	assert.Equal(t, "custom", errs[0].Message)
 	assert.Equal(t, 4, dest)
 }
 
@@ -238,7 +238,7 @@ func TestNumberGte(t *testing.T) {
 	if len(errs) == 0 {
 		t.Errorf("Expected errors, got none")
 	}
-	assert.Equal(t, "custom", errs[0].Message())
+	assert.Equal(t, "custom", errs[0].Message)
 	assert.Equal(t, 4, dest)
 }
 
@@ -253,12 +253,12 @@ func TestNumberLt(t *testing.T) {
 	if len(errs) == 0 {
 		t.Errorf("Expected errors, got none")
 	}
-	assert.Equal(t, "custom", errs[0].Message())
+	assert.Equal(t, "custom", errs[0].Message)
 	errs = validator.Parse(6, &dest)
 	if len(errs) == 0 {
 		t.Errorf("Expected errors, got none")
 	}
-	assert.Equal(t, "custom", errs[0].Message())
+	assert.Equal(t, "custom", errs[0].Message)
 	assert.Equal(t, 6, dest)
 }
 
@@ -277,7 +277,7 @@ func TestNumberLte(t *testing.T) {
 	if len(errs) == 0 {
 		t.Errorf("Expected errors, got none")
 	}
-	assert.Equal(t, "custom", errs[0].Message())
+	assert.Equal(t, "custom", errs[0].Message)
 	assert.Equal(t, 6, dest)
 }
 

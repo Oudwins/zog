@@ -33,15 +33,15 @@ func TestPtrPrimitive(t *testing.T) {
 
 func TestPtrParseFormatter(t *testing.T) {
 	var dest *int
-	fmt := WithIssueFormatter(func(e ZogIssue, ctx Ctx) {
+	fmt := WithIssueFormatter(func(e *ZogIssue, ctx Ctx) {
 		e.SetMessage("test2")
 	})
 	validator := Ptr(Int().GTE(10)).NotNil(Message("test1"))
 	errs := validator.Parse(nil, &dest, fmt)
-	assert.Equal(t, "test1", errs[zconst.ISSUE_KEY_ROOT][0].Message())
+	assert.Equal(t, "test1", errs[zconst.ISSUE_KEY_ROOT][0].Message)
 	validator2 := Ptr(Int()).NotNil()
 	errs2 := validator2.Parse(nil, &dest, fmt)
-	assert.Equal(t, "test2", errs2[zconst.ISSUE_KEY_ROOT][0].Message())
+	assert.Equal(t, "test2", errs2[zconst.ISSUE_KEY_ROOT][0].Message)
 }
 
 func TestPtrParseSetCoercerPassThrough(t *testing.T) {
@@ -77,23 +77,27 @@ func TestPtrInStruct(t *testing.T) {
 
 func TestPtrPtrInStruct(t *testing.T) {
 	type TestStruct struct {
-		Value **int
+		Value  **int
+		Value2 *int
 	}
 
 	s := Struct(Schema{
-		"value": Ptr(Ptr(Int())),
+		"value":  Ptr(Ptr(Int())).NotNil(),
+		"value2": Ptr(Int()),
 	})
-	in := map[string]any{
-		"value": 10,
-	}
 	var out TestStruct
 	// empty input
 	err := s.Parse(nil, &out)
 	assert.NotNil(t, err)
-	assert.Equal(t, zconst.IssueCodeCoerce, err[zconst.ISSUE_KEY_ROOT][0].Code())
+	assert.Equal(t, zconst.IssueCodeNotNil, err[zconst.ISSUE_KEY_FIRST][0].Code)
+	assert.Equal(t, 1, len(err[zconst.ISSUE_KEY_FIRST]))
 	assert.Nil(t, out.Value)
-
+	assert.Nil(t, out.Value2)
 	// good input
+	in := map[string]any{
+		"value":  10,
+		"value2": 20,
+	}
 	err = s.Parse(in, &out)
 
 	assert.Nil(t, err)
@@ -185,7 +189,7 @@ func TestPtrRequired(t *testing.T) {
 		err := schema.Parse(test.Val, &dest)
 		if test.ExpectedErr {
 			assert.NotNil(t, err)
-			assert.Equal(t, "Testing", err[zconst.ISSUE_KEY_ROOT][0].Message())
+			assert.Equal(t, "Testing", err[zconst.ISSUE_KEY_ROOT][0].Message)
 		} else {
 			assert.Nil(t, err)
 		}

@@ -21,7 +21,8 @@ type PointerSchema struct {
 }
 
 func (v *PointerSchema) getType() zconst.ZogType {
-	return zconst.TypePtr
+	// return zconst.TypePtr
+	return v.schema.getType()
 }
 
 func (v *PointerSchema) setCoercer(c conf.CoercerFunc) {
@@ -57,13 +58,13 @@ func (v *PointerSchema) process(ctx *p.SchemaCtx) {
 	// TODO this is a mess. But couldn't figure out a simple way to support top level optional structs without doing this.
 	// Companion code to this codde is in struct.go > process
 	subCtx := ctx.NewSchemaCtx(ctx.Val, nil, ctx.Path, v.schema.getType())
-	var err error
 	if fn, ok := ctx.Val.(p.DpFactory); ok {
-		ctx.Val, err = fn()
+		val, err := fn()
 		if err != nil {
 			ctx.AddIssue(subCtx.IssueFromUnknownError(err))
 			return
 		}
+		ctx.Val = val
 	}
 	// End of messy code
 

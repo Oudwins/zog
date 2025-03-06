@@ -127,8 +127,8 @@ func TestBoolRequired(t *testing.T) {
 				t.Errorf("On Run %s -> Expected error: %v, got: %v", test.name, test.expectErr, errs)
 			}
 
-			if test.expectErr && errs[0].Message() != "test" {
-				t.Errorf("On Run %s -> Expected error: %v, got: %v", test.name, "test", errs[0].Message())
+			if test.expectErr && errs[0].Message != "test" {
+				t.Errorf("On Run %s -> Expected error: %v, got: %v", test.name, "test", errs[0].Message)
 			}
 
 			if !test.expectErr && result != test.expected {

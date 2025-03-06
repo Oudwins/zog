@@ -17,7 +17,7 @@ func TestTimeValidateRequired(t *testing.T) {
 	now = time.Time{}
 	errs = validator.Validate(&now)
 	assert.Len(t, errs, 1)
-	assert.Equal(t, "custom", errs[0].Message())
+	assert.Equal(t, "custom", errs[0].Message)
 }
 
 func TestTimeValidateOptional(t *testing.T) {
@@ -86,7 +86,7 @@ func TestTimeValidateAfter(t *testing.T) {
 	past := time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)
 	errs = validator.Validate(&past)
 	assert.Len(t, errs, 1)
-	assert.Equal(t, "custom", errs[0].Message())
+	assert.Equal(t, "custom", errs[0].Message)
 }
 
 func TestTimeValidateBefore(t *testing.T) {
@@ -98,7 +98,7 @@ func TestTimeValidateBefore(t *testing.T) {
 	future := time.Date(2022, 1, 1, 0, 0, 0, 0, time.UTC)
 	errs = validator.Validate(&future)
 	assert.Len(t, errs, 1)
-	assert.Equal(t, "custom", errs[0].Message())
+	assert.Equal(t, "custom", errs[0].Message)
 }
 
 func TestTimeValidateEQ(t *testing.T) {
@@ -110,7 +110,7 @@ func TestTimeValidateEQ(t *testing.T) {
 	different := time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)
 	errs = validator.Validate(&different)
 	assert.Len(t, errs, 1)
-	assert.Equal(t, "custom", errs[0].Message())
+	assert.Equal(t, "custom", errs[0].Message)
 }
 
 func TestTimeValidateCustomTest(t *testing.T) {
@@ -120,7 +120,7 @@ func TestTimeValidateCustomTest(t *testing.T) {
 	}, Message("custom"))
 	errs := validator.Validate(&now)
 	assert.NotNil(t, errs)
-	assert.Equal(t, "custom", errs[0].Message())
+	assert.Equal(t, "custom", errs[0].Message)
 }
 
 func TestTimeValidateGetType(t *testing.T) {

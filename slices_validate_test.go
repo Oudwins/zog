@@ -174,7 +174,7 @@ func TestValidateSliceCustomTest(t *testing.T) {
 	if len(errs) == 0 {
 		t.Errorf("Expected errors, got none")
 	}
-	assert.Equal(t, "custom", errs["$root"][0].Message())
+	assert.Equal(t, "custom", errs["$root"][0].Message)
 	// assert.Equal(t, "custom_test", errs["$root"][0].Code())
 }
 
@@ -225,14 +225,14 @@ func TestValidateSliceMultipleValidators(t *testing.T) {
 	dest = []string{"wrong"}
 	errs = validator.Validate(&dest)
 	assert.NotEmpty(t, errs)
-	assert.Contains(t, Errors.SanitizeList(errs["$root"]), "too short")
-	assert.Contains(t, Errors.SanitizeList(errs["$root"]), "must contain test")
+	assert.Contains(t, Issues.SanitizeList(errs["$root"]), "too short")
+	assert.Contains(t, Issues.SanitizeList(errs["$root"]), "must contain test")
 	assert.Len(t, errs["$root"], 2)
 
 	dest = []string{"a", "b", "c", "d", "e"}
 	errs = validator.Validate(&dest)
 	assert.NotEmpty(t, errs)
-	assert.Contains(t, Errors.SanitizeList(errs["$root"]), "too long")
-	assert.Contains(t, Errors.SanitizeList(errs["$root"]), "must contain test")
+	assert.Contains(t, Issues.SanitizeList(errs["$root"]), "too long")
+	assert.Contains(t, Issues.SanitizeList(errs["$root"]), "must contain test")
 	assert.Len(t, errs["$root"], 2)
 }

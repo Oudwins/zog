@@ -17,24 +17,24 @@ func TestWithCtxValue(t *testing.T) {
 
 func TestWithIssueFormatter(t *testing.T) {
 	var ctx = p.NewExecCtx(p.NewErrsList(), nil)
-	WithIssueFormatter(func(e p.ZogIssue, p ParseCtx) {
+	WithIssueFormatter(func(e *p.ZogIssue, p ParseCtx) {
 		e.SetMessage("foo")
 	})(ctx)
 
-	err := &p.ZogErr{
-		EPath: "",
+	err := &p.ZogIssue{
+		Path: "",
 	}
 	ctx.AddIssue(err)
-	assert.Equal(t, "foo", err.Message())
+	assert.Equal(t, "foo", err.Message)
 }
 
 func TestWithMessageFunc(t *testing.T) {
 	var out string
-	err := String().Min(5, MessageFunc(func(e p.ZogIssue, ctx Ctx) {
+	err := String().Min(5, MessageFunc(func(e *p.ZogIssue, ctx Ctx) {
 		e.SetMessage("HELLO WORLD")
 	})).Parse("1234", &out)
 
-	assert.Equal(t, "HELLO WORLD", err[0].Message())
+	assert.Equal(t, "HELLO WORLD", err[0].Message)
 }
 
 func TestIssueCode(t *testing.T) {
@@ -43,13 +43,13 @@ func TestIssueCode(t *testing.T) {
 
 	// Test Parse
 	err := schema.Parse("1234", &out)
-	assert.Equal(t, zconst.IssueCodeCustom, err[0].Code())
+	assert.Equal(t, zconst.IssueCodeCustom, err[0].Code)
 	tutils.VerifyDefaultIssueMessages(t, err)
 
 	// Test Validate
 	out = "1234"
 	err = schema.Validate(&out)
-	assert.Equal(t, zconst.IssueCodeCustom, err[0].Code())
+	assert.Equal(t, zconst.IssueCodeCustom, err[0].Code)
 	tutils.VerifyDefaultIssueMessages(t, err)
 }
 
@@ -67,13 +67,13 @@ func TestIssuePath(t *testing.T) {
 		"name": "1234",
 	}, &out)
 	assert.NotEmpty(t, err["foo"])
-	assert.Equal(t, "foo msg", err["foo"][0].Message())
-	assert.Equal(t, "foo", err["foo"][0].Path())
+	assert.Equal(t, "foo msg", err["foo"][0].Message)
+	assert.Equal(t, "foo", err["foo"][0].Path)
 
 	// Test Validate
 	out.Name = "1234"
 	err = schema.Validate(&out)
 	assert.NotEmpty(t, err["foo"])
-	assert.Equal(t, "foo msg", err["foo"][0].Message())
-	assert.Equal(t, "foo", err["foo"][0].Path())
+	assert.Equal(t, "foo msg", err["foo"][0].Message)
+	assert.Equal(t, "foo", err["foo"][0].Path)
 }

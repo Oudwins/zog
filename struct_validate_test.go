@@ -136,7 +136,7 @@ func TestValidateStructCustomTestInSchema(t *testing.T) {
 
 	errs = schema.Validate(&obj)
 	assert.NotEmpty(t, errs)
-	assert.Equal(t, "customTest", errs["num"][0].Code())
+	assert.Equal(t, "customTest", errs["num"][0].Code)
 }
 
 func TestValidateStructCustomTest(t *testing.T) {
@@ -157,8 +157,8 @@ func TestValidateStructCustomTest(t *testing.T) {
 
 	errs := schema.Validate(&obj)
 	assert.NotEmpty(t, errs)
-	assert.Equal(t, "customTest", errs["$root"][0].Code())
-	assert.Equal(t, "customTest", errs["$root"][0].Message())
+	assert.Equal(t, "customTest", errs["$root"][0].Code)
+	assert.Equal(t, "customTest", errs["$root"][0].Message)
 
 	obj.Str = "valid"
 	errs = schema.Validate(&obj)
@@ -232,7 +232,7 @@ func TestValidateStructPassThroughRequired(t *testing.T) {
 	var output2 TestStruct
 	errs = schema.Validate(&output2)
 	assert.NotEmpty(t, errs)
-	assert.Equal(t, zconst.IssueCodeRequired, errs["somefield"][0].Code())
+	assert.Equal(t, zconst.IssueCodeRequired, errs["somefield"][0].Code)
 }
 
 func TestValidateStructGetType(t *testing.T) {

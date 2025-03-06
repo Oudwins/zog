@@ -90,21 +90,23 @@ func (v *StructSchema) process(ctx *p.SchemaCtx) {
 	}()
 
 	var dataProv p.DataProvider
-	var err error
 	// 2. cast data as DataProvider
 	if factory, ok := ctx.Val.(p.DpFactory); ok {
-		dataProv, err = factory()
+		newDp, err := factory()
 		// This is a little bit hacky. But we want to exit here because the error came from zhttp. Meaning we had an error trying to parse the request.
 		// I'm not sure if this is the best behaviour? Do we want to exit here or do we want to continue processing (ofc we add the error always)
 		if err != nil {
 			ctx.AddIssue(ctx.IssueFromUnknownError(err))
 			return
 		}
+		dataProv = newDp
 	} else {
-		dataProv, err = p.TryNewAnyDataProvider(ctx.Val)
+		newDp, err := p.TryNewAnyDataProvider(ctx.Val)
 		if err != nil {
 			ctx.AddIssue(ctx.IssueFromCoerce(err))
+			return
 		}
+		dataProv = newDp
 	}
 
 	// 3. Process / validate struct fields

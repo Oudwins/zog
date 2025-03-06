@@ -23,21 +23,21 @@ var DefaultIssueMessageMap zconst.LangMap = en.Map
 const valuePlaceholder = "{{value}}"
 
 func NewDefaultFormatter(m zconst.LangMap) p.IssueFmtFunc {
-	return func(e p.ZogIssue, c p.Ctx) {
-		if e.Message() != "" {
+	return func(e *p.ZogIssue, c p.Ctx) {
+		if e.Message != "" {
 			return
 		}
 		// Check if the error msg is defined do nothing if it set
-		t := e.Dtype()
-		msg, ok := m[t][e.Code()]
+		t := e.Dtype
+		msg, ok := m[t][e.Code]
 		if !ok {
 			e.SetMessage(m[t][zconst.IssueCodeFallback])
 			return
 		}
-		for k, v := range e.Params() {
+		for k, v := range e.Params {
 			msg = strings.ReplaceAll(msg, "{{"+k+"}}", fmt.Sprintf("%v", v))
 		}
-		msg = strings.ReplaceAll(msg, valuePlaceholder, fmt.Sprintf("%v", e.Value()))
+		msg = strings.ReplaceAll(msg, valuePlaceholder, fmt.Sprintf("%v", e.Value))
 		e.SetMessage(msg)
 	}
 

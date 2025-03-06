@@ -26,15 +26,15 @@ func TestValidatePtrPrimitive(t *testing.T) {
 
 func TestPtrValidateFormatter(t *testing.T) {
 	var dest *int
-	fmt := WithIssueFormatter(func(e ZogIssue, ctx Ctx) {
+	fmt := WithIssueFormatter(func(e *ZogIssue, ctx Ctx) {
 		e.SetMessage("test2")
 	})
 	validator := Ptr(Int().GTE(10)).NotNil(Message("test1"))
 	errs := validator.Validate(&dest, fmt)
-	assert.Equal(t, "test1", errs[zconst.ISSUE_KEY_ROOT][0].Message())
+	assert.Equal(t, "test1", errs[zconst.ISSUE_KEY_ROOT][0].Message)
 	validator2 := Ptr(Int()).NotNil()
 	errs2 := validator2.Validate(&dest, fmt)
-	assert.Equal(t, "test2", errs2[zconst.ISSUE_KEY_ROOT][0].Message())
+	assert.Equal(t, "test2", errs2[zconst.ISSUE_KEY_ROOT][0].Message)
 }
 
 func TestValidatePtrInStruct(t *testing.T) {

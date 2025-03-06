@@ -17,38 +17,11 @@ type ParseCtx = p.Ctx
 // You can use it to pass a key/value for a specific execution. More about context in the [docs](https://zog.dev/context)
 type Ctx = p.Ctx
 
-// Deprecated: This will be removed in the future. Use z.ZogIssue instead
-// This is a type for the ZogError interface. It is the interface that all errors returned from zog implement.
-type ZogError = p.ZogError
-
-// This is a type for the ZogIssue= interface. It is the interface that all errors returned from zog implement.
-type ZogIssue = p.ZogError
-
-// Deprecated: This will be removed in the future. Use z.ZogIssueList instead
-// This is a type for the ZogErrList type. It is a list of ZogIssues returned from parsing primitive schemas. The type is []ZogError
-type ZogErrList = p.ZogIssueList
+// This is a type for the ZogIssue type. It is the type of all the errors returned from zog.
+type ZogIssue = p.ZogIssue
 
 // This is a type for the ZogErrList type. It is a list of ZogIssues returned from parsing primitive schemas. The type is []ZogIssue
 type ZogIssueList = p.ZogIssueList
-
-// Deprecated: This will be removed in the future. Use z.ZogIssueMap instead
-// This is a type for the ZogErrMap type. It is a map[string][]ZogError returned from parsing complex schemas. The type is map[string][]ZogError
-// All errors are returned in a flat map, not matter how deep the schema is. For example:
-/*
-schema := z.Struct(z.Schema{
-  "address": z.Struct(z.Schema{
-    "street": z.String().Min(3).Max(10),
-    "city": z.String().Min(3).Max(10),
-  }),
-  "fields": z.Slice(z.String().Min(3).Max(10)),
-})
-errors = map[string][]ZogError{
-  "address.street": []ZogError{....}, // error for the street field in the address struct
-  "fields[0]": []ZogError{...}, // error for the first field in the slice
-}
-
-*/
-type ZogErrMap = p.ZogIssueMap
 
 // This is a type for the ZogIssueMap type. It is a map[string][]ZogIssue returned from parsing complex schemas. The type is map[string][]ZogIssue
 // All errors are returned in a flat map, not matter how deep the schema is. For example:
@@ -72,6 +45,7 @@ type ZogIssueMap = p.ZogIssueMap
 // Test is the test object. It is the struct that represents an individual validation. For example `z.String().Min(3)` is a test that checks if the string is at least 3 characters long.
 type Test = p.Test
 
+// WARNING: Use z.schema.TestFunc instead. This may be removed in the future
 // TestFunc is a helper function to define a custom test. It takes the error code which will be used for the error message and a validate function. Usage:
 //
 //	schema.Test(z.TestFunc(zconst.IssueCodeCustom, func(val any, ctx ParseCtx) bool {
@@ -90,6 +64,7 @@ type issueHelpers struct {
 
 var Issues = issueHelpers{}
 
+// SanitizeMap returns a map of issue messages for each key in the map. It keeps only the issue messages and strips out any other issue data.
 func (i *issueHelpers) SanitizeMap(m ZogIssueMap) map[string][]string {
 	errs := make(map[string][]string, len(m))
 	for k, v := range m {
@@ -98,105 +73,46 @@ func (i *issueHelpers) SanitizeMap(m ZogIssueMap) map[string][]string {
 	return errs
 }
 
+// Suger function that does both sanitize and collect.
 func (i issueHelpers) SanitizeMapAndCollect(m ZogIssueMap) map[string][]string {
 	errs := i.SanitizeMap(m)
 	i.CollectMap(m)
 	return errs
 }
 
+// SanitizeList returns a slice of issue messages for each issue in the list. It keeps only the issue messages and strips out any other issue data.
 func (i *issueHelpers) SanitizeList(l ZogIssueList) []string {
 	errs := make([]string, len(l))
 	for i, err := range l {
-		errs[i] = err.Message()
+		errs[i] = err.Message
 	}
 	return errs
 }
 
-func (i *issueHelpers) SanitizeListAndCollect(l ZogIssueList) []string {
+// Suger function that does both sanitize and collect.
+func (i issueHelpers) SanitizeListAndCollect(l ZogIssueList) []string {
 	errs := i.SanitizeList(l)
 	i.CollectList(l)
 	return errs
 }
 
+// Collects a ZogIssueMap to be reused by Zog. This will "free" the issues in the map. This can help make Zog more performant by reusing issue structs.
 func (i *issueHelpers) CollectMap(issues ZogIssueMap) {
 	for _, list := range issues {
 		i.CollectList(list)
 	}
 }
 
+// Collects a ZogIssueList to be reused by Zog. This will "free" the issues in the list. This can help make Zog more performant by reusing issue structs.
 func (i *issueHelpers) CollectList(issues ZogIssueList) {
-	for _, err := range issues {
-		if err, ok := err.(*p.ZogErr); ok {
-			err.Free()
-		}
+	for _, iss := range issues {
+		i.Collect(iss)
 	}
 }
 
-// ! ERRORS -> Deprecated
-// Deprecated: This will be removed in the future.
-type errHelpers struct {
-}
-
-// Deprecated: This will be removed in the future.
-// Use z.Issues instead
-// Helper struct for dealing with zog errors. Beware this API may change
-var Errors = errHelpers{}
-
-// Deprecated: This will be removed in the future.
-// Create error from (originValue any, destinationValue any, test *p.Test)
-func (e *errHelpers) FromTest(o any, destType zconst.ZogType, t *p.Test, p ParseCtx) ZogIssue {
-	er := e.New(t.IssueCode, o, destType, t.Params, "", nil)
-	if t.IssueFmtFunc != nil {
-		t.IssueFmtFunc(er, p)
-	}
-	return er
-}
-
-// Deprecated: This will be removed in the future.
-// Create error from
-func (e *errHelpers) FromErr(o any, destType zconst.ZogType, err error) ZogIssue {
-	return e.New(zconst.IssueCodeCustom, o, destType, nil, "", err)
-}
-
-// Deprecated: This will be removed in the future.
-func (e *errHelpers) WrapUnknown(o any, destType zconst.ZogType, err error) ZogIssue {
-	zerr, ok := err.(ZogIssue)
-	if !ok {
-		return e.FromErr(o, destType, err)
-	}
-	return zerr
-}
-
-// Deprecated: This will be removed in the future.
-func (e *errHelpers) New(code zconst.ZogIssueCode, o any, destType zconst.ZogType, params map[string]any, msg string, err error) p.ZogError {
-	return &p.ZogErr{
-		C:       code,
-		ParamsM: params,
-		Val:     o,
-		Typ:     destType,
-		Msg:     msg,
-		Err:     err,
-	}
-}
-
-// Deprecated: This will be removed in the future. Use z.Issues.SanitizeMap instead
-func (e *errHelpers) SanitizeMap(m p.ZogIssueMap) map[string][]string {
-	return Issues.SanitizeMap(m)
-}
-
-// Deprecated: This will be removed in the future. Use z.Issues.SanitizeList instead
-func (e *errHelpers) SanitizeList(l p.ZogIssueList) []string {
-	return Issues.SanitizeList(l)
-}
-
-// ! Data Providers
-
-// Deprecated: This will be removed in the future.
-// You should just pass your map[string]T to the schema.Parse() function directly without using this:
-// old: schema.Parse(z.NewMapDataProvider(m), &dest)
-// new: schema.Parse(m, &dest)
-func NewMapDataProvider[T any](m map[string]T) p.DataProvider {
-	return p.NewMapDataProvider(m)
+// Collects a ZogIssue to be reused by Zog. This will "free" the issue. This can help make Zog more performant by reusing issue structs.
+func (i *issueHelpers) Collect(issue *ZogIssue) {
+	p.FreeIssue(issue)
 }
 
 // Backwards Compatibility
