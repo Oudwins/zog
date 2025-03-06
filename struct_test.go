@@ -51,7 +51,7 @@ func TestStructExample(t *testing.T) {
 	}
 
 	// parse the data
-	errs := objSchema.Parse(NewMapDataProvider(data), &o)
+	errs := objSchema.Parse(data, &o)
 	assert.Nil(t, errs)
 	assert.Equal(t, o.Str, "hello")
 }
@@ -67,7 +67,7 @@ func TestStructTags(t *testing.T) {
 		"tim": "2024-08-06T00:00:00Z",
 	}
 
-	errs := objSchema.Parse(NewMapDataProvider(data), &o)
+	errs := objSchema.Parse(data, &o)
 	assert.Nil(t, errs)
 	assert.Equal(t, o.Str, "hello")
 	assert.Equal(t, o.In, 10)
@@ -100,7 +100,7 @@ func TestStructNestedStructs(t *testing.T) {
 		"schema": map[string]any{"str": "hello"},
 	}
 
-	errs := nestedSchema.Parse(NewMapDataProvider(m), &v)
+	errs := nestedSchema.Parse(m, &v)
 	assert.Nil(t, errs)
 	assert.Equal(t, v.Str, "hello")
 	assert.Equal(t, v.Schema.Str, "hello")

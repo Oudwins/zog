@@ -20,31 +20,8 @@ type Ctx = p.Ctx
 // This is a type for the ZogIssue type. It is the type of all the errors returned from zog.
 type ZogIssue = p.ZogIssue
 
-// Deprecated: This will be removed in the future. Use z.ZogIssueList instead
-// This is a type for the ZogErrList type. It is a list of ZogIssues returned from parsing primitive schemas. The type is []ZogError
-type ZogErrList = p.ZogIssueList
-
 // This is a type for the ZogErrList type. It is a list of ZogIssues returned from parsing primitive schemas. The type is []ZogIssue
 type ZogIssueList = p.ZogIssueList
-
-// Deprecated: This will be removed in the future. Use z.ZogIssueMap instead
-// This is a type for the ZogErrMap type. It is a map[string][]ZogError returned from parsing complex schemas. The type is map[string][]ZogError
-// All errors are returned in a flat map, not matter how deep the schema is. For example:
-/*
-schema := z.Struct(z.Schema{
-  "address": z.Struct(z.Schema{
-    "street": z.String().Min(3).Max(10),
-    "city": z.String().Min(3).Max(10),
-  }),
-  "fields": z.Slice(z.String().Min(3).Max(10)),
-})
-errors = map[string][]ZogError{
-  "address.street": []ZogError{....}, // error for the street field in the address struct
-  "fields[0]": []ZogError{...}, // error for the first field in the slice
-}
-
-*/
-type ZogErrMap = p.ZogIssueMap
 
 // This is a type for the ZogIssueMap type. It is a map[string][]ZogIssue returned from parsing complex schemas. The type is map[string][]ZogIssue
 // All errors are returned in a flat map, not matter how deep the schema is. For example:
@@ -68,6 +45,7 @@ type ZogIssueMap = p.ZogIssueMap
 // Test is the test object. It is the struct that represents an individual validation. For example `z.String().Min(3)` is a test that checks if the string is at least 3 characters long.
 type Test = p.Test
 
+// WARNING: Use z.schema.TestFunc instead. This may be removed in the future
 // TestFunc is a helper function to define a custom test. It takes the error code which will be used for the error message and a validate function. Usage:
 //
 //	schema.Test(z.TestFunc(zconst.IssueCodeCustom, func(val any, ctx ParseCtx) bool {
@@ -135,16 +113,6 @@ func (i *issueHelpers) CollectList(issues ZogIssueList) {
 // Collects a ZogIssue to be reused by Zog. This will "free" the issue. This can help make Zog more performant by reusing issue structs.
 func (i *issueHelpers) Collect(issue *ZogIssue) {
 	p.FreeIssue(issue)
-}
-
-// ! Data Providers
-
-// Deprecated: This will be removed in the future.
-// You should just pass your map[string]T to the schema.Parse() function directly without using this:
-// old: schema.Parse(z.NewMapDataProvider(m), &dest)
-// new: schema.Parse(m, &dest)
-func NewMapDataProvider[T any](m map[string]T) p.DataProvider {
-	return p.NewMapDataProvider(m)
 }
 
 // Backwards Compatibility
