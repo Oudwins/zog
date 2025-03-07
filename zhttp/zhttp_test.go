@@ -151,10 +151,19 @@ func TestRequestParamsOnJsonContentType(t *testing.T) {
 }
 
 func TestRequestParamsOnDeleteMethodWithJsonContentType(t *testing.T) {
-	formData := "name=JohnDoe&email=john@doe.com&age=30&isMarried=true&lights=on&cash=10.5&swagger=doweird&swagger=swagger&q=test"
+	// Create a fake HTTP request with JSON data
+	jsonData := `{
+		"name": "JohnDoe",
+		"email": "john@doe.com",
+		"age": 30,
+		"isMarried": true,
+		"lights": true,
+		"cash": 10.5,
+		"swagger": ["doweird", "swagger"],
+		"q": "test"
+	}`
 
-	// Create a fake HTTP request with form data
-	req, err := http.NewRequest("DELETE", "/submit?"+formData, nil)
+	req, err := http.NewRequest("DELETE", "/submit", strings.NewReader(jsonData))
 	req.Header.Set("Content-Type", "application/json")
 	if err != nil {
 		t.Fatalf("Error creating request: %v", err)
