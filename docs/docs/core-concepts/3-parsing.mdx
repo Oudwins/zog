@@ -25,6 +25,41 @@ z.Struct(z.Schema{"name": z.String().Min(3)}).Parse(map[string]any{"name": "test
 
 Under the hood Zog follows the [Parsing Execution Structure](#parsing-execution-structure) and does a bunch of things under the hood to make sure your data is parsed correctly. Such as checking for zero values, coercing types, etc...
 
+## Parsing Struct Tags
+
+By default zog will use the schema field name as the key for the parsed value. For example:
+
+```go
+type User struct {
+	Name string `zog:"name"`
+}
+z.Struct(z.Schema{"name": z.String()}).Parse(map[string]any{"name": "test"}, &User{}) // note zog will fetch the value as map[name]
+type User struct {
+   Name string `zog:"name"`
+}
+z.Struct(z.Schema{"Name": z.String()}).Parse(map[string]any{"name": "test"}, &User{}) // note zog will fetch the value as map[Name]
+```
+
+However, this is not always practical. For example, you may have data coming in in kebab case and you want to parse it into camel case. For this Zog supports a few struct tags:
+
+- `zog` tag which works for any input data
+- `json` tag which works for JSON input data
+- `form` tag which works for form input data
+- `query` tag which works for query string input data
+- `env` tag which works for environment variables see [zenv](/packages/zenv) for more info
+
+> The priority of keys is as follows:
+> `zog` -> `json` || `form` || `query` || `env` -> schema field name
+> So be careful when using `zog` tag as it will override the other tags.
+
+```go
+type User struct {
+   Name string `zog:"first-name"` // this
+   LastName string `query:"last_name" json:"last-name"`
+}
+z.Struct(z.Schema{"name": z.String(), "lastName": z.String()}).Parse(map[string]any{"first-name": "test", "lastName": "Doe"}, &User{})
+```
+
 ## Coercion
 
 Zog will attempt to coerce the data into the correct type. For example if you have a `z.Int()` schema and you pass in a `"1"` it will be coerced into an `int` type. This behaviour, like almost everything else in Zog, can be customized. Zog provides two main ways to customize coercion:
