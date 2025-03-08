@@ -122,6 +122,15 @@ func Uint64() *NumberSchema[uint64] {
 // Then call it like so:
 schema := Uint64().Required().LTE(10)
 
+/*
+If you are using parse. You may need to write your own coercion function for these weird types since zog won't have one built in. But this is quite easy, I recommend you checkout /conf/coercers.go for inspiration. Then you just have to provide that coercer to the schema like this:
+*/
+func Uint64(..) *z.NumberSchema[uint64] {
+  return &z.NumberSchema[uint64]{
+    Coercer: MyCustomCoercerFunc
+}
+}
+
 
 // Tests / Validators
 z.Int().GT(n) // validates int is greater than n
