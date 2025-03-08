@@ -189,7 +189,7 @@ func (v *StringSchema[T]) OneOf(enum []T, options ...TestOption) *StringSchema[T
 
 // Test: checks that the value is at least n characters long
 func (v *StringSchema[T]) Min(n int, options ...TestOption) *StringSchema[T] {
-	t := p.LenMin[string](n)
+	t := p.LenMin[T](n)
 	for _, opt := range options {
 		opt(&t)
 	}
@@ -199,7 +199,7 @@ func (v *StringSchema[T]) Min(n int, options ...TestOption) *StringSchema[T] {
 
 // Test: checks that the value is at most n characters long
 func (v *StringSchema[T]) Max(n int, options ...TestOption) *StringSchema[T] {
-	t := p.LenMax[string](n)
+	t := p.LenMax[T](n)
 	for _, opt := range options {
 		opt(&t)
 	}
@@ -209,7 +209,7 @@ func (v *StringSchema[T]) Max(n int, options ...TestOption) *StringSchema[T] {
 
 // Test: checks that the value is exactly n characters long
 func (v *StringSchema[T]) Len(n int, options ...TestOption) *StringSchema[T] {
-	t := p.Len[string](n)
+	t := p.Len[T](n)
 	for _, opt := range options {
 		opt(&t)
 	}
