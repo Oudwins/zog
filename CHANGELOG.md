@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.18.2](https://github.com/Oudwins/zog/compare/v0.18.1...v0.18.2) (2025-03-08)
+
+
+### ⚠ BREAKING CHANGES
+
+* zog tag changed to a catch all instead of superseding the other tags
+
+### Bug Fixes
+
+* zog tag changed to a catch all instead of superseding the other tags ([869268e](https://github.com/Oudwins/zog/commit/869268ecf8aaf981fe0ac23e7de521bc22222e2a))
+
+
+### Miscellaneous Chores
+
+* release 0.18.2 ([6517301](https://github.com/Oudwins/zog/commit/6517301b14f44b40c73e5193e846fdb449005512))
+
 ## [0.18.1](https://github.com/Oudwins/zog/compare/v0.18.0...v0.18.1) (2025-03-08)
 
 
