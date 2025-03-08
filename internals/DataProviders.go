@@ -3,13 +3,30 @@ package internals
 import (
 	"fmt"
 	"reflect"
+
+	zconst "github.com/Oudwins/zog/zconst"
 )
+
+func GetKeyFromField(field reflect.StructField, fallback string, tag *string) string {
+	fieldTag, ok := field.Tag.Lookup(zconst.ZogTag)
+	if ok {
+		return fieldTag
+	}
+	if tag != nil {
+		fieldTag, ok = field.Tag.Lookup(*tag)
+		if ok {
+			return fieldTag
+		}
+	}
+	return fallback
+}
 
 type DpFactory = func() (DataProvider, *ZogIssue)
 
 // This is used for parsing structs & maps
 type DataProvider interface {
 	Get(key string) any
+	GetByField(field reflect.StructField, fallback string) (any, string)
 	GetNestedProvider(key string) DataProvider
 	GetUnderlying() any // returns the underlying value the dp is wrapping
 }
@@ -18,11 +35,18 @@ type DataProvider interface {
 var _ DataProvider = &MapDataProvider[string]{}
 
 type MapDataProvider[T any] struct {
-	M map[string]T
+	M   map[string]T
+	tag *string
 }
 
 func (m *MapDataProvider[T]) Get(key string) any {
 	return any(m.M[key])
+}
+
+// returns value + key used
+func (m *MapDataProvider[T]) GetByField(field reflect.StructField, fallback string) (any, string) {
+	key := GetKeyFromField(field, fallback, m.tag)
+	return m.Get(key), key
 }
 
 func (m *MapDataProvider[T]) GetNestedProvider(key string) DataProvider {
@@ -34,12 +58,13 @@ func (m *MapDataProvider[T]) GetUnderlying() any {
 	return m.M
 }
 
-func NewMapDataProvider[T any](m map[string]T) DataProvider {
+func NewMapDataProvider[T any](m map[string]T, tag *string) DataProvider {
 	if len(m) == 0 {
 		return nil
 	}
 	return &MapDataProvider[T]{
-		M: m,
+		M:   m,
+		tag: tag,
 	}
 }
 
@@ -47,7 +72,7 @@ func NewSafeMapDataProvider[T any](m map[string]T) DataProvider {
 	if len(m) == 0 {
 		return &EmptyDataProvider{}
 	}
-	return NewMapDataProvider(m)
+	return NewMapDataProvider(m, nil)
 }
 
 type EmptyDataProvider struct {
@@ -56,6 +81,10 @@ type EmptyDataProvider struct {
 
 func (e *EmptyDataProvider) Get(key string) any {
 	return nil
+}
+
+func (e *EmptyDataProvider) GetByField(field reflect.StructField, fallback string) (any, string) {
+	return nil, fallback
 }
 
 func (e *EmptyDataProvider) GetNestedProvider(key string) DataProvider {
