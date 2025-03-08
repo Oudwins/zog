@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.18.1](https://github.com/Oudwins/zog/compare/v0.18.0...v0.18.1) (2025-03-08)
+
+
+### Features
+
+* allow zog to use multiple struct tags zog, json, form, query, env ([5426bb6](https://github.com/Oudwins/zog/commit/5426bb6eb5c93f314dc0c5d805d5e7cd51b2cf0c))
+
+
+### Miscellaneous Chores
+
+* release 0.18.1 ([62fcb88](https://github.com/Oudwins/zog/commit/62fcb88e420204837ee23902c6761037d5fafc3d))
+
 ## [0.18.0](https://github.com/Oudwins/zog/compare/v0.17.2...v0.18.0) (2025-03-08)
 
 
