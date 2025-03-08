@@ -48,7 +48,7 @@ func TestEnvParsingWithEnvTag(t *testing.T) {
 
 func TestEnvParsingWithConflictingTags(t *testing.T) {
 	type TestStruct struct {
-		Str  string `zog:"TEST_STR" env:"TEST_STR2"` // zog takes priority over env
+		Str  string `zog:"TEST_STR2" env:"TEST_STR"` // env takes priority for being more specific
 		PORT int
 	}
 	env := TestStruct{}

@@ -71,7 +71,7 @@ func TestRequestParams(t *testing.T) {
 		IsMarried bool     `query:"Married"`
 		Lights    bool     `query:"light"`
 		Cash      float64  `query:"money"`
-		Swagger   []string `query:"swagger"`
+		Swagger   []string `zog:"random" query:"swagger"` // query takes priority over zog
 		Q         string   `zog:"q"`
 	}
 

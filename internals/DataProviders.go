@@ -8,15 +8,15 @@ import (
 )
 
 func GetKeyFromField(field reflect.StructField, fallback string, tag *string) string {
-	fieldTag, ok := field.Tag.Lookup(zconst.ZogTag)
-	if ok {
-		return fieldTag
-	}
 	if tag != nil {
-		fieldTag, ok = field.Tag.Lookup(*tag)
+		fieldTag, ok := field.Tag.Lookup(*tag)
 		if ok {
 			return fieldTag
 		}
+	}
+	fieldTag, ok := field.Tag.Lookup(zconst.ZogTag)
+	if ok {
+		return fieldTag
 	}
 	return fallback
 }

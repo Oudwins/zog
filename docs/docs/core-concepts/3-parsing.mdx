@@ -42,19 +42,20 @@ z.Struct(z.Schema{"Name": z.String()}).Parse(map[string]any{"name": "test"}, &Us
 
 However, this is not always practical. For example, you may have data coming in in kebab case and you want to parse it into camel case. For this Zog supports a few struct tags:
 
-- `zog` tag which works for any input data
 - `json` tag which works for JSON input data
 - `form` tag which works for form input data
 - `query` tag which works for query string input data
 - `env` tag which works for environment variables see [zenv](/packages/zenv) for more info
+- `zog` a catch all tag which works for any input data
 
 > The priority of keys is as follows:
-> `zog` -> `json` || `form` || `query` || `env` -> schema field name
-> So be careful when using `zog` tag as it will override the other tags.
+> `json` || `form` || `query` || `env` -> `zog` -> schema field name
+
+You can mix and match without issue:
 
 ```go
 type User struct {
-   Name string `zog:"first-name"` // this
+   Name string `zog:"first-name"`
    LastName string `query:"last_name" json:"last-name"`
 }
 z.Struct(z.Schema{"name": z.String(), "lastName": z.String()}).Parse(map[string]any{"first-name": "test", "lastName": "Doe"}, &User{})
