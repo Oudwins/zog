@@ -3,7 +3,6 @@ package zog
 import (
 	"fmt"
 	"reflect"
-	"strings"
 
 	"github.com/Oudwins/zog/conf"
 	p "github.com/Oudwins/zog/internals"
@@ -113,8 +112,13 @@ func (v *StructSchema) process(ctx *p.SchemaCtx) {
 	structVal := reflect.ValueOf(ctx.DestPtr).Elem()
 
 	for key, processor := range v.schema {
-		fieldKey := key
-		key = strings.ToUpper(string(key[0])) + key[1:]
+		originalKey := key
+		if key[0] >= 'a' && key[0] <= 'z' {
+			var b [32]byte // Use a size that fits your max key length
+			copy(b[:], key)
+			b[0] -= 32
+			key = string(b[:len(key)])
+		}
 
 		fieldMeta, ok := structVal.Type().FieldByName(key)
 		if !ok {
@@ -122,16 +126,12 @@ func (v *StructSchema) process(ctx *p.SchemaCtx) {
 		}
 		destPtr := structVal.FieldByName(key).Addr().Interface()
 
-		fieldTag, ok := fieldMeta.Tag.Lookup(zconst.ZogTag)
-		if ok {
-			fieldKey = fieldTag
-		}
-
+		subValue, fieldKey := dataProv.GetByField(fieldMeta, originalKey)
 		switch schema := processor.(type) {
 		case *StructSchema:
-			schema.process(ctx.NewSchemaCtx(dataProv.GetNestedProvider(fieldKey), destPtr, ctx.Path.Push(&fieldKey), schema.getType()))
+			schema.process(ctx.NewSchemaCtx(subValue, destPtr, ctx.Path.Push(&fieldKey), schema.getType()))
 		default:
-			schema.process(ctx.NewSchemaCtx(dataProv.Get(fieldKey), destPtr, ctx.Path.Push(&fieldKey), schema.getType()))
+			schema.process(ctx.NewSchemaCtx(subValue, destPtr, ctx.Path.Push(&fieldKey), schema.getType()))
 		}
 		ctx.Path.Pop()
 	}

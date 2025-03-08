@@ -23,6 +23,10 @@ import (
 // 	}
 // }
 
+var (
+	jsonTag string = "json"
+)
+
 // Decodes JSON data. Does not support json arrays or primitives
 /*
 - "null" -> nil -> Not accepted by zhttp -> errs["$root"]-> required issue
@@ -47,6 +51,6 @@ func Decode(r io.Reader) p.DpFactory {
 		if m == nil {
 			return nil, &p.ZogIssue{Code: zconst.IssueCodeInvalidJSON, Err: errors.New("nill json body")}
 		}
-		return p.NewMapDataProvider(m), nil
+		return p.NewMapDataProvider(m, &jsonTag), nil
 	}
 }

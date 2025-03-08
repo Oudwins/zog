@@ -6,7 +6,6 @@ sidebar_position: 5
 
 ## What is schema.Validate()?
 
-
 To validate your data you can use the `schema.Validate()` function. The function signature looks like this:
 
 ```go
@@ -25,6 +24,7 @@ z.Struct(z.Schema{"name": z.String().Min(3)}).Validate(&user)
 ```
 
 ## Required and Zero Values
+
 One quirk of `schema.Validate()` is that it will consider zero values as invalid if the schema is required. For example:
 
 ```go
@@ -44,15 +44,16 @@ z.Ptr(z.Int()).NotNil().Validate(&data) // No issues will be returned
 ```
 
 ## Struct Validation Pattern
+
 Some people prefer calling validate method on the struct themselves. For that you can use this:
 
 ```go
 type User struct {
-	ID int `zog:"id"`
+	ID int
 	Name string
 }
 var userSchema = z.Struct(z.Schema{
-	"id": z.Int().Required(),
+	"ID": z.Int().Required(),
 	"name": z.String().Required(),
 })
 
