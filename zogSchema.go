@@ -29,6 +29,14 @@ type PrimitiveZogSchema[T p.ZogPrimitive] interface {
 	Parse(val any, dest *T, options ...ExecOption) ZogIssueList
 }
 
+// Schema Parts Export
+
+// Function signature for preTransforms. Takes the value and the context and returns the new value and an error.
+type PreTransform = p.PreTransform
+
+// Function signature for postTransforms. Takes the value pointer and the context and returns an error.
+type PostTransform = p.PostTransform
+
 // ! PRIMITIVE PROCESSING
 
 func primitiveProcessor[T p.ZogPrimitive](ctx *p.SchemaCtx, preTransforms []p.PreTransform, tests []p.Test, postTransforms []p.PostTransform, defaultVal *T, required *p.Test, catch *T, coercer conf.CoercerFunc, isZeroFunc p.IsZeroValueFunc) {
