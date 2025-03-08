@@ -4,6 +4,7 @@ import (
 	"regexp"
 	"testing"
 
+	"github.com/Oudwins/zog/internals"
 	"github.com/Oudwins/zog/tutils"
 	"github.com/Oudwins/zog/zconst"
 	"github.com/stretchr/testify/assert"
@@ -379,4 +380,110 @@ func TestStringSchemaOption(t *testing.T) {
 func TestStringGetType(t *testing.T) {
 	s := String()
 	assert.Equal(t, zconst.TypeString, s.getType())
+}
+
+func TestStringNot(t *testing.T) {
+	tests := map[string]struct {
+		schema         *StringSchema
+		strVal         string
+		expectedErrMap internals.ZogIssueList
+	}{
+		"not len success": {
+			schema:         String().Not().Len(10).Contains("test"),
+			strVal:         "test",
+			expectedErrMap: nil,
+		},
+		"not len fail": {
+			schema: String().Not().Len(4).Contains("t"),
+			strVal: "test",
+			expectedErrMap: internals.ZogIssueList{
+				&internals.ZogErr{
+					C:       "not_len",
+					ParamsM: map[string]any{"len": 4},
+					Typ:     "string",
+					Val:     "test",
+					Msg:     "string must not be exactly 4 character(s)",
+					Err:     nil,
+				},
+			},
+		},
+		"not email": {
+			schema:         String().Not().Email(),
+			strVal:         "not-an-email",
+			expectedErrMap: nil,
+		},
+		"not email failure": {
+			schema: String().Not().Email(),
+			strVal: "test@test.com",
+			expectedErrMap: internals.ZogIssueList{
+				&internals.ZogErr{
+					C:       "not_email",
+					ParamsM: nil,
+					Typ:     "string",
+					Val:     "test@test.com",
+					Msg:     "must not be a valid email",
+					Err:     nil,
+				},
+			},
+		},
+		"not with empty": {
+			schema: String().Not().Len(1),
+			strVal: "a",
+			expectedErrMap: internals.ZogIssueList{
+				&internals.ZogErr{
+					C:       "not_len",
+					ParamsM: map[string]any{"len": 1},
+					Typ:     "string",
+					Val:     "a",
+					Msg:     "string must not be exactly 1 character(s)",
+					Err:     nil,
+				},
+			},
+		},
+		"not url": {
+			schema:         String().Not().URL(),
+			strVal:         "not a url",
+			expectedErrMap: nil,
+		},
+		"not url failure": {
+			schema: String().Not().URL(),
+			strVal: "https://google.com",
+			expectedErrMap: internals.ZogIssueList{
+				&internals.ZogErr{
+					C:   "not_url",
+					Typ: "string",
+					Val: "https://google.com",
+					Msg: "must not be a valid URL",
+					Err: nil,
+				},
+			},
+		},
+		"not has prefix": {
+			schema:         String().Not().HasPrefix("test_"),
+			strVal:         "value",
+			expectedErrMap: nil,
+		},
+		"not has prefix failure": {
+			schema: String().Not().HasPrefix("test_"),
+			strVal: "test_value",
+			expectedErrMap: internals.ZogIssueList{
+				&internals.ZogErr{
+					C:       "not_prefix",
+					ParamsM: map[string]any{"prefix": "test_"},
+					Typ:     "string",
+					Val:     "test_value",
+					Msg:     "string must not start with test_",
+					Err:     nil,
+				},
+			},
+		},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			var dest string
+			errMap := tc.schema.Parse(tc.strVal, &dest)
+			assert.Equal(t, tc.expectedErrMap, errMap)
+		})
+	}
 }
