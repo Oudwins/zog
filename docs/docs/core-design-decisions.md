@@ -15,6 +15,7 @@ toc_max_heading_level: 4
 
 > **A WORD OF CAUTION. ZOG & PANICS**
 > In general Zog will never panic if the input data is wrong but it will panic if you configure it wrong. For example:
+>
 > - In parse mode Zog will never panic due to invalid input data but will always panic if invalid destination is passed to the `Parse` function. if the destination does not match the schema in terms of types or fields.
 > - In validate mode Zog will panic if the expected types or fields are not present in the structure you are validating.
 
@@ -42,6 +43,13 @@ schema.Validate(&User2{}) // This will panic because the structure does not matc
 
 Most of these things are issues we would like to address in future versions.
 
-- maps are not a supported schema type
+- Unsupported schemas:
+
+  - `z.Map()`
+  - custom types -> i.e `type MyString string`
+  - custom interfaces as types -> i.e the `Valuer` interface
+
+- `zhttp` does not support parsing into any data type that is not a struct
+- Schema & pick, omit, etc are not really typesafe. i.e `z.Struct(z.Schema{"name"})` name is not typesafe
 - structs and slices don't support catch, and structs don't support default values
 - It is not recommended to use very deeply nested schemas since that requires a lot of reflection and can have a negative impact on performance
