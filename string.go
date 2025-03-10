@@ -109,8 +109,8 @@ func (v *StringSchema[T]) PreTransform(transform p.PreTransform) *StringSchema[T
 func (v *StringSchema[T]) Trim() *StringSchema[T] {
 	v.preTransforms = append(v.preTransforms, func(val any, ctx Ctx) (any, error) {
 		switch v := val.(type) {
-		case string:
-			return strings.TrimSpace(v), nil
+		case T:
+			return T(strings.TrimSpace(string(v))), nil
 		default:
 			return val, nil
 		}
@@ -257,7 +257,7 @@ func (v *StringSchema[T]) URL(options ...TestOption) *StringSchema[T] {
 }
 
 // Test: checks that the value has the prefix
-func (v *StringSchema[T]) HasPrefix(s string, options ...TestOption) *StringSchema[T] {
+func (v *StringSchema[T]) HasPrefix(s T, options ...TestOption) *StringSchema[T] {
 	t := p.Test{
 		IssueCode: zconst.IssueCodeHasPrefix,
 		Params:    make(map[string]any, 1),
@@ -266,7 +266,7 @@ func (v *StringSchema[T]) HasPrefix(s string, options ...TestOption) *StringSche
 			if !ok {
 				return false
 			}
-			return strings.HasPrefix(string(*val), s)
+			return strings.HasPrefix(string(*val), string(s))
 		},
 	}
 	t.Params[zconst.IssueCodeHasPrefix] = s
@@ -278,7 +278,7 @@ func (v *StringSchema[T]) HasPrefix(s string, options ...TestOption) *StringSche
 }
 
 // Test: checks that the value has the suffix
-func (v *StringSchema[T]) HasSuffix(s string, options ...TestOption) *StringSchema[T] {
+func (v *StringSchema[T]) HasSuffix(s T, options ...TestOption) *StringSchema[T] {
 	t := p.Test{
 		IssueCode: zconst.IssueCodeHasSuffix,
 		Params:    make(map[string]any, 1),
@@ -287,7 +287,7 @@ func (v *StringSchema[T]) HasSuffix(s string, options ...TestOption) *StringSche
 			if !ok {
 				return false
 			}
-			return strings.HasSuffix(string(*val), s)
+			return strings.HasSuffix(string(*val), string(s))
 		},
 	}
 	t.Params[zconst.IssueCodeHasSuffix] = s
@@ -299,7 +299,7 @@ func (v *StringSchema[T]) HasSuffix(s string, options ...TestOption) *StringSche
 }
 
 // Test: checks that the value contains the substring
-func (v *StringSchema[T]) Contains(sub string, options ...TestOption) *StringSchema[T] {
+func (v *StringSchema[T]) Contains(sub T, options ...TestOption) *StringSchema[T] {
 	t := p.Test{
 		IssueCode: zconst.IssueCodeContains,
 		Params:    make(map[string]any, 1),
@@ -308,7 +308,7 @@ func (v *StringSchema[T]) Contains(sub string, options ...TestOption) *StringSch
 			if !ok {
 				return false
 			}
-			return strings.Contains(string(*val), sub)
+			return strings.Contains(string(*val), string(sub))
 		},
 	}
 	t.Params[zconst.IssueCodeContains] = sub

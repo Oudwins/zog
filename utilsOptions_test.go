@@ -1,8 +1,10 @@
 package zog
 
 import (
+	"fmt"
 	"testing"
 
+	"github.com/Oudwins/zog/conf"
 	p "github.com/Oudwins/zog/internals"
 	"github.com/Oudwins/zog/tutils"
 	"github.com/Oudwins/zog/zconst"
@@ -76,4 +78,43 @@ func TestIssuePath(t *testing.T) {
 	assert.NotEmpty(t, err["foo"])
 	assert.Equal(t, "foo msg", err["foo"][0].Message)
 	assert.Equal(t, "foo", err["foo"][0].Path)
+}
+
+func TestWithCoercer(t *testing.T) {
+	schema := String(WithCoercer(func(val any) (any, error) {
+		switch v := val.(type) {
+		case [32]byte:
+			// Convert bytes to a proper string representation
+			result := ""
+			for _, b := range v {
+				if b == 0 {
+					break // Stop at null byte
+				}
+				result += fmt.Sprintf("%02x", b)
+			}
+			return result, nil
+		default:
+			// Fall back to default string coercer for other types
+			return conf.DefaultCoercers.String(val)
+		}
+	}))
+	var out string
+	err := schema.Parse([32]byte{1, 2, 3}, &out)
+	assert.Empty(t, err)
+	assert.Equal(t, "010203", out)
+
+	type S struct {
+		Bytes string
+	}
+
+	schema2 := Struct(Schema{
+		"bytes": schema,
+	})
+
+	var out2 S
+	schema2.Parse(map[string]any{
+		"bytes": [32]byte{1, 2, 3},
+	}, &out2)
+	assert.Empty(t, err)
+	assert.Equal(t, "010203", out2.Bytes)
 }

@@ -31,6 +31,15 @@ func TestCustomIntWithoutConversion(t *testing.T) {
 	assert.Equal(t, c, val)
 }
 
+func TestCustomString(t *testing.T) {
+	var v AString = " ABB "
+
+	schema := (&StringSchema[AString]{}).Contains(a).HasPrefix(a).HasSuffix(b).Len(3).Trim()
+	errs := schema.Validate(&v)
+	assert.Nil(t, errs)
+	assert.Equal(t, AString("ABB"), v)
+}
+
 func TestCustomType(t *testing.T) {
 	// This approach will work doing this before and then after and just treating the thing as a string for the rest
 	var v AString = "A"
