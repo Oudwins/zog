@@ -49,9 +49,8 @@ func primitiveProcessor[T p.ZogPrimitive](ctx *p.SchemaCtx, preTransforms []p.Pr
 	for _, fn := range preTransforms {
 		nVal, err := fn(ctx.Val, ctx)
 		// bail if error in preTransform
-		if err != nil {
+		if err != nil || ctx.HasCaught {
 			if ctx.CanCatch {
-				*destPtr = *catch
 				ctx.HasCaught = true
 				break
 			}
@@ -67,12 +66,8 @@ func primitiveProcessor[T p.ZogPrimitive](ctx *p.SchemaCtx, preTransforms []p.Pr
 			for _, fn := range postTransforms {
 				err := fn(destPtr, ctx)
 				if err != nil {
-					if ctx.CanCatch {
-						*destPtr = *catch
-						ctx.HasCaught = true
-					} else {
-						ctx.AddIssue(ctx.IssueFromUnknownError(err))
-					}
+					// TODO unsure if we should also catch here
+					ctx.AddIssue(ctx.IssueFromUnknownError(err))
 					return
 				}
 			}
@@ -80,6 +75,7 @@ func primitiveProcessor[T p.ZogPrimitive](ctx *p.SchemaCtx, preTransforms []p.Pr
 	}()
 
 	if ctx.HasCaught {
+		*destPtr = *catch
 		return
 	}
 
@@ -96,7 +92,6 @@ func primitiveProcessor[T p.ZogPrimitive](ctx *p.SchemaCtx, preTransforms []p.Pr
 			// is required & zero value
 			// required
 			if ctx.CanCatch {
-				*destPtr = *catch
 				ctx.HasCaught = true
 			} else {
 				ctx.AddIssue(ctx.IssueFromTest(required, ctx.Val))
@@ -109,7 +104,6 @@ func primitiveProcessor[T p.ZogPrimitive](ctx *p.SchemaCtx, preTransforms []p.Pr
 			*destPtr = newVal.(T)
 		} else {
 			if ctx.CanCatch {
-				*destPtr = *catch
 				ctx.HasCaught = true
 			} else {
 				ctx.AddIssue(ctx.IssueFromCoerce(err))
@@ -119,6 +113,7 @@ func primitiveProcessor[T p.ZogPrimitive](ctx *p.SchemaCtx, preTransforms []p.Pr
 	}
 
 	if ctx.HasCaught {
+		*destPtr = *catch
 		return
 	}
 	// 3. tests
@@ -163,13 +158,18 @@ func primitiveValidator[T p.ZogPrimitive](ctx *p.SchemaCtx, preTransforms []p.Pr
 		// bail if error in preTransform
 		if err != nil {
 			if ctx.CanCatch {
-				*valPtr = *catch
-			} else {
-				ctx.AddIssue(ctx.IssueFromUnknownError(err))
+				ctx.HasCaught = true
+				break
 			}
+			ctx.AddIssue(ctx.IssueFromUnknownError(err))
 			return
 		}
 		*valPtr = nVal.(T)
+	}
+
+	if ctx.HasCaught {
+		*valPtr = *catch
+		return
 	}
 
 	// 2. cast data to string & handle default/required
@@ -186,21 +186,27 @@ func primitiveValidator[T p.ZogPrimitive](ctx *p.SchemaCtx, preTransforms []p.Pr
 			// is required & zero value
 			// required
 			if ctx.CanCatch {
-				*valPtr = *catch
-				return
+				ctx.HasCaught = true
 			} else {
 				ctx.AddIssue(ctx.IssueFromTest(required, ctx.Val))
 				return
 			}
 		}
 	}
+
+	if ctx.HasCaught {
+		*valPtr = *catch
+		return
+	}
+
 	// 3. tests
 	for _, test := range tests {
 		if !test.ValidateFunc(valPtr, ctx) {
 			// catching the first error if catch is set
 			if ctx.CanCatch {
+				ctx.HasCaught = true
 				*valPtr = *catch
-				return
+				break
 			}
 			ctx.AddIssue(ctx.IssueFromTest(&test, ctx.Val))
 		}

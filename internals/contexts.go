@@ -108,9 +108,18 @@ type SchemaCtx struct {
 	CanCatch  bool
 	HasCaught bool
 }
-type TestCtx struct {
-	*SchemaCtx
-	Test *Test
+
+// type TestCtx struct {
+// 	*SchemaCtx
+// 	Test *Test
+// }
+
+func (c *SchemaCtx) AddIssue(e *ZogIssue) {
+	if c.CanCatch {
+		c.HasCaught = true
+		return
+	}
+	c.ExecCtx.AddIssue(e)
 }
 
 func (c *SchemaCtx) Issue() *ZogIssue {
@@ -172,33 +181,33 @@ func (c *SchemaCtx) Free() {
 	SchemaCtxPool.Put(c)
 }
 
-func (c *TestCtx) Issue() *ZogIssue {
-	// TODO handle catch here
-	zerr := ZogIssuePool.Get().(*ZogIssue)
-	zerr.Code = c.Test.IssueCode
-	zerr.Path = c.Path.String()
-	zerr.Err = nil
-	zerr.Message = ""
-	zerr.Params = c.Test.Params
-	zerr.Dtype = c.DType
-	zerr.Value = c.Val
-	return zerr
-}
+// func (c *TestCtx) Issue() *ZogIssue {
+// 	// TODO handle catch here
+// 	zerr := ZogIssuePool.Get().(*ZogIssue)
+// 	zerr.Code = c.Test.IssueCode
+// 	zerr.Path = c.Path.String()
+// 	zerr.Err = nil
+// 	zerr.Message = ""
+// 	zerr.Params = c.Test.Params
+// 	zerr.Dtype = c.DType
+// 	zerr.Value = c.Val
+// 	return zerr
+// }
 
-func (c *TestCtx) FmtErr(e *ZogIssue) {
-	if e.Message != "" {
-		return
-	}
+// func (c *TestCtx) FmtErr(e *ZogIssue) {
+// 	if e.Message != "" {
+// 		return
+// 	}
 
-	if c.Test.IssueFmtFunc != nil {
-		c.Test.IssueFmtFunc(e, c)
-		return
-	}
+// 	if c.Test.IssueFmtFunc != nil {
+// 		c.Test.IssueFmtFunc(e, c)
+// 		return
+// 	}
 
-	c.SchemaCtx.FmtErr(e)
-}
+// 	c.SchemaCtx.FmtErr(e)
+// }
 
-func (c *TestCtx) AddIssue(e *ZogIssue) {
-	c.FmtErr(e)
-	c.Errors.Add(c.Path.String(), e)
-}
+// func (c *TestCtx) AddIssue(e *ZogIssue) {
+// 	c.FmtErr(e)
+// 	c.Errors.Add(c.Path.String(), e)
+// }
