@@ -56,4 +56,4 @@ This comes from a misunderstanding of how the zog struct tag works. The zog stru
 
 ## Why does zog have an internals package?
 
-Please see the [internals](/docs/packages/internals) page for more information.
+Please see the [internals](/packages/internals) page for more information.
