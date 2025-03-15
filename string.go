@@ -10,12 +10,35 @@ import (
 	"github.com/Oudwins/zog/zconst"
 )
 
-var _ PrimitiveZogSchema[string] = &StringSchema{}
+var (
+	_ PrimitiveZogSchema[string] = (*StringSchema)(nil)
+	_ NotStringSchema            = (*StringSchema)(nil)
+)
 
 var (
 	emailRegex = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
 	uuidRegex  = regexp.MustCompile(`^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$`)
 )
+
+type NotStringSchema interface {
+	Test(t p.Test, opts ...TestOption) *StringSchema
+	OneOf(enum []string, options ...TestOption) *StringSchema
+	Min(n int, options ...TestOption) *StringSchema
+	Max(n int, options ...TestOption) *StringSchema
+	Len(n int, options ...TestOption) *StringSchema
+	Email(options ...TestOption) *StringSchema
+	URL(options ...TestOption) *StringSchema
+	HasPrefix(s string, options ...TestOption) *StringSchema
+	HasSuffix(s string, options ...TestOption) *StringSchema
+	Contains(sub string, options ...TestOption) *StringSchema
+	ContainsUpper(options ...TestOption) *StringSchema
+	ContainsDigit(options ...TestOption) *StringSchema
+	ContainsSpecial(options ...TestOption) *StringSchema
+	UUID(options ...TestOption) *StringSchema
+	Match(regex *regexp.Regexp, options ...TestOption) *StringSchema
+
+	// `Not` method is missing here as we do not want the user to do `Not` chaining.
+}
 
 type StringSchema struct {
 	preTransforms  []p.PreTransform
@@ -25,6 +48,7 @@ type StringSchema struct {
 	required       *p.Test
 	catch          *string
 	coercer        conf.CoercerFunc
+	isNot          bool
 }
 
 // ! INTERNALS
@@ -165,9 +189,9 @@ func (v *StringSchema) Test(t p.Test, opts ...TestOption) *StringSchema {
 	for _, opt := range opts {
 		opt(&t)
 	}
+
 	t.ValidateFunc = customTestBackwardsCompatWrapper(t.ValidateFunc)
-	v.tests = append(v.tests, t)
-	return v
+	return v.addTest(t)
 }
 
 // Create a custom test function for the schema. This is similar to Zod's `.refine()` method.
@@ -183,8 +207,7 @@ func (v *StringSchema) OneOf(enum []string, options ...TestOption) *StringSchema
 	for _, opt := range options {
 		opt(&t)
 	}
-	v.tests = append(v.tests, t)
-	return v
+	return v.addTest(t)
 }
 
 // Test: checks that the value is at least n characters long
@@ -193,8 +216,7 @@ func (v *StringSchema) Min(n int, options ...TestOption) *StringSchema {
 	for _, opt := range options {
 		opt(&t)
 	}
-	v.tests = append(v.tests, t)
-	return v
+	return v.addTest(t)
 }
 
 // Test: checks that the value is at most n characters long
@@ -203,8 +225,7 @@ func (v *StringSchema) Max(n int, options ...TestOption) *StringSchema {
 	for _, opt := range options {
 		opt(&t)
 	}
-	v.tests = append(v.tests, t)
-	return v
+	return v.addTest(t)
 }
 
 // Test: checks that the value is exactly n characters long
@@ -213,8 +234,7 @@ func (v *StringSchema) Len(n int, options ...TestOption) *StringSchema {
 	for _, opt := range options {
 		opt(&t)
 	}
-	v.tests = append(v.tests, t)
-	return v
+	return v.addTest(t)
 }
 
 // Test: checks that the value is a valid email address
@@ -232,8 +252,7 @@ func (v *StringSchema) Email(options ...TestOption) *StringSchema {
 	for _, opt := range options {
 		opt(&t)
 	}
-	v.tests = append(v.tests, t)
-	return v
+	return v.addTest(t)
 }
 
 // Test: checks that the value is a valid URL
@@ -252,8 +271,7 @@ func (v *StringSchema) URL(options ...TestOption) *StringSchema {
 	for _, opt := range options {
 		opt(&t)
 	}
-	v.tests = append(v.tests, t)
-	return v
+	return v.addTest(t)
 }
 
 // Test: checks that the value has the prefix
@@ -273,8 +291,7 @@ func (v *StringSchema) HasPrefix(s string, options ...TestOption) *StringSchema 
 	for _, opt := range options {
 		opt(&t)
 	}
-	v.tests = append(v.tests, t)
-	return v
+	return v.addTest(t)
 }
 
 // Test: checks that the value has the suffix
@@ -294,8 +311,7 @@ func (v *StringSchema) HasSuffix(s string, options ...TestOption) *StringSchema 
 	for _, opt := range options {
 		opt(&t)
 	}
-	v.tests = append(v.tests, t)
-	return v
+	return v.addTest(t)
 }
 
 // Test: checks that the value contains the substring
@@ -315,8 +331,7 @@ func (v *StringSchema) Contains(sub string, options ...TestOption) *StringSchema
 	for _, opt := range options {
 		opt(&t)
 	}
-	v.tests = append(v.tests, t)
-	return v
+	return v.addTest(t)
 }
 
 // Test: checks that the value contains an uppercase letter
@@ -339,8 +354,7 @@ func (v *StringSchema) ContainsUpper(options ...TestOption) *StringSchema {
 	for _, opt := range options {
 		opt(&t)
 	}
-	v.tests = append(v.tests, t)
-	return v
+	return v.addTest(t)
 }
 
 // Test: checks that the value contains a digit
@@ -365,8 +379,7 @@ func (v *StringSchema) ContainsDigit(options ...TestOption) *StringSchema {
 		opt(&t)
 	}
 
-	v.tests = append(v.tests, t)
-	return v
+	return v.addTest(t)
 }
 
 // Test: checks that the value contains a special character
@@ -393,8 +406,7 @@ func (v *StringSchema) ContainsSpecial(options ...TestOption) *StringSchema {
 	for _, opt := range options {
 		opt(&t)
 	}
-	v.tests = append(v.tests, t)
-	return v
+	return v.addTest(t)
 }
 
 // Test: checks that the value is a valid uuid
@@ -412,8 +424,7 @@ func (v *StringSchema) UUID(options ...TestOption) *StringSchema {
 	for _, opt := range options {
 		opt(&t)
 	}
-	v.tests = append(v.tests, t)
-	return v
+	return v.addTest(t)
 }
 
 // Test: checks that value matches to regex
@@ -433,6 +444,20 @@ func (v *StringSchema) Match(regex *regexp.Regexp, options ...TestOption) *Strin
 	for _, opt := range options {
 		opt(&t)
 	}
-	v.tests = append(v.tests, t)
+	return v.addTest(t)
+}
+
+// Test: nots the next test fn
+func (v *StringSchema) Not() NotStringSchema {
+	v.isNot = !v.isNot
+	return v
+}
+
+func (v *StringSchema) addTest(t p.Test) *StringSchema {
+	v.tests = p.AddTest(v.tests, t, v.isNot)
+	if v.isNot {
+		v.isNot = false
+	}
+
 	return v
 }
