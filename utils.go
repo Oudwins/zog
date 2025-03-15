@@ -3,6 +3,7 @@ package zog
 import (
 	"reflect"
 
+	"github.com/Oudwins/zog/conf"
 	p "github.com/Oudwins/zog/internals"
 	"github.com/Oudwins/zog/zconst"
 )
@@ -36,12 +37,14 @@ errors = map[string][]ZogIssue{
 */
 type ZogIssueMap = p.ZogIssueMap
 
+type CoercerFunc = conf.CoercerFunc
+
 // ! TESTS
 
 // Test is the test object. It is the struct that represents an individual validation. For example `z.String().Min(3)` is a test that checks if the string is at least 3 characters long.
 type Test = p.Test
 
-// WARNING: Use z.schema.TestFunc instead. This may be removed in the future
+// Deprecated: Use z.schema.TestFunc instead. This may be removed in the future
 // TestFunc is a helper function to define a custom test. It takes the error code which will be used for the error message and a validate function. Usage:
 //
 //	schema.Test(z.TestFunc(zconst.IssueCodeCustom, func(val any, ctx Ctx) bool {
