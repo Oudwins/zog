@@ -1,5 +1,58 @@
 # Changelog
 
+## [0.18.2](https://github.com/Oudwins/zog/compare/v0.18.1...v0.18.2) (2025-03-08)
+
+
+### ⚠ BREAKING CHANGES
+
+* zog tag changed to a catch all instead of superseding the other tags
+
+### Bug Fixes
+
+* zog tag changed to a catch all instead of superseding the other tags ([869268e](https://github.com/Oudwins/zog/commit/869268ecf8aaf981fe0ac23e7de521bc22222e2a))
+
+
+### Miscellaneous Chores
+
+* release 0.18.2 ([6517301](https://github.com/Oudwins/zog/commit/6517301b14f44b40c73e5193e846fdb449005512))
+
+## [0.18.1](https://github.com/Oudwins/zog/compare/v0.18.0...v0.18.1) (2025-03-08)
+
+
+### Features
+
+* allow zog to use multiple struct tags zog, json, form, query, env ([5426bb6](https://github.com/Oudwins/zog/commit/5426bb6eb5c93f314dc0c5d805d5e7cd51b2cf0c))
+
+
+### Miscellaneous Chores
+
+* release 0.18.1 ([62fcb88](https://github.com/Oudwins/zog/commit/62fcb88e420204837ee23902c6761037d5fafc3d))
+
+## [0.18.0](https://github.com/Oudwins/zog/compare/v0.17.2...v0.18.0) (2025-03-08)
+
+
+### ⚠ BREAKING CHANGES
+
+* DELETE Method on zhttp also supports multiplexing based on content type header
+* Removed deprecated z.ParseCtx interface. Use z.Ctx instead
+* Zog issue interface is converted into a struct ([#119](https://github.com/Oudwins/zog/issues/119))
+
+### Bug Fixes
+
+* DELETE Method on zhttp also supports multiplexing based on content type header ([b8ebdc7](https://github.com/Oudwins/zog/commit/b8ebdc71856a8de3fc59cac789f592a4900c7333))
+* export pre & post transforms from main zog package ([57703a4](https://github.com/Oudwins/zog/commit/57703a4e8c4b6ab3c86b80e6cfa4f81d2e5ddda5))
+
+
+### Miscellaneous Chores
+
+* release 0.18.0 ([df12fb1](https://github.com/Oudwins/zog/commit/df12fb1144722a62b8bea492b3101f674532ebbd))
+
+
+### Code Refactoring
+
+* Removed deprecated z.ParseCtx interface. Use z.Ctx instead ([0bb4cfd](https://github.com/Oudwins/zog/commit/0bb4cfde4df4f5b8a72e2772e398f17331d2a235))
+* Zog issue interface is converted into a struct ([#119](https://github.com/Oudwins/zog/issues/119)) ([a68b393](https://github.com/Oudwins/zog/commit/a68b393d7b078274c26bad459340a1d7276deef1))
+
 ## [0.17.2](https://github.com/Oudwins/zog/compare/v0.17.1...v0.17.2) (2025-03-02)
 
 

@@ -17,7 +17,7 @@ func TestTimeValidateRequired(t *testing.T) {
 	now = time.Time{}
 	errs = validator.Validate(&now)
 	assert.Len(t, errs, 1)
-	assert.Equal(t, "custom", errs[0].Message())
+	assert.Equal(t, "custom", errs[0].Message)
 }
 
 func TestTimeValidateOptional(t *testing.T) {
@@ -50,7 +50,7 @@ func TestTimeValidateCatch(t *testing.T) {
 }
 
 func TestTimeValidatePreTransform(t *testing.T) {
-	validator := Time().PreTransform(func(data any, ctx ParseCtx) (any, error) {
+	validator := Time().PreTransform(func(data any, ctx Ctx) (any, error) {
 		// Add 1 hour to the input time
 		return data.(time.Time).Add(time.Hour), nil
 	})
@@ -63,7 +63,7 @@ func TestTimeValidatePreTransform(t *testing.T) {
 }
 
 func TestTimeValidatePostTransform(t *testing.T) {
-	validator := Time().PostTransform(func(dataPtr any, ctx ParseCtx) error {
+	validator := Time().PostTransform(func(dataPtr any, ctx Ctx) error {
 		// Set the time to noon
 		t := dataPtr.(*time.Time)
 		*t = time.Date(t.Year(), t.Month(), t.Day(), 12, 0, 0, 0, t.Location())
@@ -86,7 +86,7 @@ func TestTimeValidateAfter(t *testing.T) {
 	past := time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)
 	errs = validator.Validate(&past)
 	assert.Len(t, errs, 1)
-	assert.Equal(t, "custom", errs[0].Message())
+	assert.Equal(t, "custom", errs[0].Message)
 }
 
 func TestTimeValidateBefore(t *testing.T) {
@@ -98,7 +98,7 @@ func TestTimeValidateBefore(t *testing.T) {
 	future := time.Date(2022, 1, 1, 0, 0, 0, 0, time.UTC)
 	errs = validator.Validate(&future)
 	assert.Len(t, errs, 1)
-	assert.Equal(t, "custom", errs[0].Message())
+	assert.Equal(t, "custom", errs[0].Message)
 }
 
 func TestTimeValidateEQ(t *testing.T) {
@@ -110,17 +110,17 @@ func TestTimeValidateEQ(t *testing.T) {
 	different := time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)
 	errs = validator.Validate(&different)
 	assert.Len(t, errs, 1)
-	assert.Equal(t, "custom", errs[0].Message())
+	assert.Equal(t, "custom", errs[0].Message)
 }
 
 func TestTimeValidateCustomTest(t *testing.T) {
 	now := time.Now()
-	validator := Time().TestFunc(func(val any, ctx ParseCtx) bool {
+	validator := Time().TestFunc(func(val any, ctx Ctx) bool {
 		return val != now
 	}, Message("custom"))
 	errs := validator.Validate(&now)
 	assert.NotNil(t, errs)
-	assert.Equal(t, "custom", errs[0].Message())
+	assert.Equal(t, "custom", errs[0].Message)
 }
 
 func TestTimeValidateGetType(t *testing.T) {

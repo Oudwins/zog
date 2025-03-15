@@ -23,9 +23,9 @@ var envSchema = z.Struct(z.Schema{
 var Env = struct {
 	PORT int // zog will automatically coerce the PORT env to an int
 	DB   struct {
-		Host string `zog:"DB_HOST"` // we specify the zog tag to tell zog to parse the field from the DB_HOST environment variable
+		Host string `env:"DB_HOST"` // we specify the `env` or the `zog` tag to tell zog to parse the field from the DB_HOST environment variable. See parsing for more info on struct tags
 		User string `zog:"DB_USER"`
-		Pass string `zog:"DB_PASS"`
+		Pass string `env:"DB_PASS"`
 	}
 }{}
 

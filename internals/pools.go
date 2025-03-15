@@ -31,7 +31,7 @@ var InternalIssueMapPool = sync.Pool{
 
 var ZogIssuePool = sync.Pool{
 	New: func() any {
-		return &ZogErr{}
+		return &ZogIssue{}
 	},
 }
 
@@ -82,7 +82,7 @@ func ClearPools() {
 	}
 	ZogIssuePool = sync.Pool{
 		New: func() any {
-			return &ZogErr{}
+			return &ZogIssue{}
 		},
 	}
 	PathBuilderPool = sync.Pool{

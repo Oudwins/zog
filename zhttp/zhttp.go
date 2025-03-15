@@ -3,6 +3,7 @@ package zhttp
 import (
 	"net/http"
 	"net/url"
+	"reflect"
 	"strings"
 
 	p "github.com/Oudwins/zog/internals"
@@ -11,6 +12,11 @@ import (
 )
 
 type ParserFunc = func(r *http.Request) p.DpFactory
+
+var (
+	formTag    string = "form"
+	queryParam string = "query"
+)
 
 var Config = struct {
 	Parsers struct {
@@ -28,18 +34,18 @@ var Config = struct {
 			return zjson.Decode(r.Body)
 		},
 		Form: func(r *http.Request) p.DpFactory {
-			return func() (p.DataProvider, p.ZogIssue) {
+			return func() (p.DataProvider, *p.ZogIssue) {
 				err := r.ParseForm()
 				if err != nil {
-					return nil, &p.ZogErr{C: zconst.IssueCodeZHTTPInvalidForm, Err: err}
+					return nil, &p.ZogIssue{Code: zconst.IssueCodeZHTTPInvalidForm, Err: err}
 				}
-				return form(r.Form), nil
+				return form(r.Form, &formTag), nil
 			}
 		},
 		Query: func(r *http.Request) p.DpFactory {
-			return func() (p.DataProvider, p.ZogIssue) {
+			return func() (p.DataProvider, *p.ZogIssue) {
 				// This handles generic GET request from browser. We treat it as url.Values
-				return form(r.URL.Query()), nil
+				return form(r.URL.Query(), &queryParam), nil
 			}
 		},
 	},
@@ -47,6 +53,7 @@ var Config = struct {
 
 type urlDataProvider struct {
 	Data url.Values
+	tag  *string
 }
 
 var _ p.DataProvider = urlDataProvider{}
@@ -62,6 +69,11 @@ func (u urlDataProvider) Get(key string) any {
 	} else {
 		return u.Data.Get(key)
 	}
+}
+
+func (u urlDataProvider) GetByField(field reflect.StructField, fallback string) (any, string) {
+	key := p.GetKeyFromField(field, fallback, u.tag)
+	return u.Get(key), key
 }
 
 func (u urlDataProvider) GetNestedProvider(key string) p.DataProvider {
@@ -81,8 +93,6 @@ func Request(r *http.Request) p.DpFactory {
 		return Config.Parsers.Query(r)
 	case "HEAD":
 		return Config.Parsers.Query(r)
-	case "DELETE":
-		return Config.Parsers.Query(r)
 	default:
 		// Content-Type follows this format: Content-Type: <media-type> [; parameter=value]
 		typ, _, _ := strings.Cut(r.Header.Get("Content-Type"), ";")
@@ -97,8 +107,8 @@ func Request(r *http.Request) p.DpFactory {
 	}
 }
 
-func form(data url.Values) p.DataProvider {
-	return urlDataProvider{Data: data}
+func form(data url.Values, tag *string) p.DataProvider {
+	return urlDataProvider{Data: data, tag: tag}
 }
 
 // func params(data url.Values) p.DataProvider {

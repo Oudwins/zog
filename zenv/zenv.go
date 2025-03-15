@@ -2,6 +2,7 @@ package zenv
 
 import (
 	"os"
+	"reflect"
 	"strings"
 
 	p "github.com/Oudwins/zog/internals"
@@ -9,11 +10,20 @@ import (
 
 var _ p.DataProvider = &envDataProvider{}
 
+var (
+	envTag string = "env"
+)
+
 type envDataProvider struct {
 }
 
 func (e *envDataProvider) Get(key string) any {
 	return strings.TrimSpace(os.Getenv(key))
+}
+
+func (e *envDataProvider) GetByField(field reflect.StructField, fallback string) (any, string) {
+	key := p.GetKeyFromField(field, fallback, &envTag)
+	return e.Get(key), key
 }
 
 func (e *envDataProvider) GetNestedProvider(key string) p.DataProvider {

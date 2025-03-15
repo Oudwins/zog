@@ -44,7 +44,7 @@ func TestValidateStringOptional(t *testing.T) {
 }
 
 func TestValidateStringPreTransform(t *testing.T) {
-	field := String().Required().Len(6).PreTransform(func(val any, ctx ParseCtx) (any, error) {
+	field := String().Required().Len(6).PreTransform(func(val any, ctx Ctx) (any, error) {
 		if x, ok := val.(string); ok {
 			return "foo" + x, nil
 		}
@@ -72,7 +72,7 @@ func TestValidateStringTrim(t *testing.T) {
 }
 
 func TestValidateStringPostTransform(t *testing.T) {
-	field := String().Required().PostTransform(func(val any, ctx ParseCtx) error {
+	field := String().Required().PostTransform(func(val any, ctx Ctx) error {
 		s := val.(*string)
 		*s = *s + "_transformed"
 		return nil
@@ -84,7 +84,7 @@ func TestValidateStringPostTransform(t *testing.T) {
 	assert.Equal(t, "hello_transformed", dest)
 
 	// Test that PostTransform is not applied when there's an error
-	field = String().Required().Len(1).PostTransform(func(val any, ctx ParseCtx) error {
+	field = String().Required().Len(1).PostTransform(func(val any, ctx Ctx) error {
 		s := val.(*string)
 		*s = *s + "_transformed"
 		return nil
@@ -108,7 +108,7 @@ func TestValidateStringRequiredAborts(t *testing.T) {
 }
 
 func TestValidateStringCustomTest(t *testing.T) {
-	field := String().TestFunc(func(val any, ctx ParseCtx) bool {
+	field := String().TestFunc(func(val any, ctx Ctx) bool {
 		return val == "test"
 	}, Message("Invalid"))
 
@@ -122,7 +122,7 @@ func TestValidateStringCustomTest(t *testing.T) {
 	dest = "not test"
 	errs = field.Validate(&dest)
 	assert.NotEmpty(t, errs)
-	assert.Equal(t, "Invalid", errs[0].Message())
+	assert.Equal(t, "Invalid", errs[0].Message)
 }
 
 func TestValidateStringRequired(t *testing.T) {
@@ -131,7 +131,7 @@ func TestValidateStringRequired(t *testing.T) {
 
 	errs := field.Validate(&dest)
 	assert.NotEmpty(t, errs)
-	assert.Equal(t, errs[0].Message(), "a")
+	assert.Equal(t, errs[0].Message, "a")
 
 	dest = "foo"
 	errs = field.Validate(&dest)
@@ -270,7 +270,7 @@ func TestValidateStringContains(t *testing.T) {
 
 	errs := field.Validate(&dest)
 	assert.NotEmpty(t, errs)
-	assert.Equal(t, "custom contains", errs[0].Message())
+	assert.Equal(t, "custom contains", errs[0].Message)
 
 	dest = "contains"
 	errs = field.Validate(&dest)
@@ -285,7 +285,7 @@ func TestValidateStringContainsDigit(t *testing.T) {
 
 	errs := field.Validate(&dest)
 	assert.NotEmpty(t, errs)
-	assert.Equal(t, "custom digit", errs[0].Message())
+	assert.Equal(t, "custom digit", errs[0].Message)
 
 	dest = "1234"
 	errs = field.Validate(&dest)
@@ -300,7 +300,7 @@ func TestValidateStringContainsUpper(t *testing.T) {
 
 	errs := field.Validate(&dest)
 	assert.NotEmpty(t, errs)
-	assert.Equal(t, "custom upper", errs[0].Message())
+	assert.Equal(t, "custom upper", errs[0].Message)
 
 	dest = "UPPERCASE"
 	errs = field.Validate(&dest)
@@ -315,7 +315,7 @@ func TestValidateStringContainsSpecial(t *testing.T) {
 
 	errs := field.Validate(&dest)
 	assert.NotEmpty(t, errs)
-	assert.Equal(t, "custom special", errs[0].Message())
+	assert.Equal(t, "custom special", errs[0].Message)
 
 	dest = "!@#$%"
 	errs = field.Validate(&dest)
@@ -330,7 +330,7 @@ func TestValidateStringOneOf(t *testing.T) {
 
 	errs := field.Validate(&dest)
 	assert.NotEmpty(t, errs)
-	assert.Equal(t, "custom one of", errs[0].Message())
+	assert.Equal(t, "custom one of", errs[0].Message)
 
 	dest = "banana"
 	errs = field.Validate(&dest)
@@ -341,7 +341,7 @@ func TestValidateStringOneOf(t *testing.T) {
 	dest = ""
 	errs = field.Validate(&dest)
 	assert.NotEmpty(t, errs)
-	assert.Equal(t, "custom required", errs[0].Message())
+	assert.Equal(t, "custom required", errs[0].Message)
 }
 
 func TestValidateStringUUID(t *testing.T) {
@@ -350,7 +350,7 @@ func TestValidateStringUUID(t *testing.T) {
 
 	errs := field.Validate(&dest)
 	assert.NotEmpty(t, errs)
-	assert.Equal(t, "custom uuid msg", errs[0].Message())
+	assert.Equal(t, "custom uuid msg", errs[0].Message)
 
 	dest = "f81d4fae-7dec-11d0-a765-00a0c91e6bf6"
 	errs = field.Validate(&dest)
@@ -370,7 +370,7 @@ func TestValidateStringRegex(t *testing.T) {
 
 	errs := field.Validate(&dest)
 	assert.NotEmpty(t, errs)
-	assert.Equal(t, "custom regex msg", errs[0].Message())
+	assert.Equal(t, "custom regex msg", errs[0].Message)
 
 	dest = "00"
 	errs = field.Validate(&dest)

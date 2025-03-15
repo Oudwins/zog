@@ -329,7 +329,7 @@ func (v *SliceSchema) Contains(value any, options ...TestOption) *SliceSchema {
 		p.Test{
 			IssueCode: zconst.IssueCodeContains,
 			Params:    make(map[string]any, 1),
-			ValidateFunc: func(val any, ctx ParseCtx) bool {
+			ValidateFunc: func(val any, ctx Ctx) bool {
 				rv := reflect.ValueOf(val).Elem()
 				if rv.Kind() != reflect.Slice {
 					return false
@@ -357,7 +357,7 @@ func sliceMin(n int) p.Test {
 	t := p.Test{
 		IssueCode: zconst.IssueCodeMin,
 		Params:    make(map[string]any, 1),
-		ValidateFunc: func(val any, ctx ParseCtx) bool {
+		ValidateFunc: func(val any, ctx Ctx) bool {
 			rv := reflect.ValueOf(val).Elem()
 			if rv.Kind() != reflect.Slice {
 				return false
@@ -372,7 +372,7 @@ func sliceMax(n int) p.Test {
 	t := p.Test{
 		IssueCode: zconst.IssueCodeMax,
 		Params:    make(map[string]any, 1),
-		ValidateFunc: func(val any, ctx ParseCtx) bool {
+		ValidateFunc: func(val any, ctx Ctx) bool {
 			rv := reflect.ValueOf(val).Elem()
 			if rv.Kind() != reflect.Slice {
 				return false
@@ -387,7 +387,7 @@ func sliceLength(n int) p.Test {
 	t := p.Test{
 		IssueCode: zconst.IssueCodeLen,
 		Params:    make(map[string]any, 1),
-		ValidateFunc: func(val any, ctx ParseCtx) bool {
+		ValidateFunc: func(val any, ctx Ctx) bool {
 			rv := reflect.ValueOf(val).Elem()
 			if rv.Kind() != reflect.Slice {
 				return false

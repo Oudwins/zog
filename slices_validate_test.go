@@ -51,7 +51,7 @@ func TestValidateSliceDefault(t *testing.T) {
 }
 
 func TestValidateSlicePreTransform(t *testing.T) {
-	preTransform := func(val any, ctx ParseCtx) (any, error) {
+	preTransform := func(val any, ctx Ctx) (any, error) {
 		if v, ok := val.([]string); ok {
 			out := make([]string, len(v))
 			copy(out, v)
@@ -73,7 +73,7 @@ func TestValidateSlicePreTransform(t *testing.T) {
 }
 
 func TestValidateSlicePostTransform(t *testing.T) {
-	postTransform := func(val any, ctx ParseCtx) error {
+	postTransform := func(val any, ctx Ctx) error {
 		if v, ok := val.(*[]string); ok {
 			for i := range *v {
 				(*v)[i] = strings.ToUpper((*v)[i])
@@ -156,7 +156,7 @@ func TestValidateSliceContains(t *testing.T) {
 }
 
 func TestValidateSliceCustomTest(t *testing.T) {
-	validator := Slice(String()).TestFunc(func(val any, ctx ParseCtx) bool {
+	validator := Slice(String()).TestFunc(func(val any, ctx Ctx) bool {
 		if v, ok := val.(*[]string); ok {
 			return len(*v) > 0 && (*v)[0] == "test"
 		}
@@ -174,7 +174,7 @@ func TestValidateSliceCustomTest(t *testing.T) {
 	if len(errs) == 0 {
 		t.Errorf("Expected errors, got none")
 	}
-	assert.Equal(t, "custom", errs["$root"][0].Message())
+	assert.Equal(t, "custom", errs["$root"][0].Message)
 	// assert.Equal(t, "custom_test", errs["$root"][0].Code())
 }
 
@@ -225,14 +225,14 @@ func TestValidateSliceMultipleValidators(t *testing.T) {
 	dest = []string{"wrong"}
 	errs = validator.Validate(&dest)
 	assert.NotEmpty(t, errs)
-	assert.Contains(t, Errors.SanitizeList(errs["$root"]), "too short")
-	assert.Contains(t, Errors.SanitizeList(errs["$root"]), "must contain test")
+	assert.Contains(t, Issues.SanitizeList(errs["$root"]), "too short")
+	assert.Contains(t, Issues.SanitizeList(errs["$root"]), "must contain test")
 	assert.Len(t, errs["$root"], 2)
 
 	dest = []string{"a", "b", "c", "d", "e"}
 	errs = validator.Validate(&dest)
 	assert.NotEmpty(t, errs)
-	assert.Contains(t, Errors.SanitizeList(errs["$root"]), "too long")
-	assert.Contains(t, Errors.SanitizeList(errs["$root"]), "must contain test")
+	assert.Contains(t, Issues.SanitizeList(errs["$root"]), "too long")
+	assert.Contains(t, Issues.SanitizeList(errs["$root"]), "must contain test")
 	assert.Len(t, errs["$root"], 2)
 }

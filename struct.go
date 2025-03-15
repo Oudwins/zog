@@ -3,7 +3,6 @@ package zog
 import (
 	"fmt"
 	"reflect"
-	"strings"
 
 	"github.com/Oudwins/zog/conf"
 	p "github.com/Oudwins/zog/internals"
@@ -90,29 +89,36 @@ func (v *StructSchema) process(ctx *p.SchemaCtx) {
 	}()
 
 	var dataProv p.DataProvider
-	var err error
 	// 2. cast data as DataProvider
 	if factory, ok := ctx.Val.(p.DpFactory); ok {
-		dataProv, err = factory()
+		newDp, err := factory()
 		// This is a little bit hacky. But we want to exit here because the error came from zhttp. Meaning we had an error trying to parse the request.
 		// I'm not sure if this is the best behaviour? Do we want to exit here or do we want to continue processing (ofc we add the error always)
 		if err != nil {
 			ctx.AddIssue(ctx.IssueFromUnknownError(err))
 			return
 		}
+		dataProv = newDp
 	} else {
-		dataProv, err = p.TryNewAnyDataProvider(ctx.Val)
+		newDp, err := p.TryNewAnyDataProvider(ctx.Val)
 		if err != nil {
 			ctx.AddIssue(ctx.IssueFromCoerce(err))
+			return
 		}
+		dataProv = newDp
 	}
 
 	// 3. Process / validate struct fields
 	structVal := reflect.ValueOf(ctx.DestPtr).Elem()
 
 	for key, processor := range v.schema {
-		fieldKey := key
-		key = strings.ToUpper(string(key[0])) + key[1:]
+		originalKey := key
+		if key[0] >= 'a' && key[0] <= 'z' {
+			var b [32]byte // Use a size that fits your max key length
+			copy(b[:], key)
+			b[0] -= 32
+			key = string(b[:len(key)])
+		}
 
 		fieldMeta, ok := structVal.Type().FieldByName(key)
 		if !ok {
@@ -120,16 +126,12 @@ func (v *StructSchema) process(ctx *p.SchemaCtx) {
 		}
 		destPtr := structVal.FieldByName(key).Addr().Interface()
 
-		fieldTag, ok := fieldMeta.Tag.Lookup(zconst.ZogTag)
-		if ok {
-			fieldKey = fieldTag
-		}
-
+		subValue, fieldKey := dataProv.GetByField(fieldMeta, originalKey)
 		switch schema := processor.(type) {
 		case *StructSchema:
-			schema.process(ctx.NewSchemaCtx(dataProv.GetNestedProvider(fieldKey), destPtr, ctx.Path.Push(&fieldKey), schema.getType()))
+			schema.process(ctx.NewSchemaCtx(subValue, destPtr, ctx.Path.Push(&fieldKey), schema.getType()))
 		default:
-			schema.process(ctx.NewSchemaCtx(dataProv.Get(fieldKey), destPtr, ctx.Path.Push(&fieldKey), schema.getType()))
+			schema.process(ctx.NewSchemaCtx(subValue, destPtr, ctx.Path.Push(&fieldKey), schema.getType()))
 		}
 		ctx.Path.Pop()
 	}

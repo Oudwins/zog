@@ -9,19 +9,19 @@ import (
 )
 
 func TestZogIssueString(t *testing.T) {
-	var err p.ZogIssue = &p.ZogErr{
-		C:       "test",
-		ParamsM: map[string]any{},
-		Typ:     "string",
-		Val:     "asda",
-		Msg:     "asda",
+	var err *p.ZogIssue = &p.ZogIssue{
+		Code:    "test",
+		Params:  map[string]any{},
+		Dtype:   "string",
+		Value:   "asda",
+		Message: "asda",
 	}
 
 	assert.Equal(t, err.String(), err.Error())
 }
 
 func TestZogIssueUnwrap(t *testing.T) {
-	var err p.ZogIssue = &p.ZogErr{
+	var err *p.ZogIssue = &p.ZogIssue{
 		Err: errors.New("test"),
 	}
 

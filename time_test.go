@@ -16,7 +16,7 @@ func TestTimeRequired(t *testing.T) {
 	now = time.Time{}
 	errs = schema.Parse(nil, &now)
 	assert.Len(t, errs, 1)
-	assert.Equal(t, "custom", errs[0].Message())
+	assert.Equal(t, "custom", errs[0].Message)
 }
 
 func TestTimeOptional(t *testing.T) {
@@ -48,7 +48,7 @@ func TestTimeCatch(t *testing.T) {
 
 func TestTimePreTransform(t *testing.T) {
 	var now time.Time
-	schema := Time().PreTransform(func(data any, ctx ParseCtx) (any, error) {
+	schema := Time().PreTransform(func(data any, ctx Ctx) (any, error) {
 		// Add 1 hour to the input time
 		t, ok := data.(time.Time)
 		if !ok {
@@ -67,7 +67,7 @@ func TestTimePreTransform(t *testing.T) {
 
 func TestTimePostTransform(t *testing.T) {
 	var now time.Time
-	schema := Time().PostTransform(func(dataPtr any, ctx ParseCtx) error {
+	schema := Time().PostTransform(func(dataPtr any, ctx Ctx) error {
 		// Set the time to noon
 		t := dataPtr.(*time.Time)
 		*t = time.Date(t.Year(), t.Month(), t.Day(), 12, 0, 0, 0, t.Location())
@@ -94,7 +94,7 @@ func TestTimeAfter(t *testing.T) {
 	now = time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)
 	errs = schema.Parse(now, &now)
 	assert.Len(t, errs, 1)
-	assert.Equal(t, "custom", errs[0].Message())
+	assert.Equal(t, "custom", errs[0].Message)
 }
 func TestTimeBefore(t *testing.T) {
 	now := time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)
@@ -104,7 +104,7 @@ func TestTimeBefore(t *testing.T) {
 	now = time.Date(2022, 1, 1, 0, 0, 0, 0, time.UTC)
 	errs = schema.Parse(now, &now)
 	assert.Len(t, errs, 1)
-	assert.Equal(t, "custom", errs[0].Message())
+	assert.Equal(t, "custom", errs[0].Message)
 }
 
 func TestTimeEQ(t *testing.T) {
@@ -115,17 +115,17 @@ func TestTimeEQ(t *testing.T) {
 	now = time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)
 	errs = schema.Parse(now, &now)
 	assert.Len(t, errs, 1)
-	assert.Equal(t, "custom", errs[0].Message())
+	assert.Equal(t, "custom", errs[0].Message)
 }
 
 func TestTimeCustomTest(t *testing.T) {
 	now := time.Now()
-	schema := Time().TestFunc(func(val any, ctx ParseCtx) bool {
+	schema := Time().TestFunc(func(val any, ctx Ctx) bool {
 		return val != now
 	}, Message("custom"))
 	errs := schema.Parse(now, &now)
 	assert.NotNil(t, errs)
-	assert.Equal(t, "custom", errs[0].Message())
+	assert.Equal(t, "custom", errs[0].Message)
 }
 
 func TestTimeSchemaOption(t *testing.T) {

@@ -107,7 +107,7 @@ func TestValidateStructCustomTestInSchema(t *testing.T) {
 	}
 
 	// Create a custom test function
-	customTest := func(val any, ctx ParseCtx) bool {
+	customTest := func(val any, ctx Ctx) bool {
 		// Custom test logic here
 		num := val.(int)
 		return num > 0
@@ -136,7 +136,7 @@ func TestValidateStructCustomTestInSchema(t *testing.T) {
 
 	errs = schema.Validate(&obj)
 	assert.NotEmpty(t, errs)
-	assert.Equal(t, "customTest", errs["num"][0].Code())
+	assert.Equal(t, "customTest", errs["num"][0].Code)
 }
 
 func TestValidateStructCustomTest(t *testing.T) {
@@ -146,7 +146,7 @@ func TestValidateStructCustomTest(t *testing.T) {
 
 	schema := Struct(Schema{
 		"str": String(),
-	}).Test(TestFunc("customTest", func(val any, ctx ParseCtx) bool {
+	}).Test(TestFunc("customTest", func(val any, ctx Ctx) bool {
 		s := val.(*CustomStruct)
 		return s.Str == "valid"
 	}), Message("customTest"))
@@ -157,8 +157,8 @@ func TestValidateStructCustomTest(t *testing.T) {
 
 	errs := schema.Validate(&obj)
 	assert.NotEmpty(t, errs)
-	assert.Equal(t, "customTest", errs["$root"][0].Code())
-	assert.Equal(t, "customTest", errs["$root"][0].Message())
+	assert.Equal(t, "customTest", errs["$root"][0].Code)
+	assert.Equal(t, "customTest", errs["$root"][0].Message)
 
 	obj.Str = "valid"
 	errs = schema.Validate(&obj)
@@ -170,7 +170,7 @@ func TestValidateStructPreTransforms(t *testing.T) {
 		Value string
 	}
 
-	preTransform := func(val any, ctx ParseCtx) (any, error) {
+	preTransform := func(val any, ctx Ctx) (any, error) {
 		if s, ok := val.(TestStruct); ok {
 			s.Value = "transformed"
 			return s, nil
@@ -194,7 +194,7 @@ func TestValidateStructPostTransforms(t *testing.T) {
 		Value string
 	}
 
-	postTransform := func(val any, ctx ParseCtx) error {
+	postTransform := func(val any, ctx Ctx) error {
 		if s, ok := val.(*TestStruct); ok {
 			s.Value = "post_" + s.Value
 		}
@@ -232,7 +232,7 @@ func TestValidateStructPassThroughRequired(t *testing.T) {
 	var output2 TestStruct
 	errs = schema.Validate(&output2)
 	assert.NotEmpty(t, errs)
-	assert.Equal(t, zconst.IssueCodeRequired, errs["somefield"][0].Code())
+	assert.Equal(t, zconst.IssueCodeRequired, errs["somefield"][0].Code)
 }
 
 func TestValidateStructGetType(t *testing.T) {

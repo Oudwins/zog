@@ -160,7 +160,7 @@ func (v *TimeSchema) Catch(val time.Time) *TimeSchema {
 
 // GLOBAL METHODS
 
-// custom test function call it -> schema.Test("error_code", func(val any, ctx ParseCtx) bool {return true})
+// custom test function call it -> schema.Test("error_code", func(val any, ctx Ctx) bool {return true})
 func (v *TimeSchema) Test(t p.Test, opts ...TestOption) *TimeSchema {
 	for _, opt := range opts {
 		opt(&t)
@@ -184,7 +184,7 @@ func (v *TimeSchema) After(t time.Time, opts ...TestOption) *TimeSchema {
 	r := p.Test{
 		IssueCode: zconst.IssueCodeAfter,
 		Params:    make(map[string]any, 1),
-		ValidateFunc: func(v any, ctx ParseCtx) bool {
+		ValidateFunc: func(v any, ctx Ctx) bool {
 			val, ok := v.(*time.Time)
 			if !ok {
 				return false
@@ -206,7 +206,7 @@ func (v *TimeSchema) Before(t time.Time, opts ...TestOption) *TimeSchema {
 		p.Test{
 			IssueCode: zconst.IssueCodeBefore,
 			Params:    make(map[string]any, 1),
-			ValidateFunc: func(v any, ctx ParseCtx) bool {
+			ValidateFunc: func(v any, ctx Ctx) bool {
 				val, ok := v.(*time.Time)
 				if !ok {
 					return false
@@ -228,7 +228,7 @@ func (v *TimeSchema) EQ(t time.Time, opts ...TestOption) *TimeSchema {
 	r := p.Test{
 		IssueCode: zconst.IssueCodeEQ,
 		Params:    make(map[string]any, 1),
-		ValidateFunc: func(v any, ctx ParseCtx) bool {
+		ValidateFunc: func(v any, ctx Ctx) bool {
 			val, ok := v.(*time.Time)
 			if !ok {
 				return false

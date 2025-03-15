@@ -51,7 +51,7 @@ func TestStructExample(t *testing.T) {
 	}
 
 	// parse the data
-	errs := objSchema.Parse(NewMapDataProvider(data), &o)
+	errs := objSchema.Parse(data, &o)
 	assert.Nil(t, errs)
 	assert.Equal(t, o.Str, "hello")
 }
@@ -67,7 +67,7 @@ func TestStructTags(t *testing.T) {
 		"tim": "2024-08-06T00:00:00Z",
 	}
 
-	errs := objSchema.Parse(NewMapDataProvider(data), &o)
+	errs := objSchema.Parse(data, &o)
 	assert.Nil(t, errs)
 	assert.Equal(t, o.Str, "hello")
 	assert.Equal(t, o.In, 10)
@@ -100,7 +100,7 @@ func TestStructNestedStructs(t *testing.T) {
 		"schema": map[string]any{"str": "hello"},
 	}
 
-	errs := nestedSchema.Parse(NewMapDataProvider(m), &v)
+	errs := nestedSchema.Parse(m, &v)
 	assert.Nil(t, errs)
 	assert.Equal(t, v.Str, "hello")
 	assert.Equal(t, v.Schema.Str, "hello")
@@ -136,7 +136,7 @@ func TestStructCustomTestInSchema(t *testing.T) {
 	}
 
 	// Create a custom test function
-	customTest := func(val any, ctx ParseCtx) bool {
+	customTest := func(val any, ctx Ctx) bool {
 		// Custom test logic here
 		num := val.(int)
 		return num > 0
@@ -172,7 +172,7 @@ func TestStructCustomTest(t *testing.T) {
 
 	schema := Struct(Schema{
 		"str": String(),
-	}).TestFunc(func(val any, ctx ParseCtx) bool {
+	}).TestFunc(func(val any, ctx Ctx) bool {
 		s := val.(*CustomStruct)
 		return s.Str == "valid"
 	}, Message("customTest"))
@@ -185,7 +185,7 @@ func TestStructCustomTest(t *testing.T) {
 	errs := schema.Parse(data, &obj)
 	assert.NotNil(t, errs)
 	// assert.Equal(t, "customTest", errs["$root"][0].Code())
-	assert.Equal(t, "customTest", errs["$root"][0].Message())
+	assert.Equal(t, "customTest", errs["$root"][0].Message)
 	data["str"] = "valid"
 	errs = schema.Parse(data, &obj)
 	assert.Nil(t, errs)
@@ -261,7 +261,7 @@ func TestStructPreTransforms(t *testing.T) {
 		Value string
 	}
 
-	preTransform := func(val any, ctx ParseCtx) (any, error) {
+	preTransform := func(val any, ctx Ctx) (any, error) {
 		if m, ok := val.(map[string]any); ok {
 			m["value"] = "transformed"
 			return m, nil
@@ -286,7 +286,7 @@ func TestStructPostTransforms(t *testing.T) {
 		Value string
 	}
 
-	postTransform := func(val any, ctx ParseCtx) error {
+	postTransform := func(val any, ctx Ctx) error {
 		if s, ok := val.(*TestStruct); ok {
 			s.Value = "post_" + s.Value
 		}
@@ -326,7 +326,6 @@ func TestStructPassThroughRequired(t *testing.T) {
 	errs = schema.Parse(nil, &output2)
 	assert.NotNil(t, errs)
 	tutils.VerifyDefaultIssueMessagesMap(t, errs)
-	assert.NotEmpty(t, errs["$root"])
 	assert.NotEmpty(t, errs["somefield"])
 }
 

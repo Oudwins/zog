@@ -56,22 +56,22 @@ func TestRequest(t *testing.T) {
 }
 
 func TestRequestParams(t *testing.T) {
-	formData := "name=JohnDoe&email=john@doe.com&age=30&isMarried=true&lights=on&cash=10.5&swagger=doweird&swagger=swagger&q=test"
+	formData := "thename=JohnDoe&mail=john@doe.com&theage=30&Married=true&light=on&money=10.5&swagger=doweird&swagger=swagger&q=test"
 
-	// Create a fake HTTP request with form data
+	// Create a fake HTTP request with query param data
 	req, err := http.NewRequest("POST", "/submit?"+formData, nil)
 	if err != nil {
 		t.Fatalf("Error creating request: %v", err)
 	}
 
 	type User struct {
-		Email     string   `param:"email"`
-		Name      string   `param:"name"`
-		Age       int      `param:"age"`
-		IsMarried bool     `param:"isMarried"`
-		Lights    bool     `param:"lights"`
-		Cash      float64  `param:"cash"`
-		Swagger   []string `param:"swagger"`
+		Email     string   `query:"mail"`
+		Name      string   `query:"thename"`
+		Age       int      `query:"theage"`
+		IsMarried bool     `query:"Married"`
+		Lights    bool     `query:"light"`
+		Cash      float64  `query:"money"`
+		Swagger   []string `zog:"random" query:"swagger"` // query takes priority over zog
 		Q         string   `zog:"q"`
 	}
 
@@ -113,14 +113,14 @@ func TestRequestParamsOnJsonContentType(t *testing.T) {
 	}
 
 	type User struct {
-		Email     string   `param:"email"`
-		Name      string   `param:"name"`
-		Age       int      `param:"age"`
-		IsMarried bool     `param:"isMarried"`
-		Lights    bool     `param:"lights"`
-		Cash      float64  `param:"cash"`
-		Swagger   []string `param:"swagger"`
-		Q         string   `zog:"q"`
+		Email     string
+		Name      string
+		Age       int
+		IsMarried bool
+		Lights    bool
+		Cash      float64
+		Swagger   []string
+		Q         string
 	}
 
 	schema := z.Struct(z.Schema{
@@ -151,24 +151,33 @@ func TestRequestParamsOnJsonContentType(t *testing.T) {
 }
 
 func TestRequestParamsOnDeleteMethodWithJsonContentType(t *testing.T) {
-	formData := "name=JohnDoe&email=john@doe.com&age=30&isMarried=true&lights=on&cash=10.5&swagger=doweird&swagger=swagger&q=test"
+	// Create a fake HTTP request with JSON data
+	jsonData := `{
+		"userEmail": "john@doe.com",
+		"userName": "JohnDoe",
+		"userAge": 30,
+		"userMarried": true,
+		"userLights": true,
+		"userMoney": 10.5,
+		"userStyles": ["doweird", "swagger"],
+		"userQuery": "test"
+	}`
 
-	// Create a fake HTTP request with form data
-	req, err := http.NewRequest("DELETE", "/submit?"+formData, nil)
+	req, err := http.NewRequest("DELETE", "/submit", strings.NewReader(jsonData))
 	req.Header.Set("Content-Type", "application/json")
 	if err != nil {
 		t.Fatalf("Error creating request: %v", err)
 	}
 
 	type User struct {
-		Email     string   `param:"email"`
-		Name      string   `param:"name"`
-		Age       int      `param:"age"`
-		IsMarried bool     `param:"isMarried"`
-		Lights    bool     `param:"lights"`
-		Cash      float64  `param:"cash"`
-		Swagger   []string `param:"swagger"`
-		Q         string   `zog:"q"`
+		Email     string   `json:"userEmail"`
+		Name      string   `json:"userName"`
+		Age       int      `json:"userAge"`
+		IsMarried bool     `json:"userMarried"`
+		Lights    bool     `json:"userLights"`
+		Cash      float64  `json:"userMoney"`
+		Swagger   []string `json:"userStyles"`
+		Q         string   `json:"userQuery"`
 	}
 
 	schema := z.Struct(z.Schema{
@@ -311,7 +320,7 @@ func TestParseJsonInvalid(t *testing.T) {
 
 	assert.Error(t, err)
 	assert.Nil(t, dp)
-	assert.Equal(t, zconst.IssueCodeInvalidJSON, err.Code())
+	assert.Equal(t, zconst.IssueCodeInvalidJSON, err.Code)
 }
 
 func TestParseJsonWithNilValue(t *testing.T) {
@@ -391,7 +400,7 @@ func TestForm(t *testing.T) {
 		"age":  []string{"30"},
 	}
 
-	dp := form(data)
+	dp := form(data, &formTag)
 
 	assert.IsType(t, urlDataProvider{}, dp)
 	assert.Equal(t, data, dp.(urlDataProvider).Data)

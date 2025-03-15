@@ -19,15 +19,15 @@ func TestNumberValidate(t *testing.T) {
 
 func TestNumberValidateFormatter(t *testing.T) {
 	dest := 1
-	fmt := WithIssueFormatter(func(e ZogIssue, ctx Ctx) {
+	fmt := WithIssueFormatter(func(e *ZogIssue, ctx Ctx) {
 		e.SetMessage("test2")
 	})
 	validator := Int().GTE(10, Message("test1")).Required()
 	errs := validator.Validate(&dest, fmt)
-	assert.Equal(t, "test1", errs[0].Message())
+	assert.Equal(t, "test1", errs[0].Message)
 	validator2 := Int().GTE(10)
 	errs2 := validator2.Validate(&dest, fmt)
-	assert.Equal(t, "test2", errs2[0].Message())
+	assert.Equal(t, "test2", errs2[0].Message)
 }
 
 func TestValidateNumberRequired(t *testing.T) {
@@ -44,7 +44,7 @@ func TestValidateNumberRequired(t *testing.T) {
 	if len(errs) == 0 {
 		t.Errorf("Expected errors, got none")
 	}
-	assert.Equal(t, "custom", errs[0].Message())
+	assert.Equal(t, "custom", errs[0].Message)
 }
 
 func TestValidateNumberOptional(t *testing.T) {
@@ -83,7 +83,7 @@ func TestValidateNumberCatch(t *testing.T) {
 }
 
 func TestValidateNumberPreTransform(t *testing.T) {
-	preTransform := func(val any, ctx ParseCtx) (any, error) {
+	preTransform := func(val any, ctx Ctx) (any, error) {
 		if v, ok := val.(int); ok {
 			out := v * 2
 			return out, nil
@@ -101,7 +101,7 @@ func TestValidateNumberPreTransform(t *testing.T) {
 }
 
 func TestValidateNumberPostTransform(t *testing.T) {
-	postTransform := func(val any, ctx ParseCtx) error {
+	postTransform := func(val any, ctx Ctx) error {
 		if v, ok := val.(*int); ok {
 			*v += 1
 		}
@@ -118,7 +118,7 @@ func TestValidateNumberPostTransform(t *testing.T) {
 }
 
 func TestValidateNumberMultipleTransforms(t *testing.T) {
-	preTransform := func(val any, ctx ParseCtx) (any, error) {
+	preTransform := func(val any, ctx Ctx) (any, error) {
 		if v, ok := val.(int); ok {
 			out := v * 2
 			return out, nil
@@ -126,7 +126,7 @@ func TestValidateNumberMultipleTransforms(t *testing.T) {
 		return val, nil
 	}
 
-	postTransform := func(val any, ctx ParseCtx) error {
+	postTransform := func(val any, ctx Ctx) error {
 		if v, ok := val.(*int); ok {
 			*v += 1
 		}
@@ -154,7 +154,7 @@ func TestValidateNumberOneOf(t *testing.T) {
 	if len(errs) == 0 {
 		t.Errorf("Expected errors, got none")
 	}
-	assert.Equal(t, "custom", errs[0].Message())
+	assert.Equal(t, "custom", errs[0].Message)
 	assert.Equal(t, 4, dest)
 }
 
@@ -170,7 +170,7 @@ func TestValidateNumberEq(t *testing.T) {
 	if len(errs) == 0 {
 		t.Errorf("Expected errors, got none")
 	}
-	assert.Equal(t, "custom", errs[0].Message())
+	assert.Equal(t, "custom", errs[0].Message)
 	assert.Equal(t, 4, dest)
 }
 
@@ -186,13 +186,13 @@ func TestValidateNumberGt(t *testing.T) {
 	if len(errs) == 0 {
 		t.Errorf("Expected errors, got none")
 	}
-	assert.Equal(t, "custom", errs[0].Message())
+	assert.Equal(t, "custom", errs[0].Message)
 	dest = 4
 	errs = validator.Validate(&dest)
 	if len(errs) == 0 {
 		t.Errorf("Expected errors, got none")
 	}
-	assert.Equal(t, "custom", errs[0].Message())
+	assert.Equal(t, "custom", errs[0].Message)
 	assert.Equal(t, 4, dest)
 }
 
@@ -213,7 +213,7 @@ func TestValidateNumberGte(t *testing.T) {
 	if len(errs) == 0 {
 		t.Errorf("Expected errors, got none")
 	}
-	assert.Equal(t, "custom", errs[0].Message())
+	assert.Equal(t, "custom", errs[0].Message)
 	assert.Equal(t, 4, dest)
 }
 
@@ -229,13 +229,13 @@ func TestValidateNumberLt(t *testing.T) {
 	if len(errs) == 0 {
 		t.Errorf("Expected errors, got none")
 	}
-	assert.Equal(t, "custom", errs[0].Message())
+	assert.Equal(t, "custom", errs[0].Message)
 	dest = 6
 	errs = validator.Validate(&dest)
 	if len(errs) == 0 {
 		t.Errorf("Expected errors, got none")
 	}
-	assert.Equal(t, "custom", errs[0].Message())
+	assert.Equal(t, "custom", errs[0].Message)
 	assert.Equal(t, 6, dest)
 }
 
@@ -256,7 +256,7 @@ func TestValidateNumberLte(t *testing.T) {
 	if len(errs) == 0 {
 		t.Errorf("Expected errors, got none")
 	}
-	assert.Equal(t, "custom", errs[0].Message())
+	assert.Equal(t, "custom", errs[0].Message)
 	assert.Equal(t, 6, dest)
 }
 
@@ -271,7 +271,7 @@ func TestValidateNumberValidate(t *testing.T) {
 }
 
 func TestValidateNumberCustomTest(t *testing.T) {
-	validator := Int().TestFunc(func(val any, ctx ParseCtx) bool {
+	validator := Int().TestFunc(func(val any, ctx Ctx) bool {
 		// Custom test logic here
 		assert.Equal(t, 5, val)
 		return true

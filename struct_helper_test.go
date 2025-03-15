@@ -21,7 +21,7 @@ func TestStructMergeSimple(t *testing.T) {
 	}
 
 	var o User
-	errs := schema.Parse(NewMapDataProvider(map[string]any{"name": "hello", "age": 20}), &o)
+	errs := schema.Parse(map[string]any{"name": "hello", "age": 20}, &o)
 	assert.Nil(t, errs)
 	assert.Equal(t, o.Name, "hello")
 	assert.Equal(t, o.Age, 20)
@@ -41,7 +41,7 @@ func TestStructMergeOverride(t *testing.T) {
 	}
 
 	var o User
-	errs := schema.Parse(NewMapDataProvider(map[string]any{"name": "world"}), &o)
+	errs := schema.Parse(map[string]any{"name": "world"}, &o)
 	assert.Nil(t, errs)
 	assert.Equal(t, o.Name, "world")
 }
@@ -69,7 +69,7 @@ func TestStructMergeWithPostTransforms(t *testing.T) {
 
 	var o User
 
-	errs := schema.Parse(NewMapDataProvider(map[string]any{"name": "hello", "age": 20}), &o)
+	errs := schema.Parse(map[string]any{"name": "hello", "age": 20}, &o)
 	assert.Nil(t, errs)
 	assert.Equal(t, o.Name, "hello_post")
 	assert.Equal(t, o.Age, 30)
@@ -123,7 +123,7 @@ func TestStructMergeMultiple(t *testing.T) {
 	}
 
 	var o User
-	errs := schema.Parse(NewMapDataProvider(map[string]any{"name": "hello", "age": 20, "email": "test@test.com"}), &o)
+	errs := schema.Parse(map[string]any{"name": "hello", "age": 20, "email": "test@test.com"}, &o)
 	assert.Nil(t, errs)
 	assert.Equal(t, o.Name, "hello")
 	assert.Equal(t, o.Age, 20)
@@ -148,11 +148,11 @@ func TestStructPick(t *testing.T) {
 	})
 
 	var o User
-	errs := pickedSchema.Parse(NewMapDataProvider(map[string]any{
+	errs := pickedSchema.Parse(map[string]any{
 		"name":  "hello",
 		"email": "test@test.com",
 		"age":   20, // This should be ignored
-	}), &o)
+	}, &o)
 
 	assert.Nil(t, errs)
 	assert.Equal(t, o.Name, "hello")
@@ -178,11 +178,11 @@ func TestStructOmit(t *testing.T) {
 	})
 
 	var o User
-	errs := omittedSchema.Parse(NewMapDataProvider(map[string]any{
+	errs := omittedSchema.Parse(map[string]any{
 		"name":  "hello",
 		"email": "test@test.com",
 		"age":   20, // This should be ignored
-	}), &o)
+	}, &o)
 
 	assert.Nil(t, errs)
 	assert.Equal(t, o.Name, "hello")
@@ -210,10 +210,10 @@ func TestStructPickWithTransforms(t *testing.T) {
 	})
 
 	var o User
-	errs := pickedSchema.Parse(NewMapDataProvider(map[string]any{
+	errs := pickedSchema.Parse(map[string]any{
 		"name": "hello",
 		"age":  20, // This should be ignored
-	}), &o)
+	}, &o)
 
 	assert.Nil(t, errs)
 	assert.Equal(t, o.Name, "hello_post") // Transform should still work
@@ -240,10 +240,10 @@ func TestStructOmitWithTransforms(t *testing.T) {
 	})
 
 	var o User
-	errs := omittedSchema.Parse(NewMapDataProvider(map[string]any{
+	errs := omittedSchema.Parse(map[string]any{
 		"name": "hello",
 		"age":  20, // This should be ignored
-	}), &o)
+	}, &o)
 
 	assert.Nil(t, errs)
 	assert.Equal(t, o.Name, "hello_post") // Transform should still work
@@ -270,11 +270,11 @@ func TestStructPickIgnoresFalseKeys(t *testing.T) {
 	})
 
 	var o User
-	errs := pickedSchema.Parse(NewMapDataProvider(map[string]any{
+	errs := pickedSchema.Parse(map[string]any{
 		"name":  "hello",
 		"age":   20,
 		"email": "test@test.com", // Should be ignored since email was not picked
-	}), &o)
+	}, &o)
 
 	assert.Nil(t, errs)
 	assert.Equal(t, o.Name, "hello")
@@ -300,11 +300,11 @@ func TestStructOmitIgnoresFalseKeys(t *testing.T) {
 	})
 
 	var o User
-	errs := omittedSchema.Parse(NewMapDataProvider(map[string]any{
+	errs := omittedSchema.Parse(map[string]any{
 		"name":  "hello",
 		"email": "test@test.com", // Should still be processed since email omit was false
 		"age":   20,              // Should be ignored since age was omitted
-	}), &o)
+	}, &o)
 
 	assert.Nil(t, errs)
 	assert.Equal(t, o.Name, "hello")

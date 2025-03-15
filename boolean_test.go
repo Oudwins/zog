@@ -73,7 +73,7 @@ func TestExecOption(t *testing.T) {
 		var result bool
 		var contextPassed bool
 
-		// Create a fake parsing option that checks if it receives a ParseCtx
+		// Create a fake parsing option that checks if it receives a Ctx
 		fakeOption := func(p *p.ExecCtx) {
 			if p != nil {
 				contextPassed = true
@@ -127,8 +127,8 @@ func TestBoolRequired(t *testing.T) {
 				t.Errorf("On Run %s -> Expected error: %v, got: %v", test.name, test.expectErr, errs)
 			}
 
-			if test.expectErr && errs[0].Message() != "test" {
-				t.Errorf("On Run %s -> Expected error: %v, got: %v", test.name, "test", errs[0].Message())
+			if test.expectErr && errs[0].Message != "test" {
+				t.Errorf("On Run %s -> Expected error: %v, got: %v", test.name, "test", errs[0].Message)
 			}
 
 			if !test.expectErr && result != test.expected {
@@ -390,7 +390,7 @@ func TestBoolPreTransform(t *testing.T) {
 		{
 			name: "Valid transform",
 			data: "true",
-			transform: func(val any, ctx ParseCtx) (any, error) {
+			transform: func(val any, ctx Ctx) (any, error) {
 				if s, ok := val.(*string); ok {
 					return *s == "true", nil
 				}
@@ -401,7 +401,7 @@ func TestBoolPreTransform(t *testing.T) {
 		{
 			name: "Invalid transform",
 			data: "invalid",
-			transform: func(val any, ctx ParseCtx) (any, error) {
+			transform: func(val any, ctx Ctx) (any, error) {
 				return nil, fmt.Errorf("invalid input")
 			},
 			expectErr: true,
@@ -441,7 +441,7 @@ func TestBoolPostTransform(t *testing.T) {
 		{
 			name: "Invert boolean",
 			data: true,
-			transform: func(val any, ctx ParseCtx) error {
+			transform: func(val any, ctx Ctx) error {
 				if b, ok := val.(*bool); ok {
 					*b = !*b
 				}
@@ -452,7 +452,7 @@ func TestBoolPostTransform(t *testing.T) {
 		{
 			name: "No change",
 			data: false,
-			transform: func(val any, ctx ParseCtx) error {
+			transform: func(val any, ctx Ctx) error {
 				return nil
 			},
 			expected: false,
@@ -460,7 +460,7 @@ func TestBoolPostTransform(t *testing.T) {
 		{
 			name: "Invalid transform",
 			data: true,
-			transform: func(val any, ctx ParseCtx) error {
+			transform: func(val any, ctx Ctx) error {
 				return fmt.Errorf("invalid operation")
 			},
 			expectErr: true,

@@ -19,7 +19,7 @@ type stringSchema struct {
    isRequired: bool // optional. Defaults to FALSE
    defaultValue: string // optional. if the input value is a "zero value" it will be replaced with this. Tests will still run on this value.
    catchValue: string // optional. If this is set it will "catch" any errors, set the destination value to this value and exit
-   [tests](#tests): []Test // These are your validation checks. Such as .Min(), .Contains(), etc
+   tests: []Test // These are your validation checks. Such as .Min(), .Contains(), etc
    postTransforms: []PostTransform // transformations executed after the validation.
 }
 ```
@@ -42,9 +42,8 @@ z.Slice(z.String()).PreTransform(func(data any, ctx Ctx) (any, error) {
 }).Parse("item1,item2,item3", &dest)
 ```
 
-> **FOOTGUNS**
-> *Type Coercion*: Please note that pretransforms are executed before type coercion (if using `schema.Parse()`). This means that if you are responsible for checking that the data matches your expected type. If you blinding typecast the data to, for example, an int and your user provides a string as input you will cause a panic.
-> *Pure Functions*: Since pretransforms are pure functions. A copy of the data is passed in. So if you place a preTransform on a large struct it will copy the entire struct which is not efficient. Be careful!
+> **FOOTGUNS** > _Type Coercion_: Please note that pretransforms are executed before type coercion (if using `schema.Parse()`). This means that if you are responsible for checking that the data matches your expected type. If you blinding typecast the data to, for example, an int and your user provides a string as input you will cause a panic.
+> _Pure Functions_: Since pretransforms are pure functions. A copy of the data is passed in. So if you place a preTransform on a large struct it will copy the entire struct which is not efficient. Be careful!
 
 ## Required, Default and Catch
 
@@ -58,8 +57,8 @@ z.Slice(z.String()).PreTransform(func(data any, ctx Ctx) (any, error) {
 
 > A test is what zog calls a "validator". It is a struct that represents an individual validation. For example for the String schema `z.String()` the method `Min(3)` generates a test that checks if the string is at least 3 characters long. You can view all the default tests that come with each [schema type here.](/zog-schemas)
 
-
 ### Test Options
+
 You can configure tests with `TestOptions` which modify a test in some manner. Here are some examples:
 
 ```go
@@ -71,7 +70,6 @@ z.String().Min(3, z.IssuePath("name")) // This sets the issue path that Zogissue
 ### Creating Custom Tests
 
 You are also free to create custom tests and pass them to the `schema.Test()` and `schema.TestFunc()` methods. For more details on this checkout the [Creating Custom Tests](/custom-tests) page.
-
 
 ## PostTransforms
 

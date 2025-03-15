@@ -241,7 +241,7 @@ func (v *StringSchema) Len(n int, options ...TestOption) *StringSchema {
 func (v *StringSchema) Email(options ...TestOption) *StringSchema {
 	t := p.Test{
 		IssueCode: zconst.IssueCodeEmail,
-		ValidateFunc: func(v any, ctx ParseCtx) bool {
+		ValidateFunc: func(v any, ctx Ctx) bool {
 			email, ok := v.(*string)
 			if !ok {
 				return false
@@ -259,7 +259,7 @@ func (v *StringSchema) Email(options ...TestOption) *StringSchema {
 func (v *StringSchema) URL(options ...TestOption) *StringSchema {
 	t := p.Test{
 		IssueCode: zconst.IssueCodeURL,
-		ValidateFunc: func(v any, ctx ParseCtx) bool {
+		ValidateFunc: func(v any, ctx Ctx) bool {
 			s, ok := v.(*string)
 			if !ok {
 				return false
@@ -279,7 +279,7 @@ func (v *StringSchema) HasPrefix(s string, options ...TestOption) *StringSchema 
 	t := p.Test{
 		IssueCode: zconst.IssueCodeHasPrefix,
 		Params:    make(map[string]any, 1),
-		ValidateFunc: func(v any, ctx ParseCtx) bool {
+		ValidateFunc: func(v any, ctx Ctx) bool {
 			val, ok := v.(*string)
 			if !ok {
 				return false
@@ -299,7 +299,7 @@ func (v *StringSchema) HasSuffix(s string, options ...TestOption) *StringSchema 
 	t := p.Test{
 		IssueCode: zconst.IssueCodeHasSuffix,
 		Params:    make(map[string]any, 1),
-		ValidateFunc: func(v any, ctx ParseCtx) bool {
+		ValidateFunc: func(v any, ctx Ctx) bool {
 			val, ok := v.(*string)
 			if !ok {
 				return false
@@ -319,7 +319,7 @@ func (v *StringSchema) Contains(sub string, options ...TestOption) *StringSchema
 	t := p.Test{
 		IssueCode: zconst.IssueCodeContains,
 		Params:    make(map[string]any, 1),
-		ValidateFunc: func(v any, ctx ParseCtx) bool {
+		ValidateFunc: func(v any, ctx Ctx) bool {
 			val, ok := v.(*string)
 			if !ok {
 				return false
@@ -338,7 +338,7 @@ func (v *StringSchema) Contains(sub string, options ...TestOption) *StringSchema
 func (v *StringSchema) ContainsUpper(options ...TestOption) *StringSchema {
 	t := p.Test{
 		IssueCode: zconst.IssueCodeContainsUpper,
-		ValidateFunc: func(v any, ctx ParseCtx) bool {
+		ValidateFunc: func(v any, ctx Ctx) bool {
 			val, ok := v.(*string)
 			if !ok {
 				return false
@@ -361,7 +361,7 @@ func (v *StringSchema) ContainsUpper(options ...TestOption) *StringSchema {
 func (v *StringSchema) ContainsDigit(options ...TestOption) *StringSchema {
 	t := p.Test{
 		IssueCode: zconst.IssueCodeContainsDigit,
-		ValidateFunc: func(v any, ctx ParseCtx) bool {
+		ValidateFunc: func(v any, ctx Ctx) bool {
 			val, ok := v.(*string)
 			if !ok {
 				return false
@@ -387,7 +387,7 @@ func (v *StringSchema) ContainsSpecial(options ...TestOption) *StringSchema {
 	t :=
 		p.Test{
 			IssueCode: zconst.IssueCodeContainsSpecial,
-			ValidateFunc: func(v any, ctx ParseCtx) bool {
+			ValidateFunc: func(v any, ctx Ctx) bool {
 				val, ok := v.(*string)
 				if !ok {
 					return false
@@ -413,7 +413,7 @@ func (v *StringSchema) ContainsSpecial(options ...TestOption) *StringSchema {
 func (v *StringSchema) UUID(options ...TestOption) *StringSchema {
 	t := p.Test{
 		IssueCode: zconst.IssueCodeUUID,
-		ValidateFunc: func(v any, ctx ParseCtx) bool {
+		ValidateFunc: func(v any, ctx Ctx) bool {
 			uuid, ok := v.(*string)
 			if !ok {
 				return false
@@ -432,7 +432,7 @@ func (v *StringSchema) Match(regex *regexp.Regexp, options ...TestOption) *Strin
 	t := p.Test{
 		IssueCode: zconst.IssueCodeMatch,
 		Params:    make(map[string]any, 1),
-		ValidateFunc: func(v any, ctx ParseCtx) bool {
+		ValidateFunc: func(v any, ctx Ctx) bool {
 			s, ok := v.(*string)
 			if !ok {
 				return false
