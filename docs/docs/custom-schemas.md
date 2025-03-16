@@ -8,11 +8,11 @@ toc_max_heading_level: 4
 
 > Please read the [Anatomy of a Schema](/core-concepts/anatomy-of-schema) page before continuing.
 
-Currently Zog plans to support three different ways of creating custom schemas. Although this is subject to change and some of these are not yet implemented so keep an eye out on this page as it gets updated, [more details on my thoughts here](https://github.com/Oudwins/zog/discussions/132):
+Currently Zog plans to support three different ways of creating custom schemas. Although this is subject to change and some of these are not yet implemented so keep an eye out on this page as it gets updated, [more details on my thoughts here](https://github.com/Oudwins/zog/discussions/132).
 
 1. Generics on Primitive Schemas for custom strings, numbers, booleans, etc...
 2. Custom Schemas Interface you can implement to create a 100% custom schema (Not yet implemented)
-3. A system by which you can define a schema for a custom type or interface that after some transformation is a normal zog schema. API currently under development but the idea is something like this: `z.Custom(z.CustomDef{GET: func (val any, )})
+3. A system by which you can define a schema for a custom type or interface that after some transformation can become a normal zog schema.
 
 ## Creating Custom Schemas for Primitive Types
 
@@ -62,10 +62,8 @@ func EnvSchema(opts ...z.SchemaOption) *StringSchema[Env] {
 	}
 	return s
 }
-
 // Usage is the same as before
-
 ```
 
-> **Why is this so verbose?**
+> Why is this so verbose?
 > Although we considered introducing an API that would allow you to define this types of schemas in a more concise way (and we may still do so), to keep code consistency & reusability we recommend that you make a factory function like the one above for your custom types. And we felt that providing a simpler API could lead to people just inlining the schema's which would make it impossible to reuse them.
