@@ -60,13 +60,14 @@ func (v *SliceSchema) Validate(data any, options ...ExecOption) p.ZogIssueMap {
 	}
 	path := p.NewPathBuilder()
 	defer path.Free()
-	v.validate(ctx.NewValidateSchemaCtx(data, path, v.getType()))
+	sctx := ctx.NewSchemaCtx(data, data, path, v.getType())
+	defer sctx.Free()
+	v.validate(sctx)
 	return errs.M
 }
 
 // Internal function to validate the data
 func (v *SliceSchema) validate(ctx *p.SchemaCtx) {
-	defer ctx.Free()
 	// 4. postTransforms
 	defer func() {
 		// only run posttransforms on success
@@ -109,12 +110,15 @@ func (v *SliceSchema) validate(ctx *p.SchemaCtx) {
 	}
 
 	// 3.1 tests for slice items
+	subCtx := ctx.NewSchemaCtx(ctx.Val, ctx.DestPtr, ctx.Path, v.schema.getType())
+	defer subCtx.Free()
 	for idx := 0; idx < refVal.Len(); idx++ {
 		item := refVal.Index(idx).Addr().Interface()
 		k := fmt.Sprintf("[%d]", idx)
-		path := ctx.Path.Push(&k)
-		v.schema.validate(ctx.NewValidateSchemaCtx(item, path, v.schema.getType()))
-		path.Pop()
+		subCtx.Val = item
+		subCtx.Path.Push(&k)
+		v.schema.validate(subCtx)
+		subCtx.Path.Pop()
 	}
 
 	// 3. tests for slice
@@ -143,14 +147,15 @@ func (v *SliceSchema) Parse(data any, dest any, options ...ExecOption) p.ZogIssu
 	}
 	path := p.NewPathBuilder()
 	defer path.Free()
-	v.process(ctx.NewSchemaCtx(data, dest, path, v.getType()))
+	sctx := ctx.NewSchemaCtx(data, dest, path, v.getType())
+	defer sctx.Free()
+	v.process(sctx)
 
 	return errs.M
 }
 
 // Internal function to process the data
 func (v *SliceSchema) process(ctx *p.SchemaCtx) {
-	defer ctx.Free()
 	// 1. preTransforms
 	for _, fn := range v.preTransforms {
 		nVal, err := fn(ctx.Val, ctx)
@@ -204,13 +209,17 @@ func (v *SliceSchema) process(ctx *p.SchemaCtx) {
 	destVal.Set(reflect.MakeSlice(destVal.Type(), refVal.Len(), refVal.Len()))
 
 	// 3.1 tests for slice items
+	subCtx := ctx.NewSchemaCtx(ctx.Val, ctx.DestPtr, ctx.Path, v.schema.getType())
+	defer subCtx.Free()
 	for idx := 0; idx < refVal.Len(); idx++ {
 		item := refVal.Index(idx).Interface()
 		ptr := destVal.Index(idx).Addr().Interface()
 		k := fmt.Sprintf("[%d]", idx)
-		path := ctx.Path.Push(&k)
-		v.schema.process(ctx.NewSchemaCtx(item, ptr, path, v.schema.getType()))
-		path.Pop()
+		subCtx.Val = item
+		subCtx.DestPtr = ptr
+		subCtx.Path.Push(&k)
+		v.schema.process(subCtx)
+		subCtx.Path.Pop()
 	}
 
 	// 3. tests for slice

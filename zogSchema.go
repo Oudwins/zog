@@ -40,7 +40,6 @@ type PostTransform = p.PostTransform
 // ! PRIMITIVE PROCESSING
 
 func primitiveProcessor[T p.ZogPrimitive](ctx *p.SchemaCtx, preTransforms []p.PreTransform, tests []p.Test, postTransforms []p.PostTransform, defaultVal *T, required *p.Test, catch *T, coercer conf.CoercerFunc, isZeroFunc p.IsZeroValueFunc) {
-	defer ctx.Free()
 	ctx.CanCatch = catch != nil
 	ctx.HasCaught = false
 
@@ -133,7 +132,6 @@ func primitiveProcessor[T p.ZogPrimitive](ctx *p.SchemaCtx, preTransforms []p.Pr
 }
 
 func primitiveValidator[T p.ZogPrimitive](ctx *p.SchemaCtx, preTransforms []p.PreTransform, tests []p.Test, postTransforms []p.PostTransform, defaultVal *T, required *p.Test, catch *T) {
-	defer ctx.Free()
 	ctx.CanCatch = catch != nil
 	ctx.HasCaught = false
 

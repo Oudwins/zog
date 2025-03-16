@@ -48,7 +48,9 @@ func (v *PointerSchema) Parse(data any, dest any, options ...ExecOption) p.ZogIs
 	}
 	path := p.NewPathBuilder()
 	defer path.Free()
-	v.process(ctx.NewSchemaCtx(data, dest, path, v.getType()))
+	sctx := ctx.NewSchemaCtx(data, dest, path, v.getType())
+	defer sctx.Free()
+	v.process(sctx)
 
 	return errs.M
 }
@@ -57,7 +59,8 @@ func (v *PointerSchema) process(ctx *p.SchemaCtx) {
 
 	// TODO this is a mess. But couldn't figure out a simple way to support top level optional structs without doing this.
 	// Companion code to this codde is in struct.go > process
-	subCtx := ctx.NewSchemaCtx(ctx.Val, nil, ctx.Path, v.schema.getType())
+	subCtx := ctx.NewSchemaCtx(ctx.Val, ctx.DestPtr, ctx.Path, v.schema.getType())
+	defer subCtx.Free()
 	if fn, ok := ctx.Val.(p.DpFactory); ok {
 		val, err := fn()
 		if err != nil {
