@@ -1,5 +1,5 @@
 ---
-sidebar_position: 7
+sidebar_position: 8
 ---
 
 # Zog Schemas
@@ -147,6 +147,7 @@ z.Float().OneOf([]float64{1.0, 2.0, 3.0}) // validates float is one of the value
 // Tests / Validators
 z.Bool().True() // validates bool is true
 z.Bool().False() // validates bool is false
+z.Bool().EQ(true) // validates bool is equal to true
 ```
 
 ### Times & Dates
