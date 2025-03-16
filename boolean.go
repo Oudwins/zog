@@ -161,3 +161,8 @@ func (v *BoolSchema[T]) False() *BoolSchema[T] {
 	v.tests = append(v.tests, p.EQ[T](T(false)))
 	return v
 }
+
+func (v *BoolSchema[T]) EQ(val T) *BoolSchema[T] {
+	v.tests = append(v.tests, p.EQ[T](val))
+	return v
+}
