@@ -80,7 +80,9 @@ func (v *TimeSchema) Parse(data any, dest *time.Time, options ...ExecOption) p.Z
 	}
 	path := p.NewPathBuilder()
 	defer path.Free()
-	v.process(ctx.NewSchemaCtx(data, dest, path, v.getType()))
+	sctx := ctx.NewSchemaCtx(data, dest, path, v.getType())
+	defer sctx.Free()
+	v.process(sctx)
 
 	return errs.List
 }
@@ -101,7 +103,9 @@ func (v *TimeSchema) Validate(data *time.Time, options ...ExecOption) p.ZogIssue
 	}
 	path := p.NewPathBuilder()
 	defer path.Free()
-	v.validate(ctx.NewValidateSchemaCtx(data, path, v.getType()))
+	sctx := ctx.NewSchemaCtx(data, data, path, v.getType())
+	defer sctx.Free()
+	v.validate(sctx)
 	return errs.List
 }
 
