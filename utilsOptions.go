@@ -7,7 +7,7 @@ import (
 )
 
 // Options that can be passed to a test
-type TestOption = func(test *p.Test)
+type TestOption = func(test *Test)
 
 // Message is a function that allows you to set a custom message for the test.
 func Message(msg string) TestOption {
@@ -19,8 +19,8 @@ func Message(msg string) TestOption {
 }
 
 // MessageFunc is a function that allows you to set a custom message formatter for the test.
-func MessageFunc(fn p.IssueFmtFunc) TestOption {
-	return func(test *p.Test) {
+func MessageFunc(fn IssueFmtFunc) TestOption {
+	return func(test *Test) {
 		test.IssueFmtFunc = fn
 	}
 }
@@ -30,7 +30,7 @@ func MessageFunc(fn p.IssueFmtFunc) TestOption {
 z.String().TestFunc(..., z.IssueCode("just_provide_a_string" or use values in zconst))
 */
 func IssueCode(code zconst.ZogIssueCode) TestOption {
-	return func(test *p.Test) {
+	return func(test *Test) {
 		test.IssueCode = code
 	}
 }
@@ -47,7 +47,7 @@ z.Schema {
 )
 */
 func IssuePath(path string) TestOption {
-	return func(test *p.Test) {
+	return func(test *Test) {
 		test.IssuePath = path
 	}
 }
@@ -55,7 +55,7 @@ func IssuePath(path string) TestOption {
 // Params is a function that allows you to set a custom params for the test.
 // You may then access these values when formatting test errors in the IssueFmtFunc
 func Params(params map[string]any) TestOption {
-	return func(test *p.Test) {
+	return func(test *Test) {
 		test.Params = params
 	}
 }
@@ -77,13 +77,13 @@ type ParsingOption = ExecOption
 
 // Deprecated: use WithIssueFormatter instead
 // Deprecated for naming consistency
-func WithErrFormatter(fmter p.IssueFmtFunc) ExecOption {
+func WithErrFormatter(fmter IssueFmtFunc) ExecOption {
 	return WithIssueFormatter(fmter)
 }
 
 // Sets the issue formatter for the execution context. This is used to format the issues messages during execution.
 // This follows principle of most specific wins. So default formatter < execution formatter < test specific formatter (i.e MessageFunc)
-func WithIssueFormatter(fmter p.IssueFmtFunc) ExecOption {
+func WithIssueFormatter(fmter IssueFmtFunc) ExecOption {
 	return func(p *p.ExecCtx) {
 		p.SetIssueFormatter(fmter)
 	}

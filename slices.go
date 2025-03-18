@@ -13,11 +13,11 @@ import (
 var _ ComplexZogSchema = &SliceSchema{}
 
 type SliceSchema struct {
-	preTransforms  []p.PreTransform
-	tests          []p.Test
+	preTransforms  []PreTransform
+	tests          []Test
 	schema         ZogSchema
-	postTransforms []p.PostTransform
-	required       *p.Test
+	postTransforms []PostTransform
+	required       *Test
 	defaultVal     any
 	// catch          any
 	coercer conf.CoercerFunc
@@ -49,7 +49,7 @@ func Slice(schema ZogSchema, opts ...SchemaOption) *SliceSchema {
 }
 
 // Validates a slice
-func (v *SliceSchema) Validate(data any, options ...ExecOption) p.ZogIssueMap {
+func (v *SliceSchema) Validate(data any, options ...ExecOption) ZogIssueMap {
 	errs := p.NewErrsMap()
 	defer errs.Free()
 
@@ -138,7 +138,7 @@ func (v *SliceSchema) validate(ctx *p.SchemaCtx) {
 }
 
 // Only supports parsing from data=slice[any] to a dest =&slice[] (this can be typed. Doesn't have to be any)
-func (v *SliceSchema) Parse(data any, dest any, options ...ExecOption) p.ZogIssueMap {
+func (v *SliceSchema) Parse(data any, dest any, options ...ExecOption) ZogIssueMap {
 	errs := p.NewErrsMap()
 	defer errs.Free()
 	ctx := p.NewExecCtx(errs, conf.IssueFormatter)
@@ -233,18 +233,18 @@ func (v *SliceSchema) process(ctx *p.SchemaCtx) {
 }
 
 // Adds pretransform function to schema
-func (v *SliceSchema) PreTransform(transform p.PreTransform) *SliceSchema {
+func (v *SliceSchema) PreTransform(transform PreTransform) *SliceSchema {
 	if v.preTransforms == nil {
-		v.preTransforms = []p.PreTransform{}
+		v.preTransforms = []PreTransform{}
 	}
 	v.preTransforms = append(v.preTransforms, transform)
 	return v
 }
 
 // Adds posttransform function to schema
-func (v *SliceSchema) PostTransform(transform p.PostTransform) *SliceSchema {
+func (v *SliceSchema) PostTransform(transform PostTransform) *SliceSchema {
 	if v.postTransforms == nil {
-		v.postTransforms = []p.PostTransform{}
+		v.postTransforms = []PostTransform{}
 	}
 	v.postTransforms = append(v.postTransforms, transform)
 	return v
@@ -284,7 +284,7 @@ func (v *SliceSchema) Default(val any) *SliceSchema {
 // !TESTS
 
 // custom test function call it -> schema.Test(t z.Test, opts ...TestOption)
-func (v *SliceSchema) Test(t p.Test, opts ...TestOption) *SliceSchema {
+func (v *SliceSchema) Test(t Test, opts ...TestOption) *SliceSchema {
 	for _, opt := range opts {
 		opt(&t)
 	}
@@ -336,7 +336,7 @@ func (v *SliceSchema) Len(n int, options ...TestOption) *SliceSchema {
 // Slice contains a specific value
 func (v *SliceSchema) Contains(value any, options ...TestOption) *SliceSchema {
 	v.tests = append(v.tests,
-		p.Test{
+		Test{
 			IssueCode: zconst.IssueCodeContains,
 			Params:    make(map[string]any, 1),
 			ValidateFunc: func(val any, ctx Ctx) bool {
@@ -363,8 +363,8 @@ func (v *SliceSchema) Contains(value any, options ...TestOption) *SliceSchema {
 	return v
 }
 
-func sliceMin(n int) p.Test {
-	t := p.Test{
+func sliceMin(n int) Test {
+	t := Test{
 		IssueCode: zconst.IssueCodeMin,
 		Params:    make(map[string]any, 1),
 		ValidateFunc: func(val any, ctx Ctx) bool {
@@ -378,8 +378,8 @@ func sliceMin(n int) p.Test {
 	t.Params[zconst.IssueCodeMin] = n
 	return t
 }
-func sliceMax(n int) p.Test {
-	t := p.Test{
+func sliceMax(n int) Test {
+	t := Test{
 		IssueCode: zconst.IssueCodeMax,
 		Params:    make(map[string]any, 1),
 		ValidateFunc: func(val any, ctx Ctx) bool {
@@ -393,8 +393,8 @@ func sliceMax(n int) p.Test {
 	t.Params[zconst.IssueCodeMax] = n
 	return t
 }
-func sliceLength(n int) p.Test {
-	t := p.Test{
+func sliceLength(n int) Test {
+	t := Test{
 		IssueCode: zconst.IssueCodeLen,
 		Params:    make(map[string]any, 1),
 		ValidateFunc: func(val any, ctx Ctx) bool {

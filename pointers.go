@@ -11,11 +11,11 @@ import (
 var _ ComplexZogSchema = &PointerSchema{}
 
 type PointerSchema struct {
-	// preTransforms  []p.PreTransform
-	tests    []p.Test
+	// preTransforms  []PreTransform
+	tests    []Test
 	schema   ZogSchema
-	required *p.Test
-	// postTransforms []p.PostTransform
+	required *Test
+	// postTransforms []PostTransform
 	// defaultVal     *any
 	// catch          *any
 }
@@ -32,13 +32,13 @@ func (v *PointerSchema) setCoercer(c conf.CoercerFunc) {
 // Ptr creates a pointer ZogSchema
 func Ptr(schema ZogSchema) *PointerSchema {
 	return &PointerSchema{
-		tests:  []p.Test{},
+		tests:  []Test{},
 		schema: schema,
 	}
 }
 
 // Parse the data into the destination pointer
-func (v *PointerSchema) Parse(data any, dest any, options ...ExecOption) p.ZogIssueMap {
+func (v *PointerSchema) Parse(data any, dest any, options ...ExecOption) ZogIssueMap {
 	errs := p.NewErrsMap()
 	defer errs.Free()
 	ctx := p.NewExecCtx(errs, conf.IssueFormatter)
@@ -94,7 +94,7 @@ func (v *PointerSchema) process(ctx *p.SchemaCtx) {
 }
 
 // Validates a pointer pointer
-func (v *PointerSchema) Validate(data any, options ...ExecOption) p.ZogIssueMap {
+func (v *PointerSchema) Validate(data any, options ...ExecOption) ZogIssueMap {
 	errs := p.NewErrsMap()
 	defer errs.Free()
 	ctx := p.NewExecCtx(errs, conf.IssueFormatter)
@@ -126,7 +126,7 @@ func (v *PointerSchema) validate(ctx *p.SchemaCtx) {
 // Validate Existing Pointer
 
 func (v *PointerSchema) NotNil(options ...TestOption) *PointerSchema {
-	r := p.Test{
+	r := Test{
 		IssueCode: zconst.IssueCodeNotNil,
 	}
 	for _, opt := range options {

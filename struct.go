@@ -12,12 +12,12 @@ import (
 var _ ComplexZogSchema = &StructSchema{}
 
 type StructSchema struct {
-	preTransforms  []p.PreTransform
+	preTransforms  []PreTransform
 	schema         Schema
-	postTransforms []p.PostTransform
-	tests          []p.Test
+	postTransforms []PostTransform
+	tests          []Test
 	// defaultVal     any
-	required *p.Test
+	required *Test
 	// catch          any
 }
 
@@ -44,7 +44,7 @@ func Struct(schema Schema) *StructSchema {
 }
 
 // Parses val into destPtr and validates each field based on the schema. Only supports val = map[string]any & dest = &struct
-func (v *StructSchema) Parse(data any, destPtr any, options ...ExecOption) p.ZogIssueMap {
+func (v *StructSchema) Parse(data any, destPtr any, options ...ExecOption) ZogIssueMap {
 	errs := p.NewErrsMap()
 	defer errs.Free()
 	ctx := p.NewExecCtx(errs, conf.IssueFormatter)
@@ -152,7 +152,7 @@ func (v *StructSchema) process(ctx *p.SchemaCtx) {
 
 // Validate a struct pointer given the struct schema. Usage:
 // userSchema.Validate(&User, ...options)
-func (v *StructSchema) Validate(dataPtr any, options ...ExecOption) p.ZogIssueMap {
+func (v *StructSchema) Validate(dataPtr any, options ...ExecOption) ZogIssueMap {
 	errs := p.NewErrsMap()
 	defer errs.Free()
 	ctx := p.NewExecCtx(errs, conf.IssueFormatter)
@@ -240,18 +240,18 @@ func (v *StructSchema) validate(ctx *p.SchemaCtx) {
 }
 
 // Add a pretransform step to the schema
-func (v *StructSchema) PreTransform(transform p.PreTransform) *StructSchema {
+func (v *StructSchema) PreTransform(transform PreTransform) *StructSchema {
 	if v.preTransforms == nil {
-		v.preTransforms = []p.PreTransform{}
+		v.preTransforms = []PreTransform{}
 	}
 	v.preTransforms = append(v.preTransforms, transform)
 	return v
 }
 
 // Adds posttransform function to schema
-func (v *StructSchema) PostTransform(transform p.PostTransform) *StructSchema {
+func (v *StructSchema) PostTransform(transform PostTransform) *StructSchema {
 	if v.postTransforms == nil {
-		v.postTransforms = []p.PostTransform{}
+		v.postTransforms = []PostTransform{}
 	}
 	v.postTransforms = append(v.postTransforms, transform)
 	return v
@@ -286,7 +286,7 @@ func (v *StructSchema) Optional() *StructSchema {
 
 // ! VALIDATORS
 // custom test function call it -> schema.Test(t z.Test, opts ...TestOption)
-func (v *StructSchema) Test(t p.Test, opts ...TestOption) *StructSchema {
+func (v *StructSchema) Test(t Test, opts ...TestOption) *StructSchema {
 	for _, opt := range opts {
 		opt(&t)
 	}
