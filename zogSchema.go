@@ -41,23 +41,8 @@ type PostTransform = p.PostTransform
 
 func primitiveProcessor[T p.ZogPrimitive](ctx *p.SchemaCtx, preTransforms []p.PreTransform, tests []p.Test, postTransforms []p.PostTransform, defaultVal *T, required *p.Test, catch *T, coercer conf.CoercerFunc, isZeroFunc p.IsZeroValueFunc) {
 	ctx.CanCatch = catch != nil
-	ctx.HasCaught = false
 
 	destPtr := ctx.DestPtr.(*T)
-	// 1. preTransforms
-	for _, fn := range preTransforms {
-		nVal, err := fn(ctx.Val, ctx)
-		// bail if error in preTransform
-		if err != nil || ctx.HasCaught {
-			if ctx.CanCatch {
-				ctx.HasCaught = true
-				break
-			}
-			ctx.AddIssue(ctx.IssueFromUnknownError(err))
-			return
-		}
-		ctx.Val = nVal
-	}
 	// 4. postTransforms
 	defer func() {
 		// only run posttransforms on success
@@ -65,7 +50,6 @@ func primitiveProcessor[T p.ZogPrimitive](ctx *p.SchemaCtx, preTransforms []p.Pr
 			for _, fn := range postTransforms {
 				err := fn(destPtr, ctx)
 				if err != nil {
-					// TODO unsure if we should also catch here
 					ctx.AddIssue(ctx.IssueFromUnknownError(err))
 					return
 				}
@@ -73,9 +57,19 @@ func primitiveProcessor[T p.ZogPrimitive](ctx *p.SchemaCtx, preTransforms []p.Pr
 		}
 	}()
 
-	if ctx.HasCaught {
-		*destPtr = *catch
-		return
+	// 1. preTransforms
+	for _, fn := range preTransforms {
+		nVal, err := fn(ctx.Val, ctx)
+		// bail if error in preTransform
+		if err != nil || ctx.Exit {
+			if ctx.CanCatch {
+				*destPtr = *catch
+				return
+			}
+			ctx.AddIssue(ctx.IssueFromUnknownError(err))
+			return
+		}
+		ctx.Val = nVal
 	}
 
 	// 2. cast data to string & handle default/required
@@ -91,7 +85,8 @@ func primitiveProcessor[T p.ZogPrimitive](ctx *p.SchemaCtx, preTransforms []p.Pr
 			// is required & zero value
 			// required
 			if ctx.CanCatch {
-				ctx.HasCaught = true
+				*destPtr = *catch
+				return
 			} else {
 				ctx.AddIssue(ctx.IssueFromTest(required, ctx.Val))
 				return
@@ -103,7 +98,8 @@ func primitiveProcessor[T p.ZogPrimitive](ctx *p.SchemaCtx, preTransforms []p.Pr
 			*destPtr = newVal.(T)
 		} else {
 			if ctx.CanCatch {
-				ctx.HasCaught = true
+				*destPtr = *catch
+				return
 			} else {
 				ctx.AddIssue(ctx.IssueFromCoerce(err))
 				return
@@ -111,18 +107,13 @@ func primitiveProcessor[T p.ZogPrimitive](ctx *p.SchemaCtx, preTransforms []p.Pr
 		}
 	}
 
-	if ctx.HasCaught {
-		*destPtr = *catch
-		return
-	}
 	// 3. tests
 	for _, test := range tests {
 		if !test.ValidateFunc(destPtr, ctx) {
 			// catching the first error if catch is set
 			if ctx.CanCatch {
 				*destPtr = *catch
-				ctx.HasCaught = true
-				break
+				return
 			}
 			ctx.AddIssue(ctx.IssueFromTest(&test, ctx.Val))
 		}
@@ -133,7 +124,6 @@ func primitiveProcessor[T p.ZogPrimitive](ctx *p.SchemaCtx, preTransforms []p.Pr
 
 func primitiveValidator[T p.ZogPrimitive](ctx *p.SchemaCtx, preTransforms []p.PreTransform, tests []p.Test, postTransforms []p.PostTransform, defaultVal *T, required *p.Test, catch *T) {
 	ctx.CanCatch = catch != nil
-	ctx.HasCaught = false
 
 	valPtr := ctx.Val.(*T)
 	// 4. postTransforms
@@ -154,20 +144,15 @@ func primitiveValidator[T p.ZogPrimitive](ctx *p.SchemaCtx, preTransforms []p.Pr
 	for _, fn := range preTransforms {
 		nVal, err := fn(*valPtr, ctx)
 		// bail if error in preTransform
-		if err != nil {
+		if err != nil || ctx.Exit {
 			if ctx.CanCatch {
-				ctx.HasCaught = true
-				break
+				*valPtr = *catch
+				return
 			}
 			ctx.AddIssue(ctx.IssueFromUnknownError(err))
 			return
 		}
 		*valPtr = nVal.(T)
-	}
-
-	if ctx.HasCaught {
-		*valPtr = *catch
-		return
 	}
 
 	// 2. cast data to string & handle default/required
@@ -184,7 +169,8 @@ func primitiveValidator[T p.ZogPrimitive](ctx *p.SchemaCtx, preTransforms []p.Pr
 			// is required & zero value
 			// required
 			if ctx.CanCatch {
-				ctx.HasCaught = true
+				*valPtr = *catch
+				return
 			} else {
 				ctx.AddIssue(ctx.IssueFromTest(required, ctx.Val))
 				return
@@ -192,19 +178,13 @@ func primitiveValidator[T p.ZogPrimitive](ctx *p.SchemaCtx, preTransforms []p.Pr
 		}
 	}
 
-	if ctx.HasCaught {
-		*valPtr = *catch
-		return
-	}
-
 	// 3. tests
 	for _, test := range tests {
 		if !test.ValidateFunc(valPtr, ctx) {
 			// catching the first error if catch is set
 			if ctx.CanCatch {
-				ctx.HasCaught = true
 				*valPtr = *catch
-				break
+				return
 			}
 			ctx.AddIssue(ctx.IssueFromTest(&test, ctx.Val))
 		}
