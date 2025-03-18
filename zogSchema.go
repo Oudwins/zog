@@ -1,7 +1,6 @@
 package zog
 
 import (
-	"github.com/Oudwins/zog/conf"
 	p "github.com/Oudwins/zog/internals"
 	"github.com/Oudwins/zog/zconst"
 )
@@ -11,7 +10,7 @@ import (
 type ZogSchema interface {
 	process(ctx *p.SchemaCtx)
 	validate(ctx *p.SchemaCtx)
-	setCoercer(c conf.CoercerFunc)
+	setCoercer(c CoercerFunc)
 	getType() zconst.ZogType
 }
 
@@ -37,9 +36,11 @@ type PreTransform = p.PreTransform
 // Function signature for postTransforms. Takes the value pointer and the context and returns an error.
 type PostTransform = p.PostTransform
 
+type IssueFmtFunc = p.IssueFmtFunc
+
 // ! PRIMITIVE PROCESSING
 
-func primitiveProcessor[T p.ZogPrimitive](ctx *p.SchemaCtx, preTransforms []p.PreTransform, tests []p.Test, postTransforms []p.PostTransform, defaultVal *T, required *p.Test, catch *T, coercer conf.CoercerFunc, isZeroFunc p.IsZeroValueFunc) {
+func primitiveProcessor[T p.ZogPrimitive](ctx *p.SchemaCtx, preTransforms []PreTransform, tests []Test, postTransforms []PostTransform, defaultVal *T, required *Test, catch *T, coercer CoercerFunc, isZeroFunc p.IsZeroValueFunc) {
 	ctx.CanCatch = catch != nil
 
 	destPtr := ctx.DestPtr.(*T)
@@ -122,7 +123,7 @@ func primitiveProcessor[T p.ZogPrimitive](ctx *p.SchemaCtx, preTransforms []p.Pr
 	// 4. postTransforms -> Done above on defer
 }
 
-func primitiveValidator[T p.ZogPrimitive](ctx *p.SchemaCtx, preTransforms []p.PreTransform, tests []p.Test, postTransforms []p.PostTransform, defaultVal *T, required *p.Test, catch *T) {
+func primitiveValidator[T p.ZogPrimitive](ctx *p.SchemaCtx, preTransforms []PreTransform, tests []Test, postTransforms []PostTransform, defaultVal *T, required *Test, catch *T) {
 	ctx.CanCatch = catch != nil
 
 	valPtr := ctx.Val.(*T)

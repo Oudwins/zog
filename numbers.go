@@ -12,11 +12,11 @@ type Numeric = constraints.Ordered
 var _ PrimitiveZogSchema[int] = &NumberSchema[int]{}
 
 type NumberSchema[T Numeric] struct {
-	preTransforms  []p.PreTransform
-	tests          []p.Test
-	postTransforms []p.PostTransform
+	preTransforms  []PreTransform
+	tests          []Test
+	postTransforms []PostTransform
 	defaultVal     *T
-	required       *p.Test
+	required       *Test
 	catch          *T
 	coercer        conf.CoercerFunc
 }
@@ -29,7 +29,7 @@ func (v *NumberSchema[T]) getType() zconst.ZogType {
 }
 
 // Sets the coercer for the schema
-func (v *NumberSchema[T]) setCoercer(c conf.CoercerFunc) {
+func (v *NumberSchema[T]) setCoercer(c CoercerFunc) {
 	v.coercer = c
 }
 
@@ -120,7 +120,7 @@ func Int32(opts ...SchemaOption) *NumberSchema[int32] {
 }
 
 // parses the value and stores it in the destination
-func (v *NumberSchema[T]) Parse(data any, dest *T, options ...ExecOption) p.ZogIssueList {
+func (v *NumberSchema[T]) Parse(data any, dest *T, options ...ExecOption) ZogIssueList {
 	errs := p.NewErrsList()
 	defer errs.Free()
 	ctx := p.NewExecCtx(errs, conf.IssueFormatter)
@@ -144,7 +144,7 @@ func (v *NumberSchema[T]) process(ctx *p.SchemaCtx) {
 }
 
 // Validates a number pointer
-func (v *NumberSchema[T]) Validate(data *T, options ...ExecOption) p.ZogIssueList {
+func (v *NumberSchema[T]) Validate(data *T, options ...ExecOption) ZogIssueList {
 	errs := p.NewErrsList()
 	defer errs.Free()
 	ctx := p.NewExecCtx(errs, conf.IssueFormatter)
@@ -167,18 +167,18 @@ func (v *NumberSchema[T]) validate(ctx *p.SchemaCtx) {
 
 // GLOBAL METHODS
 
-func (v *NumberSchema[T]) PreTransform(transform p.PreTransform) *NumberSchema[T] {
+func (v *NumberSchema[T]) PreTransform(transform PreTransform) *NumberSchema[T] {
 	if v.preTransforms == nil {
-		v.preTransforms = []p.PreTransform{}
+		v.preTransforms = []PreTransform{}
 	}
 	v.preTransforms = append(v.preTransforms, transform)
 	return v
 }
 
 // Adds posttransform function to schema
-func (v *NumberSchema[T]) PostTransform(transform p.PostTransform) *NumberSchema[T] {
+func (v *NumberSchema[T]) PostTransform(transform PostTransform) *NumberSchema[T] {
 	if v.postTransforms == nil {
-		v.postTransforms = []p.PostTransform{}
+		v.postTransforms = []PostTransform{}
 	}
 	v.postTransforms = append(v.postTransforms, transform)
 	return v
@@ -215,7 +215,7 @@ func (v *NumberSchema[T]) Catch(val T) *NumberSchema[T] {
 }
 
 // custom test function call it -> schema.Test(test, options)
-func (v *NumberSchema[T]) Test(t p.Test, opts ...TestOption) *NumberSchema[T] {
+func (v *NumberSchema[T]) Test(t Test, opts ...TestOption) *NumberSchema[T] {
 	for _, opt := range opts {
 		opt(&t)
 	}

@@ -9,13 +9,13 @@ import (
 var _ PrimitiveZogSchema[bool] = &BoolSchema[bool]{}
 
 type BoolSchema[T ~bool] struct {
-	preTransforms  []p.PreTransform
-	tests          []p.Test
-	postTransforms []p.PostTransform
+	preTransforms  []PreTransform
+	tests          []Test
+	postTransforms []PostTransform
 	defaultVal     *T
-	required       *p.Test
+	required       *Test
 	catch          *T
-	coercer        conf.CoercerFunc
+	coercer        CoercerFunc
 }
 
 // ! INTERNALS
@@ -26,7 +26,7 @@ func (v *BoolSchema[T]) getType() zconst.ZogType {
 }
 
 // Sets the coercer for the schema
-func (v *BoolSchema[T]) setCoercer(c conf.CoercerFunc) {
+func (v *BoolSchema[T]) setCoercer(c CoercerFunc) {
 	v.coercer = c
 }
 
@@ -44,7 +44,7 @@ func Bool(opts ...SchemaOption) *BoolSchema[bool] {
 }
 
 // Parse data into destination pointer
-func (v *BoolSchema[T]) Parse(data any, dest *T, options ...ExecOption) p.ZogIssueList {
+func (v *BoolSchema[T]) Parse(data any, dest *T, options ...ExecOption) ZogIssueList {
 	errs := p.NewErrsList()
 	defer errs.Free()
 	ctx := p.NewExecCtx(errs, conf.IssueFormatter)
@@ -66,7 +66,7 @@ func (v *BoolSchema[T]) process(ctx *p.SchemaCtx) {
 }
 
 // Validate data against schema
-func (v *BoolSchema[T]) Validate(val *T, options ...ExecOption) p.ZogIssueList {
+func (v *BoolSchema[T]) Validate(val *T, options ...ExecOption) ZogIssueList {
 	errs := p.NewErrsList()
 	defer errs.Free()
 	ctx := p.NewExecCtx(errs, conf.IssueFormatter)
@@ -90,7 +90,7 @@ func (v *BoolSchema[T]) validate(ctx *p.SchemaCtx) {
 
 // GLOBAL METHODS
 
-func (v *BoolSchema[T]) Test(t p.Test, options ...TestOption) *BoolSchema[T] {
+func (v *BoolSchema[T]) Test(t Test, options ...TestOption) *BoolSchema[T] {
 	for _, opt := range options {
 		opt(&t)
 	}
@@ -107,18 +107,18 @@ func (v *BoolSchema[T]) TestFunc(testFunc p.TestFunc, options ...TestOption) *Bo
 }
 
 // Adds pretransform function to schema
-func (v *BoolSchema[T]) PreTransform(transform p.PreTransform) *BoolSchema[T] {
+func (v *BoolSchema[T]) PreTransform(transform PreTransform) *BoolSchema[T] {
 	if v.preTransforms == nil {
-		v.preTransforms = []p.PreTransform{}
+		v.preTransforms = []PreTransform{}
 	}
 	v.preTransforms = append(v.preTransforms, transform)
 	return v
 }
 
 // Adds posttransform function to schema
-func (v *BoolSchema[T]) PostTransform(transform p.PostTransform) *BoolSchema[T] {
+func (v *BoolSchema[T]) PostTransform(transform PostTransform) *BoolSchema[T] {
 	if v.postTransforms == nil {
-		v.postTransforms = []p.PostTransform{}
+		v.postTransforms = []PostTransform{}
 	}
 	v.postTransforms = append(v.postTransforms, transform)
 	return v

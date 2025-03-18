@@ -18,11 +18,11 @@ var (
 )
 
 type StringSchema[T ~string] struct {
-	preTransforms  []p.PreTransform
-	tests          []p.Test
-	postTransforms []p.PostTransform
+	preTransforms  []PreTransform
+	tests          []Test
+	postTransforms []PostTransform
 	defaultVal     *T
-	required       *p.Test
+	required       *Test
 	catch          *T
 	coercer        conf.CoercerFunc
 }
@@ -53,7 +53,7 @@ func String(opts ...SchemaOption) *StringSchema[string] {
 }
 
 // Parses the data into the destination string. Returns a list of ZogIssues
-func (v *StringSchema[T]) Parse(data any, dest *T, options ...ExecOption) p.ZogIssueList {
+func (v *StringSchema[T]) Parse(data any, dest *T, options ...ExecOption) ZogIssueList {
 	errs := p.NewErrsList()
 	defer errs.Free()
 
@@ -78,7 +78,7 @@ func (v *StringSchema[T]) process(ctx *p.SchemaCtx) {
 }
 
 // Validate Given string
-func (v *StringSchema[T]) Validate(data *T, options ...ExecOption) p.ZogIssueList {
+func (v *StringSchema[T]) Validate(data *T, options ...ExecOption) ZogIssueList {
 	errs := p.NewErrsList()
 	defer errs.Free()
 	ctx := p.NewExecCtx(errs, conf.IssueFormatter)
@@ -101,9 +101,9 @@ func (v *StringSchema[T]) validate(ctx *p.SchemaCtx) {
 }
 
 // Adds pretransform function to schema
-func (v *StringSchema[T]) PreTransform(transform p.PreTransform) *StringSchema[T] {
+func (v *StringSchema[T]) PreTransform(transform PreTransform) *StringSchema[T] {
 	if v.preTransforms == nil {
-		v.preTransforms = []p.PreTransform{}
+		v.preTransforms = []PreTransform{}
 	}
 	v.preTransforms = append(v.preTransforms, transform)
 	return v
@@ -123,9 +123,9 @@ func (v *StringSchema[T]) Trim() *StringSchema[T] {
 }
 
 // Adds posttransform function to schema
-func (v *StringSchema[T]) PostTransform(transform p.PostTransform) *StringSchema[T] {
+func (v *StringSchema[T]) PostTransform(transform PostTransform) *StringSchema[T] {
 	if v.postTransforms == nil {
-		v.postTransforms = []p.PostTransform{}
+		v.postTransforms = []PostTransform{}
 	}
 	v.postTransforms = append(v.postTransforms, transform)
 	return v
@@ -165,7 +165,7 @@ func (v *StringSchema[T]) Catch(val T) *StringSchema[T] {
 
 // ! Tests
 // custom test function call it -> schema.Test(t z.Test, opts ...TestOption)
-func (v *StringSchema[T]) Test(t p.Test, opts ...TestOption) *StringSchema[T] {
+func (v *StringSchema[T]) Test(t Test, opts ...TestOption) *StringSchema[T] {
 	for _, opt := range opts {
 		opt(&t)
 	}
@@ -223,7 +223,7 @@ func (v *StringSchema[T]) Len(n int, options ...TestOption) *StringSchema[T] {
 
 // Test: checks that the value is a valid email address
 func (v *StringSchema[T]) Email(options ...TestOption) *StringSchema[T] {
-	t := p.Test{
+	t := Test{
 		IssueCode: zconst.IssueCodeEmail,
 		ValidateFunc: func(v any, ctx Ctx) bool {
 			email, ok := v.(*T)
@@ -242,7 +242,7 @@ func (v *StringSchema[T]) Email(options ...TestOption) *StringSchema[T] {
 
 // Test: checks that the value is a valid URL
 func (v *StringSchema[T]) URL(options ...TestOption) *StringSchema[T] {
-	t := p.Test{
+	t := Test{
 		IssueCode: zconst.IssueCodeURL,
 		ValidateFunc: func(v any, ctx Ctx) bool {
 			s, ok := v.(*T)
@@ -262,7 +262,7 @@ func (v *StringSchema[T]) URL(options ...TestOption) *StringSchema[T] {
 
 // Test: checks that the value has the prefix
 func (v *StringSchema[T]) HasPrefix(s T, options ...TestOption) *StringSchema[T] {
-	t := p.Test{
+	t := Test{
 		IssueCode: zconst.IssueCodeHasPrefix,
 		Params:    make(map[string]any, 1),
 		ValidateFunc: func(v any, ctx Ctx) bool {
@@ -283,7 +283,7 @@ func (v *StringSchema[T]) HasPrefix(s T, options ...TestOption) *StringSchema[T]
 
 // Test: checks that the value has the suffix
 func (v *StringSchema[T]) HasSuffix(s T, options ...TestOption) *StringSchema[T] {
-	t := p.Test{
+	t := Test{
 		IssueCode: zconst.IssueCodeHasSuffix,
 		Params:    make(map[string]any, 1),
 		ValidateFunc: func(v any, ctx Ctx) bool {
@@ -304,7 +304,7 @@ func (v *StringSchema[T]) HasSuffix(s T, options ...TestOption) *StringSchema[T]
 
 // Test: checks that the value contains the substring
 func (v *StringSchema[T]) Contains(sub T, options ...TestOption) *StringSchema[T] {
-	t := p.Test{
+	t := Test{
 		IssueCode: zconst.IssueCodeContains,
 		Params:    make(map[string]any, 1),
 		ValidateFunc: func(v any, ctx Ctx) bool {
@@ -325,7 +325,7 @@ func (v *StringSchema[T]) Contains(sub T, options ...TestOption) *StringSchema[T
 
 // Test: checks that the value contains an uppercase letter
 func (v *StringSchema[T]) ContainsUpper(options ...TestOption) *StringSchema[T] {
-	t := p.Test{
+	t := Test{
 		IssueCode: zconst.IssueCodeContainsUpper,
 		ValidateFunc: func(v any, ctx Ctx) bool {
 			val, ok := v.(*T)
@@ -349,7 +349,7 @@ func (v *StringSchema[T]) ContainsUpper(options ...TestOption) *StringSchema[T] 
 
 // Test: checks that the value contains a digit
 func (v *StringSchema[T]) ContainsDigit(options ...TestOption) *StringSchema[T] {
-	t := p.Test{
+	t := Test{
 		IssueCode: zconst.IssueCodeContainsDigit,
 		ValidateFunc: func(v any, ctx Ctx) bool {
 			val, ok := v.(*T)
@@ -376,7 +376,7 @@ func (v *StringSchema[T]) ContainsDigit(options ...TestOption) *StringSchema[T] 
 // Test: checks that the value contains a special character
 func (v *StringSchema[T]) ContainsSpecial(options ...TestOption) *StringSchema[T] {
 	t :=
-		p.Test{
+		Test{
 			IssueCode: zconst.IssueCodeContainsSpecial,
 			ValidateFunc: func(v any, ctx Ctx) bool {
 				val, ok := v.(*T)
@@ -403,7 +403,7 @@ func (v *StringSchema[T]) ContainsSpecial(options ...TestOption) *StringSchema[T
 
 // Test: checks that the value is a valid uuid
 func (v *StringSchema[T]) UUID(options ...TestOption) *StringSchema[T] {
-	t := p.Test{
+	t := Test{
 		IssueCode: zconst.IssueCodeUUID,
 		ValidateFunc: func(v any, ctx Ctx) bool {
 			uuid, ok := v.(*T)
@@ -422,7 +422,7 @@ func (v *StringSchema[T]) UUID(options ...TestOption) *StringSchema[T] {
 
 // Test: checks that value matches to regex
 func (v *StringSchema[T]) Match(regex *regexp.Regexp, options ...TestOption) *StringSchema[T] {
-	t := p.Test{
+	t := Test{
 		IssueCode: zconst.IssueCodeMatch,
 		Params:    make(map[string]any, 1),
 		ValidateFunc: func(v any, ctx Ctx) bool {
