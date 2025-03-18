@@ -80,6 +80,7 @@ func (c *ExecCtx) NewSchemaCtx(val any, destPtr any, path *PathBuilder, dtype zc
 	c2.DType = dtype
 	c2.CanCatch = false
 	c2.HasCaught = false
+	c2.Exit = false
 	return c2
 }
 
@@ -92,6 +93,7 @@ func (c *ExecCtx) NewValidateSchemaCtx(valPtr any, path *PathBuilder, dtype zcon
 	c2.DType = dtype
 	c2.CanCatch = false
 	c2.HasCaught = false
+	c2.Exit = false
 	return c2
 }
 
@@ -106,6 +108,7 @@ type SchemaCtx struct {
 	Path      *PathBuilder
 	DType     zconst.ZogType
 	CanCatch  bool
+	Exit      bool
 	HasCaught bool
 }
 
@@ -116,7 +119,8 @@ type SchemaCtx struct {
 
 func (c *SchemaCtx) AddIssue(e *ZogIssue) {
 	if c.CanCatch {
-		c.HasCaught = true
+		c.Exit = true
+		FreeIssue(e)
 		return
 	}
 	c.ExecCtx.AddIssue(e)

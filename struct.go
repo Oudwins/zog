@@ -62,18 +62,6 @@ func (v *StructSchema) Parse(data any, destPtr any, options ...ExecOption) p.Zog
 }
 
 func (v *StructSchema) process(ctx *p.SchemaCtx) {
-	// 1. preTransforms
-	if v.preTransforms != nil {
-		for _, fn := range v.preTransforms {
-			nVal, err := fn(ctx.Val, ctx)
-			// bail if error in preTransform
-			if err != nil {
-				ctx.AddIssue(ctx.Issue().SetError(err))
-				return
-			}
-			ctx.Val = nVal
-		}
-	}
 
 	// 4. postTransforms
 	defer func() {
@@ -88,6 +76,21 @@ func (v *StructSchema) process(ctx *p.SchemaCtx) {
 			}
 		}
 	}()
+	// 1. preTransforms
+	if v.preTransforms != nil {
+		for _, fn := range v.preTransforms {
+			nVal, err := fn(ctx.Val, ctx)
+			// bail if error in preTransform
+			if ctx.Exit {
+				return
+			}
+			if err != nil {
+				ctx.AddIssue(ctx.Issue().SetError(err))
+				return
+			}
+			ctx.Val = nVal
+		}
+	}
 
 	var dataProv p.DataProvider
 	// 2. cast data as DataProvider
@@ -133,6 +136,7 @@ func (v *StructSchema) process(ctx *p.SchemaCtx) {
 		subCtx.DestPtr = destPtr
 		subCtx.Path.Push(&fieldKey)
 		subCtx.DType = processor.getType()
+		subCtx.Exit = false
 		processor.process(subCtx)
 		subCtx.Path.Pop()
 	}

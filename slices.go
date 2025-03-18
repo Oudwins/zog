@@ -117,6 +117,7 @@ func (v *SliceSchema) validate(ctx *p.SchemaCtx) {
 		k := fmt.Sprintf("[%d]", idx)
 		subCtx.Val = item
 		subCtx.Path.Push(&k)
+		subCtx.Exit = false
 		v.schema.validate(subCtx)
 		subCtx.Path.Pop()
 	}
