@@ -14,8 +14,8 @@ Here is an example with a pretransform
 
 ```go
 nameSchema := z.String().Min(3).PreTransform(func(data any, ctx z.Ctx) (any, error) {
-  char := ctx.Get("split_by")
-  return strings.Split(data.(string), char), nil
+	char := ctx.Get("split_by")
+	return strings.Split(data.(string), char), nil
 })
 nameSchema.Parse("Michael Jackson", &dest, z.WithCtxValue("split_by", " "))
 ```

@@ -8,8 +8,8 @@ sidebar_position: 3
 
 ```go
 import (
-  z "github.com/Oudwins/zog"
-  "github.com/Oudwins/zog/zenv"
+	z "github.com/Oudwins/zog"
+	"github.com/Oudwins/zog/zenv"
 )
 
 var envSchema = z.Struct(z.Schema{
@@ -20,6 +20,7 @@ var envSchema = z.Struct(z.Schema{
 		"Pass": z.String().Default("root"),
 	}),
 })
+
 var Env = struct {
 	PORT int // zog will automatically coerce the PORT env to an int
 	DB   struct {
@@ -31,14 +32,15 @@ var Env = struct {
 
 // Init our typesafe env vars, panic if any envs are missing
 func Init() {
-  errs := envSchema.Parse(zenv.NewDataProvider(), &Env)
-  if errs != nil {
-    log.Fatal(errs)
-  }
+	errs := envSchema.Parse(zenv.NewDataProvider(), &Env)
+	if errs != nil {
+		log.Fatal(errs)
+	}
 }
 
 // if you want to always panic on error
 var Env = parse()
+
 func Parse() env {
 	var e env
 	errs := envSchema.Parse(zenv.NewDataProvider(), &e)

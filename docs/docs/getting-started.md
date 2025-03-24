@@ -41,7 +41,7 @@ func main() {
 	u := User{}
 	m := map[string]string{
 		"name": "Zog",
-		"age":       "",    // won't return an error because fields are optional by default
+		"age":  "", // won't return an error because fields are optional by default
 	}
 	errsMap := userSchema.Parse(m, &u)
 	if errsMap != nil {

@@ -43,7 +43,7 @@ errsMap3["address.streets[0]"] // will return []z.ZogIssue{{Message: "min length
 
 ```go
 errsMap := z.Slice(z.String()).Min(2).Parse([]string{"only_one"}, &dest)
-errsMap["$root"] // will return []z.ZogIssue{{Message: "slice length should at least be 2"}}
+errsMap["$root"]  // will return []z.ZogIssue{{Message: "slice length should at least be 2"}}
 errsMap["$first"] // will return the same in this case []z.ZogIssue{{Message: "slice length should at least be 2"}}
 ```
 
@@ -72,7 +72,6 @@ const (
 	*/
 	ISSUE_KEY_ROOT = "$root"
 )
-
 ```
 
 ## Sanitizing ZogIssues
@@ -184,8 +183,8 @@ const (
 	IssueCodeCoerce   ZogIssueCode = "coerce"   // all
 	IssueCodeFallback ZogIssueCode = "fallback" // all. Applied when other errror code is not implemented. Required to be implemented for every zog type!
 
-	IssueCodeEQ       ZogIssueCode = "eq"             // number, time, string
-	IssueCodeOneOf    ZogIssueCode = "one_of_options" // string or number
+	IssueCodeEQ    ZogIssueCode = "eq"             // number, time, string
+	IssueCodeOneOf ZogIssueCode = "one_of_options" // string or number
 
 	IssueCodeMin      ZogIssueCode = "min"       // string, slice
 	IssueCodeMax      ZogIssueCode = "max"       // string, slice
@@ -248,7 +247,7 @@ type IssueFmtFunc = func(e *ZogIssue, ctx z.Ctx)
 
 ```go
 err := z.String().Min(5, z.MessageFunc(func(e *z.ZogIssue, ctx z.Ctx) {
-  e.SetMessage("string must be at least 5 characters long")
+	e.SetMessage("string must be at least 5 characters long")
 })).Parse("bad", &dest)
 // err = []ZogIssue{{Message: "string must be at least 5 characters long"}}
 ```
@@ -259,7 +258,7 @@ This allows you to set a custom `ZogIssue` formatter for the entire parsing oper
 
 ```go
 err := z.String().Min(5).Email().Parse("zog", &dest, z.WithIssueFormatter(func(e *z.ZogIssue, ctx z.Ctx) {
-  e.SetMessage("override message")
+	e.SetMessage("override message")
 }))
 // err = []ZogIssue{{Code: min_length_issue, Message: "override message"}, {Code: email_issue, Message: "override message"}}
 ```
@@ -273,7 +272,7 @@ errs := userSchema.Parse(data, &user)
 msgs := FormatZogIssues(errs)
 
 func FormatZogIssues(errs z.ZogIssueMap) map[string][]string {
-  // iterate over issues and create custom messages based on the issue code, the params and destination type
+	// iterate over issues and create custom messages based on the issue code, the params and destination type
 }
 ```
 
@@ -283,8 +282,8 @@ Zog provides a `conf` package where you can override the issue messages for spec
 
 ```go
 import (
-  conf "github.com/Oudwins/zog/zconf"
-  zconst "github.com/Oudwins/zog/zconst"
+	conf "github.com/Oudwins/zog/zconf"
+	zconst "github.com/Oudwins/zog/zconst"
 )
 
 // override specific issue messages
@@ -298,10 +297,10 @@ But you can also outright override the issue formatter and ignore the issues map
 ```go
 // override the issue formatter function - CAREFUL with this you can set every issue message to the same thing!
 conf.IssueFormatter = func(e *p.ZogIssue, ctx z.Ctx) {
-  // do something with the issue
-  ...
-  // fallback to the default issue formatter
-  conf.DefaultIssueFormatter(e, p) // this uses the DefaultErrMsgMap to format the issue messages
+	// do something with the issue
+	...
+	// fallback to the default issue formatter
+	conf.DefaultIssueFormatter(e, p) // this uses the DefaultErrMsgMap to format the issue messages
 }
 ```
 
