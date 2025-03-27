@@ -100,7 +100,7 @@ z.String().ContainsDigit() // validates string contains digit
 z.String().ContainsSpecial() // validates string contains special character
 z.String().HasPrefix(prefix) // validates string has prefix
 z.String().HasSuffix(suffix) // validates string has suffix
-z.String().OneOf([]string{"a", "b", "c"}) // validates string is one of the values
+z.String().OneOf([]string{"a", "b", "c"}) // validates string is one of the values. Similar to zod enums
 ```
 
 ### Numbers / Ints & Floats
@@ -138,7 +138,7 @@ z.Float().GTE(n) // validates float is greater than or equal to n
 z.Int().LT(n) // validates int is less than n
 z.Float().LTE(n) // validates float is less than or equal to n
 z.Int().EQ(n) // validates int is equal to n
-z.Float().OneOf([]float64{1.0, 2.0, 3.0}) // validates float is one of the values
+z.Float().OneOf([]float64{1.0, 2.0, 3.0}) // validates float is one of the values. Similar to zod enums
 ```
 
 ### Booleans
