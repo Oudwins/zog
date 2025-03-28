@@ -36,9 +36,9 @@ func TestRequest(t *testing.T) {
 		"isMarried": z.Bool().True(),
 		"lights":    z.Bool().True(),
 		"cash":      z.Float64().GT(10.0),
-		"swagger": z.String().Test(z.TestFunc("swagger", func(val any, ctx z.Ctx) bool {
+		"swagger": z.String().TestFunc(func(val any, ctx z.Ctx) bool {
 			return val.(string) == "doweird"
-		})),
+		}),
 	})
 	u := User{}
 

@@ -143,8 +143,10 @@ func (v *StructSchema) process(ctx *p.SchemaCtx) {
 
 	// 3. Tests for struct
 	for _, test := range v.tests {
-		if !test.ValidateFunc(ctx.DestPtr, ctx) {
-			ctx.AddIssue(ctx.IssueFromTest(&test, ctx.DestPtr))
+		test.Func(ctx.DestPtr, ctx)
+		if ctx.Exit {
+			// Catch here
+			return
 		}
 	}
 
@@ -232,8 +234,10 @@ func (v *StructSchema) validate(ctx *p.SchemaCtx) {
 
 	// 3. tests for slice
 	for _, test := range v.tests {
-		if !test.ValidateFunc(ctx.Val, ctx) {
-			ctx.AddIssue(ctx.IssueFromTest(&test, ctx.Val))
+		test.Func(ctx.Val, ctx)
+		if ctx.Exit {
+			// catch
+			return
 		}
 	}
 	// 4. postTransforms -> defered see above
@@ -295,8 +299,8 @@ func (v *StructSchema) Test(t Test, opts ...TestOption) *StructSchema {
 }
 
 // Create a custom test function for the schema. This is similar to Zod's `.refine()` method.
-func (v *StructSchema) TestFunc(testFunc p.TestFunc, options ...TestOption) *StructSchema {
-	test := TestFunc("", testFunc)
-	v.Test(test, options...)
+func (v *StructSchema) TestFunc(testFunc BoolTestFunc, options ...TestOption) *StructSchema {
+	test := p.NewTestFunc("", testFunc, options...)
+	v.Test(*test)
 	return v
 }
