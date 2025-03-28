@@ -15,6 +15,20 @@ type Ctx interface {
 	AddIssue(e *ZogIssue)
 
 	// Returns a new issue with the current schema context's data prefilled
+	/*
+		Usage:
+
+		func MyCustomTestFunc(val any, ctx z.Ctx) {
+			if reason1 {
+			   ctx.AddIssue(ctx.Issue().SetMessage("Reason 1"))
+			} else if reason2 {
+			   ctx.AddIssue(ctx.Issue().SetMessage("Reason 2"))
+			} else {
+			   ctx.AddIssue(ctx.Issue().SetMessage("Reason 3"))
+			}
+		}
+
+	*/
 	Issue() *ZogIssue
 
 	/**
