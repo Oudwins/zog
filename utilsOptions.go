@@ -7,7 +7,7 @@ import (
 )
 
 // Options that can be passed to a test
-type TestOption = func(test *Test)
+type TestOption = p.TestOption
 
 // Message is a function that allows you to set a custom message for the test.
 func Message(msg string) TestOption {
