@@ -169,15 +169,15 @@ func (v *TimeSchema) Test(t Test, opts ...TestOption) *TimeSchema {
 	for _, opt := range opts {
 		opt(&t)
 	}
-	t.ValidateFunc = customTestBackwardsCompatWrapper(t.ValidateFunc)
+	t.Func = customTestBackwardsCompatWrapper(t.Func)
 	v.tests = append(v.tests, t)
 	return v
 }
 
 // Create a custom test function for the schema. This is similar to Zod's `.refine()` method.
-func (v *TimeSchema) TestFunc(testFunc p.TestFunc, options ...TestOption) *TimeSchema {
-	test := TestFunc("", testFunc)
-	v.Test(test, options...)
+func (v *TimeSchema) TestFunc(testFunc BoolTestFunc, options ...TestOption) *TimeSchema {
+	test := p.NewTestFunc("", testFunc, options...)
+	v.Test(*test)
 	return v
 }
 
@@ -185,18 +185,20 @@ func (v *TimeSchema) TestFunc(testFunc p.TestFunc, options ...TestOption) *TimeS
 
 // Checks that the value is after the given time
 func (v *TimeSchema) After(t time.Time, opts ...TestOption) *TimeSchema {
+	fn := func(v any, ctx Ctx) bool {
+		val, ok := v.(*time.Time)
+		if !ok {
+			return false
+		}
+		return val.After(t)
+	}
+
 	r := Test{
 		IssueCode: zconst.IssueCodeAfter,
 		Params:    make(map[string]any, 1),
-		ValidateFunc: func(v any, ctx Ctx) bool {
-			val, ok := v.(*time.Time)
-			if !ok {
-				return false
-			}
-			return val.After(t)
-		},
 	}
 	r.Params[zconst.IssueCodeAfter] = t
+	p.TestFuncFromBool(fn, &r)
 	for _, opt := range opts {
 		opt(&r)
 	}
@@ -206,41 +208,44 @@ func (v *TimeSchema) After(t time.Time, opts ...TestOption) *TimeSchema {
 
 // Checks that the value is before the given time
 func (v *TimeSchema) Before(t time.Time, opts ...TestOption) *TimeSchema {
+	fn := func(v any, ctx Ctx) bool {
+		val, ok := v.(*time.Time)
+		if !ok {
+			return false
+		}
+		return val.Before(t)
+	}
+
 	r :=
 		Test{
 			IssueCode: zconst.IssueCodeBefore,
 			Params:    make(map[string]any, 1),
-			ValidateFunc: func(v any, ctx Ctx) bool {
-				val, ok := v.(*time.Time)
-				if !ok {
-					return false
-				}
-				return val.Before(t)
-			},
 		}
 	r.Params[zconst.IssueCodeBefore] = t
+	p.TestFuncFromBool(fn, &r)
 	for _, opt := range opts {
 		opt(&r)
 	}
 	v.tests = append(v.tests, r)
-
 	return v
 }
 
 // Checks that the value is equal to the given time
 func (v *TimeSchema) EQ(t time.Time, opts ...TestOption) *TimeSchema {
+	fn := func(v any, ctx Ctx) bool {
+		val, ok := v.(*time.Time)
+		if !ok {
+			return false
+		}
+		return val.Equal(t)
+	}
+
 	r := Test{
 		IssueCode: zconst.IssueCodeEQ,
 		Params:    make(map[string]any, 1),
-		ValidateFunc: func(v any, ctx Ctx) bool {
-			val, ok := v.(*time.Time)
-			if !ok {
-				return false
-			}
-			return val.Equal(t)
-		},
 	}
 	r.Params[zconst.IssueCodeEQ] = t
+	p.TestFuncFromBool(fn, &r)
 	for _, opt := range opts {
 		opt(&r)
 	}
