@@ -49,11 +49,12 @@ Some people prefer calling validate method on the struct themselves. For that yo
 
 ```go
 type User struct {
-	ID int
+	ID   int
 	Name string
 }
+
 var userSchema = z.Struct(z.Schema{
-	"ID": z.Int().Required(),
+	"ID":   z.Int().Required(),
 	"name": z.String().Required(),
 })
 
@@ -64,6 +65,7 @@ func (u *User) Validate() z.ZogIssueMap {
 // in some handler somewhere
 user := User{ID: 1, Name: "Alice"}
 err := user.Validate()
+
 if err != nil {
 	fmt.Println(err)
 }

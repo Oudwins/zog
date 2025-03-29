@@ -11,9 +11,8 @@ Please make sure that you are using Zog correctly. The expectation is that if Zo
 **1 Not passing a pointer to the struct you are parsing into**
 
 ```go
-	payload := models.UserPayload{}
-	errMap := models.UserSchema.Parse(zhttp.Request(c.Request), payload) // note that the "payload" is not a pointer correct code here is &payload
-
+payload := models.UserPayload{}
+errMap := models.UserSchema.Parse(zhttp.Request(c.Request), payload) // note that the "payload" is not a pointer correct code here is &payload
 ```
 
 **2 No defining your schema correctly**
@@ -28,7 +27,7 @@ data := new(Name)
 
 var schema = z.Struct(z.Schema{
 	"first_name": z.String().Required(z.Message("First name is required")), // here you are telling zog that your struct should have a First_name field, but this is incorrect because the struct has a FirstName field. The key here should be "firstName" or "FirstName" (both are valid)
-	"last_name": z.String().Required(z.Message("Last name is required")), // same issue here
+	"last_name":  z.String().Required(z.Message("Last name is required")),  // same issue here
 })
 ```
 
@@ -48,7 +47,7 @@ data := new(Name)
 
 var schema = z.Struct(z.Schema{
 	"first_name": z.String().Required(z.Message("First name is required")), // here you are telling zog that your struct should have a First_name field, but this is incorrect because the struct has a FirstName field. The key here should be "firstName" or "FirstName" (both are valid)
-	"last_name": z.String().Required(z.Message("Last name is required")), // same issue here
+	"last_name":  z.String().Required(z.Message("Last name is required")),  // same issue here
 })
 ```
 

@@ -14,7 +14,7 @@ All schemas contain the `TestFunc()` method which can be used to create a simple
 
 ```go
 z.String().TestFunc(func(data any, ctx z.Ctx) bool {
-  return data == "test"
+	return data == "test"
 })
 ```
 
@@ -22,11 +22,11 @@ Test funcs for structs and slices instead receive a pointer to the data to avoid
 
 ```go
 z.Struct(z.Schema{
-  "name": z.String()
-  }).TestFunc(func(dataPtr any, ctx z.Ctx) bool {
-    user := dataPtr.(*User)
-    return user.Name == "test"
-  })
+	"name": z.String(),
+}).TestFunc(func(dataPtr any, ctx z.Ctx) bool {
+	user := dataPtr.(*User)
+	return user.Name == "test"
+})
 ```
 
 > **Pro tip**

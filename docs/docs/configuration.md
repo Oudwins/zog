@@ -14,19 +14,19 @@ Lets go through an example of overriding the `float64` coercer function, because
 
 ```go
 import (
-  // import the conf package
+	// import the conf package
 	"github.com/Oudwins/zog/conf"
 )
 
 // we override the coercer function for float64
 conf.Coercers.Float64 = func(data any) (any, error) {
-  str, ok := data.(string)
-  // identify the case we want to override
-  if !ok && strings.Contains(str, ",") {
-    return MyCustomFloatCoercer(str)
-  }
-  // fallback to the original function
-  return conf.DefaultCoercers.Float64(data)
+	str, ok := data.(string)
+	// identify the case we want to override
+	if !ok && strings.Contains(str, ",") {
+		return MyCustomFloatCoercer(str)
+	}
+	// fallback to the original function
+	return conf.DefaultCoercers.Float64(data)
 }
 ```
 

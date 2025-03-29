@@ -28,7 +28,7 @@ It means that Parse will handle things like type coercion, zero value checking, 
 data := "2024-01-01"
 var dest time.Time
 z.Time().Parse(data, &dest) // dest will be 2024-01-01 00:00:00 +0000 UTC
-z.Time().Validate(&data) // Error: string is not a valid time
+z.Time().Validate(&data)    // Error: string is not a valid time
 ```
 
 

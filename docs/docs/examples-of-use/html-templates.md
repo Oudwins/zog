@@ -11,36 +11,37 @@ Imagine our handler looks like this:
 
 ```go
 type SignupFormData struct {
-  Email string
-  Password string
+	Email    string
+	Password string
 }
 
 schema := z.Struct(z.Schema{
-  "email": z.String().Email().Required(),
-  "password": z.String().Min(8).Required(),
+	"email":    z.String().Email().Required(),
+	"password": z.String().Min(8).Required(),
 })
 
 func handleSignup(w http.ResponseWriter, r *http.Request) {
-  var signupFormData = SignupFormData{}
-  errs := schema.Parse(zhttp.Request(r), &signupFormData)
+	var signupFormData = SignupFormData{}
+	errs := schema.Parse(zhttp.Request(r), &signupFormData)
 
-  if errs != nil {
-    www.Render(signupFormTempl(&signupFormData, errs))
-  }
-  // handle successful signup
+	if errs != nil {
+		www.Render(signupFormTempl(&signupFormData, errs))
+	}
+
+	// handle successful signup
 }
 
 templ signupFormTempl(data *SignupFormData, errs z.ZogErrMap) {
-  <input type="text" name="email" value={data.Email}>
-  // display only the first error
-  if e, ok := errs["email"]; ok {
-    <p class="error">{e[0].Message}</p>
-  }
-  <input type="text" name="password" value={data.Password}>
-  // display only the first error
-  if e, ok := errs["password"]; ok {
-    <p class="error">{e[0].Message}</p>
-  }
+	<input type="text" name="email" value={data.Email}>
+	// display only the first error
+	if e, ok := errs["email"]; ok {
+		<p class="error">{e[0].Message}</p>
+	}
+	<input type="text" name="password" value={data.Password}>
+	// display only the first error
+	if e, ok := errs["password"]; ok {
+		<p class="error">{e[0].Message}</p>
+	}
 }
 ```
 

@@ -33,10 +33,13 @@ By default zog will use the schema field name as the key for the parsed value. F
 type User struct {
 	Name string `zog:"name"`
 }
+
 z.Struct(z.Schema{"name": z.String()}).Parse(map[string]any{"name": "test"}, &User{}) // note zog will fetch the value as map[name]
+
 type User struct {
-   Name string `zog:"name"`
+	Name string `zog:"name"`
 }
+
 z.Struct(z.Schema{"Name": z.String()}).Parse(map[string]any{"name": "test"}, &User{}) // note zog will fetch the value as map[Name]
 ```
 
@@ -55,9 +58,10 @@ You can mix and match without issue:
 
 ```go
 type User struct {
-   Name string `zog:"first-name"`
-   LastName string `query:"last_name" json:"last-name"`
+	Name     string `zog:"first-name"`
+	LastName string `query:"last_name" json:"last-name"`
 }
+
 z.Struct(z.Schema{"name": z.String(), "lastName": z.String()}).Parse(map[string]any{"first-name": "test", "lastName": "Doe"}, &User{})
 ```
 
@@ -74,7 +78,7 @@ You can define custom coercion functions for your schemas by using the `z.WithCo
 
 ```go
 z.String(z.WithCoercer(func(data any) (any, error) {
-   return "test", nil // now the result will be "test" no matter the input
+	return "test", nil // now the result will be "test" no matter the input
 })).Parse("abc", &dest) // dest will be "test"
 ```
 
