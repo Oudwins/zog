@@ -16,6 +16,7 @@
 [![Mentioned in Awesome Go](https://awesome.re/mentioned-badge.svg)](https://github.com/avelino/awesome-go)
 [![Mentioned in Awesome Templ](https://awesome.re/mentioned-badge-flat.svg)](https://github.com/templ-go/awesome-templ)
 [![stars - zog](https://img.shields.io/github/stars/Oudwins/zog?style=social)](https://github.com/Oudwins/zog)
+[![libs.tech recommends](https://libs.tech/project/818985137/badge.svg)](https://libs.tech/project/818985137/zog)
 
 [![view - Documentation](https://img.shields.io/badge/view-Documentation-blue?style=for-the-badge)](https://zog.dev)
 
