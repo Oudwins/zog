@@ -7,16 +7,21 @@ import (
 	"github.com/Oudwins/zog/zconst"
 )
 
+const (
+	notPrefix     = "not_"
+	defaultString = "<nil>"
+)
+
 func SafeString(x any) string {
 	if x == nil {
-		return "<nil>"
+		return defaultString
 	}
 	return fmt.Sprintf("%v", x)
 }
 
 func SafeError(x error) string {
 	if x == nil {
-		return "<nil>"
+		return defaultString
 	}
 	return x.Error()
 }
@@ -37,8 +42,8 @@ func AddTest(testArr []Test, t Test, isNot bool) []Test {
 }
 
 func NotIssueCode(e zconst.ZogIssueCode) string {
-	if strings.HasPrefix(e, "not_") {
-		return zconst.ZogIssueCode(strings.TrimPrefix(e, "not_"))
+	if strings.HasPrefix(e, notPrefix) {
+		return zconst.ZogIssueCode(strings.TrimPrefix(e, notPrefix))
 	}
-	return zconst.ZogIssueCode(fmt.Sprintf("not_%s", e))
+	return zconst.ZogIssueCode(notPrefix + e)
 }
