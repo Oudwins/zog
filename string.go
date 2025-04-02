@@ -11,8 +11,8 @@ import (
 )
 
 var (
-	_ PrimitiveZogSchema[string] = (*StringSchema)(nil)
-	_ NotStringSchema            = (*StringSchema)(nil)
+	_ PrimitiveZogSchema[string] = (*StringSchema[string])(nil)
+	_ NotStringSchema[string]    = (*StringSchema[string])(nil)
 )
 
 var (
@@ -20,22 +20,22 @@ var (
 	uuidRegex  = regexp.MustCompile(`^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$`)
 )
 
-type NotStringSchema interface {
-	Test(t p.Test, opts ...TestOption) *StringSchema
-	OneOf(enum []string, options ...TestOption) *StringSchema
-	Min(n int, options ...TestOption) *StringSchema
-	Max(n int, options ...TestOption) *StringSchema
-	Len(n int, options ...TestOption) *StringSchema
-	Email(options ...TestOption) *StringSchema
-	URL(options ...TestOption) *StringSchema
-	HasPrefix(s string, options ...TestOption) *StringSchema
-	HasSuffix(s string, options ...TestOption) *StringSchema
-	Contains(sub string, options ...TestOption) *StringSchema
-	ContainsUpper(options ...TestOption) *StringSchema
-	ContainsDigit(options ...TestOption) *StringSchema
-	ContainsSpecial(options ...TestOption) *StringSchema
-	UUID(options ...TestOption) *StringSchema
-	Match(regex *regexp.Regexp, options ...TestOption) *StringSchema
+type NotStringSchema[T ~string] interface {
+	Test(t p.Test, opts ...TestOption) *StringSchema[T]
+	OneOf(enum []T, options ...TestOption) *StringSchema[T]
+	Min(n int, options ...TestOption) *StringSchema[T]
+	Max(n int, options ...TestOption) *StringSchema[T]
+	Len(n int, options ...TestOption) *StringSchema[T]
+	Email(options ...TestOption) *StringSchema[T]
+	URL(options ...TestOption) *StringSchema[T]
+	HasPrefix(s T, options ...TestOption) *StringSchema[T]
+	HasSuffix(s T, options ...TestOption) *StringSchema[T]
+	Contains(sub T, options ...TestOption) *StringSchema[T]
+	ContainsUpper(options ...TestOption) *StringSchema[T]
+	ContainsDigit(options ...TestOption) *StringSchema[T]
+	ContainsSpecial(options ...TestOption) *StringSchema[T]
+	UUID(options ...TestOption) *StringSchema[T]
+	Match(regex *regexp.Regexp, options ...TestOption) *StringSchema[T]
 
 	// `Not` method is missing here as we do not want the user to do `Not` chaining.
 }
@@ -452,12 +452,12 @@ func (v *StringSchema[T]) Match(regex *regexp.Regexp, options ...TestOption) *St
 }
 
 // Test: nots the next test fn
-func (v *StringSchema) Not() NotStringSchema {
+func (v *StringSchema[T]) Not() NotStringSchema[T] {
 	v.isNot = !v.isNot
 	return v
 }
 
-func (v *StringSchema) addTest(t p.Test) *StringSchema {
+func (v *StringSchema[T]) addTest(t p.Test) *StringSchema[T] {
 	v.tests = p.AddTest(v.tests, t, v.isNot)
 	if v.isNot {
 		v.isNot = false
