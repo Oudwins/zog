@@ -26,7 +26,7 @@ type stringSchema struct {
 
 ## PreTransforms
 
-Pretransforms is a list of function that are applied to the data before the [tests](#tests) are run. You can think of it like a `pipeline` of transformations for a specific schema. **PreTransforms are PURE functions**. They take in data and return new data. This is the function signature:
+Pretransforms is a list of function that are applied to the data before the [tests](#tests) are run. You can think of it like a `pipeline` of pre validation transformations for a specific schema. These are similar to preprocess functions in zod. **PreTransforms are PURE functions**. They take in data and return new data. This is the function signature:
 
 ```go
 // takes the data as input and returns the new data which will then be passed onto the next functions.

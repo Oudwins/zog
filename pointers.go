@@ -11,11 +11,11 @@ import (
 var _ ComplexZogSchema = &PointerSchema{}
 
 type PointerSchema struct {
-	// preTransforms  []p.PreTransform
-	tests    []p.Test
+	// preTransforms  []PreTransform
+	tests    []Test
 	schema   ZogSchema
-	required *p.Test
-	// postTransforms []p.PostTransform
+	required *Test
+	// postTransforms []PostTransform
 	// defaultVal     *any
 	// catch          *any
 }
@@ -32,13 +32,13 @@ func (v *PointerSchema) setCoercer(c conf.CoercerFunc) {
 // Ptr creates a pointer ZogSchema
 func Ptr(schema ZogSchema) *PointerSchema {
 	return &PointerSchema{
-		tests:  []p.Test{},
+		tests:  []Test{},
 		schema: schema,
 	}
 }
 
 // Parse the data into the destination pointer
-func (v *PointerSchema) Parse(data any, dest any, options ...ExecOption) p.ZogIssueMap {
+func (v *PointerSchema) Parse(data any, dest any, options ...ExecOption) ZogIssueMap {
 	errs := p.NewErrsMap()
 	defer errs.Free()
 	ctx := p.NewExecCtx(errs, conf.IssueFormatter)
@@ -48,7 +48,9 @@ func (v *PointerSchema) Parse(data any, dest any, options ...ExecOption) p.ZogIs
 	}
 	path := p.NewPathBuilder()
 	defer path.Free()
-	v.process(ctx.NewSchemaCtx(data, dest, path, v.getType()))
+	sctx := ctx.NewSchemaCtx(data, dest, path, v.getType())
+	defer sctx.Free()
+	v.process(sctx)
 
 	return errs.M
 }
@@ -57,7 +59,8 @@ func (v *PointerSchema) process(ctx *p.SchemaCtx) {
 
 	// TODO this is a mess. But couldn't figure out a simple way to support top level optional structs without doing this.
 	// Companion code to this codde is in struct.go > process
-	subCtx := ctx.NewSchemaCtx(ctx.Val, nil, ctx.Path, v.schema.getType())
+	subCtx := ctx.NewSchemaCtx(ctx.Val, ctx.DestPtr, ctx.Path, v.schema.getType())
+	defer subCtx.Free()
 	if fn, ok := ctx.Val.(p.DpFactory); ok {
 		val, err := fn()
 		if err != nil {
@@ -91,7 +94,7 @@ func (v *PointerSchema) process(ctx *p.SchemaCtx) {
 }
 
 // Validates a pointer pointer
-func (v *PointerSchema) Validate(data any, options ...ExecOption) p.ZogIssueMap {
+func (v *PointerSchema) Validate(data any, options ...ExecOption) ZogIssueMap {
 	errs := p.NewErrsMap()
 	defer errs.Free()
 	ctx := p.NewExecCtx(errs, conf.IssueFormatter)
@@ -123,7 +126,7 @@ func (v *PointerSchema) validate(ctx *p.SchemaCtx) {
 // Validate Existing Pointer
 
 func (v *PointerSchema) NotNil(options ...TestOption) *PointerSchema {
-	r := p.Test{
+	r := Test{
 		IssueCode: zconst.IssueCodeNotNil,
 	}
 	for _, opt := range options {

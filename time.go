@@ -12,11 +12,11 @@ import (
 var _ PrimitiveZogSchema[time.Time] = &TimeSchema{}
 
 type TimeSchema struct {
-	preTransforms  []p.PreTransform
-	tests          []p.Test
-	postTransforms []p.PostTransform
+	preTransforms  []PreTransform
+	tests          []Test
+	postTransforms []PostTransform
 	defaultVal     *time.Time
-	required       *p.Test
+	required       *Test
 	catch          *time.Time
 	coercer        conf.CoercerFunc
 }
@@ -70,7 +70,7 @@ func (t TimeFunc) Format(format string) SchemaOption {
 }
 
 // Parses the data into the destination time.Time. Returns a list of errors
-func (v *TimeSchema) Parse(data any, dest *time.Time, options ...ExecOption) p.ZogIssueList {
+func (v *TimeSchema) Parse(data any, dest *time.Time, options ...ExecOption) ZogIssueList {
 	errs := p.NewErrsList()
 	defer errs.Free()
 	ctx := p.NewExecCtx(errs, conf.IssueFormatter)
@@ -80,7 +80,9 @@ func (v *TimeSchema) Parse(data any, dest *time.Time, options ...ExecOption) p.Z
 	}
 	path := p.NewPathBuilder()
 	defer path.Free()
-	v.process(ctx.NewSchemaCtx(data, dest, path, v.getType()))
+	sctx := ctx.NewSchemaCtx(data, dest, path, v.getType())
+	defer sctx.Free()
+	v.process(sctx)
 
 	return errs.List
 }
@@ -91,7 +93,7 @@ func (v *TimeSchema) process(ctx *p.SchemaCtx) {
 }
 
 // Validates an existing time.Time
-func (v *TimeSchema) Validate(data *time.Time, options ...ExecOption) p.ZogIssueList {
+func (v *TimeSchema) Validate(data *time.Time, options ...ExecOption) ZogIssueList {
 	errs := p.NewErrsList()
 	defer errs.Free()
 	ctx := p.NewExecCtx(errs, conf.IssueFormatter)
@@ -101,7 +103,9 @@ func (v *TimeSchema) Validate(data *time.Time, options ...ExecOption) p.ZogIssue
 	}
 	path := p.NewPathBuilder()
 	defer path.Free()
-	v.validate(ctx.NewValidateSchemaCtx(data, path, v.getType()))
+	sctx := ctx.NewSchemaCtx(data, data, path, v.getType())
+	defer sctx.Free()
+	v.validate(sctx)
 	return errs.List
 }
 
@@ -111,18 +115,18 @@ func (v *TimeSchema) validate(ctx *p.SchemaCtx) {
 }
 
 // Adds pretransform function to schema
-func (v *TimeSchema) PreTransform(transform p.PreTransform) *TimeSchema {
+func (v *TimeSchema) PreTransform(transform PreTransform) *TimeSchema {
 	if v.preTransforms == nil {
-		v.preTransforms = []p.PreTransform{}
+		v.preTransforms = []PreTransform{}
 	}
 	v.preTransforms = append(v.preTransforms, transform)
 	return v
 }
 
 // Adds posttransform function to schema
-func (v *TimeSchema) PostTransform(transform p.PostTransform) *TimeSchema {
+func (v *TimeSchema) PostTransform(transform PostTransform) *TimeSchema {
 	if v.postTransforms == nil {
-		v.postTransforms = []p.PostTransform{}
+		v.postTransforms = []PostTransform{}
 	}
 	v.postTransforms = append(v.postTransforms, transform)
 	return v
@@ -161,7 +165,7 @@ func (v *TimeSchema) Catch(val time.Time) *TimeSchema {
 // GLOBAL METHODS
 
 // custom test function call it -> schema.Test("error_code", func(val any, ctx Ctx) bool {return true})
-func (v *TimeSchema) Test(t p.Test, opts ...TestOption) *TimeSchema {
+func (v *TimeSchema) Test(t Test, opts ...TestOption) *TimeSchema {
 	for _, opt := range opts {
 		opt(&t)
 	}
@@ -181,7 +185,7 @@ func (v *TimeSchema) TestFunc(testFunc p.TestFunc, options ...TestOption) *TimeS
 
 // Checks that the value is after the given time
 func (v *TimeSchema) After(t time.Time, opts ...TestOption) *TimeSchema {
-	r := p.Test{
+	r := Test{
 		IssueCode: zconst.IssueCodeAfter,
 		Params:    make(map[string]any, 1),
 		ValidateFunc: func(v any, ctx Ctx) bool {
@@ -203,7 +207,7 @@ func (v *TimeSchema) After(t time.Time, opts ...TestOption) *TimeSchema {
 // Checks that the value is before the given time
 func (v *TimeSchema) Before(t time.Time, opts ...TestOption) *TimeSchema {
 	r :=
-		p.Test{
+		Test{
 			IssueCode: zconst.IssueCodeBefore,
 			Params:    make(map[string]any, 1),
 			ValidateFunc: func(v any, ctx Ctx) bool {
@@ -225,7 +229,7 @@ func (v *TimeSchema) Before(t time.Time, opts ...TestOption) *TimeSchema {
 
 // Checks that the value is equal to the given time
 func (v *TimeSchema) EQ(t time.Time, opts ...TestOption) *TimeSchema {
-	r := p.Test{
+	r := Test{
 		IssueCode: zconst.IssueCodeEQ,
 		Params:    make(map[string]any, 1),
 		ValidateFunc: func(v any, ctx Ctx) bool {

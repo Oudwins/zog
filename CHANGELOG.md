@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.18.4](https://github.com/Oudwins/zog/compare/v0.18.2...v0.18.4) (2025-03-16)
+
+
+### Features
+
+* support for custom strings, numbers and booleans ([#131](https://github.com/Oudwins/zog/issues/131)) ([29cb24d](https://github.com/Oudwins/zog/commit/29cb24db55ba520a65e57c4d2e6ca729fffddbc2))
+
+
+### Miscellaneous Chores
+
+* release 0.18.4 ([a3526ae](https://github.com/Oudwins/zog/commit/a3526aea1eaace1738bb41d0f82b5c6b9014e9c5))
+
 ## [0.18.2](https://github.com/Oudwins/zog/compare/v0.18.1...v0.18.2) (2025-03-08)
 
 

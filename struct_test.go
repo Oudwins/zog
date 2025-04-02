@@ -32,11 +32,11 @@ var objSchema = Struct(Schema{
 })
 
 type objTagged struct {
-	Str string  `zog:"s"`
-	In  int     `zog:"i"`
-	Fl  float64 `zog:"f"`
-	Bol bool    `zog:"b"`
-	Tim time.Time
+	Str string    `zog:"s"`
+	In  int       `zog:"i"`
+	Fl  float64   `zog:"f"`
+	Bol bool      `zog:"b"`
+	Tim time.Time `zog:"tim-1"`
 }
 
 func TestStructExample(t *testing.T) {
@@ -60,11 +60,11 @@ func TestStructTags(t *testing.T) {
 	var o objTagged
 
 	data := map[string]any{
-		"s":   "hello",
-		"i":   10,
-		"f":   10.5,
-		"b":   true,
-		"tim": "2024-08-06T00:00:00Z",
+		"s":     "hello",
+		"i":     10,
+		"f":     10.5,
+		"b":     true,
+		"tim-1": "2024-08-06T00:00:00Z",
 	}
 
 	errs := objSchema.Parse(data, &o)
@@ -329,11 +329,11 @@ func TestStructPassThroughRequired(t *testing.T) {
 	assert.NotEmpty(t, errs["somefield"])
 }
 
-type Custom int
+type CustomType int
 
 const (
-	Custom1 Custom = 1
-	Custom2 Custom = 2
+	Custom1 CustomType = 1
+	Custom2 CustomType = 2
 )
 
 func TestStructCustomType(t *testing.T) {

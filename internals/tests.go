@@ -30,7 +30,7 @@ func Required() Test {
 }
 
 type LengthCapable[K any] interface {
-	~[]any | ~[]K | string | map[any]any | ~chan any
+	~[]any | ~[]K | ~string | map[any]any | ~chan any
 }
 
 func LenMin[T LengthCapable[any]](n int) Test {

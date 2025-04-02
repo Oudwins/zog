@@ -12,12 +12,12 @@ import (
 var _ ComplexZogSchema = &StructSchema{}
 
 type StructSchema struct {
-	preTransforms  []p.PreTransform
+	preTransforms  []PreTransform
 	schema         Schema
-	postTransforms []p.PostTransform
-	tests          []p.Test
+	postTransforms []PostTransform
+	tests          []Test
 	// defaultVal     any
-	required *p.Test
+	required *Test
 	// catch          any
 }
 
@@ -44,7 +44,7 @@ func Struct(schema Schema) *StructSchema {
 }
 
 // Parses val into destPtr and validates each field based on the schema. Only supports val = map[string]any & dest = &struct
-func (v *StructSchema) Parse(data any, destPtr any, options ...ExecOption) p.ZogIssueMap {
+func (v *StructSchema) Parse(data any, destPtr any, options ...ExecOption) ZogIssueMap {
 	errs := p.NewErrsMap()
 	defer errs.Free()
 	ctx := p.NewExecCtx(errs, conf.IssueFormatter)
@@ -54,25 +54,14 @@ func (v *StructSchema) Parse(data any, destPtr any, options ...ExecOption) p.Zog
 	}
 	path := p.NewPathBuilder()
 	defer path.Free()
-	v.process(ctx.NewSchemaCtx(data, destPtr, path, v.getType()))
+	sctx := ctx.NewSchemaCtx(data, destPtr, path, v.getType())
+	defer sctx.Free()
+	v.process(sctx)
 
 	return errs.M
 }
 
 func (v *StructSchema) process(ctx *p.SchemaCtx) {
-	defer ctx.Free()
-	// 1. preTransforms
-	if v.preTransforms != nil {
-		for _, fn := range v.preTransforms {
-			nVal, err := fn(ctx.Val, ctx)
-			// bail if error in preTransform
-			if err != nil {
-				ctx.AddIssue(ctx.Issue().SetError(err))
-				return
-			}
-			ctx.Val = nVal
-		}
-	}
 
 	// 4. postTransforms
 	defer func() {
@@ -87,6 +76,21 @@ func (v *StructSchema) process(ctx *p.SchemaCtx) {
 			}
 		}
 	}()
+	// 1. preTransforms
+	if v.preTransforms != nil {
+		for _, fn := range v.preTransforms {
+			nVal, err := fn(ctx.Val, ctx)
+			// bail if error in preTransform
+			if ctx.Exit {
+				return
+			}
+			if err != nil {
+				ctx.AddIssue(ctx.Issue().SetError(err))
+				return
+			}
+			ctx.Val = nVal
+		}
+	}
 
 	var dataProv p.DataProvider
 	// 2. cast data as DataProvider
@@ -110,7 +114,8 @@ func (v *StructSchema) process(ctx *p.SchemaCtx) {
 
 	// 3. Process / validate struct fields
 	structVal := reflect.ValueOf(ctx.DestPtr).Elem()
-
+	subCtx := ctx.NewSchemaCtx(ctx.Val, ctx.DestPtr, ctx.Path, v.getType())
+	defer subCtx.Free()
 	for key, processor := range v.schema {
 		originalKey := key
 		if key[0] >= 'a' && key[0] <= 'z' {
@@ -127,13 +132,13 @@ func (v *StructSchema) process(ctx *p.SchemaCtx) {
 		destPtr := structVal.FieldByName(key).Addr().Interface()
 
 		subValue, fieldKey := dataProv.GetByField(fieldMeta, originalKey)
-		switch schema := processor.(type) {
-		case *StructSchema:
-			schema.process(ctx.NewSchemaCtx(subValue, destPtr, ctx.Path.Push(&fieldKey), schema.getType()))
-		default:
-			schema.process(ctx.NewSchemaCtx(subValue, destPtr, ctx.Path.Push(&fieldKey), schema.getType()))
-		}
-		ctx.Path.Pop()
+		subCtx.Val = subValue
+		subCtx.DestPtr = destPtr
+		subCtx.Path.Push(&fieldKey)
+		subCtx.DType = processor.getType()
+		subCtx.Exit = false
+		processor.process(subCtx)
+		subCtx.Path.Pop()
 	}
 
 	// 3. Tests for struct
@@ -147,7 +152,7 @@ func (v *StructSchema) process(ctx *p.SchemaCtx) {
 
 // Validate a struct pointer given the struct schema. Usage:
 // userSchema.Validate(&User, ...options)
-func (v *StructSchema) Validate(dataPtr any, options ...ExecOption) p.ZogIssueMap {
+func (v *StructSchema) Validate(dataPtr any, options ...ExecOption) ZogIssueMap {
 	errs := p.NewErrsMap()
 	defer errs.Free()
 	ctx := p.NewExecCtx(errs, conf.IssueFormatter)
@@ -157,15 +162,15 @@ func (v *StructSchema) Validate(dataPtr any, options ...ExecOption) p.ZogIssueMa
 	}
 	path := p.NewPathBuilder()
 	defer path.Free()
-
-	v.validate(ctx.NewValidateSchemaCtx(dataPtr, path, v.getType()))
+	sctx := ctx.NewSchemaCtx(dataPtr, dataPtr, path, v.getType())
+	defer sctx.Free()
+	v.validate(sctx)
 
 	return errs.M
 }
 
 // Internal function to validate the data
 func (v *StructSchema) validate(ctx *p.SchemaCtx) {
-	defer ctx.Free()
 	// 4. postTransforms
 	defer func() {
 		// only run posttransforms on success
@@ -196,6 +201,8 @@ func (v *StructSchema) validate(ctx *p.SchemaCtx) {
 	// 2. cast data to string & handle default/required
 
 	// 3.1 tests for struct fields
+	subCtx := ctx.NewSchemaCtx(ctx.Val, ctx.DestPtr, ctx.Path, v.getType())
+	defer subCtx.Free()
 	for key, schema := range v.schema {
 		fieldKey := key
 		if key[0] >= 'a' && key[0] <= 'z' {
@@ -215,8 +222,12 @@ func (v *StructSchema) validate(ctx *p.SchemaCtx) {
 		if ok {
 			fieldKey = fieldTag
 		}
-		schema.validate(ctx.NewValidateSchemaCtx(destPtr, ctx.Path.Push(&fieldKey), schema.getType()))
-		ctx.Path.Pop()
+		subCtx.Val = destPtr
+		subCtx.DestPtr = destPtr
+		subCtx.Path.Push(&fieldKey)
+		subCtx.DType = schema.getType()
+		schema.validate(subCtx)
+		subCtx.Path.Pop()
 	}
 
 	// 3. tests for slice
@@ -229,18 +240,18 @@ func (v *StructSchema) validate(ctx *p.SchemaCtx) {
 }
 
 // Add a pretransform step to the schema
-func (v *StructSchema) PreTransform(transform p.PreTransform) *StructSchema {
+func (v *StructSchema) PreTransform(transform PreTransform) *StructSchema {
 	if v.preTransforms == nil {
-		v.preTransforms = []p.PreTransform{}
+		v.preTransforms = []PreTransform{}
 	}
 	v.preTransforms = append(v.preTransforms, transform)
 	return v
 }
 
 // Adds posttransform function to schema
-func (v *StructSchema) PostTransform(transform p.PostTransform) *StructSchema {
+func (v *StructSchema) PostTransform(transform PostTransform) *StructSchema {
 	if v.postTransforms == nil {
-		v.postTransforms = []p.PostTransform{}
+		v.postTransforms = []PostTransform{}
 	}
 	v.postTransforms = append(v.postTransforms, transform)
 	return v
@@ -275,7 +286,7 @@ func (v *StructSchema) Optional() *StructSchema {
 
 // ! VALIDATORS
 // custom test function call it -> schema.Test(t z.Test, opts ...TestOption)
-func (v *StructSchema) Test(t p.Test, opts ...TestOption) *StructSchema {
+func (v *StructSchema) Test(t Test, opts ...TestOption) *StructSchema {
 	for _, opt := range opts {
 		opt(&t)
 	}
