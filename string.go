@@ -23,7 +23,6 @@ type likeString interface {
 }
 
 type NotStringSchema[T likeString] interface {
-	Test(t Test) *StringSchema[T]
 	OneOf(enum []T, options ...TestOption) *StringSchema[T]
 	Min(n int, options ...TestOption) *StringSchema[T]
 	Max(n int, options ...TestOption) *StringSchema[T]
