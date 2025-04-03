@@ -26,24 +26,13 @@ func SafeError(x error) string {
 	return x.Error()
 }
 
-func AddTest(testArr []Test, t Test, isNot bool) []Test {
-	if !isNot {
-		return append(testArr, t)
-	}
-
-	// Saving old functions required here to prevent recursive call during assignment.
-	oldFn := t.ValidateFunc
-	t.ValidateFunc = func(val any, ctx Ctx) bool {
-		return !oldFn(val, ctx)
-	}
-	t.IssueCode = NotIssueCode(t.IssueCode)
-
-	return append(testArr, t)
-}
-
 func NotIssueCode(e zconst.ZogIssueCode) string {
 	if strings.HasPrefix(e, notPrefix) {
 		return zconst.ZogIssueCode(strings.TrimPrefix(e, notPrefix))
 	}
 	return zconst.ZogIssueCode(notPrefix + e)
+}
+
+func PtrOf[T any](v T) *T {
+	return &v
 }

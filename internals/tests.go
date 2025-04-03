@@ -25,6 +25,17 @@ func TestFuncFromBool(fn BoolTFunc, test *Test) {
 	}
 }
 
+func TestNotFuncFromBool(fn BoolTFunc, test *Test) {
+	test.Func = func(val any, ctx Ctx) {
+		if fn(val, ctx) {
+			c := ctx.(*SchemaCtx)
+			issue := c.IssueFromTest(c.Test, val)
+			issue.Code = NotIssueCode(issue.Code)
+			ctx.AddIssue(issue)
+		}
+	}
+}
+
 func NewTestFunc(IssueCode zconst.ZogIssueCode, fn BoolTFunc, options ...TestOption) *Test {
 	t := &Test{
 		IssueCode: IssueCode,

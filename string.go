@@ -13,14 +13,16 @@ import (
 var (
 	_ PrimitiveZogSchema[string] = (*StringSchema[string])(nil)
 	_ NotStringSchema[string]    = (*StringSchema[string])(nil)
-)
 
-var (
 	emailRegex = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
 	uuidRegex  = regexp.MustCompile(`^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$`)
 )
 
-type NotStringSchema[T ~string] interface {
+type likeString interface {
+	~string
+}
+
+type NotStringSchema[T likeString] interface {
 	Test(t Test) *StringSchema[T]
 	OneOf(enum []T, options ...TestOption) *StringSchema[T]
 	Min(n int, options ...TestOption) *StringSchema[T]
@@ -40,7 +42,7 @@ type NotStringSchema[T ~string] interface {
 	// `Not` method is missing here as we do not want the user to do `Not` chaining.
 }
 
-type StringSchema[T ~string] struct {
+type StringSchema[T likeString] struct {
 	preTransforms  []PreTransform
 	tests          []Test
 	postTransforms []PostTransform
@@ -205,48 +207,30 @@ func (v *StringSchema[T]) TestFunc(testFunc BoolTFunc, options ...TestOption) *S
 // Test: checks that the value is one of the enum values
 func (v *StringSchema[T]) OneOf(enum []T, options ...TestOption) *StringSchema[T] {
 	t, fn := p.In(enum)
-	p.TestFuncFromBool(fn, &t)
-	for _, opt := range options {
-		opt(&t)
-	}
-	return v.addTest(t)
+	return v.addTest(t, fn, options...)
 }
 
 // Test: checks that the value is at least n characters long
 func (v *StringSchema[T]) Min(n int, options ...TestOption) *StringSchema[T] {
 	t, fn := p.LenMin[T](n)
-	p.TestFuncFromBool(fn, &t)
-	for _, opt := range options {
-		opt(&t)
-	}
-	return v.addTest(t)
+	return v.addTest(t, fn, options...)
 }
 
 // Test: checks that the value is at most n characters long
 func (v *StringSchema[T]) Max(n int, options ...TestOption) *StringSchema[T] {
 	t, fn := p.LenMax[T](n)
-	p.TestFuncFromBool(fn, &t)
-	for _, opt := range options {
-		opt(&t)
-	}
-	return v.addTest(t)
+	return v.addTest(t, fn)
 }
 
 // Test: checks that the value is exactly n characters long
 func (v *StringSchema[T]) Len(n int, options ...TestOption) *StringSchema[T] {
 	t, fn := p.Len[T](n)
-	p.TestFuncFromBool(fn, &t)
-	for _, opt := range options {
-		opt(&t)
-	}
-	return v.addTest(t)
+	return v.addTest(t, fn)
 }
 
 // Test: checks that the value is a valid email address
 func (v *StringSchema[T]) Email(options ...TestOption) *StringSchema[T] {
-	t := Test{
-		IssueCode: zconst.IssueCodeEmail,
-	}
+	t := Test{IssueCode: zconst.IssueCodeEmail}
 	fn := func(v any, ctx Ctx) bool {
 		email, ok := v.(*T)
 		if !ok {
@@ -254,11 +238,7 @@ func (v *StringSchema[T]) Email(options ...TestOption) *StringSchema[T] {
 		}
 		return emailRegex.MatchString(string(*email))
 	}
-	p.TestFuncFromBool(fn, &t)
-	for _, opt := range options {
-		opt(&t)
-	}
-	return v.addTest(t)
+	return v.addTest(t, fn, options...)
 }
 
 // Test: checks that the value is a valid URL
@@ -274,11 +254,7 @@ func (v *StringSchema[T]) URL(options ...TestOption) *StringSchema[T] {
 		u, err := url.Parse(string(*s))
 		return err == nil && u.Scheme != "" && u.Host != ""
 	}
-	p.TestFuncFromBool(fn, &t)
-	for _, opt := range options {
-		opt(&t)
-	}
-	return v.addTest(t)
+	return v.addTest(t, fn, options...)
 }
 
 // Test: checks that the value has the prefix
@@ -295,11 +271,7 @@ func (v *StringSchema[T]) HasPrefix(s T, options ...TestOption) *StringSchema[T]
 		}
 		return strings.HasPrefix(string(*val), string(s))
 	}
-	p.TestFuncFromBool(fn, &t)
-	for _, opt := range options {
-		opt(&t)
-	}
-	return v.addTest(t)
+	return v.addTest(t, fn, options...)
 }
 
 // Test: checks that the value has the suffix
@@ -316,11 +288,7 @@ func (v *StringSchema[T]) HasSuffix(s T, options ...TestOption) *StringSchema[T]
 		}
 		return strings.HasSuffix(string(*val), string(s))
 	}
-	p.TestFuncFromBool(fn, &t)
-	for _, opt := range options {
-		opt(&t)
-	}
-	return v.addTest(t)
+	return v.addTest(t, fn, options...)
 }
 
 // Test: checks that the value contains the substring
@@ -337,11 +305,7 @@ func (v *StringSchema[T]) Contains(sub T, options ...TestOption) *StringSchema[T
 		}
 		return strings.Contains(string(*val), string(sub))
 	}
-	p.TestFuncFromBool(fn, &t)
-	for _, opt := range options {
-		opt(&t)
-	}
-	return v.addTest(t)
+	return v.addTest(t, fn, options...)
 }
 
 // Test: checks that the value contains an uppercase letter
@@ -361,11 +325,8 @@ func (v *StringSchema[T]) ContainsUpper(options ...TestOption) *StringSchema[T] 
 		}
 		return false
 	}
-	p.TestFuncFromBool(fn, &t)
-	for _, opt := range options {
-		opt(&t)
-	}
-	return v.addTest(t)
+
+	return v.addTest(t, fn, options...)
 }
 
 // Test: checks that the value contains a digit
@@ -385,12 +346,8 @@ func (v *StringSchema[T]) ContainsDigit(options ...TestOption) *StringSchema[T] 
 		}
 		return false
 	}
-	p.TestFuncFromBool(fn, &t)
-	for _, opt := range options {
-		opt(&t)
-	}
 
-	return v.addTest(t)
+	return v.addTest(t, fn, options...)
 }
 
 // Test: checks that the value contains a special character
@@ -413,11 +370,8 @@ func (v *StringSchema[T]) ContainsSpecial(options ...TestOption) *StringSchema[T
 		}
 		return false
 	}
-	p.TestFuncFromBool(fn, &t)
-	for _, opt := range options {
-		opt(&t)
-	}
-	return v.addTest(t)
+
+	return v.addTest(t, fn, options...)
 }
 
 // Test: checks that the value is a valid uuid
@@ -432,11 +386,8 @@ func (v *StringSchema[T]) UUID(options ...TestOption) *StringSchema[T] {
 		}
 		return uuidRegex.MatchString(string(*uuid))
 	}
-	p.TestFuncFromBool(fn, &t)
-	for _, opt := range options {
-		opt(&t)
-	}
-	return v.addTest(t)
+
+	return v.addTest(t, fn, options...)
 }
 
 // Test: checks that value matches to regex
@@ -453,11 +404,8 @@ func (v *StringSchema[T]) Match(regex *regexp.Regexp, options ...TestOption) *St
 		}
 		return regex.MatchString(string(*s))
 	}
-	p.TestFuncFromBool(fn, &t)
-	for _, opt := range options {
-		opt(&t)
-	}
-	return v.addTest(t)
+
+	return v.addTest(t, fn, options...)
 }
 
 // Test: nots the next test fn
@@ -466,11 +414,18 @@ func (v *StringSchema[T]) Not() NotStringSchema[T] {
 	return v
 }
 
-func (v *StringSchema[T]) addTest(t p.Test) *StringSchema[T] {
-	v.tests = p.AddTest(v.tests, t, v.isNot)
+func (v *StringSchema[T]) addTest(t Test, fn BoolTFunc, options ...TestOption) *StringSchema[T] {
 	if v.isNot {
+		p.TestNotFuncFromBool(fn, &t)
 		v.isNot = false
+	} else {
+		p.TestFuncFromBool(fn, &t)
 	}
 
+	for _, opt := range options {
+		opt(&t)
+	}
+
+	v.tests = append(v.tests, t)
 	return v
 }
