@@ -219,13 +219,13 @@ func (v *StringSchema[T]) Min(n int, options ...TestOption) *StringSchema[T] {
 // Test: checks that the value is at most n characters long
 func (v *StringSchema[T]) Max(n int, options ...TestOption) *StringSchema[T] {
 	t, fn := p.LenMax[T](n)
-	return v.addTest(t, fn)
+	return v.addTest(t, fn, options...)
 }
 
 // Test: checks that the value is exactly n characters long
 func (v *StringSchema[T]) Len(n int, options ...TestOption) *StringSchema[T] {
 	t, fn := p.Len[T](n)
-	return v.addTest(t, fn)
+	return v.addTest(t, fn, options...)
 }
 
 // Test: checks that the value is a valid email address
