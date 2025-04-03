@@ -5,7 +5,6 @@ import (
 
 	"github.com/Oudwins/zog/conf"
 	p "github.com/Oudwins/zog/internals"
-	"github.com/Oudwins/zog/zconst"
 )
 
 // ! Passing Types through
@@ -43,20 +42,6 @@ type CoercerFunc = conf.CoercerFunc
 
 // Test is the test object. It is the struct that represents an individual validation. For example `z.String().Min(3)` is a test that checks if the string is at least 3 characters long.
 type Test = p.Test
-
-// Deprecated: Use z.schema.TestFunc instead. This may be removed in the future
-// TestFunc is a helper function to define a custom test. It takes the error code which will be used for the error message and a validate function. Usage:
-//
-//	schema.Test(z.TestFunc(zconst.IssueCodeCustom, func(val any, ctx Ctx) bool {
-//		return val == "hello"
-//	}))
-func TestFunc(IssueCode zconst.ZogIssueCode, validateFunc p.TestFunc) p.Test {
-	t := p.Test{
-		IssueCode:    IssueCode,
-		ValidateFunc: validateFunc,
-	}
-	return t
-}
 
 type issueHelpers struct {
 }
@@ -116,9 +101,9 @@ func (i *issueHelpers) Collect(issue *ZogIssue) {
 
 // Backwards Compatibility
 
-func customTestBackwardsCompatWrapper(testFunc p.TestFunc) func(val any, ctx Ctx) bool {
-	return func(val any, ctx Ctx) bool {
+func customTestBackwardsCompatWrapper(testFunc TFunc) func(val any, ctx Ctx) {
+	return func(val any, ctx Ctx) {
 		refVal := reflect.ValueOf(val).Elem()
-		return testFunc(refVal.Interface(), ctx)
+		testFunc(refVal.Interface(), ctx)
 	}
 }

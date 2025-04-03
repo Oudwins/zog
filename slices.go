@@ -124,14 +124,16 @@ func (v *SliceSchema) validate(ctx *p.SchemaCtx) {
 
 	// 3. tests for slice
 	for _, test := range v.tests {
-		if !test.ValidateFunc(ctx.Val, ctx) {
+		ctx.Test = &test
+		test.Func(ctx.Val, ctx)
+		if ctx.Exit {
 			// catching the first error if catch is set
 			// if v.catch != nil {
 			// 	dest = v.catch
 			// 	break
 			// }
 			//
-			ctx.AddIssue(ctx.IssueFromTest(&test, ctx.Val))
+			return
 		}
 	}
 	// 4. postTransforms -> defered see above
@@ -225,8 +227,11 @@ func (v *SliceSchema) process(ctx *p.SchemaCtx) {
 
 	// 3. tests for slice
 	for _, test := range v.tests {
-		if !test.ValidateFunc(ctx.DestPtr, ctx) {
-			ctx.AddIssue(ctx.IssueFromTest(&test, ctx.DestPtr))
+		ctx.Test = &test
+		test.Func(ctx.DestPtr, ctx)
+		if ctx.Exit {
+			// catch here
+			return
 		}
 	}
 	// 4. postTransforms -> defered see above
@@ -283,128 +288,127 @@ func (v *SliceSchema) Default(val any) *SliceSchema {
 
 // !TESTS
 
-// custom test function call it -> schema.Test(t z.Test, opts ...TestOption)
-func (v *SliceSchema) Test(t Test, opts ...TestOption) *SliceSchema {
-	for _, opt := range opts {
+// custom test function call it -> schema.Test(t z.Test)
+func (v *SliceSchema) Test(t Test) *SliceSchema {
+	v.tests = append(v.tests, t)
+	return v
+}
+
+// Create a custom test function for the schema. This is similar to Zod's `.refine()` method.
+func (v *SliceSchema) TestFunc(testFunc BoolTFunc, opts ...TestOption) *SliceSchema {
+	t := p.NewTestFunc("", testFunc, opts...)
+	v.Test(*t)
+	return v
+}
+
+// Minimum number of items
+func (v *SliceSchema) Min(n int, options ...TestOption) *SliceSchema {
+	t, fn := sliceMin(n)
+	p.TestFuncFromBool(fn, &t)
+	for _, opt := range options {
 		opt(&t)
 	}
 	v.tests = append(v.tests, t)
 	return v
 }
 
-// Create a custom test function for the schema. This is similar to Zod's `.refine()` method.
-func (v *SliceSchema) TestFunc(testFunc p.TestFunc, options ...TestOption) *SliceSchema {
-	test := TestFunc("", testFunc)
-	v.Test(test, options...)
-	return v
-}
-
-// Minimum number of items
-func (v *SliceSchema) Min(n int, options ...TestOption) *SliceSchema {
-	v.tests = append(v.tests,
-		sliceMin(n),
-	)
-	for _, opt := range options {
-		opt(&v.tests[len(v.tests)-1])
-	}
-
-	return v
-}
-
 // Maximum number of items
 func (v *SliceSchema) Max(n int, options ...TestOption) *SliceSchema {
-	v.tests = append(v.tests,
-		sliceMax(n),
-	)
+	t, fn := sliceMax(n)
+	p.TestFuncFromBool(fn, &t)
 	for _, opt := range options {
-		opt(&v.tests[len(v.tests)-1])
+		opt(&t)
 	}
+	v.tests = append(v.tests, t)
 	return v
 }
 
 // Exact number of items
 func (v *SliceSchema) Len(n int, options ...TestOption) *SliceSchema {
-	v.tests = append(v.tests,
-		sliceLength(n),
-	)
+	t, fn := sliceLength(n)
+	p.TestFuncFromBool(fn, &t)
 	for _, opt := range options {
-		opt(&v.tests[len(v.tests)-1])
+		opt(&t)
 	}
+	v.tests = append(v.tests, t)
 	return v
 }
 
 // Slice contains a specific value
 func (v *SliceSchema) Contains(value any, options ...TestOption) *SliceSchema {
-	v.tests = append(v.tests,
-		Test{
-			IssueCode: zconst.IssueCodeContains,
-			Params:    make(map[string]any, 1),
-			ValidateFunc: func(val any, ctx Ctx) bool {
-				rv := reflect.ValueOf(val).Elem()
-				if rv.Kind() != reflect.Slice {
-					return false
-				}
-				for idx := 0; idx < rv.Len(); idx++ {
-					v := rv.Index(idx).Interface()
+	fn := func(val any, ctx Ctx) bool {
+		rv := reflect.ValueOf(val).Elem()
+		if rv.Kind() != reflect.Slice {
+			return false
+		}
+		for idx := 0; idx < rv.Len(); idx++ {
+			v := rv.Index(idx).Interface()
 
-					if reflect.DeepEqual(v, value) {
-						return true
-					}
-				}
+			if reflect.DeepEqual(v, value) {
+				return true
+			}
+		}
 
-				return false
-			},
-		},
-	)
-	v.tests[len(v.tests)-1].Params[zconst.IssueCodeContains] = value
-	for _, opt := range options {
-		opt(&v.tests[len(v.tests)-1])
+		return false
 	}
+	t := Test{
+		IssueCode: zconst.IssueCodeContains,
+		Params:    make(map[string]any, 1),
+	}
+	t.Params[zconst.IssueCodeContains] = value
+	p.TestFuncFromBool(fn, &t)
+	for _, opt := range options {
+		opt(&t)
+	}
+	v.tests = append(v.tests, t)
 	return v
 }
 
-func sliceMin(n int) Test {
+func sliceMin(n int) (Test, BoolTFunc) {
+	fn := func(val any, ctx Ctx) bool {
+		rv := reflect.ValueOf(val).Elem()
+		if rv.Kind() != reflect.Slice {
+			return false
+		}
+		return rv.Len() >= n
+	}
+
 	t := Test{
 		IssueCode: zconst.IssueCodeMin,
 		Params:    make(map[string]any, 1),
-		ValidateFunc: func(val any, ctx Ctx) bool {
-			rv := reflect.ValueOf(val).Elem()
-			if rv.Kind() != reflect.Slice {
-				return false
-			}
-			return rv.Len() >= n
-		},
 	}
 	t.Params[zconst.IssueCodeMin] = n
-	return t
+	return t, fn
 }
-func sliceMax(n int) Test {
+
+func sliceMax(n int) (Test, BoolTFunc) {
+	fn := func(val any, ctx Ctx) bool {
+		rv := reflect.ValueOf(val).Elem()
+		if rv.Kind() != reflect.Slice {
+			return false
+		}
+		return rv.Len() <= n
+	}
+
 	t := Test{
 		IssueCode: zconst.IssueCodeMax,
 		Params:    make(map[string]any, 1),
-		ValidateFunc: func(val any, ctx Ctx) bool {
-			rv := reflect.ValueOf(val).Elem()
-			if rv.Kind() != reflect.Slice {
-				return false
-			}
-			return rv.Len() <= n
-		},
 	}
 	t.Params[zconst.IssueCodeMax] = n
-	return t
+	return t, fn
 }
-func sliceLength(n int) Test {
+func sliceLength(n int) (Test, BoolTFunc) {
+	fn := func(val any, ctx Ctx) bool {
+		rv := reflect.ValueOf(val).Elem()
+		if rv.Kind() != reflect.Slice {
+			return false
+		}
+		return rv.Len() == n
+	}
 	t := Test{
 		IssueCode: zconst.IssueCodeLen,
 		Params:    make(map[string]any, 1),
-		ValidateFunc: func(val any, ctx Ctx) bool {
-			rv := reflect.ValueOf(val).Elem()
-			if rv.Kind() != reflect.Slice {
-				return false
-			}
-			return rv.Len() == n
-		},
 	}
 	t.Params[zconst.IssueCodeLen] = n
-	return t
+	return t, fn
 }

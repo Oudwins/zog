@@ -36,9 +36,22 @@ type PreTransform = p.PreTransform
 // Function signature for postTransforms. Takes the value pointer and the context and returns an error.
 type PostTransform = p.PostTransform
 
+// Function signature for issue formatters. Takes the issue and the context and returns the formatted issue.
 type IssueFmtFunc = p.IssueFmtFunc
 
-// ! PRIMITIVE PROCESSING
+// Function signature for tests. Takes the value and the context and returns a boolean.
+// This used to be a function you could pass to the schema.Test method -> `s.Test(z.TFunc(fn))`. But that has been deprecated. Use `schema.TFunc(fn)` instead.
+type TFunc = p.TFunc
+
+// Function signature for bool tests. Takes the value and the context and returns a boolean. This is the function passed to the TestFunc method.
+type BoolTFunc = p.BoolTFunc
+
+// Creates a reusable testFunc you can add to schemas by doing schema.Test(z.TestFunc()). Has the same API as schema.TestFunc() so it is recommended you use that one for non reusable tests.
+func TestFunc(IssueCode zconst.ZogIssueCode, fn BoolTFunc, options ...TestOption) Test {
+	return *p.NewTestFunc(IssueCode, fn, options...)
+}
+
+// ! PRIMITIVE PROCESSING -> Not userspace code
 
 func primitiveProcessor[T p.ZogPrimitive](ctx *p.SchemaCtx, preTransforms []PreTransform, tests []Test, postTransforms []PostTransform, defaultVal *T, required *Test, catch *T, coercer CoercerFunc, isZeroFunc p.IsZeroValueFunc) {
 	ctx.CanCatch = catch != nil
@@ -110,13 +123,13 @@ func primitiveProcessor[T p.ZogPrimitive](ctx *p.SchemaCtx, preTransforms []PreT
 
 	// 3. tests
 	for _, test := range tests {
-		if !test.ValidateFunc(destPtr, ctx) {
-			// catching the first error if catch is set
+		ctx.Test = &test
+		test.Func(destPtr, ctx)
+		if ctx.Exit {
 			if ctx.CanCatch {
 				*destPtr = *catch
 				return
 			}
-			ctx.AddIssue(ctx.IssueFromTest(&test, ctx.Val))
 		}
 	}
 
@@ -181,13 +194,13 @@ func primitiveValidator[T p.ZogPrimitive](ctx *p.SchemaCtx, preTransforms []PreT
 
 	// 3. tests
 	for _, test := range tests {
-		if !test.ValidateFunc(valPtr, ctx) {
-			// catching the first error if catch is set
+		ctx.Test = &test
+		test.Func(valPtr, ctx)
+		if ctx.Exit {
 			if ctx.CanCatch {
 				*valPtr = *catch
 				return
 			}
-			ctx.AddIssue(ctx.IssueFromTest(&test, ctx.Val))
 		}
 	}
 

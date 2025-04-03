@@ -6,7 +6,39 @@ sidebar_position: 7
 
 ## What is context?
 
-Zog uses a `z.Ctx` interface to pass around information related to a specific `schema.Parse()` or `schema.Validate()` call. Currently use of the parse context is quite limited but it will be expanded upon in the future. It can be used for the following:
+Zog uses a `z.Ctx` interface to pass around information related to a specific `schema.Parse()` or `schema.Validate()` call. Currently use of the parse context is quite limited but it will be expanded upon in the future. The context interface currently looks like this:
+
+```go
+type Ctx interface {
+	// Get a value from the context
+	Get(key string) any
+	// Adds an issue to the schema execution.
+	AddIssue(e *ZogIssue)
+
+	// Returns a new issue with the current schema context's data prefilled
+	/*
+		Usage:
+
+		func MyCustomTestFunc(val any, ctx z.Ctx) {
+			if reason1 {
+			   ctx.AddIssue(ctx.Issue().SetMessage("Reason 1"))
+			} else if reason2 {
+			   ctx.AddIssue(ctx.Issue().SetMessage("Reason 2"))
+			} else {
+			   ctx.AddIssue(ctx.Issue().SetMessage("Reason 3"))
+			}
+		}
+
+	*/
+	Issue() *ZogIssue
+}
+```
+
+### Uses of context
+
+#### Create issues manually
+
+In any Zog function that has access to the context you may add issues manually. This is useful for many reasons. But mostly for creating [complex custom tests](/custom-tests), check the [custom tests](/custom-tests) section for more information.
 
 #### Pass custom data to functions
 

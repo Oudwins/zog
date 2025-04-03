@@ -215,19 +215,16 @@ func (v *NumberSchema[T]) Catch(val T) *NumberSchema[T] {
 }
 
 // custom test function call it -> schema.Test(test, options)
-func (v *NumberSchema[T]) Test(t Test, opts ...TestOption) *NumberSchema[T] {
-	for _, opt := range opts {
-		opt(&t)
-	}
-	t.ValidateFunc = customTestBackwardsCompatWrapper(t.ValidateFunc)
+func (v *NumberSchema[T]) Test(t Test) *NumberSchema[T] {
+	t.Func = customTestBackwardsCompatWrapper(t.Func)
 	v.tests = append(v.tests, t)
 	return v
 }
 
 // Create a custom test function for the schema. This is similar to Zod's `.refine()` method.
-func (v *NumberSchema[T]) TestFunc(testFunc p.TestFunc, options ...TestOption) *NumberSchema[T] {
-	test := TestFunc("", testFunc)
-	v.Test(test, options...)
+func (v *NumberSchema[T]) TestFunc(testFunc BoolTFunc, options ...TestOption) *NumberSchema[T] {
+	t := p.NewTestFunc("", testFunc, options...)
+	v.Test(*t)
 	return v
 }
 
@@ -235,7 +232,8 @@ func (v *NumberSchema[T]) TestFunc(testFunc p.TestFunc, options ...TestOption) *
 
 // Check that the value is one of the enum values
 func (v *NumberSchema[T]) OneOf(enum []T, options ...TestOption) *NumberSchema[T] {
-	t := p.In(enum)
+	t, fn := p.In(enum)
+	p.TestFuncFromBool(fn, &t)
 	for _, opt := range options {
 		opt(&t)
 	}
@@ -245,7 +243,8 @@ func (v *NumberSchema[T]) OneOf(enum []T, options ...TestOption) *NumberSchema[T
 
 // checks for equality
 func (v *NumberSchema[T]) EQ(n T, options ...TestOption) *NumberSchema[T] {
-	t := p.EQ(n)
+	t, fn := p.EQ(n)
+	p.TestFuncFromBool(fn, &t)
 	for _, opt := range options {
 		opt(&t)
 	}
@@ -255,7 +254,8 @@ func (v *NumberSchema[T]) EQ(n T, options ...TestOption) *NumberSchema[T] {
 
 // checks for lesser or equal
 func (v *NumberSchema[T]) LTE(n T, options ...TestOption) *NumberSchema[T] {
-	t := p.LTE(n)
+	t, fn := p.LTE(n)
+	p.TestFuncFromBool(fn, &t)
 	for _, opt := range options {
 		opt(&t)
 	}
@@ -265,7 +265,8 @@ func (v *NumberSchema[T]) LTE(n T, options ...TestOption) *NumberSchema[T] {
 
 // checks for greater or equal
 func (v *NumberSchema[T]) GTE(n T, options ...TestOption) *NumberSchema[T] {
-	t := p.GTE(n)
+	t, fn := p.GTE(n)
+	p.TestFuncFromBool(fn, &t)
 	for _, opt := range options {
 		opt(&t)
 	}
@@ -275,7 +276,8 @@ func (v *NumberSchema[T]) GTE(n T, options ...TestOption) *NumberSchema[T] {
 
 // checks for lesser
 func (v *NumberSchema[T]) LT(n T, options ...TestOption) *NumberSchema[T] {
-	t := p.LT(n)
+	t, fn := p.LT(n)
+	p.TestFuncFromBool(fn, &t)
 	for _, opt := range options {
 		opt(&t)
 	}
@@ -285,7 +287,8 @@ func (v *NumberSchema[T]) LT(n T, options ...TestOption) *NumberSchema[T] {
 
 // checks for greater
 func (v *NumberSchema[T]) GT(n T, options ...TestOption) *NumberSchema[T] {
-	t := p.GT(n)
+	t, fn := p.GT(n)
+	p.TestFuncFromBool(fn, &t)
 	for _, opt := range options {
 		opt(&t)
 	}

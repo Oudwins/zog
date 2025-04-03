@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Oudwins/zog/i18n/en"
 	"github.com/Oudwins/zog/zconst"
 	"github.com/stretchr/testify/assert"
 )
@@ -116,7 +117,7 @@ func TestValidateStructCustomTestInSchema(t *testing.T) {
 	// Create a schema with a custom test
 	schema := Struct(Schema{
 		"str": String().Required(),
-		"num": Int().Test(TestFunc("customTest", customTest)),
+		"num": Int().TestFunc(customTest),
 	})
 
 	obj := CustomStruct{
@@ -136,7 +137,7 @@ func TestValidateStructCustomTestInSchema(t *testing.T) {
 
 	errs = schema.Validate(&obj)
 	assert.NotEmpty(t, errs)
-	assert.Equal(t, "customTest", errs["num"][0].Code)
+	assert.Equal(t, en.Map[zconst.TypeNumber][zconst.IssueCodeFallback], errs["num"][0].Message)
 }
 
 func TestValidateStructCustomTest(t *testing.T) {
@@ -146,10 +147,10 @@ func TestValidateStructCustomTest(t *testing.T) {
 
 	schema := Struct(Schema{
 		"str": String(),
-	}).Test(TestFunc("customTest", func(val any, ctx Ctx) bool {
+	}).TestFunc(func(val any, ctx Ctx) bool {
 		s := val.(*CustomStruct)
 		return s.Str == "valid"
-	}), Message("customTest"))
+	}, Message("customTest"))
 
 	obj := CustomStruct{
 		Str: "invalid",
@@ -157,7 +158,6 @@ func TestValidateStructCustomTest(t *testing.T) {
 
 	errs := schema.Validate(&obj)
 	assert.NotEmpty(t, errs)
-	assert.Equal(t, "customTest", errs["$root"][0].Code)
 	assert.Equal(t, "customTest", errs["$root"][0].Message)
 
 	obj.Str = "valid"

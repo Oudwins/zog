@@ -33,6 +33,18 @@ type ZogIssue struct {
 	Err error
 }
 
+func NewZogIssue() *ZogIssue {
+	e := ZogIssuePool.Get().(*ZogIssue)
+	e.Code = ""
+	e.Path = ""
+	e.Value = nil
+	e.Dtype = ""
+	e.Params = nil
+	e.Message = ""
+	e.Err = nil
+	return e
+}
+
 // SetCode sets the issue code for the issue and returns the issue for chaining
 func (i *ZogIssue) SetCode(c zconst.ZogIssueCode) *ZogIssue {
 	i.Code = c

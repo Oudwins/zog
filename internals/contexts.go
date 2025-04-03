@@ -6,13 +6,37 @@ import (
 
 // Zog Context interface. This is the interface that is passed to schema tests, pre and post transforms
 type Ctx interface {
+	/**
+	METHOD YOU ARE FREE TO USE
+	*/
 	// Get a value from the context
 	Get(key string) any
+	// Adds an issue to the schema execution.
+	AddIssue(e *ZogIssue)
+
+	// Returns a new issue with the current schema context's data prefilled
+	/*
+		Usage:
+
+		func MyCustomTestFunc(val any, ctx z.Ctx) {
+			if reason1 {
+			   ctx.AddIssue(ctx.Issue().SetMessage("Reason 1"))
+			} else if reason2 {
+			   ctx.AddIssue(ctx.Issue().SetMessage("Reason 2"))
+			} else {
+			   ctx.AddIssue(ctx.Issue().SetMessage("Reason 3"))
+			}
+		}
+
+	*/
+	Issue() *ZogIssue
+
+	/**
+	METHOD YOU SHOULD NOT USE
+	*/
 	// Deprecated: Use Ctx.AddIssue() instead
 	// Please don't depend on this interface it may change
 	NewError(p *PathBuilder, e *ZogIssue)
-	// Adds an issue to the schema execution.
-	AddIssue(e *ZogIssue)
 	// Please don't depend on this interface it may change
 	HasErrored() bool
 }
@@ -55,6 +79,10 @@ func (c *ExecCtx) AddIssue(e *ZogIssue) {
 		c.Fmter(e, c)
 	}
 	c.Errors.Add(e.Path, e)
+}
+
+func (c *ExecCtx) Issue() *ZogIssue {
+	return NewZogIssue()
 }
 
 // Deprecated: Use Ctx.AddIssue() instead
@@ -110,12 +138,8 @@ type SchemaCtx struct {
 	CanCatch  bool
 	Exit      bool
 	HasCaught bool
+	Test      *Test
 }
-
-// type TestCtx struct {
-// 	*SchemaCtx
-// 	Test *Test
-// }
 
 func (c *SchemaCtx) AddIssue(e *ZogIssue) {
 	if c.CanCatch {
@@ -127,16 +151,15 @@ func (c *SchemaCtx) AddIssue(e *ZogIssue) {
 }
 
 func (c *SchemaCtx) Issue() *ZogIssue {
-	// TODO handle catch here
-	e := ZogIssuePool.Get().(*ZogIssue)
-	e.Code = ""
-	e.Path = c.Path.String()
-	e.Err = nil
-	e.Message = ""
-	e.Params = nil
-	e.Dtype = c.DType
-	e.Value = c.Val
-	return e
+	// e := ZogIssuePool.Get().(*ZogIssue)
+	// e.Code = ""
+	// e.Path = c.Path.String()
+	// e.Err = nil
+	// e.Message = ""
+	// e.Params = nil
+	// e.Dtype = c.DType
+	// e.Value = c.Val
+	return NewZogIssue().SetPath(c.Path.String()).SetDType(c.DType).SetValue(c.Val)
 }
 
 // Please don't depend on this method it may change
