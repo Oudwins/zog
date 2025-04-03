@@ -38,6 +38,7 @@ type NotStringSchema[T likeString] interface {
 	UUID(options ...TestOption) *StringSchema[T]
 	Match(regex *regexp.Regexp, options ...TestOption) *StringSchema[T]
 
+	// `Test` method is missing here as we require the user to define their own test for their use case.
 	// `Not` method is missing here as we do not want the user to do `Not` chaining.
 }
 
@@ -232,7 +233,7 @@ func (v *StringSchema[T]) Email(options ...TestOption) *StringSchema[T] {
 	t := Test{IssueCode: zconst.IssueCodeEmail}
 	fn := func(v any, ctx Ctx) bool {
 		email, ok := v.(*T)
-		if !ok {
+		if !ok || email == nil {
 			return false
 		}
 		return emailRegex.MatchString(string(*email))
@@ -246,11 +247,11 @@ func (v *StringSchema[T]) URL(options ...TestOption) *StringSchema[T] {
 		IssueCode: zconst.IssueCodeURL,
 	}
 	fn := func(v any, ctx Ctx) bool {
-		s, ok := v.(*T)
-		if !ok {
+		urlVal, ok := v.(*T)
+		if !ok || urlVal == nil {
 			return false
 		}
-		u, err := url.Parse(string(*s))
+		u, err := url.Parse(string(*urlVal))
 		return err == nil && u.Scheme != "" && u.Host != ""
 	}
 	return v.addTest(t, fn, options...)
@@ -265,7 +266,7 @@ func (v *StringSchema[T]) HasPrefix(s T, options ...TestOption) *StringSchema[T]
 	t.Params[zconst.IssueCodeHasPrefix] = s
 	fn := func(v any, ctx Ctx) bool {
 		val, ok := v.(*T)
-		if !ok {
+		if !ok || val == nil {
 			return false
 		}
 		return strings.HasPrefix(string(*val), string(s))
@@ -282,7 +283,7 @@ func (v *StringSchema[T]) HasSuffix(s T, options ...TestOption) *StringSchema[T]
 	t.Params[zconst.IssueCodeHasSuffix] = s
 	fn := func(v any, ctx Ctx) bool {
 		val, ok := v.(*T)
-		if !ok {
+		if !ok || val == nil {
 			return false
 		}
 		return strings.HasSuffix(string(*val), string(s))
@@ -299,7 +300,7 @@ func (v *StringSchema[T]) Contains(sub T, options ...TestOption) *StringSchema[T
 	t.Params[zconst.IssueCodeContains] = sub
 	fn := func(v any, ctx Ctx) bool {
 		val, ok := v.(*T)
-		if !ok {
+		if !ok || val == nil {
 			return false
 		}
 		return strings.Contains(string(*val), string(sub))
@@ -314,7 +315,7 @@ func (v *StringSchema[T]) ContainsUpper(options ...TestOption) *StringSchema[T] 
 	}
 	fn := func(v any, ctx Ctx) bool {
 		val, ok := v.(*T)
-		if !ok {
+		if !ok || val == nil {
 			return false
 		}
 		for _, r := range string(*val) {
@@ -335,7 +336,7 @@ func (v *StringSchema[T]) ContainsDigit(options ...TestOption) *StringSchema[T] 
 	}
 	fn := func(v any, ctx Ctx) bool {
 		val, ok := v.(*T)
-		if !ok {
+		if !ok || val == nil {
 			return false
 		}
 		for _, r := range string(*val) {
@@ -356,7 +357,7 @@ func (v *StringSchema[T]) ContainsSpecial(options ...TestOption) *StringSchema[T
 	}
 	fn := func(v any, ctx Ctx) bool {
 		val, ok := v.(*T)
-		if !ok {
+		if !ok || val == nil {
 			return false
 		}
 		for _, r := range string(*val) {
@@ -380,7 +381,7 @@ func (v *StringSchema[T]) UUID(options ...TestOption) *StringSchema[T] {
 	}
 	fn := func(v any, ctx Ctx) bool {
 		uuid, ok := v.(*T)
-		if !ok {
+		if !ok || uuid == nil {
 			return false
 		}
 		return uuidRegex.MatchString(string(*uuid))
@@ -398,7 +399,7 @@ func (v *StringSchema[T]) Match(regex *regexp.Regexp, options ...TestOption) *St
 	t.Params[zconst.IssueCodeMatch] = regex.String()
 	fn := func(v any, ctx Ctx) bool {
 		s, ok := v.(*T)
-		if !ok {
+		if !ok || s == nil {
 			return false
 		}
 		return regex.MatchString(string(*s))
