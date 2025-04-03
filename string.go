@@ -165,17 +165,14 @@ func (v *StringSchema[T]) Catch(val T) *StringSchema[T] {
 
 // ! Tests
 // custom test function call it -> schema.Test(t z.Test, opts ...TestOption)
-func (v *StringSchema[T]) Test(t Test, opts ...TestOption) *StringSchema[T] {
-	for _, opt := range opts {
-		opt(&t)
-	}
+func (v *StringSchema[T]) Test(t Test) *StringSchema[T] {
 	t.Func = customTestBackwardsCompatWrapper(t.Func)
 	v.tests = append(v.tests, t)
 	return v
 }
 
 // Create a custom test function for the schema. This is similar to Zod's `.refine()` method.
-func (v *StringSchema[T]) TestFunc(testFunc BoolTestFunc, options ...TestOption) *StringSchema[T] {
+func (v *StringSchema[T]) TestFunc(testFunc BoolTFunc, options ...TestOption) *StringSchema[T] {
 	t := p.NewTestFunc("", testFunc, options...)
 	v.Test(*t)
 	return v

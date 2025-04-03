@@ -90,17 +90,14 @@ func (v *BoolSchema[T]) validate(ctx *p.SchemaCtx) {
 
 // GLOBAL METHODS
 
-func (v *BoolSchema[T]) Test(t Test, options ...TestOption) *BoolSchema[T] {
-	for _, opt := range options {
-		opt(&t)
-	}
+func (v *BoolSchema[T]) Test(t Test) *BoolSchema[T] {
 	t.Func = customTestBackwardsCompatWrapper(t.Func)
 	v.tests = append(v.tests, t)
 	return v
 }
 
 // Create a custom test function for the schema. This is similar to Zod's `.refine()` method.
-func (v *BoolSchema[T]) TestFunc(testFunc BoolTestFunc, options ...TestOption) *BoolSchema[T] {
+func (v *BoolSchema[T]) TestFunc(testFunc BoolTFunc, options ...TestOption) *BoolSchema[T] {
 	test := p.NewTestFunc("", testFunc, options...)
 	v.Test(*test)
 	return v

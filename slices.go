@@ -124,6 +124,7 @@ func (v *SliceSchema) validate(ctx *p.SchemaCtx) {
 
 	// 3. tests for slice
 	for _, test := range v.tests {
+		ctx.Test = &test
 		test.Func(ctx.Val, ctx)
 		if ctx.Exit {
 			// catching the first error if catch is set
@@ -226,6 +227,7 @@ func (v *SliceSchema) process(ctx *p.SchemaCtx) {
 
 	// 3. tests for slice
 	for _, test := range v.tests {
+		ctx.Test = &test
 		test.Func(ctx.DestPtr, ctx)
 		if ctx.Exit {
 			// catch here
@@ -286,17 +288,14 @@ func (v *SliceSchema) Default(val any) *SliceSchema {
 
 // !TESTS
 
-// custom test function call it -> schema.Test(t z.Test, opts ...TestOption)
-func (v *SliceSchema) Test(t Test, opts ...TestOption) *SliceSchema {
-	for _, opt := range opts {
-		opt(&t)
-	}
+// custom test function call it -> schema.Test(t z.Test)
+func (v *SliceSchema) Test(t Test) *SliceSchema {
 	v.tests = append(v.tests, t)
 	return v
 }
 
 // Create a custom test function for the schema. This is similar to Zod's `.refine()` method.
-func (v *SliceSchema) TestFunc(testFunc BoolTestFunc, opts ...TestOption) *SliceSchema {
+func (v *SliceSchema) TestFunc(testFunc BoolTFunc, opts ...TestOption) *SliceSchema {
 	t := p.NewTestFunc("", testFunc, opts...)
 	v.Test(*t)
 	return v
@@ -365,7 +364,7 @@ func (v *SliceSchema) Contains(value any, options ...TestOption) *SliceSchema {
 	return v
 }
 
-func sliceMin(n int) (Test, BoolTestFunc) {
+func sliceMin(n int) (Test, BoolTFunc) {
 	fn := func(val any, ctx Ctx) bool {
 		rv := reflect.ValueOf(val).Elem()
 		if rv.Kind() != reflect.Slice {
@@ -382,7 +381,7 @@ func sliceMin(n int) (Test, BoolTestFunc) {
 	return t, fn
 }
 
-func sliceMax(n int) (Test, BoolTestFunc) {
+func sliceMax(n int) (Test, BoolTFunc) {
 	fn := func(val any, ctx Ctx) bool {
 		rv := reflect.ValueOf(val).Elem()
 		if rv.Kind() != reflect.Slice {
@@ -398,7 +397,7 @@ func sliceMax(n int) (Test, BoolTestFunc) {
 	t.Params[zconst.IssueCodeMax] = n
 	return t, fn
 }
-func sliceLength(n int) (Test, BoolTestFunc) {
+func sliceLength(n int) (Test, BoolTFunc) {
 	fn := func(val any, ctx Ctx) bool {
 		rv := reflect.ValueOf(val).Elem()
 		if rv.Kind() != reflect.Slice {

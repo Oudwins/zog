@@ -40,11 +40,16 @@ type PostTransform = p.PostTransform
 type IssueFmtFunc = p.IssueFmtFunc
 
 // Function signature for tests. Takes the value and the context and returns a boolean.
-// This used to be a function you could pass to the schema.Test method -> `s.Test(z.TestFunc(fn))`. But that has been deprecated. Use `schema.TestFunc(fn)` instead.
-type TestFunc = p.TestFunc
+// This used to be a function you could pass to the schema.Test method -> `s.Test(z.TFunc(fn))`. But that has been deprecated. Use `schema.TFunc(fn)` instead.
+type TFunc = p.TFunc
 
 // Function signature for bool tests. Takes the value and the context and returns a boolean. This is the function passed to the TestFunc method.
-type BoolTestFunc = p.BoolTestFunc
+type BoolTFunc = p.BoolTFunc
+
+// Creates a reusable testFunc you can add to schemas by doing schema.Test(z.TestFunc()). Has the same API as schema.TestFunc() so it is recommended you use that one for non reusable tests.
+func TestFunc(IssueCode zconst.ZogIssueCode, fn BoolTFunc, options ...TestOption) Test {
+	return *p.NewTestFunc(IssueCode, fn, options...)
+}
 
 // ! PRIMITIVE PROCESSING -> Not userspace code
 
@@ -118,6 +123,7 @@ func primitiveProcessor[T p.ZogPrimitive](ctx *p.SchemaCtx, preTransforms []PreT
 
 	// 3. tests
 	for _, test := range tests {
+		ctx.Test = &test
 		test.Func(destPtr, ctx)
 		if ctx.Exit {
 			if ctx.CanCatch {
@@ -188,6 +194,7 @@ func primitiveValidator[T p.ZogPrimitive](ctx *p.SchemaCtx, preTransforms []PreT
 
 	// 3. tests
 	for _, test := range tests {
+		ctx.Test = &test
 		test.Func(valPtr, ctx)
 		if ctx.Exit {
 			if ctx.CanCatch {

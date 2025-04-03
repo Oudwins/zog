@@ -101,7 +101,7 @@ func (i *issueHelpers) Collect(issue *ZogIssue) {
 
 // Backwards Compatibility
 
-func customTestBackwardsCompatWrapper(testFunc TestFunc) func(val any, ctx Ctx) {
+func customTestBackwardsCompatWrapper(testFunc TFunc) func(val any, ctx Ctx) {
 	return func(val any, ctx Ctx) {
 		refVal := reflect.ValueOf(val).Elem()
 		testFunc(refVal.Interface(), ctx)

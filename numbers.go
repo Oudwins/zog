@@ -215,17 +215,14 @@ func (v *NumberSchema[T]) Catch(val T) *NumberSchema[T] {
 }
 
 // custom test function call it -> schema.Test(test, options)
-func (v *NumberSchema[T]) Test(t Test, opts ...TestOption) *NumberSchema[T] {
-	for _, opt := range opts {
-		opt(&t)
-	}
+func (v *NumberSchema[T]) Test(t Test) *NumberSchema[T] {
 	t.Func = customTestBackwardsCompatWrapper(t.Func)
 	v.tests = append(v.tests, t)
 	return v
 }
 
 // Create a custom test function for the schema. This is similar to Zod's `.refine()` method.
-func (v *NumberSchema[T]) TestFunc(testFunc BoolTestFunc, options ...TestOption) *NumberSchema[T] {
+func (v *NumberSchema[T]) TestFunc(testFunc BoolTFunc, options ...TestOption) *NumberSchema[T] {
 	t := p.NewTestFunc("", testFunc, options...)
 	v.Test(*t)
 	return v

@@ -62,3 +62,34 @@ sessionSchema := z.String().Test(z.Test{
   }
 })
 ```
+
+## Making Reusable Tests
+
+In general I recommend you wrap you reusable tests in a function. Here are examples for both simple and complex tests:
+
+```go
+
+// Notice how we can pass default values to the test which can then be overriden by the function called. This is super nice if you need it!
+func MySimpleTest(opts ...z.TestOption) z.Test {
+	options := []TestOption{
+		Message("Default message, can be overriden"),
+	}
+	options = append(options, opts...)
+  return z.TestFunc(
+    func (val any, ctx z.Ctx) bool {
+      return true // or any other validation
+    },
+   ...options
+  )
+}
+
+
+func MyComplexTest() z.Test {
+  return z.Test{
+    Func: func (val any, ctx z.Ctx) {
+      // complex test here
+    }
+  }
+}
+
+```

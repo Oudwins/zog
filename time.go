@@ -164,18 +164,17 @@ func (v *TimeSchema) Catch(val time.Time) *TimeSchema {
 
 // GLOBAL METHODS
 
-// custom test function call it -> schema.Test("error_code", func(val any, ctx Ctx) bool {return true})
-func (v *TimeSchema) Test(t Test, opts ...TestOption) *TimeSchema {
-	for _, opt := range opts {
-		opt(&t)
-	}
+// custom test function call it -> schema.Test(z.Test{Func: func (val any, ctx z.Ctx) {
+// my test
+// }})
+func (v *TimeSchema) Test(t Test) *TimeSchema {
 	t.Func = customTestBackwardsCompatWrapper(t.Func)
 	v.tests = append(v.tests, t)
 	return v
 }
 
 // Create a custom test function for the schema. This is similar to Zod's `.refine()` method.
-func (v *TimeSchema) TestFunc(testFunc BoolTestFunc, options ...TestOption) *TimeSchema {
+func (v *TimeSchema) TestFunc(testFunc BoolTFunc, options ...TestOption) *TimeSchema {
 	test := p.NewTestFunc("", testFunc, options...)
 	v.Test(*test)
 	return v
