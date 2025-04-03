@@ -408,7 +408,9 @@ func (v *StringSchema[T]) Match(regex *regexp.Regexp, options ...TestOption) *St
 	return v.addTest(t, fn, options...)
 }
 
-// Test: nots the next test fn
+// Not returns a schema that negates the next validation test.
+// For example, `z.String().Not().Email()` validates that the string is NOT a valid email.
+// Note: The negation only applies to the next validation test and is reset afterward.
 func (v *StringSchema[T]) Not() NotStringSchema[T] {
 	v.isNot = !v.isNot
 	return v
