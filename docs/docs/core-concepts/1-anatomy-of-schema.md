@@ -7,7 +7,7 @@ sidebar_position: 1
 A zog schema is an interface implemented by multiple custom structs that represent a set of `validation` and `transformation` logic for a variable of a given type. For example:
 
 ```go
-stringSchema := z.String().Min(3).Required().Trim() // A zog schema that represents a required string of minimum 3 characters and will be trimmed for white space
+stringSchema := z.String().Min(3).Required().Trim()    // A zog schema that represents a required string of minimum 3 characters and will be trimmed for white space
 userSchema := z.Struct(z.Schema{"name": stringSchema}) // a zog schema that represents a user struct. Also yes I know that z.Schema might be confusing but think of it as the schema for the struct not a ZogSchema
 ```
 
@@ -15,12 +15,12 @@ userSchema := z.Struct(z.Schema{"name": stringSchema}) // a zog schema that repr
 
 ```go
 type stringSchema struct {
-   preTransforms: []PreTransforms // transformations executed before the validation. For example trimming the string
-   isRequired: bool // optional. Defaults to FALSE
-   defaultValue: string // optional. if the input value is a "zero value" it will be replaced with this. Tests will still run on this value.
-   catchValue: string // optional. If this is set it will "catch" any errors, set the destination value to this value and exit
-   tests: []Test // These are your validation checks. Such as .Min(), .Contains(), etc
-   postTransforms: []PostTransform // transformations executed after the validation.
+	preTransforms  []PreTransforms // transformations executed before the validation. For example trimming the string
+	isRequired     bool            // optional. Defaults to FALSE
+	defaultValue   string          // optional. if the input value is a "zero value" it will be replaced with this. Tests will still run on this value.
+	catchValue     string          // optional. If this is set it will "catch" any errors, set the destination value to this value and exit
+	tests          []Test          // These are your validation checks. Such as .Min(), .Contains(), etc
+	postTransforms []PostTransform // transformations executed after the validation.
 }
 ```
 
@@ -38,7 +38,7 @@ You can use pretransforms for things like trimming whitespace, splitting strings
 
 ```go
 z.Slice(z.String()).PreTransform(func(data any, ctx Ctx) (any, error) {
-  return strings.Split(data.(string), ","), nil
+	return strings.Split(data.(string), ","), nil
 }).Parse("item1,item2,item3", &dest)
 ```
 
@@ -63,8 +63,8 @@ You can configure tests with `TestOptions` which modify a test in some manner. H
 
 ```go
 z.String().Min(3, z.Message("String must be at least 3 characters long")) // This sets the message that Zogissues will have if the validation fails
-z.String().Min(3, z.IssueCode("min_3")) // This sets the issue code that Zogissues will have if the validation fails
-z.String().Min(3, z.IssuePath("name")) // This sets the issue path that Zogissues will have if the validation fails
+z.String().Min(3, z.IssueCode("min_3"))                                   // This sets the issue code that Zogissues will have if the validation fails
+z.String().Min(3, z.IssuePath("name"))                                    // This sets the issue path that Zogissues will have if the validation fails
 ```
 
 ### Creating Custom Tests
@@ -86,15 +86,16 @@ You can use posttransforms for any transformation you want to do but don't want 
 
 ```go
 type User struct {
-  Phone string
-  AreaCode string
+	Phone    string
+	AreaCode string
 }
+
 z.Struct(z.Schema{
-  "phone": z.String().Test(....),
-  }).PostTransform(func(dataPtr any, ctx z.Ctx) error {
-  user := dataPtr.(*User)
-  user.AreaCode = user.Phone[:3]
-  user.Phone = user.Phone[3:]
-  return nil
+	"phone": z.String().Test(...),
+}).PostTransform(func(dataPtr any, ctx z.Ctx) error {
+	user := dataPtr.(*User)
+	user.AreaCode = user.Phone[:3]
+	user.Phone = user.Phone[3:]
+	return nil
 })
 ```

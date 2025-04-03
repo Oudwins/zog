@@ -21,22 +21,23 @@ toc_max_heading_level: 4
 
 ```go
 var schema = z.Struct(z.Schema{
-  "name": z.String().Required(),
+	"name": z.String().Required(),
 })
+
 // This struct is a valid destination for the schema
 type User struct {
-  Name string
-  Age int // age will be ignored since it is not a field in the schema
+	Name string
+	Age  int // age will be ignored since it is not a field in the schema
 }
+
 // this struct is not a valid structure for the schema. It is missing the name field.
 // This will cause Zog to panic in both Parse and Validate mode
 type User2 struct {
-  Email string
-  Age int
+	Email string
+	Age   int
 }
 schema.Parse(map[string]any{"name": "zog"}, &User{}) // this will panic even if input data is valid. Because the destination is not a valid structure for the schema
-schema.Validate(&User2{}) // This will panic because the structure does not match the schema
-
+schema.Validate(&User2{})                            // This will panic because the structure does not match the schema
 ```
 
 ## Limitations

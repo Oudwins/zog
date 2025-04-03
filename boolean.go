@@ -90,19 +90,16 @@ func (v *BoolSchema[T]) validate(ctx *p.SchemaCtx) {
 
 // GLOBAL METHODS
 
-func (v *BoolSchema[T]) Test(t Test, options ...TestOption) *BoolSchema[T] {
-	for _, opt := range options {
-		opt(&t)
-	}
-	t.ValidateFunc = customTestBackwardsCompatWrapper(t.ValidateFunc)
+func (v *BoolSchema[T]) Test(t Test) *BoolSchema[T] {
+	t.Func = customTestBackwardsCompatWrapper(t.Func)
 	v.tests = append(v.tests, t)
 	return v
 }
 
 // Create a custom test function for the schema. This is similar to Zod's `.refine()` method.
-func (v *BoolSchema[T]) TestFunc(testFunc p.TestFunc, options ...TestOption) *BoolSchema[T] {
-	test := TestFunc("", testFunc)
-	v.Test(test, options...)
+func (v *BoolSchema[T]) TestFunc(testFunc BoolTFunc, options ...TestOption) *BoolSchema[T] {
+	test := p.NewTestFunc("", testFunc, options...)
+	v.Test(*test)
 	return v
 }
 
@@ -156,16 +153,22 @@ func (v *BoolSchema[T]) Catch(val T) *BoolSchema[T] {
 // UNIQUE METHODS
 
 func (v *BoolSchema[T]) True() *BoolSchema[T] {
-	v.tests = append(v.tests, p.EQ[T](T(true)))
+	t, fn := p.EQ[T](T(true))
+	p.TestFuncFromBool(fn, &t)
+	v.tests = append(v.tests, t)
 	return v
 }
 
 func (v *BoolSchema[T]) False() *BoolSchema[T] {
-	v.tests = append(v.tests, p.EQ[T](T(false)))
+	t, fn := p.EQ[T](T(false))
+	p.TestFuncFromBool(fn, &t)
+	v.tests = append(v.tests, t)
 	return v
 }
 
 func (v *BoolSchema[T]) EQ(val T) *BoolSchema[T] {
-	v.tests = append(v.tests, p.EQ[T](val))
+	t, fn := p.EQ[T](val)
+	p.TestFuncFromBool(fn, &t)
+	v.tests = append(v.tests, t)
 	return v
 }

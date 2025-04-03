@@ -8,27 +8,31 @@ A very small package for using Zog schemas to parse json into structs. It export
 
 ```go
 import (
-  z "github.com/Oudwins/zog"
-  "github.com/Oudwins/zog/parsers/zjson"
-  "bytes"
+	"bytes"
+	z "github.com/Oudwins/zog"
+	"github.com/Oudwins/zog/parsers/zjson"
 )
+
 var userSchema = z.Struct(z.Schema{
-  "name": z.String().Required(),
-  "age": z.Int().Required().GT(18),
+	"name": z.String().Required(),
+	"age":  z.Int().Required().GT(18),
 })
+
 type User struct {
-  Name string
-  Age int
+	Name string
+	Age  int
 }
 
 func ParseJson(json []byte) {
-  var user User
-  errs := userSchema.Parse(zjson.Decode(bytes.NewReader(json)), &user)
-  if errs != nil {
-    // handle errors
-  }
-  user.Name // defined
-  user.Age // defined
+	var user User
+	errs := userSchema.Parse(zjson.Decode(bytes.NewReader(json)), &user)
+  
+	if errs != nil {
+		// handle errors
+	}
+
+	user.Name // defined
+	user.Age  // defined
 }
 ```
 

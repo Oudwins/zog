@@ -7,7 +7,6 @@ sidebar_position: 5
 `zconst` is a helper package that provides constants for common use cases such as error codes, Zog Types and more. Every constant here is just a string so using `zconst` is completely optional. This is the entire code of the zconst package as of version 0.11.0:
 
 ```go
-
 const (
 	ZogTag = "zog"
 )

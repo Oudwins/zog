@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.19.0](https://github.com/Oudwins/zog/compare/v0.18.4...v0.19.0) (2025-04-03)
+
+
+### ⚠ BREAKING CHANGES
+
+* Test.ValidateFunc's name has been changed to Test.Func
+
+### Features
+
+* implemented super refine like API. Create complex custom tests easily ([#138](https://github.com/Oudwins/zog/issues/138)) ([e44e593](https://github.com/Oudwins/zog/commit/e44e593034be7f91f61c63193e5848bc0896a60b))
+
+
+### Miscellaneous Chores
+
+* release 0.19.0 ([2a25dc4](https://github.com/Oudwins/zog/commit/2a25dc45792cb4f0ea35cb999e6b3c6ea19f0c88))
+
 ## [0.18.4](https://github.com/Oudwins/zog/compare/v0.18.2...v0.18.4) (2025-03-16)
 
 

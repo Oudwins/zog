@@ -21,7 +21,7 @@ var (
 )
 
 type NotStringSchema[T ~string] interface {
-	Test(t p.Test, opts ...TestOption) *StringSchema[T]
+	Test(t Test) *StringSchema[T]
 	OneOf(enum []T, options ...TestOption) *StringSchema[T]
 	Min(n int, options ...TestOption) *StringSchema[T]
 	Max(n int, options ...TestOption) *StringSchema[T]
@@ -189,25 +189,23 @@ func (v *StringSchema[T]) Catch(val T) *StringSchema[T] {
 
 // ! Tests
 // custom test function call it -> schema.Test(t z.Test, opts ...TestOption)
-func (v *StringSchema[T]) Test(t Test, opts ...TestOption) *StringSchema[T] {
-	for _, opt := range opts {
-		opt(&t)
-	}
-
-	t.ValidateFunc = customTestBackwardsCompatWrapper(t.ValidateFunc)
-	return v.addTest(t)
+func (v *StringSchema[T]) Test(t Test) *StringSchema[T] {
+	t.Func = customTestBackwardsCompatWrapper(t.Func)
+	v.tests = append(v.tests, t)
+	return v
 }
 
 // Create a custom test function for the schema. This is similar to Zod's `.refine()` method.
-func (v *StringSchema[T]) TestFunc(testFunc p.TestFunc, options ...TestOption) *StringSchema[T] {
-	test := TestFunc("", testFunc)
-	v.Test(test, options...)
+func (v *StringSchema[T]) TestFunc(testFunc BoolTFunc, options ...TestOption) *StringSchema[T] {
+	t := p.NewTestFunc("", testFunc, options...)
+	v.Test(*t)
 	return v
 }
 
 // Test: checks that the value is one of the enum values
 func (v *StringSchema[T]) OneOf(enum []T, options ...TestOption) *StringSchema[T] {
-	t := p.In(enum)
+	t, fn := p.In(enum)
+	p.TestFuncFromBool(fn, &t)
 	for _, opt := range options {
 		opt(&t)
 	}
@@ -216,7 +214,8 @@ func (v *StringSchema[T]) OneOf(enum []T, options ...TestOption) *StringSchema[T
 
 // Test: checks that the value is at least n characters long
 func (v *StringSchema[T]) Min(n int, options ...TestOption) *StringSchema[T] {
-	t := p.LenMin[T](n)
+	t, fn := p.LenMin[T](n)
+	p.TestFuncFromBool(fn, &t)
 	for _, opt := range options {
 		opt(&t)
 	}
@@ -225,7 +224,8 @@ func (v *StringSchema[T]) Min(n int, options ...TestOption) *StringSchema[T] {
 
 // Test: checks that the value is at most n characters long
 func (v *StringSchema[T]) Max(n int, options ...TestOption) *StringSchema[T] {
-	t := p.LenMax[T](n)
+	t, fn := p.LenMax[T](n)
+	p.TestFuncFromBool(fn, &t)
 	for _, opt := range options {
 		opt(&t)
 	}
@@ -234,7 +234,8 @@ func (v *StringSchema[T]) Max(n int, options ...TestOption) *StringSchema[T] {
 
 // Test: checks that the value is exactly n characters long
 func (v *StringSchema[T]) Len(n int, options ...TestOption) *StringSchema[T] {
-	t := p.Len[T](n)
+	t, fn := p.Len[T](n)
+	p.TestFuncFromBool(fn, &t)
 	for _, opt := range options {
 		opt(&t)
 	}
@@ -245,14 +246,15 @@ func (v *StringSchema[T]) Len(n int, options ...TestOption) *StringSchema[T] {
 func (v *StringSchema[T]) Email(options ...TestOption) *StringSchema[T] {
 	t := Test{
 		IssueCode: zconst.IssueCodeEmail,
-		ValidateFunc: func(v any, ctx Ctx) bool {
-			email, ok := v.(*T)
-			if !ok {
-				return false
-			}
-			return emailRegex.MatchString(string(*email))
-		},
 	}
+	fn := func(v any, ctx Ctx) bool {
+		email, ok := v.(*T)
+		if !ok {
+			return false
+		}
+		return emailRegex.MatchString(string(*email))
+	}
+	p.TestFuncFromBool(fn, &t)
 	for _, opt := range options {
 		opt(&t)
 	}
@@ -263,15 +265,16 @@ func (v *StringSchema[T]) Email(options ...TestOption) *StringSchema[T] {
 func (v *StringSchema[T]) URL(options ...TestOption) *StringSchema[T] {
 	t := Test{
 		IssueCode: zconst.IssueCodeURL,
-		ValidateFunc: func(v any, ctx Ctx) bool {
-			s, ok := v.(*T)
-			if !ok {
-				return false
-			}
-			u, err := url.Parse(string(*s))
-			return err == nil && u.Scheme != "" && u.Host != ""
-		},
 	}
+	fn := func(v any, ctx Ctx) bool {
+		s, ok := v.(*T)
+		if !ok {
+			return false
+		}
+		u, err := url.Parse(string(*s))
+		return err == nil && u.Scheme != "" && u.Host != ""
+	}
+	p.TestFuncFromBool(fn, &t)
 	for _, opt := range options {
 		opt(&t)
 	}
@@ -283,15 +286,16 @@ func (v *StringSchema[T]) HasPrefix(s T, options ...TestOption) *StringSchema[T]
 	t := Test{
 		IssueCode: zconst.IssueCodeHasPrefix,
 		Params:    make(map[string]any, 1),
-		ValidateFunc: func(v any, ctx Ctx) bool {
-			val, ok := v.(*T)
-			if !ok {
-				return false
-			}
-			return strings.HasPrefix(string(*val), string(s))
-		},
 	}
 	t.Params[zconst.IssueCodeHasPrefix] = s
+	fn := func(v any, ctx Ctx) bool {
+		val, ok := v.(*T)
+		if !ok {
+			return false
+		}
+		return strings.HasPrefix(string(*val), string(s))
+	}
+	p.TestFuncFromBool(fn, &t)
 	for _, opt := range options {
 		opt(&t)
 	}
@@ -303,15 +307,16 @@ func (v *StringSchema[T]) HasSuffix(s T, options ...TestOption) *StringSchema[T]
 	t := Test{
 		IssueCode: zconst.IssueCodeHasSuffix,
 		Params:    make(map[string]any, 1),
-		ValidateFunc: func(v any, ctx Ctx) bool {
-			val, ok := v.(*T)
-			if !ok {
-				return false
-			}
-			return strings.HasSuffix(string(*val), string(s))
-		},
 	}
 	t.Params[zconst.IssueCodeHasSuffix] = s
+	fn := func(v any, ctx Ctx) bool {
+		val, ok := v.(*T)
+		if !ok {
+			return false
+		}
+		return strings.HasSuffix(string(*val), string(s))
+	}
+	p.TestFuncFromBool(fn, &t)
 	for _, opt := range options {
 		opt(&t)
 	}
@@ -323,15 +328,16 @@ func (v *StringSchema[T]) Contains(sub T, options ...TestOption) *StringSchema[T
 	t := Test{
 		IssueCode: zconst.IssueCodeContains,
 		Params:    make(map[string]any, 1),
-		ValidateFunc: func(v any, ctx Ctx) bool {
-			val, ok := v.(*T)
-			if !ok {
-				return false
-			}
-			return strings.Contains(string(*val), string(sub))
-		},
 	}
 	t.Params[zconst.IssueCodeContains] = sub
+	fn := func(v any, ctx Ctx) bool {
+		val, ok := v.(*T)
+		if !ok {
+			return false
+		}
+		return strings.Contains(string(*val), string(sub))
+	}
+	p.TestFuncFromBool(fn, &t)
 	for _, opt := range options {
 		opt(&t)
 	}
@@ -342,19 +348,20 @@ func (v *StringSchema[T]) Contains(sub T, options ...TestOption) *StringSchema[T
 func (v *StringSchema[T]) ContainsUpper(options ...TestOption) *StringSchema[T] {
 	t := Test{
 		IssueCode: zconst.IssueCodeContainsUpper,
-		ValidateFunc: func(v any, ctx Ctx) bool {
-			val, ok := v.(*T)
-			if !ok {
-				return false
-			}
-			for _, r := range string(*val) {
-				if r >= 'A' && r <= 'Z' {
-					return true
-				}
-			}
-			return false
-		},
 	}
+	fn := func(v any, ctx Ctx) bool {
+		val, ok := v.(*T)
+		if !ok {
+			return false
+		}
+		for _, r := range string(*val) {
+			if r >= 'A' && r <= 'Z' {
+				return true
+			}
+		}
+		return false
+	}
+	p.TestFuncFromBool(fn, &t)
 	for _, opt := range options {
 		opt(&t)
 	}
@@ -365,20 +372,20 @@ func (v *StringSchema[T]) ContainsUpper(options ...TestOption) *StringSchema[T] 
 func (v *StringSchema[T]) ContainsDigit(options ...TestOption) *StringSchema[T] {
 	t := Test{
 		IssueCode: zconst.IssueCodeContainsDigit,
-		ValidateFunc: func(v any, ctx Ctx) bool {
-			val, ok := v.(*T)
-			if !ok {
-				return false
-			}
-			for _, r := range string(*val) {
-				if r >= '0' && r <= '9' {
-					return true
-				}
-			}
-			return false
-		},
 	}
-
+	fn := func(v any, ctx Ctx) bool {
+		val, ok := v.(*T)
+		if !ok {
+			return false
+		}
+		for _, r := range string(*val) {
+			if r >= '0' && r <= '9' {
+				return true
+			}
+		}
+		return false
+	}
+	p.TestFuncFromBool(fn, &t)
 	for _, opt := range options {
 		opt(&t)
 	}
@@ -388,25 +395,25 @@ func (v *StringSchema[T]) ContainsDigit(options ...TestOption) *StringSchema[T] 
 
 // Test: checks that the value contains a special character
 func (v *StringSchema[T]) ContainsSpecial(options ...TestOption) *StringSchema[T] {
-	t :=
-		Test{
-			IssueCode: zconst.IssueCodeContainsSpecial,
-			ValidateFunc: func(v any, ctx Ctx) bool {
-				val, ok := v.(*T)
-				if !ok {
-					return false
-				}
-				for _, r := range string(*val) {
-					if (r >= '!' && r <= '/') ||
-						(r >= ':' && r <= '@') ||
-						(r >= '[' && r <= '`') ||
-						(r >= '{' && r <= '~') {
-						return true
-					}
-				}
-				return false
-			},
+	t := Test{
+		IssueCode: zconst.IssueCodeContainsSpecial,
+	}
+	fn := func(v any, ctx Ctx) bool {
+		val, ok := v.(*T)
+		if !ok {
+			return false
 		}
+		for _, r := range string(*val) {
+			if (r >= '!' && r <= '/') ||
+				(r >= ':' && r <= '@') ||
+				(r >= '[' && r <= '`') ||
+				(r >= '{' && r <= '~') {
+				return true
+			}
+		}
+		return false
+	}
+	p.TestFuncFromBool(fn, &t)
 	for _, opt := range options {
 		opt(&t)
 	}
@@ -417,14 +424,15 @@ func (v *StringSchema[T]) ContainsSpecial(options ...TestOption) *StringSchema[T
 func (v *StringSchema[T]) UUID(options ...TestOption) *StringSchema[T] {
 	t := Test{
 		IssueCode: zconst.IssueCodeUUID,
-		ValidateFunc: func(v any, ctx Ctx) bool {
-			uuid, ok := v.(*T)
-			if !ok {
-				return false
-			}
-			return uuidRegex.MatchString(string(*uuid))
-		},
 	}
+	fn := func(v any, ctx Ctx) bool {
+		uuid, ok := v.(*T)
+		if !ok {
+			return false
+		}
+		return uuidRegex.MatchString(string(*uuid))
+	}
+	p.TestFuncFromBool(fn, &t)
 	for _, opt := range options {
 		opt(&t)
 	}
@@ -436,15 +444,16 @@ func (v *StringSchema[T]) Match(regex *regexp.Regexp, options ...TestOption) *St
 	t := Test{
 		IssueCode: zconst.IssueCodeMatch,
 		Params:    make(map[string]any, 1),
-		ValidateFunc: func(v any, ctx Ctx) bool {
-			s, ok := v.(*T)
-			if !ok {
-				return false
-			}
-			return regex.MatchString(string(*s))
-		},
 	}
 	t.Params[zconst.IssueCodeMatch] = regex.String()
+	fn := func(v any, ctx Ctx) bool {
+		s, ok := v.(*T)
+		if !ok {
+			return false
+		}
+		return regex.MatchString(string(*s))
+	}
+	p.TestFuncFromBool(fn, &t)
 	for _, opt := range options {
 		opt(&t)
 	}
