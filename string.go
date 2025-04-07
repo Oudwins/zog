@@ -380,7 +380,7 @@ func (v *StringSchema[T]) UUID(options ...TestOption) *StringSchema[T] {
 	}
 	fn := func(v any, ctx Ctx) bool {
 		uuid, ok := v.(*T)
-		if !ok || uuid == nil {
+		if !ok {
 			return false
 		}
 		return uuidRegex.MatchString(string(*uuid))
@@ -398,7 +398,7 @@ func (v *StringSchema[T]) Match(regex *regexp.Regexp, options ...TestOption) *St
 	t.Params[zconst.IssueCodeMatch] = regex.String()
 	fn := func(v any, ctx Ctx) bool {
 		s, ok := v.(*T)
-		if !ok || s == nil {
+		if !ok {
 			return false
 		}
 		return regex.MatchString(string(*s))
