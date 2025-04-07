@@ -24,8 +24,6 @@ type likeString interface {
 
 type NotStringSchema[T likeString] interface {
 	OneOf(enum []T, options ...TestOption) *StringSchema[T]
-	Min(n int, options ...TestOption) *StringSchema[T]
-	Max(n int, options ...TestOption) *StringSchema[T]
 	Len(n int, options ...TestOption) *StringSchema[T]
 	Email(options ...TestOption) *StringSchema[T]
 	URL(options ...TestOption) *StringSchema[T]
@@ -40,6 +38,7 @@ type NotStringSchema[T likeString] interface {
 
 	// `Test` method is missing here as we require the user to define their own test for their use case.
 	// `Not` method is missing here as we do not want the user to do `Not` chaining.
+	// `NotNil`, `Min`, `Max` methods are not included as they are opposites of each other.
 }
 
 type StringSchema[T likeString] struct {
@@ -233,7 +232,7 @@ func (v *StringSchema[T]) Email(options ...TestOption) *StringSchema[T] {
 	t := Test{IssueCode: zconst.IssueCodeEmail}
 	fn := func(v any, ctx Ctx) bool {
 		email, ok := v.(*T)
-		if !ok || email == nil {
+		if !ok {
 			return false
 		}
 		return emailRegex.MatchString(string(*email))
@@ -248,7 +247,7 @@ func (v *StringSchema[T]) URL(options ...TestOption) *StringSchema[T] {
 	}
 	fn := func(v any, ctx Ctx) bool {
 		urlVal, ok := v.(*T)
-		if !ok || urlVal == nil {
+		if !ok {
 			return false
 		}
 		u, err := url.Parse(string(*urlVal))
@@ -266,7 +265,7 @@ func (v *StringSchema[T]) HasPrefix(s T, options ...TestOption) *StringSchema[T]
 	t.Params[zconst.IssueCodeHasPrefix] = s
 	fn := func(v any, ctx Ctx) bool {
 		val, ok := v.(*T)
-		if !ok || val == nil {
+		if !ok {
 			return false
 		}
 		return strings.HasPrefix(string(*val), string(s))
@@ -283,7 +282,7 @@ func (v *StringSchema[T]) HasSuffix(s T, options ...TestOption) *StringSchema[T]
 	t.Params[zconst.IssueCodeHasSuffix] = s
 	fn := func(v any, ctx Ctx) bool {
 		val, ok := v.(*T)
-		if !ok || val == nil {
+		if !ok {
 			return false
 		}
 		return strings.HasSuffix(string(*val), string(s))
@@ -300,7 +299,7 @@ func (v *StringSchema[T]) Contains(sub T, options ...TestOption) *StringSchema[T
 	t.Params[zconst.IssueCodeContains] = sub
 	fn := func(v any, ctx Ctx) bool {
 		val, ok := v.(*T)
-		if !ok || val == nil {
+		if !ok {
 			return false
 		}
 		return strings.Contains(string(*val), string(sub))
@@ -315,7 +314,7 @@ func (v *StringSchema[T]) ContainsUpper(options ...TestOption) *StringSchema[T] 
 	}
 	fn := func(v any, ctx Ctx) bool {
 		val, ok := v.(*T)
-		if !ok || val == nil {
+		if !ok {
 			return false
 		}
 		for _, r := range string(*val) {
@@ -336,7 +335,7 @@ func (v *StringSchema[T]) ContainsDigit(options ...TestOption) *StringSchema[T] 
 	}
 	fn := func(v any, ctx Ctx) bool {
 		val, ok := v.(*T)
-		if !ok || val == nil {
+		if !ok {
 			return false
 		}
 		for _, r := range string(*val) {
@@ -357,7 +356,7 @@ func (v *StringSchema[T]) ContainsSpecial(options ...TestOption) *StringSchema[T
 	}
 	fn := func(v any, ctx Ctx) bool {
 		val, ok := v.(*T)
-		if !ok || val == nil {
+		if !ok {
 			return false
 		}
 		for _, r := range string(*val) {
