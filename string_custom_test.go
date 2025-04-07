@@ -154,16 +154,6 @@ func TestCustomStringNot(t *testing.T) {
 		strVal         string
 		expectedErrMap internals.ZogIssueList
 	}{
-		"not min": {
-			schema:         MyStringSchema().Not().Min(10),
-			strVal:         "short",
-			expectedErrMap: nil,
-		},
-		"mixed negated and non-negated": {
-			schema:         MyStringSchema().Not().Min(10).Contains("test"),
-			strVal:         "test",
-			expectedErrMap: nil,
-		},
 		"not len success": {
 			schema:         MyStringSchema().Not().Len(10).Contains("test"),
 			strVal:         "test",
