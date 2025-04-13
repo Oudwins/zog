@@ -1,62 +1,71 @@
 package zog
 
 import (
-	"fmt"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
 
-var custom = Custom(func(val any, ctx Ctx) any {
-	i, ok := val.(int)
-	if ok {
-		return fmt.Sprintf("%d", i)
+func TestCustomFunc(t *testing.T) {
+	s := CustomFunc(func(ptr *int, ctx Ctx) bool {
+		return *ptr > 10
+	}, Message("custom error"))
+	i := 0
+	errs := s.Parse(1, &i)
+	assert.Equal(t, 1, len(errs))
+	assert.Equal(t, "custom error", errs[0].Message)
+
+	// Test successful case
+	errs = s.Parse(11, &i)
+	assert.Equal(t, 0, len(errs))
+	assert.Equal(t, 11, i)
+}
+
+func TestCustomFuncString(t *testing.T) {
+	s := CustomFunc(func(ptr *string, ctx Ctx) bool {
+		return len(*ptr) > 5
+	}, Message("string too short"))
+	str := ""
+	errs := s.Parse("test", &str)
+	assert.Equal(t, 1, len(errs))
+	assert.Equal(t, "string too short", errs[0].Message)
+
+	errs = s.Parse("testing", &str)
+	assert.Equal(t, 0, len(errs))
+	assert.Equal(t, "testing", str)
+}
+
+func TestCustomFuncSlice(t *testing.T) {
+	s := CustomFunc(func(ptr *[]int, ctx Ctx) bool {
+		return len(*ptr) > 3
+	}, Message("custom error"))
+	i := []int{}
+	errs := s.Parse([]int{1, 2, 3}, &i)
+	assert.Equal(t, 1, len(errs))
+	assert.Equal(t, "custom error", errs[0].Message)
+	errs = s.Parse([]int{1, 2, 3, 4}, &i)
+	assert.Equal(t, 0, len(errs))
+	assert.Equal(t, []int{1, 2, 3, 4}, i)
+}
+
+func TestCustomFuncStruct(t *testing.T) {
+	type User struct {
+		Age  int       `zog:"min=18"`
+		Name string    `zog:"min=3"`
+		DOB  time.Time `zog:"format=2006-01-02"`
 	}
-	return "not an int"
-})
+	s := CustomFunc(func(ptr *User, ctx Ctx) bool {
+		return ptr.Age >= 18 && len(ptr.Name) >= 3
+	}, Message("invalid user data"))
 
-func TestCustomSchemaFnSimple(t *testing.T) {
-	var out string
-	custom.Parse(1, &out)
-	assert.Equal(t, "1", out)
-	custom.Validate(&out)
-	assert.Equal(t, "not an int", out)
+	u := User{}
+	errs := s.Parse(User{Age: 17, Name: "Jo"}, &u)
+	assert.Equal(t, 1, len(errs))
+	assert.Equal(t, "invalid user data", errs[0].Message)
+
+	errs = s.Parse(User{Age: 18, Name: "John"}, &u)
+	assert.Equal(t, 0, len(errs))
+	assert.Equal(t, 18, u.Age)
+	assert.Equal(t, "John", u.Name)
 }
-
-type customTesting struct {
-	Hello string
-}
-
-func TestCustomSchemaFnComplex(t *testing.T) {
-	s := Struct(Schema{
-		"Hello": custom,
-	})
-
-	var out customTesting
-
-	s.Parse(map[string]any{
-		"Hello": 1,
-	}, &out)
-
-	assert.Equal(t, "1", out.Hello)
-	s.Validate(&out)
-	assert.Equal(t, "not an int", out.Hello)
-}
-
-/* With custom function you can already do:
-z.Custom(func(val any, ctx z.Ctx) any {
-// grab the value from decimal.Decimal
-// execute validate on the value you grabbed
-// return nil
-})
-
-
-But the issue here is that now you have to merge the errors...
-
-
-
-Also I want the API for the PublicZogSchema. Maybe CustomSchema(). Then we would have:
-- z.Custom() -> for the fn
-- z.Custom.String() -> for the stringlike
-- z.CustomSchema() -> for actual full on schemas
-*/
