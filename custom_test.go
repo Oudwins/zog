@@ -11,6 +11,7 @@ func TestCustomFunc(t *testing.T) {
 	s := CustomFunc(func(ptr *int, ctx Ctx) bool {
 		return *ptr > 10
 	}, Message("custom error"))
+	// parse
 	i := 0
 	errs := s.Parse(1, &i)
 	assert.Equal(t, 1, len(errs))
@@ -20,6 +21,19 @@ func TestCustomFunc(t *testing.T) {
 	errs = s.Parse(11, &i)
 	assert.Equal(t, 0, len(errs))
 	assert.Equal(t, 11, i)
+
+	// Validate failure
+	i = 1
+	errs = s.Validate(&i)
+	assert.Equal(t, 1, len(errs))
+	assert.Equal(t, "custom error", errs[0].Message)
+
+	// Validate success
+	i = 11
+	errs = s.Validate(&i)
+	assert.Equal(t, 0, len(errs))
+	assert.Equal(t, 11, i)
+
 }
 
 func TestCustomFuncString(t *testing.T) {
@@ -56,7 +70,8 @@ func TestCustomFuncStruct(t *testing.T) {
 		DOB  time.Time `zog:"format=2006-01-02"`
 	}
 	s := CustomFunc(func(ptr *User, ctx Ctx) bool {
-		return ptr.Age >= 18 && len(ptr.Name) >= 3
+		out := ptr.Age >= 18 && len(ptr.Name) >= 3
+		return out
 	}, Message("invalid user data"))
 
 	u := User{}
@@ -68,4 +83,52 @@ func TestCustomFuncStruct(t *testing.T) {
 	assert.Equal(t, 0, len(errs))
 	assert.Equal(t, 18, u.Age)
 	assert.Equal(t, "John", u.Name)
+}
+
+func TestCustomInStruct(t *testing.T) {
+	type ID struct {
+		ID string `zog:"custom"`
+	}
+	type User struct {
+		ID ID
+	}
+
+	s := Struct(Schema{
+		"ID": CustomFunc(func(ptr *ID, ctx Ctx) bool {
+			return len(ptr.ID) > 0
+		}, Message("invalid id")),
+	})
+
+	u := User{}
+	errs := s.Parse(map[string]any{
+		"ID": ID{ID: "123"},
+	}, &u)
+	assert.Equal(t, 0, len(errs))
+	assert.Equal(t, "123", u.ID.ID)
+	errs = s.Validate(&u)
+	assert.Equal(t, 0, len(errs))
+}
+
+func TestCustomInStructPtr(t *testing.T) {
+	type ID struct {
+		ID string `zog:"custom"`
+	}
+	type User struct {
+		ID *ID
+	}
+
+	s := Struct(Schema{
+		"ID": Ptr(CustomFunc(func(ptr *ID, ctx Ctx) bool {
+			return len(ptr.ID) > 0
+		}, Message("invalid id"))),
+	})
+
+	u := User{}
+	errs := s.Parse(map[string]any{
+		"ID": ID{ID: "123"},
+	}, &u)
+	assert.Equal(t, 0, len(errs))
+	assert.Equal(t, "123", u.ID.ID)
+	errs = s.Validate(&u)
+	assert.Equal(t, 0, len(errs))
 }

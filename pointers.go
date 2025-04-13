@@ -109,7 +109,7 @@ func (v *PointerSchema) Validate(data any, options ...ExecOption) ZogIssueMap {
 }
 
 func (v *PointerSchema) validate(ctx *p.SchemaCtx) {
-	rv := reflect.ValueOf(ctx.Val)
+	rv := reflect.ValueOf(ctx.DestPtr)
 	destPtr := rv.Elem()
 	if !destPtr.IsValid() || destPtr.IsNil() {
 		if v.required != nil {
@@ -119,7 +119,7 @@ func (v *PointerSchema) validate(ctx *p.SchemaCtx) {
 		return
 	}
 	di := destPtr.Interface()
-	ctx.Val = di
+	ctx.DestPtr = di
 	v.schema.validate(ctx.NewValidateSchemaCtx(di, ctx.Path, v.schema.getType()))
 }
 
