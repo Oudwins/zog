@@ -41,8 +41,8 @@ func (c *Custom[T]) process(ctx *p.SchemaCtx) {
 	ctx.Test = &c.test
 
 	// set the value
-	d := ctx.Data.(T)
-	ptr := ctx.ValPtr.(*T)
+	d := ctx.Val.(T)
+	ptr := ctx.DestPtr.(*T)
 	*ptr = d
 
 	// run the test
@@ -67,7 +67,7 @@ func (c *Custom[T]) Validate(dataPtr *T, options ...ExecOption) ZogIssueList {
 
 func (c *Custom[T]) validate(ctx *p.SchemaCtx) {
 	ctx.Test = &c.test
-	c.test.Func(ctx.ValPtr, ctx)
+	c.test.Func(ctx.DestPtr, ctx)
 }
 
 func (c *Custom[T]) setCoercer(coercer CoercerFunc) {
