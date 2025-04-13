@@ -82,7 +82,7 @@ func (v *SliceSchema) validate(ctx *p.SchemaCtx) {
 		}
 	}()
 
-	refVal := reflect.ValueOf(ctx.Val).Elem() // we use this to set the value to the ptr. But we still reference the ptr everywhere. This is correct even if it seems confusing.
+	refVal := reflect.ValueOf(ctx.DestPtr).Elem() // we use this to set the value to the ptr. But we still reference the ptr everywhere. This is correct even if it seems confusing.
 	// 1. preTransforms
 	for _, fn := range v.preTransforms {
 		nVal, err := fn(refVal.Interface(), ctx)
@@ -115,7 +115,7 @@ func (v *SliceSchema) validate(ctx *p.SchemaCtx) {
 	for idx := 0; idx < refVal.Len(); idx++ {
 		item := refVal.Index(idx).Addr().Interface()
 		k := fmt.Sprintf("[%d]", idx)
-		subCtx.Val = item
+		subCtx.DestPtr = item
 		subCtx.Path.Push(&k)
 		subCtx.Exit = false
 		v.schema.validate(subCtx)
@@ -125,7 +125,7 @@ func (v *SliceSchema) validate(ctx *p.SchemaCtx) {
 	// 3. tests for slice
 	for _, test := range v.tests {
 		ctx.Test = &test
-		test.Func(ctx.Val, ctx)
+		test.Func(ctx.DestPtr, ctx)
 		if ctx.Exit {
 			// catching the first error if catch is set
 			// if v.catch != nil {

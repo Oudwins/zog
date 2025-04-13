@@ -115,8 +115,8 @@ func (c *ExecCtx) NewSchemaCtx(val any, destPtr any, path *PathBuilder, dtype zc
 func (c *ExecCtx) NewValidateSchemaCtx(valPtr any, path *PathBuilder, dtype zconst.ZogType) *SchemaCtx {
 	c2 := SchemaCtxPool.Get().(*SchemaCtx)
 	c2.ExecCtx = c
-	c2.Val = valPtr
-	c2.DestPtr = nil
+	c2.Val = nil
+	c2.DestPtr = valPtr
 	c2.Path = path
 	c2.DType = dtype
 	c2.CanCatch = false
