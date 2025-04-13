@@ -32,7 +32,3 @@ func NotIssueCode(e zconst.ZogIssueCode) string {
 	}
 	return zconst.ZogIssueCode(notPrefix + e)
 }
-
-func PtrOf[T any](v T) *T {
-	return &v
-}

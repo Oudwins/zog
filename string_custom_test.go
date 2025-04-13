@@ -6,6 +6,7 @@ import (
 
 	"github.com/Oudwins/zog/conf"
 	"github.com/Oudwins/zog/internals"
+	"github.com/Oudwins/zog/tutils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -167,7 +168,7 @@ func TestCustomStringNot(t *testing.T) {
 					Code:    "not_len",
 					Params:  map[string]any{"len": 4},
 					Dtype:   "string",
-					Value:   internals.PtrOf[Env]("test"),
+					Value:   tutils.PtrOf[Env]("test"),
 					Message: "string must not be exactly 4 character(s)",
 					Err:     nil,
 				},
@@ -186,7 +187,7 @@ func TestCustomStringNot(t *testing.T) {
 					Code:    "not_email",
 					Params:  nil,
 					Dtype:   "string",
-					Value:   internals.PtrOf[Env]("test@test.com"),
+					Value:   tutils.PtrOf[Env]("test@test.com"),
 					Message: "must not be a valid email",
 					Err:     nil,
 				},
@@ -200,7 +201,7 @@ func TestCustomStringNot(t *testing.T) {
 					Code:    "not_len",
 					Params:  map[string]any{"len": 1},
 					Dtype:   "string",
-					Value:   internals.PtrOf[Env]("a"),
+					Value:   tutils.PtrOf[Env]("a"),
 					Message: "string must not be exactly 1 character(s)",
 					Err:     nil,
 				},
@@ -218,7 +219,7 @@ func TestCustomStringNot(t *testing.T) {
 				&internals.ZogIssue{
 					Code:    "not_url",
 					Dtype:   "string",
-					Value:   internals.PtrOf[Env]("https://google.com"),
+					Value:   tutils.PtrOf[Env]("https://google.com"),
 					Message: "must not be a valid URL",
 					Err:     nil,
 				},
@@ -237,7 +238,7 @@ func TestCustomStringNot(t *testing.T) {
 					Code:    "not_prefix",
 					Params:  map[string]any{"prefix": Env("test_")},
 					Dtype:   "string",
-					Value:   internals.PtrOf[Env]("test_value"),
+					Value:   tutils.PtrOf[Env]("test_value"),
 					Message: "string must not start with test_",
 					Err:     nil,
 				},
