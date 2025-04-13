@@ -7,10 +7,6 @@ import (
 
 var Map zconst.LangMap = map[zconst.ZogType]map[zconst.ZogIssueCode]string{
 	zconst.TypeString: {
-		internals.NotIssueCode(zconst.IssueCodeRequired):        "is not required",
-		internals.NotIssueCode(zconst.IssueCodeNotNil):          "must be empty",
-		internals.NotIssueCode(zconst.IssueCodeMin):             "string must contain less than {{min}} character(s)",
-		internals.NotIssueCode(zconst.IssueCodeMax):             "string must contain more than {{max}} character(s)",
 		internals.NotIssueCode(zconst.IssueCodeLen):             "string must not be exactly {{len}} character(s)",
 		internals.NotIssueCode(zconst.IssueCodeEmail):           "must not be a valid email",
 		internals.NotIssueCode(zconst.IssueCodeUUID):            "must not be a valid UUID",
