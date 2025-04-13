@@ -139,7 +139,7 @@ func primitiveProcessor[T p.ZogPrimitive](ctx *p.SchemaCtx, preTransforms []PreT
 func primitiveValidator[T p.ZogPrimitive](ctx *p.SchemaCtx, preTransforms []PreTransform, tests []Test, postTransforms []PostTransform, defaultVal *T, required *Test, catch *T) {
 	ctx.CanCatch = catch != nil
 
-	valPtr := ctx.Val.(*T)
+	valPtr := ctx.DestPtr.(*T)
 	// 4. postTransforms
 	defer func() {
 		// only run posttransforms on success
@@ -186,7 +186,7 @@ func primitiveValidator[T p.ZogPrimitive](ctx *p.SchemaCtx, preTransforms []PreT
 				*valPtr = *catch
 				return
 			} else {
-				ctx.AddIssue(ctx.IssueFromTest(required, ctx.Val))
+				ctx.AddIssue(ctx.IssueFromTest(required, *valPtr))
 				return
 			}
 		}

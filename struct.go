@@ -187,7 +187,7 @@ func (v *StructSchema) validate(ctx *p.SchemaCtx) {
 			}
 		}
 	}()
-	refVal := reflect.ValueOf(ctx.Val).Elem()
+	refVal := reflect.ValueOf(ctx.DestPtr).Elem()
 	// 1. preTransforms
 	if v.preTransforms != nil {
 		for _, fn := range v.preTransforms {

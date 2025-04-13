@@ -72,3 +72,29 @@ func EnvSchema(opts ...z.SchemaOption) *StringSchema[Env] {
 
 > Why is this so verbose?
 > Although we considered introducing an API that would allow you to define this types of schemas in a more concise way (and we may still do so), to keep code consistency & reusability we recommend that you make a factory function like the one above for your custom types. And we felt that providing a simpler API could lead to people just inlining the schema's which would make it impossible to reuse them.
+
+## Quick and Dirty Custom Schema
+
+Sometimes you may want to create a custom schema for a type that is not a primitive and you don't want to go through the process of defining everything needed to create a full schema. You just want to run a validation inside Zog. Zog supports a simple way to do this using the `CustomFunc` function which looks like this:
+
+```go
+// fn signature
+func CustomFunc[T any](fn func(valPtr *T, ctx z.Ctx) bool, opts ...z.TestOption) *z.Custom[T]
+```
+
+Usage is very similar to the `schema.TestFunc()` function:
+
+```go
+
+user := User{
+	"uuid": z.CustomFunc(func(valPtr *uuid.UUID, ctx z.Ctx) bool {
+		return (*valPtr).IsValid()
+	}, z.Message("invalid uuid"))
+}
+```
+
+> **Limitations**
+>
+> - CustomFunc doesn't support type coercion yet. You can still use it with parse but it will not be able to coerce the type.
+>   **Why is valPtr a pointer?**
+>   Mainly for performance reasons. It is faster in almost every case to pass a pointer to the value than the value itself. This is specially true if the value is a large struct.
