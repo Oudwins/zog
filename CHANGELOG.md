@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.19.1](https://github.com/Oudwins/zog/compare/v0.19.0...v0.19.1) (2025-04-13)
+
+
+### Features
+
+* customFunc for easy custom schemas. Usage is z.CustomFunc[T any](func (valPtr *T, ctx z.Ctx) bool {}, ...TestOptions) ([#141](https://github.com/Oudwins/zog/issues/141)) ([4c2b42e](https://github.com/Oudwins/zog/commit/4c2b42e2bfa243347965dbb8f6d9d01c203e1699))
+
+
+### Miscellaneous Chores
+
+* release 0.19.1 ([0485a6b](https://github.com/Oudwins/zog/commit/0485a6b4a4a4eae98db24000239e738730726fec))
+
 ## [0.19.0](https://github.com/Oudwins/zog/compare/v0.18.4...v0.19.0) (2025-04-03)
 
 
