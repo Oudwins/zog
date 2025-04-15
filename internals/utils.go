@@ -2,15 +2,9 @@ package internals
 
 import (
 	"fmt"
-	"strings"
-
-	"github.com/Oudwins/zog/zconst"
 )
 
-const (
-	notPrefix     = "not_"
-	defaultString = "<nil>"
-)
+const defaultString = "<nil>"
 
 func SafeString(x any) string {
 	if x == nil {
@@ -24,11 +18,4 @@ func SafeError(x error) string {
 		return defaultString
 	}
 	return x.Error()
-}
-
-func NotIssueCode(e zconst.ZogIssueCode) string {
-	if strings.HasPrefix(e, notPrefix) {
-		return zconst.ZogIssueCode(strings.TrimPrefix(e, notPrefix))
-	}
-	return zconst.ZogIssueCode(notPrefix + e)
 }

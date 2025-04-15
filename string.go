@@ -411,7 +411,7 @@ func (v *StringSchema[T]) Match(regex *regexp.Regexp, options ...TestOption) *St
 // For example, `z.String().Not().Email()` validates that the string is NOT a valid email.
 // Note: The negation only applies to the next validation test and is reset afterward.
 func (v *StringSchema[T]) Not() NotStringSchema[T] {
-	v.isNot = !v.isNot
+	v.isNot = true
 	return v
 }
 
