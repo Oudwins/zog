@@ -2,11 +2,11 @@ package zconst
 
 import "strings"
 
-const notPrefix = "not_"
+const NotIssuePrefix = "not_"
 
 func NotIssueCode(e ZogIssueCode) string {
-	if strings.HasPrefix(e, notPrefix) {
-		return ZogIssueCode(strings.TrimPrefix(e, notPrefix))
+	if strings.HasPrefix(e, NotIssuePrefix) {
+		return ZogIssueCode(strings.TrimPrefix(e, NotIssuePrefix))
 	}
-	return ZogIssueCode(notPrefix + e)
+	return ZogIssueCode(NotIssuePrefix + e)
 }
