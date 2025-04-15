@@ -30,7 +30,7 @@ func TestNotFuncFromBool(fn BoolTFunc, test *Test) {
 		if fn(val, ctx) {
 			c := ctx.(*SchemaCtx)
 			issue := c.IssueFromTest(c.Test, val)
-			issue.Code = NotIssueCode(issue.Code)
+			issue.Code = zconst.NotIssueCode(issue.Code)
 			ctx.AddIssue(issue)
 		}
 	}
