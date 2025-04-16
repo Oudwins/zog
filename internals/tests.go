@@ -18,21 +18,23 @@ type TestOption = func(test *Test)
 
 func TestFuncFromBool(fn BoolTFunc, test *Test) {
 	test.Func = func(val any, ctx Ctx) {
-		if !fn(val, ctx) {
-			c := ctx.(*SchemaCtx)
-			ctx.AddIssue(c.IssueFromTest(c.Test, val))
+		if fn(val, ctx) {
+			return
 		}
+
+		c := ctx.(*SchemaCtx)
+		ctx.AddIssue(c.IssueFromTest(c.Test, val))
 	}
 }
 
 func TestNotFuncFromBool(fn BoolTFunc, test *Test) {
 	test.Func = func(val any, ctx Ctx) {
-		if fn(val, ctx) {
-			c := ctx.(*SchemaCtx)
-			issue := c.IssueFromTest(c.Test, val)
-			issue.Code = zconst.NotIssueCode(issue.Code)
-			ctx.AddIssue(issue)
+		if !fn(val, ctx) {
+			return
 		}
+
+		c := ctx.(*SchemaCtx)
+		ctx.AddIssue(c.IssueFromTest(c.Test, val))
 	}
 }
 

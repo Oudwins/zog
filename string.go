@@ -418,6 +418,7 @@ func (v *StringSchema[T]) Not() NotStringSchema[T] {
 func (v *StringSchema[T]) addTest(t Test, fn BoolTFunc, options ...TestOption) *StringSchema[T] {
 	if v.isNot {
 		p.TestNotFuncFromBool(fn, &t)
+		t.IssueCode = zconst.NotIssueCode(t.IssueCode)
 		v.isNot = false
 	} else {
 		p.TestFuncFromBool(fn, &t)
