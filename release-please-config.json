@@ -1,13 +1,15 @@
 {
   "plugins": [],
+  "changelog-path": "CHANGELOG.md",
+  "release-type": "go",
+  "bump-minor-pre-major": true,
+  "bump-patch-for-minor-pre-major": true,
   "packages": {
     ".": {
       "changelog-path": "CHANGELOG.md",
       "release-type": "go",
       "bump-minor-pre-major": true,
-      "bump-patch-for-minor-pre-major": true,
-      "draft": false,
-      "prerelease": false
+      "bump-patch-for-minor-pre-major": true
     }
   },
   "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json"
