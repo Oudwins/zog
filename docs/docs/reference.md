@@ -2,9 +2,9 @@
 sidebar_position: 8
 ---
 
-# Zog Schemas
+# Reference
 
-## Generic Schema Methods
+## Generic Zog Schema Methods
 
 These are methods that can generally be called on any schema type (Some exceptions might exist).
 
@@ -76,9 +76,9 @@ z.Slice(z.String())
 z.Ptr(z.String()) // pointer to string
 ```
 
-## Primitive Types
+### Primitive Types
 
-### String
+#### String
 
 ```go
 // PreTransforms
@@ -100,9 +100,12 @@ z.String().ContainsSpecial()              // validates string contains special c
 z.String().HasPrefix(prefix)              // validates string has prefix
 z.String().HasSuffix(suffix)              // validates string has suffix
 z.String().OneOf([]string{"a", "b", "c"}) // validates string is one of the values. Similar to zod enums
+
+// Utilities
+z.String().Not() // Negates the next test/validation
 ```
 
-### Numbers / Ints & Floats
+#### Numbers / Ints & Floats
 
 ```go
 // Supported out of the box:
@@ -140,7 +143,7 @@ z.Int().EQ(n)                             // validates int is equal to n
 z.Float().OneOf([]float64{1.0, 2.0, 3.0}) // validates float is one of the values. Similar to zod enums
 ```
 
-### Booleans
+#### Booleans
 
 ```go
 // Tests / Validators
@@ -163,9 +166,9 @@ z.Time().Is(time.Now())     // validates time is equal to now
 z.Time(z.Time.Format(time.RFC3339)) // If input is a string, it will be parsed as a time.Time using the provided layout. time.RFC3339 is the default. Keep in mind this coercion only works when using Parse()
 ```
 
-## Complex Types
+### Complex Types
 
-### Structs
+#### Structs
 
 > Note structs cannot be required or optional. They just pass through to the underlying ZogSchemas for their fields. If you need to express that a struct might exist and if it does it must be valid, you can use a pointer. i.e `z.Ptr(z.Struct(z.Schema{...}))`
 
@@ -186,7 +189,7 @@ schema.Merge(otherSchema, otherSchema2)  // merges two or more schemas into a ne
 // None right now
 ```
 
-### Slices
+#### Slices
 
 ```go
 // usage
@@ -199,7 +202,7 @@ z.Slice(Bool()).Length(5)         // validates slice has exactly 5 elements
 z.Slice(String()).Contains("foo") // validates slice contains the element "foo"
 ```
 
-### Pointers
+#### Pointers
 
 ```go
 z.Ptr(z.String())          // validates pointer to string
