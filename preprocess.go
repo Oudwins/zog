@@ -22,11 +22,6 @@ func (s *PreprocessSchema[F, T]) process(ctx *p.SchemaCtx) {
 		return
 	}
 	ctx.Data = out
-	// ptr := ctx.ValPtr.(*T)
-	// *ptr = out
-	// ptrVal := reflect.ValueOf(ctx.ValPtr).Elem()
-	// ptrVal.Set(reflect.ValueOf(out))
-	// ctx.ValPtr = out
 	s.schema.process(ctx)
 }
 

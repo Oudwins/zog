@@ -67,26 +67,26 @@ func TestPreprocessSlice(t *testing.T) {
 	assert.Equal(t, "world", out[1])
 }
 
-// func TestPreprocessStruct(t *testing.T) {
-// 	type User struct {
-// 		Id   string
-// 		Name string
-// 	}
-// 	s := Preprocess(func(data string, ctx Ctx) (out User, err error) {
-// 		parts := strings.Split(data, ",")
-// 		return User{Id: parts[0], Name: parts[1]}, nil
-// 	}, Struct(
-// 		Schema{
-// 			"Id":   String().Min(1),
-// 			"Name": String().Min(1),
-// 		},
-// 	))
-// 	var out User
-// 	errs := s.Parse("1,John Doe", &out)
-// 	assert.Nil(t, errs)
-// 	assert.Equal(t, "1", out.Id)
-// 	assert.Equal(t, "John Doe", out.Name)
-// }
+func TestPreprocessStruct(t *testing.T) {
+	type User struct {
+		Id   string
+		Name string
+	}
+	s := Preprocess(func(data string, ctx Ctx) (out User, err error) {
+		parts := strings.Split(data, ",")
+		return User{Id: parts[0], Name: parts[1]}, nil
+	}, Struct(
+		Schema{
+			"Id":   String().Min(1),
+			"Name": String().Min(1),
+		},
+	))
+	var out User
+	errs := s.Parse("1,John Doe", &out)
+	assert.Nil(t, errs)
+	assert.Equal(t, "1", out.Id)
+	assert.Equal(t, "John Doe", out.Name)
+}
 
 func TestPreprocessWithAny(t *testing.T) {
 	s := Preprocess(func(data any, ctx Ctx) (out string, err error) {
@@ -100,8 +100,7 @@ func TestPreprocessWithAny(t *testing.T) {
 		}
 	}, String().Min(1))
 
-	var in any
-	in = "x"
+	var in interface{} = "x"
 	var out string
 	errs := s.Parse(in, &out)
 	assert.Nil(t, errs)
