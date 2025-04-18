@@ -48,7 +48,7 @@ type StringSchema[T likeString] struct {
 	defaultVal     *T
 	required       *Test
 	catch          *T
-	coercer        conf.CoercerFunc
+	coercer        CoercerFunc
 	isNot          bool
 }
 
@@ -60,7 +60,7 @@ func (v *StringSchema[T]) getType() zconst.ZogType {
 }
 
 // Sets the coercer for the schema
-func (v *StringSchema[T]) setCoercer(c conf.CoercerFunc) {
+func (v *StringSchema[T]) setCoercer(c CoercerFunc) {
 	v.coercer = c
 }
 
@@ -99,7 +99,7 @@ func (v *StringSchema[T]) Parse(data any, dest *T, options ...ExecOption) ZogIss
 
 // Internal function to process the data
 func (v *StringSchema[T]) process(ctx *p.SchemaCtx) {
-	primitiveProcessor(ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, v.coercer, p.IsParseZeroValue)
+	primitiveProcessor(ctx, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, v.coercer, p.IsParseZeroValue)
 }
 
 // Validate Given string
@@ -122,30 +122,22 @@ func (v *StringSchema[T]) Validate(data *T, options ...ExecOption) ZogIssueList 
 
 // Internal function to validate the data
 func (v *StringSchema[T]) validate(ctx *p.SchemaCtx) {
-	primitiveValidator(ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch)
+	primitiveValidator(ctx, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch)
 }
 
-// Adds pretransform function to schema
-func (v *StringSchema[T]) PreTransform(transform PreTransform) *StringSchema[T] {
-	if v.preTransforms == nil {
-		v.preTransforms = []PreTransform{}
-	}
-	v.preTransforms = append(v.preTransforms, transform)
-	return v
-}
-
+// TODO
 // PreTransform: trims the input data of whitespace if it is a string
-func (v *StringSchema[T]) Trim() *StringSchema[T] {
-	v.preTransforms = append(v.preTransforms, func(val any, ctx Ctx) (any, error) {
-		switch v := val.(type) {
-		case T:
-			return T(strings.TrimSpace(string(v))), nil
-		default:
-			return val, nil
-		}
-	})
-	return v
-}
+// func (v *StringSchema[T]) Trim() *StringSchema[T] {
+// 	v.preTransforms = append(v.preTransforms, func(val any, ctx Ctx) (any, error) {
+// 		switch v := val.(type) {
+// 		case T:
+// 			return T(strings.TrimSpace(string(v))), nil
+// 		default:
+// 			return val, nil
+// 		}
+// 	})
+// 	return v
+// }
 
 // Adds posttransform function to schema
 func (v *StringSchema[T]) PostTransform(transform PostTransform) *StringSchema[T] {

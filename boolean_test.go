@@ -13,7 +13,7 @@ import (
 func TestBoolParse(t *testing.T) {
 	tests := []struct {
 		name      string
-		data      interface{}
+		data      any
 		expectErr bool
 		expected  bool
 	}{
@@ -362,56 +362,6 @@ func TestBoolFalse(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			var result bool
-			errs := boolProc.Parse(test.data, &result)
-
-			if (len(errs) > 0) != test.expectErr {
-				t.Errorf("Expected error: %v, got: %v", test.expectErr, errs)
-			}
-
-			if len(errs) > 0 {
-				tutils.VerifyDefaultIssueMessages(t, errs)
-			}
-
-			if result != test.expected {
-				t.Errorf("Expected %v, but got %v", test.expected, result)
-			}
-		})
-	}
-}
-func TestBoolPreTransform(t *testing.T) {
-	tests := []struct {
-		name      string
-		data      interface{}
-		transform p.PreTransform
-		expectErr bool
-		expected  bool
-	}{
-		{
-			name: "Valid transform",
-			data: "true",
-			transform: func(val any, ctx Ctx) (any, error) {
-				if s, ok := val.(*string); ok {
-					return *s == "true", nil
-				}
-				return val, nil
-			},
-			expected: true,
-		},
-		{
-			name: "Invalid transform",
-			data: "invalid",
-			transform: func(val any, ctx Ctx) (any, error) {
-				return nil, fmt.Errorf("invalid input")
-			},
-			expectErr: true,
-			expected:  false,
-		},
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			boolProc := Bool().PreTransform(test.transform)
 			var result bool
 			errs := boolProc.Parse(test.data, &result)
 

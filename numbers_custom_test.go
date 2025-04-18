@@ -29,6 +29,7 @@ func CustomInt(opts ...SchemaOption) *NumberSchema[MyInt] {
 	}
 	return s
 }
+
 func TestCustomNumberParse(t *testing.T) {
 	dest := MyInt(0)
 	validator := CustomInt()
@@ -125,27 +126,6 @@ func TestCustomNumberCatch(t *testing.T) {
 	assert.Equal(t, MyInt(0), dest)
 }
 
-func TestCustomNumberPreTransform(t *testing.T) {
-	preTransform := func(val any, ctx Ctx) (any, error) {
-		switch v := val.(type) {
-		case MyInt:
-			return int(v) * 2, nil
-		case int:
-			return v * 2, nil
-		default:
-			return val, nil
-		}
-	}
-
-	validator := CustomInt().PreTransform(preTransform)
-	var dest MyInt
-	errs := validator.Parse(5, &dest)
-	if len(errs) > 0 {
-		t.Errorf("Expected no errors, got %v", errs)
-	}
-	assert.Equal(t, MyInt(10), dest)
-}
-
 func TestCustomNumberPostTransform(t *testing.T) {
 	postTransform := func(val any, ctx Ctx) error {
 		if v, ok := val.(*MyInt); ok {
@@ -164,12 +144,6 @@ func TestCustomNumberPostTransform(t *testing.T) {
 }
 
 func TestCustomNumberMultipleTransforms(t *testing.T) {
-	preTransform := func(val any, ctx Ctx) (any, error) {
-		if v, ok := val.(int); ok {
-			return v * 2, nil
-		}
-		return val, nil
-	}
 
 	postTransform := func(val any, ctx Ctx) error {
 		if v, ok := val.(*MyInt); ok {
@@ -178,9 +152,9 @@ func TestCustomNumberMultipleTransforms(t *testing.T) {
 		return nil
 	}
 
-	validator := CustomInt().PreTransform(preTransform).PostTransform(postTransform)
+	validator := CustomInt().PostTransform(postTransform).PostTransform(postTransform)
 	var dest MyInt
-	errs := validator.Parse(5, &dest)
+	errs := validator.Parse(9, &dest)
 	if len(errs) > 0 {
 		t.Errorf("Expected no errors, got %v", errs)
 	}

@@ -59,27 +59,27 @@ func (v *PointerSchema) process(ctx *p.SchemaCtx) {
 
 	// TODO this is a mess. But couldn't figure out a simple way to support top level optional structs without doing this.
 	// Companion code to this codde is in struct.go > process
-	subCtx := ctx.NewSchemaCtx(ctx.Val, ctx.DestPtr, ctx.Path, v.schema.getType())
+	subCtx := ctx.NewSchemaCtx(ctx.Data, ctx.ValPtr, ctx.Path, v.schema.getType())
 	defer subCtx.Free()
-	if fn, ok := ctx.Val.(p.DpFactory); ok {
+	if fn, ok := ctx.Data.(p.DpFactory); ok {
 		val, err := fn()
 		if err != nil {
 			ctx.AddIssue(subCtx.IssueFromUnknownError(err))
 			return
 		}
-		ctx.Val = val
+		ctx.Data = val
 	}
 	// End of messy code
 
-	isZero := p.IsParseZeroValue(ctx.Val, ctx)
+	isZero := p.IsParseZeroValue(ctx.Data, ctx)
 	if isZero {
 		if v.required != nil {
 			// We set the destination type to the schema type because pointer doesn't have any issue messages. They pass through to the schema type
-			ctx.AddIssue(ctx.IssueFromTest(v.required, ctx.Val).SetDType(v.schema.getType()))
+			ctx.AddIssue(ctx.IssueFromTest(v.required, ctx.Data).SetDType(v.schema.getType()))
 		}
 		return
 	}
-	rv := reflect.ValueOf(ctx.DestPtr)
+	rv := reflect.ValueOf(ctx.ValPtr)
 	destPtr := rv.Elem()
 	if destPtr.IsNil() {
 		// this sets the primitive also
@@ -89,7 +89,7 @@ func (v *PointerSchema) process(ctx *p.SchemaCtx) {
 		destPtr.Set(newVal)
 	}
 	di := destPtr.Interface()
-	subCtx.DestPtr = di
+	subCtx.ValPtr = di
 	v.schema.process(subCtx)
 }
 
@@ -109,17 +109,17 @@ func (v *PointerSchema) Validate(data any, options ...ExecOption) ZogIssueMap {
 }
 
 func (v *PointerSchema) validate(ctx *p.SchemaCtx) {
-	rv := reflect.ValueOf(ctx.DestPtr)
+	rv := reflect.ValueOf(ctx.ValPtr)
 	destPtr := rv.Elem()
 	if !destPtr.IsValid() || destPtr.IsNil() {
 		if v.required != nil {
 			// We set the destination type to the schema type because pointer doesn't have any issue messages. They pass through to the schema type
-			ctx.AddIssue(ctx.IssueFromTest(v.required, ctx.Val).SetDType(v.schema.getType()))
+			ctx.AddIssue(ctx.IssueFromTest(v.required, ctx.Data).SetDType(v.schema.getType()))
 		}
 		return
 	}
 	di := destPtr.Interface()
-	ctx.DestPtr = di
+	ctx.ValPtr = di
 	v.schema.validate(ctx.NewValidateSchemaCtx(di, ctx.Path, v.schema.getType()))
 }
 

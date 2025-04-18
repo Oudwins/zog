@@ -9,7 +9,6 @@ import (
 var _ PrimitiveZogSchema[bool] = &BoolSchema[bool]{}
 
 type BoolSchema[T ~bool] struct {
-	preTransforms  []PreTransform
 	tests          []Test
 	postTransforms []PostTransform
 	defaultVal     *T
@@ -62,7 +61,7 @@ func (v *BoolSchema[T]) Parse(data any, dest *T, options ...ExecOption) ZogIssue
 
 // Internal function to process the data
 func (v *BoolSchema[T]) process(ctx *p.SchemaCtx) {
-	primitiveProcessor(ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, v.coercer, p.IsParseZeroValue)
+	primitiveProcessor(ctx, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, v.coercer, p.IsParseZeroValue)
 }
 
 // Validate data against schema
@@ -85,7 +84,7 @@ func (v *BoolSchema[T]) Validate(val *T, options ...ExecOption) ZogIssueList {
 
 // Internal function to validate data
 func (v *BoolSchema[T]) validate(ctx *p.SchemaCtx) {
-	primitiveValidator(ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch)
+	primitiveValidator(ctx, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch)
 }
 
 // GLOBAL METHODS
@@ -100,15 +99,6 @@ func (v *BoolSchema[T]) Test(t Test) *BoolSchema[T] {
 func (v *BoolSchema[T]) TestFunc(testFunc BoolTFunc, options ...TestOption) *BoolSchema[T] {
 	test := p.NewTestFunc("", testFunc, options...)
 	v.Test(*test)
-	return v
-}
-
-// Adds pretransform function to schema
-func (v *BoolSchema[T]) PreTransform(transform PreTransform) *BoolSchema[T] {
-	if v.preTransforms == nil {
-		v.preTransforms = []PreTransform{}
-	}
-	v.preTransforms = append(v.preTransforms, transform)
 	return v
 }
 

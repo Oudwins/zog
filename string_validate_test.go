@@ -44,33 +44,19 @@ func TestValidateStringOptional(t *testing.T) {
 	assert.Equal(t, "foo", dest)
 }
 
-func TestValidateStringPreTransform(t *testing.T) {
-	field := String().Required().Len(6).PreTransform(func(val any, ctx Ctx) (any, error) {
-		if x, ok := val.(string); ok {
-			return "foo" + x, nil
-		}
-		return "invalid", nil
-	})
-	dest := "bar"
+// func TestValidateStringTrim(t *testing.T) {
+// 	field := String().Required().Trim()
+// 	var dest string = " foo "
 
-	errs := field.Validate(&dest)
-	assert.Empty(t, errs)
-	assert.Equal(t, "foobar", dest)
-}
+// 	errs := field.Validate(&dest)
+// 	assert.Empty(t, errs)
+// 	assert.Equal(t, "foo", dest)
 
-func TestValidateStringTrim(t *testing.T) {
-	field := String().Required().Trim()
-	var dest string = " foo "
-
-	errs := field.Validate(&dest)
-	assert.Empty(t, errs)
-	assert.Equal(t, "foo", dest)
-
-	dest = "123"
-	errs = field.Validate(&dest)
-	assert.Empty(t, errs)
-	assert.Equal(t, "123", dest)
-}
+// 	dest = "123"
+// 	errs = field.Validate(&dest)
+// 	assert.Empty(t, errs)
+// 	assert.Equal(t, "123", dest)
+// }
 
 func TestValidateStringPostTransform(t *testing.T) {
 	field := String().Required().PostTransform(func(val any, ctx Ctx) error {
