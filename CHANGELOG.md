@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.19.2](https://github.com/Oudwins/zog/compare/v0.19.1...v0.19.2) (2025-04-18)
+
+
+### Features
+
+* add not operator ([5049e4e](https://github.com/Oudwins/zog/commit/5049e4ec1555458e7596bb3ebda485397516e9f5))
+* add not operator ([5049e4e](https://github.com/Oudwins/zog/commit/5049e4ec1555458e7596bb3ebda485397516e9f5))
+
 ## [0.19.1](https://github.com/Oudwins/zog/compare/v0.19.0...v0.19.1) (2025-04-13)
 
 
