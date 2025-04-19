@@ -42,7 +42,6 @@ type NotStringSchema[T likeString] interface {
 }
 
 type StringSchema[T likeString] struct {
-	preTransforms  []PreTransform
 	tests          []Test
 	postTransforms []PostTransform
 	defaultVal     *T
