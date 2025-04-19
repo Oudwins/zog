@@ -256,31 +256,6 @@ func TestStructPanicsOnSchemaMismatch(t *testing.T) {
 	})
 }
 
-func TestStructPreTransforms(t *testing.T) {
-	type TestStruct struct {
-		Value string
-	}
-
-	preTransform := func(val any, ctx Ctx) (any, error) {
-		if m, ok := val.(map[string]any); ok {
-			m["value"] = "transformed"
-			return m, nil
-		}
-		return val, nil
-	}
-
-	schema := Struct(Schema{
-		"value": String().Required(),
-	}).PreTransform(preTransform)
-
-	var output TestStruct
-	data := map[string]any{"value": "original"}
-
-	errs := schema.Parse(data, &output)
-	assert.Nil(t, errs)
-	assert.Equal(t, "transformed", output.Value)
-}
-
 func TestStructPostTransforms(t *testing.T) {
 	type TestStruct struct {
 		Value string

@@ -82,24 +82,6 @@ func TestValidateNumberCatch(t *testing.T) {
 	assert.Equal(t, 42, dest)
 }
 
-func TestValidateNumberPreTransform(t *testing.T) {
-	preTransform := func(val any, ctx Ctx) (any, error) {
-		if v, ok := val.(int); ok {
-			out := v * 2
-			return out, nil
-		}
-		return val, nil
-	}
-
-	validator := Int().PreTransform(preTransform)
-	dest := 5
-	errs := validator.Validate(&dest)
-	if len(errs) > 0 {
-		t.Errorf("Expected no errors, got %v", errs)
-	}
-	assert.Equal(t, 10, dest)
-}
-
 func TestValidateNumberPostTransform(t *testing.T) {
 	postTransform := func(val any, ctx Ctx) error {
 		if v, ok := val.(*int); ok {
@@ -118,13 +100,6 @@ func TestValidateNumberPostTransform(t *testing.T) {
 }
 
 func TestValidateNumberMultipleTransforms(t *testing.T) {
-	preTransform := func(val any, ctx Ctx) (any, error) {
-		if v, ok := val.(int); ok {
-			out := v * 2
-			return out, nil
-		}
-		return val, nil
-	}
 
 	postTransform := func(val any, ctx Ctx) error {
 		if v, ok := val.(*int); ok {
@@ -133,8 +108,8 @@ func TestValidateNumberMultipleTransforms(t *testing.T) {
 		return nil
 	}
 
-	validator := Int().PreTransform(preTransform).PostTransform(postTransform)
-	dest := 5
+	validator := Int().PostTransform(postTransform).PostTransform(postTransform)
+	dest := 9
 	errs := validator.Validate(&dest)
 	if len(errs) > 0 {
 		t.Errorf("Expected no errors, got %v", errs)

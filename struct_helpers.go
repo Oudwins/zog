@@ -19,19 +19,11 @@ import (
 // Returns a new schema containing the merged fields and transforms
 func (v *StructSchema) Merge(other *StructSchema, others ...*StructSchema) *StructSchema {
 	new := &StructSchema{
-		preTransforms:  make([]p.PreTransform, 0),
 		postTransforms: make([]p.PostTransform, 0),
 		tests:          make([]p.Test, 0),
 		required:       other.required,
 		schema:         Schema{},
 	}
-	if v.preTransforms != nil {
-		new.preTransforms = append(new.preTransforms, v.preTransforms...)
-	}
-	if other.preTransforms != nil {
-		new.preTransforms = append(new.preTransforms, other.preTransforms...)
-	}
-
 	if v.postTransforms != nil {
 		new.postTransforms = append(new.postTransforms, v.postTransforms...)
 	}
@@ -58,7 +50,6 @@ func (v *StructSchema) Merge(other *StructSchema, others ...*StructSchema) *Stru
 // The new schema shares references to the transforms, tests and inner schema.
 func (v *StructSchema) cloneShallow() *StructSchema {
 	new := &StructSchema{
-		preTransforms:  v.preTransforms,
 		postTransforms: v.postTransforms,
 		tests:          v.tests,
 		required:       v.required,

@@ -165,30 +165,6 @@ func TestValidateStructCustomTest(t *testing.T) {
 	assert.Empty(t, errs)
 }
 
-func TestValidateStructPreTransforms(t *testing.T) {
-	type TestStruct struct {
-		Value string
-	}
-
-	preTransform := func(val any, ctx Ctx) (any, error) {
-		if s, ok := val.(TestStruct); ok {
-			s.Value = "transformed"
-			return s, nil
-		}
-		return val, nil
-	}
-
-	schema := Struct(Schema{
-		"value": String().Required(),
-	}).PreTransform(preTransform)
-
-	output := TestStruct{Value: "original"}
-
-	errs := schema.Validate(&output)
-	assert.Empty(t, errs)
-	assert.Equal(t, "transformed", output.Value)
-}
-
 func TestValidateStructPostTransforms(t *testing.T) {
 	type TestStruct struct {
 		Value string

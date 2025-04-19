@@ -12,7 +12,6 @@ type Numeric = constraints.Ordered
 var _ PrimitiveZogSchema[int] = &NumberSchema[int]{}
 
 type NumberSchema[T Numeric] struct {
-	preTransforms  []PreTransform
 	tests          []Test
 	postTransforms []PostTransform
 	defaultVal     *T
@@ -140,7 +139,7 @@ func (v *NumberSchema[T]) Parse(data any, dest *T, options ...ExecOption) ZogIss
 
 // Internal function to process the data
 func (v *NumberSchema[T]) process(ctx *p.SchemaCtx) {
-	primitiveProcessor(ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, v.coercer, p.IsParseZeroValue)
+	primitiveProcessor(ctx, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, v.coercer, p.IsParseZeroValue)
 }
 
 // Validates a number pointer
@@ -162,18 +161,10 @@ func (v *NumberSchema[T]) Validate(data *T, options ...ExecOption) ZogIssueList 
 }
 
 func (v *NumberSchema[T]) validate(ctx *p.SchemaCtx) {
-	primitiveValidator(ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch)
+	primitiveValidator(ctx, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch)
 }
 
 // GLOBAL METHODS
-
-func (v *NumberSchema[T]) PreTransform(transform PreTransform) *NumberSchema[T] {
-	if v.preTransforms == nil {
-		v.preTransforms = []PreTransform{}
-	}
-	v.preTransforms = append(v.preTransforms, transform)
-	return v
-}
 
 // Adds posttransform function to schema
 func (v *NumberSchema[T]) PostTransform(transform PostTransform) *NumberSchema[T] {

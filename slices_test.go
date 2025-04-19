@@ -153,24 +153,6 @@ func TestSlicePostTransform(t *testing.T) {
 	assert.Equal(t, []string{"A", "B", "C"}, s)
 }
 
-func TestSlicePreTransform(t *testing.T) {
-	s := []string{}
-	schema := Slice(String()).PreTransform(func(data any, ctx Ctx) (any, error) {
-		s := data.([]string)
-		for i := 0; i < len(s); i++ {
-			s[i] = strings.ToUpper(s[i])
-		}
-		return s, nil
-	})
-
-	errs := schema.Parse([]string{"a", "b", "c"}, &s)
-	assert.Nil(t, errs)
-	assert.Len(t, s, 3)
-	assert.Equal(t, s[0], "A")
-	assert.Equal(t, s[1], "B")
-	assert.Equal(t, s[2], "C")
-}
-
 // VALIDATORS
 
 func TestSliceLen(t *testing.T) {

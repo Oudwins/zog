@@ -102,8 +102,8 @@ func (c *ExecCtx) FmtErr(e *ZogIssue) {
 func (c *ExecCtx) NewSchemaCtx(val any, destPtr any, path *PathBuilder, dtype zconst.ZogType) *SchemaCtx {
 	c2 := SchemaCtxPool.Get().(*SchemaCtx)
 	c2.ExecCtx = c
-	c2.Val = val
-	c2.DestPtr = destPtr
+	c2.Data = val
+	c2.ValPtr = destPtr
 	c2.Path = path
 	c2.DType = dtype
 	c2.CanCatch = false
@@ -115,8 +115,8 @@ func (c *ExecCtx) NewSchemaCtx(val any, destPtr any, path *PathBuilder, dtype zc
 func (c *ExecCtx) NewValidateSchemaCtx(valPtr any, path *PathBuilder, dtype zconst.ZogType) *SchemaCtx {
 	c2 := SchemaCtxPool.Get().(*SchemaCtx)
 	c2.ExecCtx = c
-	c2.Val = nil
-	c2.DestPtr = valPtr
+	c2.Data = nil
+	c2.ValPtr = valPtr
 	c2.Path = path
 	c2.DType = dtype
 	c2.CanCatch = false
@@ -131,8 +131,8 @@ func (c *ExecCtx) Free() {
 
 type SchemaCtx struct {
 	*ExecCtx
-	Val       any
-	DestPtr   any
+	Data      any // input data in case of parse
+	ValPtr    any // pointer to real output value in both validate & parse
 	Path      *PathBuilder
 	DType     zconst.ZogType
 	CanCatch  bool
@@ -158,8 +158,8 @@ func (c *SchemaCtx) Issue() *ZogIssue {
 	// e.Message = ""
 	// e.Params = nil
 	// e.Dtype = c.DType
-	// e.Value = c.Val
-	return NewZogIssue().SetPath(c.Path.String()).SetDType(c.DType).SetValue(c.Val)
+	// e.Value = c.Data
+	return NewZogIssue().SetPath(c.Path.String()).SetDType(c.DType).SetValue(c.Data)
 }
 
 // Please don't depend on this method it may change
@@ -188,7 +188,7 @@ func (c *SchemaCtx) IssueFromCoerce(err error) *ZogIssue {
 	e.Path = c.Path.String()
 	e.Message = ""
 	e.Dtype = c.DType
-	e.Value = c.Val
+	e.Value = c.Data
 	e.Err = err
 	return e
 }
@@ -217,7 +217,7 @@ func (c *SchemaCtx) Free() {
 // 	zerr.Message = ""
 // 	zerr.Params = c.Test.Params
 // 	zerr.Dtype = c.DType
-// 	zerr.Value = c.Val
+// 	zerr.Value = c.Data
 // 	return zerr
 // }
 

@@ -58,22 +58,15 @@ func TestCustomStringBasics(t *testing.T) {
 
 func TestCustomStringTransforms(t *testing.T) {
 	// Test pre-transform
-	s := MyStringSchema().PreTransform(func(val any, ctx Ctx) (any, error) {
-		return Env("pre_" + string(val.(Env))), nil
-	})
 	var data Env = "test"
-	err := s.Validate(&data)
-	assert.Nil(t, err)
-	assert.Equal(t, Env("pre_test"), data)
-
 	// Test post-transform
-	s = MyStringSchema().PostTransform(func(val any, ctx Ctx) error {
+	s := MyStringSchema().PostTransform(func(val any, ctx Ctx) error {
 		v := val.(*Env)
 		*v = Env(string(*v) + "_post")
 		return nil
 	})
 	data = "test"
-	err = s.Validate(&data)
+	err := s.Validate(&data)
 	assert.Nil(t, err)
 	assert.Equal(t, Env("test_post"), data)
 }

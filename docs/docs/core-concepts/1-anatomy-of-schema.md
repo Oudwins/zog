@@ -55,7 +55,7 @@ z.Slice(z.String()).PreTransform(func(data any, ctx Ctx) (any, error) {
 
 ## Tests
 
-> A test is what zog calls a "validator". It is a struct that represents an individual validation. For example for the String schema `z.String()` the method `Min(3)` generates a test that checks if the string is at least 3 characters long. You can view all the default tests that come with each [schema type here.](/zog-schemas)
+> A test is what zog calls a "validator". It is a struct that represents an individual validation. For example for the String schema `z.String()` the method `Min(3)` generates a test that checks if the string is at least 3 characters long. You can view all the default tests that come with each [schema type here.](/reference)
 
 ### Test Options
 

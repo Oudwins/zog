@@ -49,19 +49,6 @@ func TestTimeValidateCatch(t *testing.T) {
 	assert.Equal(t, catchVal, now)
 }
 
-func TestTimeValidatePreTransform(t *testing.T) {
-	validator := Time().PreTransform(func(data any, ctx Ctx) (any, error) {
-		// Add 1 hour to the input time
-		return data.(time.Time).Add(time.Hour), nil
-	})
-
-	input := time.Date(2023, 1, 1, 12, 0, 0, 0, time.UTC)
-	expected := input.Add(time.Hour)
-	errs := validator.Validate(&input)
-	assert.Nil(t, errs)
-	assert.Equal(t, expected, input)
-}
-
 func TestTimeValidatePostTransform(t *testing.T) {
 	validator := Time().PostTransform(func(dataPtr any, ctx Ctx) error {
 		// Set the time to noon
