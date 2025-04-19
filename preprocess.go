@@ -22,6 +22,7 @@ func (s *PreprocessSchema[F, T]) process(ctx *p.SchemaCtx) {
 	v, ok := ctx.Data.(F)
 	if !ok {
 		ctx.AddIssue(ctx.IssueFromCoerce(fmt.Errorf("preprocess expected %T but got %T", v, ctx.Data)))
+		return
 	}
 	out, err := s.fn(v, ctx)
 	if err != nil {
