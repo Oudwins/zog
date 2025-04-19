@@ -1,6 +1,8 @@
 package zog
 
 import (
+	"fmt"
+
 	"github.com/Oudwins/zog/conf"
 	p "github.com/Oudwins/zog/internals"
 	"github.com/Oudwins/zog/zconst"
@@ -21,7 +23,7 @@ func CustomFunc[T any](fn func(ptr *T, ctx Ctx) bool, opts ...TestOption) *Custo
 	return &Custom[T]{test: *test}
 }
 
-func (c *Custom[T]) Parse(data T, destPtr *T, options ...ExecOption) ZogIssueList {
+func (c *Custom[T]) Parse(data any, destPtr *T, options ...ExecOption) ZogIssueList {
 	errs := p.NewErrsList()
 	defer errs.Free()
 	ctx := p.NewExecCtx(errs, conf.IssueFormatter)
@@ -41,8 +43,12 @@ func (c *Custom[T]) process(ctx *p.SchemaCtx) {
 	ctx.Test = &c.test
 
 	// set the value
-	d := ctx.Val.(T)
-	ptr := ctx.DestPtr.(*T)
+	d, ok := ctx.Data.(T)
+	if !ok {
+		ctx.AddIssue(ctx.IssueFromCoerce(fmt.Errorf("expected %T, got %T", new(T), ctx.Data)))
+		return
+	}
+	ptr := ctx.ValPtr.(*T)
 	*ptr = d
 
 	// run the test
@@ -67,7 +73,7 @@ func (c *Custom[T]) Validate(dataPtr *T, options ...ExecOption) ZogIssueList {
 
 func (c *Custom[T]) validate(ctx *p.SchemaCtx) {
 	ctx.Test = &c.test
-	c.test.Func(ctx.DestPtr, ctx)
+	c.test.Func(ctx.ValPtr, ctx)
 }
 
 func (c *Custom[T]) setCoercer(coercer CoercerFunc) {

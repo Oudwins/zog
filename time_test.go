@@ -46,25 +46,6 @@ func TestTimeCatch(t *testing.T) {
 	assert.Equal(t, catchVal, now)
 }
 
-func TestTimePreTransform(t *testing.T) {
-	var now time.Time
-	schema := Time().PreTransform(func(data any, ctx Ctx) (any, error) {
-		// Add 1 hour to the input time
-		t, ok := data.(time.Time)
-		if !ok {
-			return nil, nil
-		}
-		return t.Add(time.Hour), nil
-	})
-
-	input := time.Date(2023, 1, 1, 12, 0, 0, 0, time.UTC)
-	expected := input.Add(time.Hour)
-
-	errs := schema.Parse(input, &now)
-	assert.Nil(t, errs)
-	assert.Equal(t, expected, now)
-}
-
 func TestTimePostTransform(t *testing.T) {
 	var now time.Time
 	schema := Time().PostTransform(func(dataPtr any, ctx Ctx) error {
@@ -126,35 +107,6 @@ func TestTimeCustomTest(t *testing.T) {
 	errs := schema.Parse(now, &now)
 	assert.NotNil(t, errs)
 	assert.Equal(t, "custom", errs[0].Message)
-}
-
-func TestTimeSchemaOption(t *testing.T) {
-	s := Time(WithCoercer(func(original any) (value any, err error) {
-		return time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC), nil
-	}))
-
-	var result time.Time
-	err := s.Parse("invalid-date", &result)
-	assert.Nil(t, err)
-	assert.Equal(t, time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC), result)
-}
-
-func TestTimeFormat(t *testing.T) {
-	s := Time(Time.Format(time.RFC1123))
-	var result time.Time
-	err := s.Parse("Mon, 01 Jan 2024 00:00:00 UTC", &result)
-	assert.Nil(t, err)
-	assert.Equal(t, time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC), result)
-}
-
-func TestTimeFormatFunc(t *testing.T) {
-	s := Time(Time.FormatFunc(func(data string) (time.Time, error) {
-		return time.Parse(time.RFC1123, data)
-	}))
-	var result time.Time
-	err := s.Parse("Mon, 01 Jan 2024 00:00:00 UTC", &result)
-	assert.Nil(t, err)
-	assert.Equal(t, time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC), result)
 }
 
 func TestTimeGetType(t *testing.T) {

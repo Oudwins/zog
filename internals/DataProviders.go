@@ -33,6 +33,38 @@ type DataProvider interface {
 
 // checks that we implement the interface
 var _ DataProvider = &MapDataProvider[string]{}
+var _ DataProvider = &StructDataProvider{}
+
+type StructDataProvider struct {
+	value reflect.Value
+	tag   *string
+}
+
+func (s *StructDataProvider) Get(key string) any {
+	field := s.value.FieldByName(key)
+	if !field.IsValid() {
+		return nil
+	}
+	return field.Interface()
+}
+
+func (s *StructDataProvider) GetByField(field reflect.StructField, fallback string) (any, string) {
+	key := GetKeyFromField(field, fallback, s.tag)
+	return s.Get(key), key
+}
+
+func (s *StructDataProvider) GetNestedProvider(key string) DataProvider {
+	field := s.value.FieldByName(key)
+	if !field.IsValid() {
+		return nil
+	}
+	dataProvider, _ := TryNewAnyDataProvider(field.Interface())
+	return dataProvider
+}
+
+func (s *StructDataProvider) GetUnderlying() any {
+	return s.value.Interface()
+}
 
 type MapDataProvider[T any] struct {
 	M   map[string]T
@@ -128,6 +160,9 @@ func TryNewAnyDataProvider(val any) (DataProvider, error) {
 		default:
 			return &EmptyDataProvider{Underlying: val}, fmt.Errorf("could not convert map[string]%s to a data provider", valTyp.String())
 		}
+
+	case reflect.Struct:
+		return &StructDataProvider{value: x, tag: nil}, nil
 
 	case reflect.Pointer:
 		if x.IsNil() {

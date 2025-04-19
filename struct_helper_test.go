@@ -75,35 +75,6 @@ func TestStructMergeWithPostTransforms(t *testing.T) {
 	assert.Equal(t, o.Age, 30)
 }
 
-func TestStructMergeWithPreTransforms(t *testing.T) {
-	type User struct {
-		Name string
-		Age  int
-	}
-	var nameSchema = Struct(Schema{
-		"name": String().Contains("hello").Required(),
-	}).PreTransform(func(data any, ctx Ctx) (any, error) {
-		m := data.(map[string]any)
-		m["name"] = m["name"].(string) + "_pre"
-		return m, nil
-	})
-	var ageSchema = Struct(Schema{
-		"age": Int().GT(18).Required(),
-	}).PreTransform(func(data any, ctx Ctx) (any, error) {
-		m := data.(map[string]any)
-		m["age"] = m["age"].(int) + 5
-		return m, nil
-	})
-	var schema = nameSchema.Merge(ageSchema)
-
-	var o User
-
-	errs := schema.Parse(map[string]any{"name": "hello", "age": 20}, &o)
-	assert.Nil(t, errs)
-	assert.Equal(t, o.Name, "hello_pre")
-	assert.Equal(t, o.Age, 25)
-}
-
 func TestStructMergeMultiple(t *testing.T) {
 	var nameSchema = Struct(Schema{
 		"name": String().Contains("hello").Required(),

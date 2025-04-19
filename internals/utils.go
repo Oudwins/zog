@@ -2,6 +2,7 @@ package internals
 
 import (
 	"fmt"
+	"reflect"
 )
 
 const defaultString = "<nil>"
@@ -18,4 +19,15 @@ func SafeError(x error) string {
 		return defaultString
 	}
 	return x.Error()
+}
+
+func UnwrapPtr(x any) any {
+	refVal := reflect.ValueOf(x)
+	if refVal.Kind() != reflect.Ptr {
+		return x
+	}
+	for refVal.Kind() == reflect.Ptr {
+		refVal = refVal.Elem()
+	}
+	return refVal.Interface()
 }

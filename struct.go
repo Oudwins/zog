@@ -12,7 +12,6 @@ import (
 var _ ComplexZogSchema = &StructSchema{}
 
 type StructSchema struct {
-	preTransforms  []PreTransform
 	schema         Schema
 	postTransforms []PostTransform
 	tests          []Test
@@ -68,7 +67,7 @@ func (v *StructSchema) process(ctx *p.SchemaCtx) {
 		// only run posttransforms on success
 		if !ctx.HasErrored() {
 			for _, fn := range v.postTransforms {
-				err := fn(ctx.DestPtr, ctx)
+				err := fn(ctx.ValPtr, ctx)
 				if err != nil {
 					ctx.AddIssue(ctx.Issue().SetError(err))
 					return
@@ -76,25 +75,10 @@ func (v *StructSchema) process(ctx *p.SchemaCtx) {
 			}
 		}
 	}()
-	// 1. preTransforms
-	if v.preTransforms != nil {
-		for _, fn := range v.preTransforms {
-			nVal, err := fn(ctx.Val, ctx)
-			// bail if error in preTransform
-			if ctx.Exit {
-				return
-			}
-			if err != nil {
-				ctx.AddIssue(ctx.Issue().SetError(err))
-				return
-			}
-			ctx.Val = nVal
-		}
-	}
 
 	var dataProv p.DataProvider
 	// 2. cast data as DataProvider
-	if factory, ok := ctx.Val.(p.DpFactory); ok {
+	if factory, ok := ctx.Data.(p.DpFactory); ok {
 		newDp, err := factory()
 		// This is a little bit hacky. But we want to exit here because the error came from zhttp. Meaning we had an error trying to parse the request.
 		// I'm not sure if this is the best behaviour? Do we want to exit here or do we want to continue processing (ofc we add the error always)
@@ -104,7 +88,7 @@ func (v *StructSchema) process(ctx *p.SchemaCtx) {
 		}
 		dataProv = newDp
 	} else {
-		newDp, err := p.TryNewAnyDataProvider(ctx.Val)
+		newDp, err := p.TryNewAnyDataProvider(ctx.Data)
 		if err != nil {
 			ctx.AddIssue(ctx.IssueFromCoerce(err))
 			return
@@ -113,8 +97,8 @@ func (v *StructSchema) process(ctx *p.SchemaCtx) {
 	}
 
 	// 3. Process / validate struct fields
-	structVal := reflect.ValueOf(ctx.DestPtr).Elem()
-	subCtx := ctx.NewSchemaCtx(ctx.Val, ctx.DestPtr, ctx.Path, v.getType())
+	structVal := reflect.ValueOf(ctx.ValPtr).Elem()
+	subCtx := ctx.NewSchemaCtx(ctx.Data, ctx.ValPtr, ctx.Path, v.getType())
 	defer subCtx.Free()
 	for key, processor := range v.schema {
 		originalKey := key
@@ -132,8 +116,8 @@ func (v *StructSchema) process(ctx *p.SchemaCtx) {
 		destPtr := structVal.FieldByName(key).Addr().Interface()
 
 		subValue, fieldKey := dataProv.GetByField(fieldMeta, originalKey)
-		subCtx.Val = subValue
-		subCtx.DestPtr = destPtr
+		subCtx.Data = subValue
+		subCtx.ValPtr = destPtr
 		subCtx.Path.Push(&fieldKey)
 		subCtx.DType = processor.getType()
 		subCtx.Exit = false
@@ -144,7 +128,7 @@ func (v *StructSchema) process(ctx *p.SchemaCtx) {
 	// 3. Tests for struct
 	for _, test := range v.tests {
 		ctx.Test = &test
-		test.Func(ctx.DestPtr, ctx)
+		test.Func(ctx.ValPtr, ctx)
 		if ctx.Exit {
 			// Catch here
 			return
@@ -179,7 +163,7 @@ func (v *StructSchema) validate(ctx *p.SchemaCtx) {
 		// only run posttransforms on success
 		if !ctx.HasErrored() {
 			for _, fn := range v.postTransforms {
-				err := fn(ctx.Val, ctx)
+				err := fn(ctx.Data, ctx)
 				if err != nil {
 					ctx.AddIssue(ctx.IssueFromUnknownError(err))
 					return
@@ -187,24 +171,12 @@ func (v *StructSchema) validate(ctx *p.SchemaCtx) {
 			}
 		}
 	}()
-	refVal := reflect.ValueOf(ctx.DestPtr).Elem()
-	// 1. preTransforms
-	if v.preTransforms != nil {
-		for _, fn := range v.preTransforms {
-			nVal, err := fn(refVal.Interface(), ctx)
-			// bail if error in preTransform
-			if err != nil {
-				ctx.AddIssue(ctx.IssueFromUnknownError(err))
-				return
-			}
-			refVal.Set(reflect.ValueOf(nVal))
-		}
-	}
+	refVal := reflect.ValueOf(ctx.ValPtr).Elem()
 
 	// 2. cast data to string & handle default/required
 
 	// 3.1 tests for struct fields
-	subCtx := ctx.NewSchemaCtx(ctx.Val, ctx.DestPtr, ctx.Path, v.getType())
+	subCtx := ctx.NewSchemaCtx(ctx.Data, ctx.ValPtr, ctx.Path, v.getType())
 	defer subCtx.Free()
 	for key, schema := range v.schema {
 		fieldKey := key
@@ -225,8 +197,8 @@ func (v *StructSchema) validate(ctx *p.SchemaCtx) {
 		if ok {
 			fieldKey = fieldTag
 		}
-		subCtx.Val = destPtr
-		subCtx.DestPtr = destPtr
+		subCtx.Data = destPtr
+		subCtx.ValPtr = destPtr
 		subCtx.Path.Push(&fieldKey)
 		subCtx.DType = schema.getType()
 		schema.validate(subCtx)
@@ -236,22 +208,13 @@ func (v *StructSchema) validate(ctx *p.SchemaCtx) {
 	// 3. tests for slice
 	for _, test := range v.tests {
 		ctx.Test = &test
-		test.Func(ctx.Val, ctx)
+		test.Func(ctx.Data, ctx)
 		if ctx.Exit {
 			// catch
 			return
 		}
 	}
 	// 4. postTransforms -> defered see above
-}
-
-// Add a pretransform step to the schema
-func (v *StructSchema) PreTransform(transform PreTransform) *StructSchema {
-	if v.preTransforms == nil {
-		v.preTransforms = []PreTransform{}
-	}
-	v.preTransforms = append(v.preTransforms, transform)
-	return v
 }
 
 // Adds posttransform function to schema

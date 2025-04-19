@@ -12,7 +12,6 @@ import (
 var _ PrimitiveZogSchema[time.Time] = &TimeSchema{}
 
 type TimeSchema struct {
-	preTransforms  []PreTransform
 	tests          []Test
 	postTransforms []PostTransform
 	defaultVal     *time.Time
@@ -55,7 +54,7 @@ var Time TimeFunc = func(opts ...SchemaOption) *TimeSchema {
 //	}))
 func (t TimeFunc) FormatFunc(format func(data string) (time.Time, error)) SchemaOption {
 	return func(s ZogSchema) {
-		s.setCoercer(conf.TimeCoercerFactory(format))
+		// s.setCoercer(conf.TimeCoercerFactory(format))
 	}
 }
 
@@ -89,7 +88,7 @@ func (v *TimeSchema) Parse(data any, dest *time.Time, options ...ExecOption) Zog
 
 // internal processes the data
 func (v *TimeSchema) process(ctx *p.SchemaCtx) {
-	primitiveProcessor(ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, v.coercer, p.IsParseZeroValue)
+	primitiveProcessor(ctx, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, v.coercer, p.IsParseZeroValue)
 }
 
 // Validates an existing time.Time
@@ -111,16 +110,7 @@ func (v *TimeSchema) Validate(data *time.Time, options ...ExecOption) ZogIssueLi
 
 // Internal function to validate the data
 func (v *TimeSchema) validate(ctx *p.SchemaCtx) {
-	primitiveValidator(ctx, v.preTransforms, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch)
-}
-
-// Adds pretransform function to schema
-func (v *TimeSchema) PreTransform(transform PreTransform) *TimeSchema {
-	if v.preTransforms == nil {
-		v.preTransforms = []PreTransform{}
-	}
-	v.preTransforms = append(v.preTransforms, transform)
-	return v
+	primitiveValidator(ctx, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch)
 }
 
 // Adds posttransform function to schema

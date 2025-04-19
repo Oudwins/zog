@@ -13,7 +13,6 @@ import (
 var _ ComplexZogSchema = &SliceSchema{}
 
 type SliceSchema struct {
-	preTransforms  []PreTransform
 	tests          []Test
 	schema         ZogSchema
 	postTransforms []PostTransform
@@ -73,7 +72,7 @@ func (v *SliceSchema) validate(ctx *p.SchemaCtx) {
 		// only run posttransforms on success
 		if !ctx.HasErrored() {
 			for _, fn := range v.postTransforms {
-				err := fn(ctx.Val, ctx)
+				err := fn(ctx.ValPtr, ctx)
 				if err != nil {
 					ctx.AddIssue(ctx.IssueFromUnknownError(err))
 					return
@@ -82,20 +81,9 @@ func (v *SliceSchema) validate(ctx *p.SchemaCtx) {
 		}
 	}()
 
-	refVal := reflect.ValueOf(ctx.DestPtr).Elem() // we use this to set the value to the ptr. But we still reference the ptr everywhere. This is correct even if it seems confusing.
-	// 1. preTransforms
-	for _, fn := range v.preTransforms {
-		nVal, err := fn(refVal.Interface(), ctx)
-		// bail if error in preTransform
-		if err != nil {
-			ctx.AddIssue(ctx.IssueFromUnknownError(err))
-			return
-		}
-		refVal.Set(reflect.ValueOf(nVal))
-	}
-
+	refVal := reflect.ValueOf(ctx.ValPtr).Elem() // we use this to set the value to the ptr. But we still reference the ptr everywhere. This is correct even if it seems confusing.
 	// 2. cast data to string & handle default/required
-	isZeroVal := p.IsZeroValue(ctx.Val)
+	isZeroVal := p.IsZeroValue(ctx.ValPtr)
 
 	if isZeroVal || refVal.Len() == 0 {
 		if v.defaultVal != nil {
@@ -104,18 +92,18 @@ func (v *SliceSchema) validate(ctx *p.SchemaCtx) {
 			return
 		} else {
 			// REQUIRED & ZERO VALUE
-			ctx.AddIssue(ctx.IssueFromTest(v.required, ctx.Val))
+			ctx.AddIssue(ctx.IssueFromTest(v.required, ctx.ValPtr))
 			return
 		}
 	}
 
 	// 3.1 tests for slice items
-	subCtx := ctx.NewSchemaCtx(ctx.Val, ctx.DestPtr, ctx.Path, v.schema.getType())
+	subCtx := ctx.NewValidateSchemaCtx(ctx.ValPtr, ctx.Path, v.schema.getType())
 	defer subCtx.Free()
 	for idx := 0; idx < refVal.Len(); idx++ {
 		item := refVal.Index(idx).Addr().Interface()
 		k := fmt.Sprintf("[%d]", idx)
-		subCtx.DestPtr = item
+		subCtx.ValPtr = item
 		subCtx.Path.Push(&k)
 		subCtx.Exit = false
 		v.schema.validate(subCtx)
@@ -125,7 +113,7 @@ func (v *SliceSchema) validate(ctx *p.SchemaCtx) {
 	// 3. tests for slice
 	for _, test := range v.tests {
 		ctx.Test = &test
-		test.Func(ctx.DestPtr, ctx)
+		test.Func(ctx.ValPtr, ctx)
 		if ctx.Exit {
 			// catching the first error if catch is set
 			// if v.catch != nil {
@@ -159,23 +147,13 @@ func (v *SliceSchema) Parse(data any, dest any, options ...ExecOption) ZogIssueM
 
 // Internal function to process the data
 func (v *SliceSchema) process(ctx *p.SchemaCtx) {
-	// 1. preTransforms
-	for _, fn := range v.preTransforms {
-		nVal, err := fn(ctx.Val, ctx)
-		// bail if error in preTransform
-		if err != nil {
-			ctx.AddIssue(ctx.IssueFromUnknownError(err))
-			return
-		}
-		ctx.Val = nVal
-	}
 
 	// 4. postTransforms
 	defer func() {
 		// only run posttransforms on success
 		if !ctx.HasErrored() {
 			for _, fn := range v.postTransforms {
-				err := fn(ctx.DestPtr, ctx)
+				err := fn(ctx.ValPtr, ctx)
 				if err != nil {
 					ctx.AddIssue(ctx.IssueFromUnknownError(err))
 					return
@@ -185,8 +163,7 @@ func (v *SliceSchema) process(ctx *p.SchemaCtx) {
 	}()
 
 	// 2. cast data to string & handle default/required
-	isZeroVal := p.IsParseZeroValue(ctx.Val, ctx)
-	destVal := reflect.ValueOf(ctx.DestPtr).Elem()
+	isZeroVal := p.IsParseZeroValue(ctx.Data, ctx)
 	var refVal reflect.Value
 
 	if isZeroVal {
@@ -196,12 +173,12 @@ func (v *SliceSchema) process(ctx *p.SchemaCtx) {
 			return
 		} else {
 			// REQUIRED & ZERO VALUE
-			ctx.AddIssue(ctx.IssueFromTest(v.required, ctx.Val))
+			ctx.AddIssue(ctx.IssueFromTest(v.required, ctx.Data))
 			return
 		}
 	} else {
 		// make sure val is a slice if not try to make it one
-		v, err := v.coercer(ctx.Val)
+		v, err := v.coercer(ctx.Data)
 		if err != nil {
 			ctx.AddIssue(ctx.IssueFromCoerce(err))
 			return
@@ -209,17 +186,18 @@ func (v *SliceSchema) process(ctx *p.SchemaCtx) {
 		refVal = reflect.ValueOf(v)
 	}
 
+	destVal := reflect.ValueOf(ctx.ValPtr).Elem()
 	destVal.Set(reflect.MakeSlice(destVal.Type(), refVal.Len(), refVal.Len()))
 
 	// 3.1 tests for slice items
-	subCtx := ctx.NewSchemaCtx(ctx.Val, ctx.DestPtr, ctx.Path, v.schema.getType())
+	subCtx := ctx.NewSchemaCtx(ctx.Data, ctx.ValPtr, ctx.Path, v.schema.getType())
 	defer subCtx.Free()
 	for idx := 0; idx < refVal.Len(); idx++ {
 		item := refVal.Index(idx).Interface()
 		ptr := destVal.Index(idx).Addr().Interface()
 		k := fmt.Sprintf("[%d]", idx)
-		subCtx.Val = item
-		subCtx.DestPtr = ptr
+		subCtx.Data = item
+		subCtx.ValPtr = ptr
 		subCtx.Path.Push(&k)
 		v.schema.process(subCtx)
 		subCtx.Path.Pop()
@@ -228,22 +206,13 @@ func (v *SliceSchema) process(ctx *p.SchemaCtx) {
 	// 3. tests for slice
 	for _, test := range v.tests {
 		ctx.Test = &test
-		test.Func(ctx.DestPtr, ctx)
+		test.Func(ctx.ValPtr, ctx)
 		if ctx.Exit {
 			// catch here
 			return
 		}
 	}
 	// 4. postTransforms -> defered see above
-}
-
-// Adds pretransform function to schema
-func (v *SliceSchema) PreTransform(transform PreTransform) *SliceSchema {
-	if v.preTransforms == nil {
-		v.preTransforms = []PreTransform{}
-	}
-	v.preTransforms = append(v.preTransforms, transform)
-	return v
 }
 
 // Adds posttransform function to schema

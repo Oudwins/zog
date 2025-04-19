@@ -10,8 +10,8 @@ import (
 type ZogSchema interface {
 	process(ctx *p.SchemaCtx)
 	validate(ctx *p.SchemaCtx)
-	setCoercer(c CoercerFunc)
 	getType() zconst.ZogType
+	setCoercer(c CoercerFunc)
 }
 
 // This is a common interface for all complex schemas (i.e structs, slices, pointers...)
@@ -53,10 +53,10 @@ func TestFunc(IssueCode zconst.ZogIssueCode, fn BoolTFunc, options ...TestOption
 
 // ! PRIMITIVE PROCESSING -> Not userspace code
 
-func primitiveProcessor[T p.ZogPrimitive](ctx *p.SchemaCtx, preTransforms []PreTransform, tests []Test, postTransforms []PostTransform, defaultVal *T, required *Test, catch *T, coercer CoercerFunc, isZeroFunc p.IsZeroValueFunc) {
+func primitiveProcessor[T p.ZogPrimitive](ctx *p.SchemaCtx, tests []Test, postTransforms []PostTransform, defaultVal *T, required *Test, catch *T, coercer CoercerFunc, isZeroFunc p.IsZeroValueFunc) {
 	ctx.CanCatch = catch != nil
 
-	destPtr := ctx.DestPtr.(*T)
+	destPtr := ctx.ValPtr.(*T)
 	// 4. postTransforms
 	defer func() {
 		// only run posttransforms on success
@@ -71,24 +71,8 @@ func primitiveProcessor[T p.ZogPrimitive](ctx *p.SchemaCtx, preTransforms []PreT
 		}
 	}()
 
-	// 1. preTransforms
-	for _, fn := range preTransforms {
-		nVal, err := fn(ctx.Val, ctx)
-		// bail if error in preTransform
-		if err != nil || ctx.Exit {
-			if ctx.CanCatch {
-				*destPtr = *catch
-				return
-			}
-			ctx.AddIssue(ctx.IssueFromUnknownError(err))
-			return
-		}
-		ctx.Val = nVal
-	}
-
 	// 2. cast data to string & handle default/required
-	isZeroVal := isZeroFunc(ctx.Val, ctx)
-
+	isZeroVal := isZeroFunc(ctx.Data, ctx)
 	if isZeroVal {
 		if defaultVal != nil {
 			*destPtr = *defaultVal
@@ -102,23 +86,21 @@ func primitiveProcessor[T p.ZogPrimitive](ctx *p.SchemaCtx, preTransforms []PreT
 				*destPtr = *catch
 				return
 			} else {
-				ctx.AddIssue(ctx.IssueFromTest(required, ctx.Val))
+				ctx.AddIssue(ctx.IssueFromTest(required, *destPtr))
 				return
 			}
 		}
 	} else {
-		newVal, err := coercer(ctx.Val)
-		if err == nil {
-			*destPtr = newVal.(T)
-		} else {
+		v, err := coercer(ctx.Data)
+		if err != nil {
 			if ctx.CanCatch {
 				*destPtr = *catch
 				return
-			} else {
-				ctx.AddIssue(ctx.IssueFromCoerce(err))
-				return
 			}
+			ctx.AddIssue(ctx.IssueFromCoerce(err))
+			return
 		}
+		*destPtr = v.(T)
 	}
 
 	// 3. tests
@@ -136,10 +118,10 @@ func primitiveProcessor[T p.ZogPrimitive](ctx *p.SchemaCtx, preTransforms []PreT
 	// 4. postTransforms -> Done above on defer
 }
 
-func primitiveValidator[T p.ZogPrimitive](ctx *p.SchemaCtx, preTransforms []PreTransform, tests []Test, postTransforms []PostTransform, defaultVal *T, required *Test, catch *T) {
+func primitiveValidator[T p.ZogPrimitive](ctx *p.SchemaCtx, tests []Test, postTransforms []PostTransform, defaultVal *T, required *Test, catch *T) {
 	ctx.CanCatch = catch != nil
 
-	valPtr := ctx.DestPtr.(*T)
+	valPtr := ctx.ValPtr.(*T)
 	// 4. postTransforms
 	defer func() {
 		// only run posttransforms on success
@@ -153,21 +135,6 @@ func primitiveValidator[T p.ZogPrimitive](ctx *p.SchemaCtx, preTransforms []PreT
 			}
 		}
 	}()
-
-	// 1. preTransforms
-	for _, fn := range preTransforms {
-		nVal, err := fn(*valPtr, ctx)
-		// bail if error in preTransform
-		if err != nil || ctx.Exit {
-			if ctx.CanCatch {
-				*valPtr = *catch
-				return
-			}
-			ctx.AddIssue(ctx.IssueFromUnknownError(err))
-			return
-		}
-		*valPtr = nVal.(T)
-	}
 
 	// 2. cast data to string & handle default/required
 	// Warning. This uses generic IsZeroValue because for Validate we treat zero values as invalid for required fields. This is different from Parse.

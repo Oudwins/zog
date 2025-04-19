@@ -200,14 +200,9 @@ func TestBoolValidateCatch(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			boolProc := Bool().Catch(test.catch).PreTransform(func(val any, ctx Ctx) (any, error) {
-				if b, ok := val.(bool); ok {
-					if b == false {
-						return false, fmt.Errorf("invalid input")
-					}
-				}
-				return val, nil
-			})
+			boolProc := Bool().TestFunc(func(val any, ctx Ctx) bool {
+				return val == true
+			}).Catch(test.catch).Required()
 			errs := boolProc.Validate(&test.data)
 			if len(errs) > 0 {
 				tutils.VerifyDefaultIssueMessages(t, errs)
@@ -280,55 +275,6 @@ func TestBoolValidateFalse(t *testing.T) {
 			}
 			if len(errs) > 0 {
 				tutils.VerifyDefaultIssueMessages(t, errs)
-			}
-		})
-	}
-}
-
-func TestBoolValidatePreTransform(t *testing.T) {
-	tests := []struct {
-		name      string
-		data      bool
-		transform p.PreTransform
-		expectErr bool
-		expected  bool
-	}{
-		{
-			name: "Valid transform",
-			data: true,
-			transform: func(val any, ctx Ctx) (any, error) {
-				if b, ok := val.(bool); ok {
-					return !b, nil
-				}
-				return true, nil
-			},
-			expected: false,
-		},
-		{
-			name: "Invalid transform",
-			data: true,
-			transform: func(val any, ctx Ctx) (any, error) {
-				return nil, fmt.Errorf("invalid input")
-			},
-			expectErr: true,
-			expected:  true,
-		},
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			boolProc := Bool().PreTransform(test.transform)
-			errs := boolProc.Validate(&test.data)
-
-			if (len(errs) > 0) != test.expectErr {
-				t.Errorf("Expected error: %v, got: %v", test.expectErr, errs)
-			}
-			if len(errs) > 0 {
-				tutils.VerifyDefaultIssueMessages(t, errs)
-			}
-
-			if test.data != test.expected {
-				t.Errorf("Expected %v, but got %v", test.expected, test.data)
 			}
 		})
 	}

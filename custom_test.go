@@ -85,7 +85,7 @@ func TestCustomFuncStruct(t *testing.T) {
 	assert.Equal(t, "John", u.Name)
 }
 
-func TestCustomInStruct(t *testing.T) {
+func TestCustomFuncInStruct(t *testing.T) {
 	type ID struct {
 		ID string `zog:"custom"`
 	}
@@ -109,7 +109,7 @@ func TestCustomInStruct(t *testing.T) {
 	assert.Equal(t, 0, len(errs))
 }
 
-func TestCustomInStructPtr(t *testing.T) {
+func TestCustomFuncInStructPtr(t *testing.T) {
 	type ID struct {
 		ID string `zog:"custom"`
 	}

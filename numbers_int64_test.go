@@ -103,23 +103,6 @@ func TestInt64Catch(t *testing.T) {
 	assert.Equal(t, int64(0), dest)
 }
 
-func TestInt64PreTransform(t *testing.T) {
-	preTransform := func(val any, ctx Ctx) (any, error) {
-		if v, ok := val.(int64); ok {
-			return v * 2, nil
-		}
-		return val, nil
-	}
-
-	validator := Int64().PreTransform(preTransform)
-	var dest int64
-	errs := validator.Parse(int64(5), &dest)
-	if len(errs) > 0 {
-		t.Errorf("Expected no errors, got %v", errs)
-	}
-	assert.Equal(t, int64(10), dest)
-}
-
 func TestInt64PostTransform(t *testing.T) {
 	postTransform := func(val any, ctx Ctx) error {
 		if v, ok := val.(*int64); ok {
@@ -138,12 +121,6 @@ func TestInt64PostTransform(t *testing.T) {
 }
 
 func TestInt64MultipleTransforms(t *testing.T) {
-	preTransform := func(val any, ctx Ctx) (any, error) {
-		if v, ok := val.(int64); ok {
-			return v * 2, nil
-		}
-		return val, nil
-	}
 
 	postTransform := func(val any, ctx Ctx) error {
 		if v, ok := val.(*int64); ok {
@@ -152,9 +129,9 @@ func TestInt64MultipleTransforms(t *testing.T) {
 		return nil
 	}
 
-	validator := Int64().PreTransform(preTransform).PostTransform(postTransform)
+	validator := Int64().PostTransform(postTransform).PostTransform(postTransform)
 	var dest int64
-	errs := validator.Parse(int64(5), &dest)
+	errs := validator.Parse(int64(9), &dest)
 	if len(errs) > 0 {
 		t.Errorf("Expected no errors, got %v", errs)
 	}
