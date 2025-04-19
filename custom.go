@@ -8,14 +8,6 @@ import (
 	"github.com/Oudwins/zog/zconst"
 )
 
-func defaultCustomCoercer[T any](data any) (any, error) {
-	v, ok := data.(T)
-	if !ok {
-		return nil, fmt.Errorf("expected %T, got %T", new(T), data)
-	}
-	return v, nil
-}
-
 type Custom[T any] struct {
 	test Test
 }

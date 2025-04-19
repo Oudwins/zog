@@ -1,6 +1,8 @@
 package zog
 
 import (
+	"fmt"
+
 	"github.com/Oudwins/zog/conf"
 	p "github.com/Oudwins/zog/internals"
 	"github.com/Oudwins/zog/zconst"
@@ -11,17 +13,22 @@ type PreprocessSchema[F any, T any] struct {
 	fn     func(data F, ctx Ctx) (out T, err error)
 }
 
+// out should never be a pointer type
 func Preprocess[F any, T any](fn func(data F, ctx Ctx) (out T, err error), schema ZogSchema) *PreprocessSchema[F, T] {
 	return &PreprocessSchema[F, T]{fn: fn, schema: schema}
 }
 
 func (s *PreprocessSchema[F, T]) process(ctx *p.SchemaCtx) {
-	out, err := s.fn(ctx.Data.(F), ctx)
+	v, ok := ctx.Data.(F)
+	if !ok {
+		ctx.AddIssue(ctx.IssueFromCoerce(fmt.Errorf("preprocess expected %T but got %T", v, ctx.Data)))
+	}
+	out, err := s.fn(v, ctx)
 	if err != nil {
-		ctx.AddIssue(ctx.Issue().SetMessage(err.Error()))
+		ctx.AddIssue(ctx.IssueFromUnknownError(err))
 		return
 	}
-	ctx.Data = out
+	ctx.Data = p.UnwrapPtr(out)
 	s.schema.process(ctx)
 }
 
@@ -31,16 +38,23 @@ func (s *PreprocessSchema[F, T]) validate(ctx *p.SchemaCtx) {
 		ctx.AddIssue(ctx.Issue().SetMessage(err.Error()))
 		return
 	}
-	ptr := ctx.ValPtr.(*T)
-	*ptr = out
-	// if out != ctx.ValPtr {
-	// 	reflect.ValueOf(ctx.ValPtr).Elem().Set(reflect.ValueOf(out))
-	// }
+	switch v := ctx.ValPtr.(type) {
+	case *T:
+		*v = out
+	case **T:
+		*v = &out
+	default:
+		panic(fmt.Sprintf("Preprocessed should be passed in schema.Validate() a value pointer that is compatible with its returned type T. Either *T or **T. Got %T", v))
+	}
 	s.schema.validate(ctx)
 }
 
 func (s *PreprocessSchema[F, T]) getType() zconst.ZogType {
 	return s.schema.getType()
+}
+
+func (s *PreprocessSchema[F, T]) setCoercer(coercer CoercerFunc) {
+	s.schema.setCoercer(coercer)
 }
 
 func (s *PreprocessSchema[F, T]) Parse(data F, destPtr *T, options ...ExecOption) ZogIssueList {

@@ -58,11 +58,9 @@ func TestCustomStringBasics(t *testing.T) {
 
 func TestCustomStringTransforms(t *testing.T) {
 	// Test pre-transform
-	s := MyStringSchema()
 	var data Env = "test"
-
 	// Test post-transform
-	s = MyStringSchema().PostTransform(func(val any, ctx Ctx) error {
+	s := MyStringSchema().PostTransform(func(val any, ctx Ctx) error {
 		v := val.(*Env)
 		*v = Env(string(*v) + "_post")
 		return nil
