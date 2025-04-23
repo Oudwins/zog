@@ -30,11 +30,12 @@ type PrimitiveZogSchema[T p.ZogPrimitive] interface {
 
 // Schema Parts Export
 
-// Function signature for preTransforms. Takes the value and the context and returns the new value and an error.
-type PreTransform = p.PreTransform
-
+// deprecated: use z.Transform instead
 // Function signature for postTransforms. Takes the value pointer and the context and returns an error.
 type PostTransform = p.PostTransform
+
+// Function signature for transforms. Takes the value pointer and the context and returns an optional error.
+type Transform = p.Transform
 
 // Function signature for issue formatters. Takes the issue and the context and returns the formatted issue.
 type IssueFmtFunc = p.IssueFmtFunc
@@ -171,4 +172,97 @@ func primitiveValidator[T p.ZogPrimitive](ctx *p.SchemaCtx, tests []Test, postTr
 		}
 	}
 
+}
+
+// New Versions
+
+func primitiveParsing[T p.ZogPrimitive](ctx *p.SchemaCtx, processors []p.ZProcessor, defaultVal *T, required *Test, catch *T, coercer CoercerFunc, isZeroFunc p.IsZeroValueFunc) {
+	ctx.CanCatch = catch != nil
+
+	destPtr := ctx.ValPtr.(*T)
+
+	// 2. cast data to string & handle default/required
+	isZeroVal := isZeroFunc(ctx.Data, ctx)
+	if isZeroVal {
+		if defaultVal != nil {
+			*destPtr = *defaultVal
+		} else if required == nil {
+			// This handles optional case
+			return
+		} else {
+			// is required & zero value
+			// required
+			if ctx.CanCatch {
+				*destPtr = *catch
+				return
+			} else {
+				ctx.AddIssue(ctx.IssueFromTest(required, *destPtr))
+				return
+			}
+		}
+	} else {
+		v, err := coercer(ctx.Data)
+		if err != nil {
+			if ctx.CanCatch {
+				*destPtr = *catch
+				return
+			}
+			ctx.AddIssue(ctx.IssueFromCoerce(err))
+			return
+		}
+		*destPtr = v.(T)
+	}
+
+	for _, processor := range processors {
+		ctx.Processor = processor
+		processor.ZProcess(destPtr, ctx)
+		if ctx.Exit {
+			if ctx.CanCatch {
+				*destPtr = *catch
+				return
+			}
+			return
+		}
+	}
+}
+
+func primitiveValidation[T p.ZogPrimitive](ctx *p.SchemaCtx, processors []p.ZProcessor, defaultVal *T, required *Test, catch *T) {
+	ctx.CanCatch = catch != nil
+
+	valPtr := ctx.ValPtr.(*T)
+
+	// 2. cast data to string & handle default/required
+	// Warning. This uses generic IsZeroValue because for Validate we treat zero values as invalid for required fields. This is different from Parse.
+	isZeroVal := p.IsZeroValue(*valPtr)
+
+	if isZeroVal {
+		if defaultVal != nil {
+			*valPtr = *defaultVal
+		} else if required == nil {
+			// This handles optional case
+			return
+		} else {
+			// is required & zero value
+			// required
+			if ctx.CanCatch {
+				*valPtr = *catch
+				return
+			} else {
+				ctx.AddIssue(ctx.IssueFromTest(required, *valPtr))
+				return
+			}
+		}
+	}
+
+	for _, processor := range processors {
+		ctx.Processor = processor
+		processor.ZProcess(valPtr, ctx)
+		if ctx.Exit {
+			if ctx.CanCatch {
+				*valPtr = *catch
+				return
+			}
+			return
+		}
+	}
 }

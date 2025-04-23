@@ -138,6 +138,7 @@ type SchemaCtx struct {
 	CanCatch  bool
 	Exit      bool
 	HasCaught bool
+	Processor ZProcessor
 	Test      *Test
 }
 

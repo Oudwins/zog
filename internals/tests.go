@@ -63,6 +63,13 @@ type Test struct {
 	Func TFunc
 }
 
+func (t *Test) ZProcess(valPtr any, ctx Ctx) {
+	// TODO REMOVE THIS. ITS COMPATIBLITY LAYER
+	s := ctx.(*SchemaCtx)
+	s.Test = s.Processor.(*Test)
+	t.Func(valPtr, ctx)
+}
+
 // returns a required test to be used for processor.Required() method
 func Required() Test {
 	t := Test{
