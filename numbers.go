@@ -12,12 +12,11 @@ type Numeric = constraints.Ordered
 var _ PrimitiveZogSchema[int] = &NumberSchema[int]{}
 
 type NumberSchema[T Numeric] struct {
-	tests          []Test
-	postTransforms []PostTransform
-	defaultVal     *T
-	required       *Test
-	catch          *T
-	coercer        conf.CoercerFunc
+	processors []p.ZProcessor
+	defaultVal *T
+	required   *Test
+	catch      *T
+	coercer    CoercerFunc
 }
 
 // ! INTERNALS
@@ -133,13 +132,12 @@ func (v *NumberSchema[T]) Parse(data any, dest *T, options ...ExecOption) ZogIss
 	sctx := ctx.NewSchemaCtx(data, dest, path, v.getType())
 	defer sctx.Free()
 	v.process(sctx)
-
 	return errs.List
 }
 
 // Internal function to process the data
 func (v *NumberSchema[T]) process(ctx *p.SchemaCtx) {
-	primitiveProcessor(ctx, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, v.coercer, p.IsParseZeroValue)
+	primitiveParsing(ctx, v.processors, v.defaultVal, v.required, v.catch, v.coercer, p.IsParseZeroValue)
 }
 
 // Validates a number pointer
@@ -161,17 +159,21 @@ func (v *NumberSchema[T]) Validate(data *T, options ...ExecOption) ZogIssueList 
 }
 
 func (v *NumberSchema[T]) validate(ctx *p.SchemaCtx) {
-	primitiveValidator(ctx, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch)
+	primitiveValidation(ctx, v.processors, v.defaultVal, v.required, v.catch)
 }
 
 // GLOBAL METHODS
 
+// deprecated: use schema.Transform instead. This no longer runs at the end of all validation steps but rather in the order it is called.
 // Adds posttransform function to schema
 func (v *NumberSchema[T]) PostTransform(transform PostTransform) *NumberSchema[T] {
-	if v.postTransforms == nil {
-		v.postTransforms = []PostTransform{}
-	}
-	v.postTransforms = append(v.postTransforms, transform)
+	v.processors = append(v.processors, &p.TransformProcessor{Transform: transform})
+	return v
+}
+
+// Adds a transform function to the schema. Runs in the order it is called
+func (v *NumberSchema[T]) Transform(transform p.Transform) *NumberSchema[T] {
+	v.processors = append(v.processors, &p.TransformProcessor{Transform: transform})
 	return v
 }
 
@@ -208,14 +210,14 @@ func (v *NumberSchema[T]) Catch(val T) *NumberSchema[T] {
 // custom test function call it -> schema.Test(test, options)
 func (v *NumberSchema[T]) Test(t Test) *NumberSchema[T] {
 	t.Func = customTestBackwardsCompatWrapper(t.Func)
-	v.tests = append(v.tests, t)
+	v.processors = append(v.processors, &t)
 	return v
 }
 
 // Create a custom test function for the schema. This is similar to Zod's `.refine()` method.
 func (v *NumberSchema[T]) TestFunc(testFunc BoolTFunc, options ...TestOption) *NumberSchema[T] {
-	t := p.NewTestFunc("", testFunc, options...)
-	v.Test(*t)
+	test := p.NewTestFunc("", testFunc, options...)
+	v.Test(*test)
 	return v
 }
 
@@ -228,7 +230,7 @@ func (v *NumberSchema[T]) OneOf(enum []T, options ...TestOption) *NumberSchema[T
 	for _, opt := range options {
 		opt(&t)
 	}
-	v.tests = append(v.tests, t)
+	v.processors = append(v.processors, &t)
 	return v
 }
 
@@ -239,7 +241,7 @@ func (v *NumberSchema[T]) EQ(n T, options ...TestOption) *NumberSchema[T] {
 	for _, opt := range options {
 		opt(&t)
 	}
-	v.tests = append(v.tests, t)
+	v.processors = append(v.processors, &t)
 	return v
 }
 
@@ -250,7 +252,7 @@ func (v *NumberSchema[T]) LTE(n T, options ...TestOption) *NumberSchema[T] {
 	for _, opt := range options {
 		opt(&t)
 	}
-	v.tests = append(v.tests, t)
+	v.processors = append(v.processors, &t)
 	return v
 }
 
@@ -261,7 +263,7 @@ func (v *NumberSchema[T]) GTE(n T, options ...TestOption) *NumberSchema[T] {
 	for _, opt := range options {
 		opt(&t)
 	}
-	v.tests = append(v.tests, t)
+	v.processors = append(v.processors, &t)
 	return v
 }
 
@@ -272,7 +274,7 @@ func (v *NumberSchema[T]) LT(n T, options ...TestOption) *NumberSchema[T] {
 	for _, opt := range options {
 		opt(&t)
 	}
-	v.tests = append(v.tests, t)
+	v.processors = append(v.processors, &t)
 	return v
 }
 
@@ -283,6 +285,6 @@ func (v *NumberSchema[T]) GT(n T, options ...TestOption) *NumberSchema[T] {
 	for _, opt := range options {
 		opt(&t)
 	}
-	v.tests = append(v.tests, t)
+	v.processors = append(v.processors, &t)
 	return v
 }
