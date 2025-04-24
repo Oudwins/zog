@@ -23,7 +23,7 @@ func TestFuncFromBool(fn BoolTFunc, test *Test) {
 		}
 
 		c := ctx.(*SchemaCtx)
-		ctx.AddIssue(c.IssueFromTest(c.Test, val))
+		ctx.AddIssue(c.IssueFromTest(c.Processor.(*Test), val))
 	}
 }
 
@@ -34,7 +34,7 @@ func TestNotFuncFromBool(fn BoolTFunc, test *Test) {
 		}
 
 		c := ctx.(*SchemaCtx)
-		ctx.AddIssue(c.IssueFromTest(c.Test, val))
+		ctx.AddIssue(c.IssueFromTest(c.Processor.(*Test), val))
 	}
 }
 
@@ -61,6 +61,10 @@ type Test struct {
 	IssueFmtFunc IssueFmtFunc
 	// The function that will be executed when evaluating the test.
 	Func TFunc
+}
+
+func (t *Test) ZProcess(valPtr any, ctx Ctx) {
+	t.Func(valPtr, ctx)
 }
 
 // returns a required test to be used for processor.Required() method

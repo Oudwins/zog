@@ -42,13 +42,12 @@ type NotStringSchema[T likeString] interface {
 }
 
 type StringSchema[T likeString] struct {
-	tests          []Test
-	postTransforms []PostTransform
-	defaultVal     *T
-	required       *Test
-	catch          *T
-	coercer        CoercerFunc
-	isNot          bool
+	processors []p.ZProcessor
+	defaultVal *T
+	required   *Test
+	catch      *T
+	coercer    CoercerFunc
+	isNot      bool
 }
 
 // ! INTERNALS
@@ -98,7 +97,7 @@ func (v *StringSchema[T]) Parse(data any, dest *T, options ...ExecOption) ZogIss
 
 // Internal function to process the data
 func (v *StringSchema[T]) process(ctx *p.SchemaCtx) {
-	primitiveProcessor(ctx, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, v.coercer, p.IsParseZeroValue)
+	primitiveParsing(ctx, v.processors, v.defaultVal, v.required, v.catch, v.coercer, p.IsParseZeroValue)
 }
 
 // Validate Given string
@@ -121,29 +120,36 @@ func (v *StringSchema[T]) Validate(data *T, options ...ExecOption) ZogIssueList 
 
 // Internal function to validate the data
 func (v *StringSchema[T]) validate(ctx *p.SchemaCtx) {
-	primitiveValidator(ctx, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch)
+	primitiveValidation(ctx, v.processors, v.defaultVal, v.required, v.catch)
 }
 
-// TODO
-// PreTransform: trims the input data of whitespace if it is a string
-// func (v *StringSchema[T]) Trim() *StringSchema[T] {
-// 	v.preTransforms = append(v.preTransforms, func(val any, ctx Ctx) (any, error) {
-// 		switch v := val.(type) {
-// 		case T:
-// 			return T(strings.TrimSpace(string(v))), nil
-// 		default:
-// 			return val, nil
-// 		}
-// 	})
-// 	return v
-// }
+// Transform: trims the input data of whitespace if it is a string
+func (v *StringSchema[T]) Trim() *StringSchema[T] {
+	v.processors = append(v.processors, &p.TransformProcessor{
+		Transform: func(val any, ctx Ctx) error {
+			switch val := val.(type) {
+			case *T:
+				*val = T(strings.TrimSpace(string(*val)))
+			default:
+				return nil
+			}
+			return nil
+		},
+	})
 
+	return v
+}
+
+// deprecated: use schema.Transform instead. This no longer runs at the end of all validation steps but rather in the order it is called.
 // Adds posttransform function to schema
-func (v *StringSchema[T]) PostTransform(transform PostTransform) *StringSchema[T] {
-	if v.postTransforms == nil {
-		v.postTransforms = []PostTransform{}
-	}
-	v.postTransforms = append(v.postTransforms, transform)
+func (v *StringSchema[T]) PostTransform(transform Transform) *StringSchema[T] {
+	v.processors = append(v.processors, &p.TransformProcessor{Transform: transform})
+	return v
+}
+
+// Adds a transform function to the schema. Runs in the order it is called
+func (v *StringSchema[T]) Transform(transform p.Transform) *StringSchema[T] {
+	v.processors = append(v.processors, &p.TransformProcessor{Transform: transform})
 	return v
 }
 
@@ -177,20 +183,18 @@ func (v *StringSchema[T]) Catch(val T) *StringSchema[T] {
 	return v
 }
 
-// ! PRETRANSFORMS
-
 // ! Tests
 // custom test function call it -> schema.Test(t z.Test, opts ...TestOption)
 func (v *StringSchema[T]) Test(t Test) *StringSchema[T] {
 	t.Func = customTestBackwardsCompatWrapper(t.Func)
-	v.tests = append(v.tests, t)
+	v.processors = append(v.processors, &t)
 	return v
 }
 
 // Create a custom test function for the schema. This is similar to Zod's `.refine()` method.
 func (v *StringSchema[T]) TestFunc(testFunc BoolTFunc, options ...TestOption) *StringSchema[T] {
-	t := p.NewTestFunc("", testFunc, options...)
-	v.Test(*t)
+	test := p.NewTestFunc("", testFunc, options...)
+	v.Test(*test)
 	return v
 }
 
@@ -419,6 +423,6 @@ func (v *StringSchema[T]) addTest(t Test, fn BoolTFunc, options ...TestOption) *
 		opt(&t)
 	}
 
-	v.tests = append(v.tests, t)
+	v.processors = append(v.processors, &t)
 	return v
 }

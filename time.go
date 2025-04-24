@@ -12,12 +12,11 @@ import (
 var _ PrimitiveZogSchema[time.Time] = &TimeSchema{}
 
 type TimeSchema struct {
-	tests          []Test
-	postTransforms []PostTransform
-	defaultVal     *time.Time
-	required       *Test
-	catch          *time.Time
-	coercer        conf.CoercerFunc
+	processors []p.ZProcessor
+	defaultVal *time.Time
+	required   *Test
+	catch      *time.Time
+	coercer    conf.CoercerFunc
 }
 
 // Returns the type of the schema
@@ -88,7 +87,7 @@ func (v *TimeSchema) Parse(data any, dest *time.Time, options ...ExecOption) Zog
 
 // internal processes the data
 func (v *TimeSchema) process(ctx *p.SchemaCtx) {
-	primitiveProcessor(ctx, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, v.coercer, p.IsParseZeroValue)
+	primitiveParsing(ctx, v.processors, v.defaultVal, v.required, v.catch, v.coercer, p.IsParseZeroValue)
 }
 
 // Validates an existing time.Time
@@ -110,15 +109,19 @@ func (v *TimeSchema) Validate(data *time.Time, options ...ExecOption) ZogIssueLi
 
 // Internal function to validate the data
 func (v *TimeSchema) validate(ctx *p.SchemaCtx) {
-	primitiveValidator(ctx, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch)
+	primitiveValidation(ctx, v.processors, v.defaultVal, v.required, v.catch)
 }
 
 // Adds posttransform function to schema
+func (v *TimeSchema) Transform(transform Transform) *TimeSchema {
+	v.processors = append(v.processors, &p.TransformProcessor{Transform: transform})
+	return v
+}
+
+// Deprecated: use schema.Transform instead. This no longer runs at the end of all validation steps but rather in the order it is called.
+// Adds posttransform function to schema
 func (v *TimeSchema) PostTransform(transform PostTransform) *TimeSchema {
-	if v.postTransforms == nil {
-		v.postTransforms = []PostTransform{}
-	}
-	v.postTransforms = append(v.postTransforms, transform)
+	v.processors = append(v.processors, &p.TransformProcessor{Transform: transform})
 	return v
 }
 
@@ -159,7 +162,7 @@ func (v *TimeSchema) Catch(val time.Time) *TimeSchema {
 // }})
 func (v *TimeSchema) Test(t Test) *TimeSchema {
 	t.Func = customTestBackwardsCompatWrapper(t.Func)
-	v.tests = append(v.tests, t)
+	v.processors = append(v.processors, &t)
 	return v
 }
 
@@ -191,7 +194,7 @@ func (v *TimeSchema) After(t time.Time, opts ...TestOption) *TimeSchema {
 	for _, opt := range opts {
 		opt(&r)
 	}
-	v.tests = append(v.tests, r)
+	v.processors = append(v.processors, &r)
 	return v
 }
 
@@ -215,7 +218,7 @@ func (v *TimeSchema) Before(t time.Time, opts ...TestOption) *TimeSchema {
 	for _, opt := range opts {
 		opt(&r)
 	}
-	v.tests = append(v.tests, r)
+	v.processors = append(v.processors, &r)
 	return v
 }
 
@@ -238,7 +241,7 @@ func (v *TimeSchema) EQ(t time.Time, opts ...TestOption) *TimeSchema {
 	for _, opt := range opts {
 		opt(&r)
 	}
-	v.tests = append(v.tests, r)
+	v.processors = append(v.processors, &r)
 
 	return v
 }

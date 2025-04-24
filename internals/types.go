@@ -6,11 +6,10 @@ import (
 	"golang.org/x/exp/constraints"
 )
 
-// takes the data as input and returns the new data which will then be passed onto the next functions. If the function returns an error all validation will be skipped & the error will be returned. You may return a ZogIssue or an error. If its an error it will be wraped inside a ZogIssue
-type PreTransform = func(data any, ctx Ctx) (out any, err error)
-
 // type for functions called after validation & parsing is done
 type PostTransform = func(dataPtr any, ctx Ctx) error
+
+type Transform = func(valPtr any, ctx Ctx) error // TODO turn this into generic alias & upgrade to go 1.23. Maybe this can't actually be turned into a generic right? because of parse vs validate? Actually no, yes it can because it will always take a pointer to the value because we do the parsing before hand
 
 // Primitive types that can be used in Zod schemas
 type ZogPrimitive interface {
