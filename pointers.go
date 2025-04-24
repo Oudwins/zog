@@ -11,8 +11,6 @@ import (
 var _ ComplexZogSchema = &PointerSchema{}
 
 type PointerSchema struct {
-	// preTransforms  []PreTransform
-	tests    []Test
 	schema   ZogSchema
 	required *Test
 	// postTransforms []PostTransform
@@ -32,7 +30,6 @@ func (v *PointerSchema) setCoercer(c conf.CoercerFunc) {
 // Ptr creates a pointer ZogSchema
 func Ptr(schema ZogSchema) *PointerSchema {
 	return &PointerSchema{
-		tests:  []Test{},
 		schema: schema,
 	}
 }

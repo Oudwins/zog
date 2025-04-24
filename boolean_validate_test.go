@@ -280,11 +280,11 @@ func TestBoolValidateFalse(t *testing.T) {
 	}
 }
 
-func TestBoolValidatePostTransform(t *testing.T) {
+func TestBoolValidateTransform(t *testing.T) {
 	tests := []struct {
 		name      string
 		data      bool
-		transform p.PostTransform
+		transform p.Transform
 		expectErr bool
 		expected  bool
 	}{
@@ -320,7 +320,7 @@ func TestBoolValidatePostTransform(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			boolProc := Bool().PostTransform(test.transform)
+			boolProc := Bool().Transform(test.transform)
 			errs := boolProc.Validate(&test.data)
 
 			if (len(errs) > 0) != test.expectErr {

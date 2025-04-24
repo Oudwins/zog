@@ -18,31 +18,29 @@ import (
 //
 // Returns a new schema containing the merged fields and transforms
 func (v *StructSchema) Merge(other *StructSchema, others ...*StructSchema) *StructSchema {
+	totalProcessors := len(v.processors) + len(other.processors)
+	for _, o := range others {
+		totalProcessors += len(o.processors)
+	}
 	new := &StructSchema{
-		postTransforms: make([]p.PostTransform, 0),
-		tests:          make([]p.Test, 0),
-		required:       other.required,
-		schema:         Schema{},
-	}
-	if v.postTransforms != nil {
-		new.postTransforms = append(new.postTransforms, v.postTransforms...)
-	}
-	if other.postTransforms != nil {
-		new.postTransforms = append(new.postTransforms, other.postTransforms...)
+		processors: make([]p.ZProcessor, 0, totalProcessors),
+		required:   other.required,
+		schema:     Schema{},
 	}
 
-	if v.tests != nil {
-		new.tests = append(new.tests, v.tests...)
-	}
-	if other.tests != nil {
-		new.tests = append(new.tests, other.tests...)
+	// processors
+	new.processors = append(new.processors, v.processors...)
+	new.processors = append(new.processors, other.processors...)
+	for _, s := range others {
+		new.processors = append(new.processors, s.processors...)
 	}
 
 	maps.Copy(new.schema, v.schema)
 	maps.Copy(new.schema, other.schema)
-	for _, o := range others {
-		new = new.Merge(o)
+	for _, s := range others {
+		maps.Copy(new.schema, s.schema)
 	}
+
 	return new
 }
 
@@ -50,10 +48,9 @@ func (v *StructSchema) Merge(other *StructSchema, others ...*StructSchema) *Stru
 // The new schema shares references to the transforms, tests and inner schema.
 func (v *StructSchema) cloneShallow() *StructSchema {
 	new := &StructSchema{
-		postTransforms: v.postTransforms,
-		tests:          v.tests,
-		required:       v.required,
-		schema:         v.schema,
+		processors: v.processors,
+		required:   v.required,
+		schema:     v.schema,
 	}
 	return new
 }

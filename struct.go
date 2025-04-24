@@ -12,9 +12,8 @@ import (
 var _ ComplexZogSchema = &StructSchema{}
 
 type StructSchema struct {
-	schema         Schema
-	postTransforms []PostTransform
-	tests          []Test
+	schema     Schema
+	processors []p.ZProcessor
 	// defaultVal     any
 	required *Test
 	// catch          any
@@ -61,20 +60,6 @@ func (v *StructSchema) Parse(data any, destPtr any, options ...ExecOption) ZogIs
 }
 
 func (v *StructSchema) process(ctx *p.SchemaCtx) {
-
-	// 4. postTransforms
-	defer func() {
-		// only run posttransforms on success
-		if !ctx.HasErrored() {
-			for _, fn := range v.postTransforms {
-				err := fn(ctx.ValPtr, ctx)
-				if err != nil {
-					ctx.AddIssue(ctx.Issue().SetError(err))
-					return
-				}
-			}
-		}
-	}()
 
 	var dataProv p.DataProvider
 	// 2. cast data as DataProvider
@@ -125,10 +110,9 @@ func (v *StructSchema) process(ctx *p.SchemaCtx) {
 		subCtx.Path.Pop()
 	}
 
-	// 3. Tests for struct
-	for _, test := range v.tests {
-		ctx.Test = &test
-		test.Func(ctx.ValPtr, ctx)
+	for _, processor := range v.processors {
+		ctx.Processor = processor
+		processor.ZProcess(ctx.ValPtr, ctx)
 		if ctx.Exit {
 			// Catch here
 			return
@@ -158,19 +142,6 @@ func (v *StructSchema) Validate(dataPtr any, options ...ExecOption) ZogIssueMap 
 
 // Internal function to validate the data
 func (v *StructSchema) validate(ctx *p.SchemaCtx) {
-	// 4. postTransforms
-	defer func() {
-		// only run posttransforms on success
-		if !ctx.HasErrored() {
-			for _, fn := range v.postTransforms {
-				err := fn(ctx.Data, ctx)
-				if err != nil {
-					ctx.AddIssue(ctx.IssueFromUnknownError(err))
-					return
-				}
-			}
-		}
-	}()
 	refVal := reflect.ValueOf(ctx.ValPtr).Elem()
 
 	// 2. cast data to string & handle default/required
@@ -205,24 +176,26 @@ func (v *StructSchema) validate(ctx *p.SchemaCtx) {
 		subCtx.Path.Pop()
 	}
 
-	// 3. tests for slice
-	for _, test := range v.tests {
-		ctx.Test = &test
-		test.Func(ctx.Data, ctx)
+	for _, processor := range v.processors {
+		ctx.Processor = processor
+		processor.ZProcess(ctx.ValPtr, ctx)
 		if ctx.Exit {
-			// catch
+			// Catch here
 			return
 		}
 	}
-	// 4. postTransforms -> defered see above
+}
+
+// Deprecated: use schema.Transform instead. This no longer runs at the end of all validation steps but rather in the order it is called.
+// Adds posttransform function to schema
+func (v *StructSchema) PostTransform(transform p.Transform) *StructSchema {
+	v.processors = append(v.processors, &p.TransformProcessor{Transform: transform})
+	return v
 }
 
 // Adds posttransform function to schema
-func (v *StructSchema) PostTransform(transform PostTransform) *StructSchema {
-	if v.postTransforms == nil {
-		v.postTransforms = []PostTransform{}
-	}
-	v.postTransforms = append(v.postTransforms, transform)
+func (v *StructSchema) Transform(transform p.Transform) *StructSchema {
+	v.processors = append(v.processors, &p.TransformProcessor{Transform: transform})
 	return v
 }
 
@@ -256,7 +229,7 @@ func (v *StructSchema) Optional() *StructSchema {
 // ! VALIDATORS
 // custom test function call it -> schema.Test(t z.Test)
 func (v *StructSchema) Test(t Test) *StructSchema {
-	v.tests = append(v.tests, t)
+	v.processors = append(v.processors, &t)
 	return v
 }
 

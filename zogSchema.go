@@ -30,11 +30,12 @@ type PrimitiveZogSchema[T p.ZogPrimitive] interface {
 
 // Schema Parts Export
 
-// Function signature for preTransforms. Takes the value and the context and returns the new value and an error.
-type PreTransform = p.PreTransform
-
+// deprecated: use z.Transform instead
 // Function signature for postTransforms. Takes the value pointer and the context and returns an error.
 type PostTransform = p.PostTransform
+
+// Function signature for transforms. Takes the value pointer and the context and returns an optional error.
+type Transform = p.Transform
 
 // Function signature for issue formatters. Takes the issue and the context and returns the formatted issue.
 type IssueFmtFunc = p.IssueFmtFunc
@@ -53,23 +54,10 @@ func TestFunc(IssueCode zconst.ZogIssueCode, fn BoolTFunc, options ...TestOption
 
 // ! PRIMITIVE PROCESSING -> Not userspace code
 
-func primitiveProcessor[T p.ZogPrimitive](ctx *p.SchemaCtx, tests []Test, postTransforms []PostTransform, defaultVal *T, required *Test, catch *T, coercer CoercerFunc, isZeroFunc p.IsZeroValueFunc) {
+func primitiveParsing[T p.ZogPrimitive](ctx *p.SchemaCtx, processors []p.ZProcessor, defaultVal *T, required *Test, catch *T, coercer CoercerFunc, isZeroFunc p.IsZeroValueFunc) {
 	ctx.CanCatch = catch != nil
 
 	destPtr := ctx.ValPtr.(*T)
-	// 4. postTransforms
-	defer func() {
-		// only run posttransforms on success
-		if !ctx.HasErrored() {
-			for _, fn := range postTransforms {
-				err := fn(destPtr, ctx)
-				if err != nil {
-					ctx.AddIssue(ctx.IssueFromUnknownError(err))
-					return
-				}
-			}
-		}
-	}()
 
 	// 2. cast data to string & handle default/required
 	isZeroVal := isZeroFunc(ctx.Data, ctx)
@@ -103,38 +91,23 @@ func primitiveProcessor[T p.ZogPrimitive](ctx *p.SchemaCtx, tests []Test, postTr
 		*destPtr = v.(T)
 	}
 
-	// 3. tests
-	for _, test := range tests {
-		ctx.Test = &test
-		test.Func(destPtr, ctx)
+	for _, processor := range processors {
+		ctx.Processor = processor
+		processor.ZProcess(destPtr, ctx)
 		if ctx.Exit {
 			if ctx.CanCatch {
 				*destPtr = *catch
 				return
 			}
+			return
 		}
 	}
-
-	// 4. postTransforms -> Done above on defer
 }
 
-func primitiveValidator[T p.ZogPrimitive](ctx *p.SchemaCtx, tests []Test, postTransforms []PostTransform, defaultVal *T, required *Test, catch *T) {
+func primitiveValidation[T p.ZogPrimitive](ctx *p.SchemaCtx, processors []p.ZProcessor, defaultVal *T, required *Test, catch *T) {
 	ctx.CanCatch = catch != nil
 
 	valPtr := ctx.ValPtr.(*T)
-	// 4. postTransforms
-	defer func() {
-		// only run posttransforms on success
-		if !ctx.HasErrored() {
-			for _, fn := range postTransforms {
-				err := fn(valPtr, ctx)
-				if err != nil {
-					ctx.AddIssue(ctx.IssueFromUnknownError(err))
-					return
-				}
-			}
-		}
-	}()
 
 	// 2. cast data to string & handle default/required
 	// Warning. This uses generic IsZeroValue because for Validate we treat zero values as invalid for required fields. This is different from Parse.
@@ -159,16 +132,15 @@ func primitiveValidator[T p.ZogPrimitive](ctx *p.SchemaCtx, tests []Test, postTr
 		}
 	}
 
-	// 3. tests
-	for _, test := range tests {
-		ctx.Test = &test
-		test.Func(valPtr, ctx)
+	for _, processor := range processors {
+		ctx.Processor = processor
+		processor.ZProcess(valPtr, ctx)
 		if ctx.Exit {
 			if ctx.CanCatch {
 				*valPtr = *catch
 				return
 			}
+			return
 		}
 	}
-
 }

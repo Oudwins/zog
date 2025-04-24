@@ -13,11 +13,10 @@ import (
 var _ ComplexZogSchema = &SliceSchema{}
 
 type SliceSchema struct {
-	tests          []Test
-	schema         ZogSchema
-	postTransforms []PostTransform
-	required       *Test
-	defaultVal     any
+	processors []p.ZProcessor
+	schema     ZogSchema
+	required   *Test
+	defaultVal any
 	// catch          any
 	coercer conf.CoercerFunc
 }
@@ -67,19 +66,6 @@ func (v *SliceSchema) Validate(data any, options ...ExecOption) ZogIssueMap {
 
 // Internal function to validate the data
 func (v *SliceSchema) validate(ctx *p.SchemaCtx) {
-	// 4. postTransforms
-	defer func() {
-		// only run posttransforms on success
-		if !ctx.HasErrored() {
-			for _, fn := range v.postTransforms {
-				err := fn(ctx.ValPtr, ctx)
-				if err != nil {
-					ctx.AddIssue(ctx.IssueFromUnknownError(err))
-					return
-				}
-			}
-		}
-	}()
 
 	refVal := reflect.ValueOf(ctx.ValPtr).Elem() // we use this to set the value to the ptr. But we still reference the ptr everywhere. This is correct even if it seems confusing.
 	// 2. cast data to string & handle default/required
@@ -110,21 +96,14 @@ func (v *SliceSchema) validate(ctx *p.SchemaCtx) {
 		subCtx.Path.Pop()
 	}
 
-	// 3. tests for slice
-	for _, test := range v.tests {
-		ctx.Test = &test
-		test.Func(ctx.ValPtr, ctx)
+	for _, processor := range v.processors {
+		ctx.Processor = processor
+		processor.ZProcess(ctx.ValPtr, ctx)
 		if ctx.Exit {
-			// catching the first error if catch is set
-			// if v.catch != nil {
-			// 	dest = v.catch
-			// 	break
-			// }
-			//
+			// can catch here
 			return
 		}
 	}
-	// 4. postTransforms -> defered see above
 }
 
 // Only supports parsing from data=slice[any] to a dest =&slice[] (this can be typed. Doesn't have to be any)
@@ -147,20 +126,6 @@ func (v *SliceSchema) Parse(data any, dest any, options ...ExecOption) ZogIssueM
 
 // Internal function to process the data
 func (v *SliceSchema) process(ctx *p.SchemaCtx) {
-
-	// 4. postTransforms
-	defer func() {
-		// only run posttransforms on success
-		if !ctx.HasErrored() {
-			for _, fn := range v.postTransforms {
-				err := fn(ctx.ValPtr, ctx)
-				if err != nil {
-					ctx.AddIssue(ctx.IssueFromUnknownError(err))
-					return
-				}
-			}
-		}
-	}()
 
 	// 2. cast data to string & handle default/required
 	isZeroVal := p.IsParseZeroValue(ctx.Data, ctx)
@@ -203,24 +168,30 @@ func (v *SliceSchema) process(ctx *p.SchemaCtx) {
 		subCtx.Path.Pop()
 	}
 
-	// 3. tests for slice
-	for _, test := range v.tests {
-		ctx.Test = &test
-		test.Func(ctx.ValPtr, ctx)
+	for _, processor := range v.processors {
+		ctx.Processor = processor
+		processor.ZProcess(ctx.ValPtr, ctx)
 		if ctx.Exit {
-			// catch here
 			return
 		}
 	}
-	// 4. postTransforms -> defered see above
+
 }
 
+// Adds transform function to schema.
+func (v *SliceSchema) Transform(transform Transform) *SliceSchema {
+	v.processors = append(v.processors, &p.TransformProcessor{
+		Transform: transform,
+	})
+	return v
+}
+
+// Deprecated: Use schema.Transform() instead. This no longer executes after all tests are ran but rather in the order it is added.
 // Adds posttransform function to schema
 func (v *SliceSchema) PostTransform(transform PostTransform) *SliceSchema {
-	if v.postTransforms == nil {
-		v.postTransforms = []PostTransform{}
-	}
-	v.postTransforms = append(v.postTransforms, transform)
+	v.processors = append(v.processors, &p.TransformProcessor{
+		Transform: transform,
+	})
 	return v
 }
 
@@ -259,7 +230,7 @@ func (v *SliceSchema) Default(val any) *SliceSchema {
 
 // custom test function call it -> schema.Test(t z.Test)
 func (v *SliceSchema) Test(t Test) *SliceSchema {
-	v.tests = append(v.tests, t)
+	v.processors = append(v.processors, &t)
 	return v
 }
 
@@ -277,7 +248,7 @@ func (v *SliceSchema) Min(n int, options ...TestOption) *SliceSchema {
 	for _, opt := range options {
 		opt(&t)
 	}
-	v.tests = append(v.tests, t)
+	v.processors = append(v.processors, &t)
 	return v
 }
 
@@ -288,7 +259,7 @@ func (v *SliceSchema) Max(n int, options ...TestOption) *SliceSchema {
 	for _, opt := range options {
 		opt(&t)
 	}
-	v.tests = append(v.tests, t)
+	v.processors = append(v.processors, &t)
 	return v
 }
 
@@ -299,7 +270,7 @@ func (v *SliceSchema) Len(n int, options ...TestOption) *SliceSchema {
 	for _, opt := range options {
 		opt(&t)
 	}
-	v.tests = append(v.tests, t)
+	v.processors = append(v.processors, &t)
 	return v
 }
 
@@ -329,7 +300,7 @@ func (v *SliceSchema) Contains(value any, options ...TestOption) *SliceSchema {
 	for _, opt := range options {
 		opt(&t)
 	}
-	v.tests = append(v.tests, t)
+	v.processors = append(v.processors, &t)
 	return v
 }
 

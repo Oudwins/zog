@@ -40,7 +40,7 @@ func (c *Custom[T]) Parse(data any, destPtr *T, options ...ExecOption) ZogIssueL
 }
 
 func (c *Custom[T]) process(ctx *p.SchemaCtx) {
-	ctx.Test = &c.test
+	ctx.Processor = &c.test
 
 	// set the value
 	d, ok := ctx.Data.(T)
@@ -72,7 +72,7 @@ func (c *Custom[T]) Validate(dataPtr *T, options ...ExecOption) ZogIssueList {
 }
 
 func (c *Custom[T]) validate(ctx *p.SchemaCtx) {
-	ctx.Test = &c.test
+	ctx.Processor = &c.test
 	c.test.Func(ctx.ValPtr, ctx)
 }
 

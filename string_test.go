@@ -43,21 +43,21 @@ func TestStringOptional(t *testing.T) {
 	assert.Equal(t, "foo", dest)
 }
 
-// func TestStringTrim(t *testing.T) {
-// 	field := String().Required().Trim()
-// 	var dest string
+func TestStringTrim(t *testing.T) {
+	field := String().Required().Trim()
+	var dest string
 
-// 	errs := field.Parse(" foo ", &dest)
-// 	assert.Empty(t, errs)
-// 	assert.Equal(t, "foo", dest)
+	errs := field.Parse(" foo ", &dest)
+	assert.Empty(t, errs)
+	assert.Equal(t, "foo", dest)
 
-// 	errs = field.Parse(123, &dest)
-// 	assert.Empty(t, errs)
-// 	assert.Equal(t, "123", dest)
-// }
+	errs = field.Parse(123, &dest)
+	assert.Empty(t, errs)
+	assert.Equal(t, "123", dest)
+}
 
 func TestStringPostTransform(t *testing.T) {
-	field := String().Required().PostTransform(func(val any, ctx Ctx) error {
+	field := String().Required().Transform(func(val any, ctx Ctx) error {
 		s := val.(*string)
 		*s = *s + "_transformed"
 		return nil
@@ -67,18 +67,6 @@ func TestStringPostTransform(t *testing.T) {
 	errs := field.Parse("hello", &dest)
 	assert.Empty(t, errs)
 	assert.Equal(t, "hello_transformed", dest)
-
-	// Test that PostTransform is not applied when there's an error
-	field = String().Required().Len(1).PostTransform(func(val any, ctx Ctx) error {
-		s := val.(*string)
-		*s = *s + "_transformed"
-		return nil
-	})
-
-	errs = field.Parse("short", &dest)
-	assert.NotEmpty(t, errs)
-	tutils.VerifyDefaultIssueMessages(t, errs)
-	assert.NotEqual(t, "short_transformed", dest)
 }
 
 func TestStringRequiredAborts(t *testing.T) {

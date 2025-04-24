@@ -50,30 +50,8 @@ func TestValidateSliceDefault(t *testing.T) {
 	assert.Equal(t, []string{"default"}, dest)
 }
 
-// func TestValidateSlicePreTransform(t *testing.T) {
-// 	preTransform := func(val any, ctx Ctx) (any, error) {
-// 		if v, ok := val.([]string); ok {
-// 			out := make([]string, len(v))
-// 			copy(out, v)
-// 			for i := range out {
-// 				out[i] = strings.ToUpper(out[i])
-// 			}
-// 			return out, nil
-// 		}
-// 		return val, nil
-// 	}
-
-// 	validator := Slice(String()).PreTransform(preTransform)
-// 	dest := []string{"test", "example"}
-// 	errs := validator.Validate(&dest)
-// 	if len(errs) > 0 {
-// 		t.Errorf("Expected no errors, got %v", errs)
-// 	}
-// 	assert.Equal(t, []string{"TEST", "EXAMPLE"}, dest)
-// }
-
-func TestValidateSlicePostTransform(t *testing.T) {
-	postTransform := func(val any, ctx Ctx) error {
+func TestValidateSliceTransform(t *testing.T) {
+	transform := func(val any, ctx Ctx) error {
 		if v, ok := val.(*[]string); ok {
 			for i := range *v {
 				(*v)[i] = strings.ToUpper((*v)[i])
@@ -82,7 +60,7 @@ func TestValidateSlicePostTransform(t *testing.T) {
 		return nil
 	}
 
-	validator := Slice(String()).PostTransform(postTransform)
+	validator := Slice(String()).Transform(transform)
 	dest := []string{"test", "example"}
 	errs := validator.Validate(&dest)
 	if len(errs) > 0 {

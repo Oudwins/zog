@@ -9,12 +9,11 @@ import (
 var _ PrimitiveZogSchema[bool] = &BoolSchema[bool]{}
 
 type BoolSchema[T ~bool] struct {
-	tests          []Test
-	postTransforms []PostTransform
-	defaultVal     *T
-	required       *Test
-	catch          *T
-	coercer        CoercerFunc
+	processors []p.ZProcessor
+	defaultVal *T
+	required   *Test
+	catch      *T
+	coercer    CoercerFunc
 }
 
 // ! INTERNALS
@@ -61,7 +60,7 @@ func (v *BoolSchema[T]) Parse(data any, dest *T, options ...ExecOption) ZogIssue
 
 // Internal function to process the data
 func (v *BoolSchema[T]) process(ctx *p.SchemaCtx) {
-	primitiveProcessor(ctx, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch, v.coercer, p.IsParseZeroValue)
+	primitiveParsing(ctx, v.processors, v.defaultVal, v.required, v.catch, v.coercer, p.IsParseZeroValue)
 }
 
 // Validate data against schema
@@ -84,14 +83,14 @@ func (v *BoolSchema[T]) Validate(val *T, options ...ExecOption) ZogIssueList {
 
 // Internal function to validate data
 func (v *BoolSchema[T]) validate(ctx *p.SchemaCtx) {
-	primitiveValidator(ctx, v.tests, v.postTransforms, v.defaultVal, v.required, v.catch)
+	primitiveValidation(ctx, v.processors, v.defaultVal, v.required, v.catch)
 }
 
 // GLOBAL METHODS
 
 func (v *BoolSchema[T]) Test(t Test) *BoolSchema[T] {
 	t.Func = customTestBackwardsCompatWrapper(t.Func)
-	v.tests = append(v.tests, t)
+	v.processors = append(v.processors, &t)
 	return v
 }
 
@@ -102,12 +101,16 @@ func (v *BoolSchema[T]) TestFunc(testFunc BoolTFunc, options ...TestOption) *Boo
 	return v
 }
 
+// deprecated: use schema.Transform instead. This no longer runs at the end of all validation steps but rather in the order it is called.
 // Adds posttransform function to schema
 func (v *BoolSchema[T]) PostTransform(transform PostTransform) *BoolSchema[T] {
-	if v.postTransforms == nil {
-		v.postTransforms = []PostTransform{}
-	}
-	v.postTransforms = append(v.postTransforms, transform)
+	v.processors = append(v.processors, &p.TransformProcessor{Transform: transform})
+	return v
+}
+
+// Adds a transform function to the schema. Runs in the order it is called (i.e schema.True().Transform(...) will run the transform after the True test)
+func (v *BoolSchema[T]) Transform(transform p.Transform) *BoolSchema[T] {
+	v.processors = append(v.processors, &p.TransformProcessor{Transform: transform})
 	return v
 }
 
@@ -145,20 +148,20 @@ func (v *BoolSchema[T]) Catch(val T) *BoolSchema[T] {
 func (v *BoolSchema[T]) True() *BoolSchema[T] {
 	t, fn := p.EQ[T](T(true))
 	p.TestFuncFromBool(fn, &t)
-	v.tests = append(v.tests, t)
+	v.processors = append(v.processors, &t)
 	return v
 }
 
 func (v *BoolSchema[T]) False() *BoolSchema[T] {
 	t, fn := p.EQ[T](T(false))
 	p.TestFuncFromBool(fn, &t)
-	v.tests = append(v.tests, t)
+	v.processors = append(v.processors, &t)
 	return v
 }
 
 func (v *BoolSchema[T]) EQ(val T) *BoolSchema[T] {
 	t, fn := p.EQ[T](val)
 	p.TestFuncFromBool(fn, &t)
-	v.tests = append(v.tests, t)
+	v.processors = append(v.processors, &t)
 	return v
 }

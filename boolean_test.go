@@ -380,11 +380,11 @@ func TestBoolFalse(t *testing.T) {
 	}
 }
 
-func TestBoolPostTransform(t *testing.T) {
+func TestBoolTransform(t *testing.T) {
 	tests := []struct {
 		name      string
 		data      interface{}
-		transform p.PostTransform
+		transform p.Transform
 		expectErr bool
 		expected  bool
 	}{
@@ -420,7 +420,7 @@ func TestBoolPostTransform(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			boolProc := Bool().PostTransform(test.transform)
+			boolProc := Bool().Transform(test.transform)
 			var result bool
 			errs := boolProc.Parse(test.data, &result)
 

@@ -136,9 +136,9 @@ func TestSliceErrors(t *testing.T) {
 	tutils.VerifyDefaultIssueMessagesMap(t, errs)
 }
 
-func TestSlicePostTransform(t *testing.T) {
+func TestSliceTransform(t *testing.T) {
 	s := []string{}
-	schema := Slice(String()).PostTransform(func(dataPtr any, ctx Ctx) error {
+	schema := Slice(String()).Transform(func(dataPtr any, ctx Ctx) error {
 		s := dataPtr.(*[]string)
 		for i := 0; i < len(*s); i++ {
 			(*s)[i] = strings.ToUpper((*s)[i])
