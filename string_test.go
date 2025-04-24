@@ -43,18 +43,18 @@ func TestStringOptional(t *testing.T) {
 	assert.Equal(t, "foo", dest)
 }
 
-// func TestStringTrim(t *testing.T) {
-// 	field := String().Required().Trim()
-// 	var dest string
+func TestStringTrim(t *testing.T) {
+	field := String().Required().Trim()
+	var dest string
 
-// 	errs := field.Parse(" foo ", &dest)
-// 	assert.Empty(t, errs)
-// 	assert.Equal(t, "foo", dest)
+	errs := field.Parse(" foo ", &dest)
+	assert.Empty(t, errs)
+	assert.Equal(t, "foo", dest)
 
-// 	errs = field.Parse(123, &dest)
-// 	assert.Empty(t, errs)
-// 	assert.Equal(t, "123", dest)
-// }
+	errs = field.Parse(123, &dest)
+	assert.Empty(t, errs)
+	assert.Equal(t, "123", dest)
+}
 
 func TestStringPostTransform(t *testing.T) {
 	field := String().Required().Transform(func(val any, ctx Ctx) error {

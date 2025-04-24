@@ -123,23 +123,26 @@ func (v *StringSchema[T]) validate(ctx *p.SchemaCtx) {
 	primitiveValidation(ctx, v.processors, v.defaultVal, v.required, v.catch)
 }
 
-// TODO
-// PreTransform: trims the input data of whitespace if it is a string
-// func (v *StringSchema[T]) Trim() *StringSchema[T] {
-// 	v.preTransforms = append(v.preTransforms, func(val any, ctx Ctx) (any, error) {
-// 		switch v := val.(type) {
-// 		case T:
-// 			return T(strings.TrimSpace(string(v))), nil
-// 		default:
-// 			return val, nil
-// 		}
-// 	})
-// 	return v
-// }
+// Transform: trims the input data of whitespace if it is a string
+func (v *StringSchema[T]) Trim() *StringSchema[T] {
+	v.processors = append(v.processors, &p.TransformProcessor{
+		Transform: func(val any, ctx Ctx) error {
+			switch val := val.(type) {
+			case *T:
+				*val = T(strings.TrimSpace(string(*val)))
+			default:
+				return nil
+			}
+			return nil
+		},
+	})
+
+	return v
+}
 
 // deprecated: use schema.Transform instead. This no longer runs at the end of all validation steps but rather in the order it is called.
 // Adds posttransform function to schema
-func (v *StringSchema[T]) PostTransform(transform PostTransform) *StringSchema[T] {
+func (v *StringSchema[T]) PostTransform(transform Transform) *StringSchema[T] {
 	v.processors = append(v.processors, &p.TransformProcessor{Transform: transform})
 	return v
 }
