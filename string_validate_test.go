@@ -58,8 +58,8 @@ func TestValidateStringOptional(t *testing.T) {
 // 	assert.Equal(t, "123", dest)
 // }
 
-func TestValidateStringPostTransform(t *testing.T) {
-	field := String().Required().PostTransform(func(val any, ctx Ctx) error {
+func TestValidateStringTransform(t *testing.T) {
+	field := String().Required().Transform(func(val any, ctx Ctx) error {
 		s := val.(*string)
 		*s = *s + "_transformed"
 		return nil
@@ -69,19 +69,6 @@ func TestValidateStringPostTransform(t *testing.T) {
 	errs := field.Validate(&dest)
 	assert.Empty(t, errs)
 	assert.Equal(t, "hello_transformed", dest)
-
-	// Test that PostTransform is not applied when there's an error
-	field = String().Required().Len(1).PostTransform(func(val any, ctx Ctx) error {
-		s := val.(*string)
-		*s = *s + "_transformed"
-		return nil
-	})
-
-	dest = "short"
-	errs = field.Validate(&dest)
-	assert.NotEmpty(t, errs)
-	tutils.VerifyDefaultIssueMessages(t, errs)
-	assert.NotEqual(t, "short_transformed", dest)
 }
 
 func TestValidateStringRequiredAborts(t *testing.T) {
