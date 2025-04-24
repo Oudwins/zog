@@ -23,7 +23,7 @@ func TestFuncFromBool(fn BoolTFunc, test *Test) {
 		}
 
 		c := ctx.(*SchemaCtx)
-		ctx.AddIssue(c.IssueFromTest(c.Test, val))
+		ctx.AddIssue(c.IssueFromTest(c.Processor.(*Test), val))
 	}
 }
 
@@ -34,7 +34,7 @@ func TestNotFuncFromBool(fn BoolTFunc, test *Test) {
 		}
 
 		c := ctx.(*SchemaCtx)
-		ctx.AddIssue(c.IssueFromTest(c.Test, val))
+		ctx.AddIssue(c.IssueFromTest(c.Processor.(*Test), val))
 	}
 }
 
@@ -64,9 +64,6 @@ type Test struct {
 }
 
 func (t *Test) ZProcess(valPtr any, ctx Ctx) {
-	// TODO REMOVE THIS. ITS COMPATIBLITY LAYER
-	s := ctx.(*SchemaCtx)
-	s.Test = s.Processor.(*Test)
 	t.Func(valPtr, ctx)
 }
 

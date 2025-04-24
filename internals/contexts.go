@@ -139,7 +139,6 @@ type SchemaCtx struct {
 	Exit      bool
 	HasCaught bool
 	Processor ZProcessor
-	Test      *Test
 }
 
 func (c *SchemaCtx) AddIssue(e *ZogIssue) {
