@@ -178,7 +178,15 @@ func (v *SliceSchema) process(ctx *p.SchemaCtx) {
 
 }
 
-// Deprecated: Use schema.Transform() instead
+// Adds transform function to schema.
+func (v *SliceSchema) Transform(transform Transform) *SliceSchema {
+	v.processors = append(v.processors, &p.TransformProcessor{
+		Transform: transform,
+	})
+	return v
+}
+
+// Deprecated: Use schema.Transform() instead. This no longer executes after all tests are ran but rather in the order it is added.
 // Adds posttransform function to schema
 func (v *SliceSchema) PostTransform(transform PostTransform) *SliceSchema {
 	v.processors = append(v.processors, &p.TransformProcessor{
