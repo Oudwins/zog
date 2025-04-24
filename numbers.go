@@ -172,7 +172,7 @@ func (v *NumberSchema[T]) PostTransform(transform PostTransform) *NumberSchema[T
 }
 
 // Adds a transform function to the schema. Runs in the order it is called
-func (v *NumberSchema[T]) Transform(transform p.Transform) *NumberSchema[T] {
+func (v *NumberSchema[T]) Transform(transform Transform) *NumberSchema[T] {
 	v.processors = append(v.processors, &p.TransformProcessor{Transform: transform})
 	return v
 }
