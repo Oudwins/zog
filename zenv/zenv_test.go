@@ -82,7 +82,7 @@ func TestEnvDataProviderGet(t *testing.T) {
 
 	// Test with non-existent environment variable
 	result = provider.Get("NON_EXISTENT_VAR")
-	assert.Equal(t, "", result)
+	assert.Equal(t, nil, result)
 
 	// Test with environment variable containing whitespace
 	os.Setenv("WHITESPACE_VAR", "  trimmed  ")

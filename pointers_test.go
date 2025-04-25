@@ -179,17 +179,18 @@ func TestPtrRequired(t *testing.T) {
 	tests := []struct {
 		Val         any
 		ExpectedErr bool
+		ErrCode     string
 	}{
-		{nil, true},
-		{"", true},
-		{0, false},
-		{false, false},
+		{nil, true, zconst.IssueCodeNotNil},
+		{"", false, ""},
+		{0, false, ""},
+		{false, false, ""},
 	}
 	for _, test := range tests {
 		err := schema.Parse(test.Val, &dest)
 		if test.ExpectedErr {
 			assert.NotNil(t, err)
-			assert.Equal(t, "Testing", err[zconst.ISSUE_KEY_ROOT][0].Message)
+			assert.Equal(t, test.ErrCode, err[zconst.ISSUE_KEY_ROOT][0].Code)
 		} else {
 			assert.Nil(t, err)
 		}

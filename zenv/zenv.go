@@ -18,7 +18,11 @@ type envDataProvider struct {
 }
 
 func (e *envDataProvider) Get(key string) any {
-	return strings.TrimSpace(os.Getenv(key))
+	val := strings.TrimSpace(os.Getenv(key))
+	if val == "" {
+		return nil
+	}
+	return val
 }
 
 func (e *envDataProvider) GetByField(field reflect.StructField, fallback string) (any, string) {

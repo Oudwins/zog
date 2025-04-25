@@ -2,7 +2,6 @@ package internals
 
 import (
 	"reflect"
-	"strings"
 )
 
 type IsZeroValueFunc = func(val any, ctx Ctx) bool
@@ -15,12 +14,5 @@ func IsZeroValue(x any) bool {
 
 // checks if the value is the zero value but only for parsing purposes (i.e the parse function)
 func IsParseZeroValue(val any, ctx Ctx) bool {
-	if val == nil {
-		return true
-	}
-	s, ok := val.(string)
-	if ok {
-		return strings.TrimSpace(s) == ""
-	}
-	return false
+	return val == nil
 }
