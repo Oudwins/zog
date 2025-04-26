@@ -82,7 +82,7 @@ func TestPreprocessStructValidate(t *testing.T) {
 	s := Preprocess(func(data *User, ctx Ctx) (out User, err error) {
 		return User{Id: data.Id + "!", Name: data.Name + "!"}, nil
 	}, Struct(
-		Schema{
+		Shape{
 			"Id":   String().Min(1),
 			"Name": String().Min(1),
 		},
@@ -105,7 +105,7 @@ func TestPreprocessSliceOfStructsValidate(t *testing.T) {
 			result[i] = User{Id: u.Id + "!", Name: u.Name + "!"}
 		}
 		return result, nil
-	}, Slice(Struct(Schema{
+	}, Slice(Struct(Shape{
 		"Id":   String().Min(1),
 		"Name": String().Min(1),
 	})))
@@ -136,7 +136,7 @@ func TestPreprocessStructWithSliceValidate(t *testing.T) {
 			Id:    data.Id + "!",
 			Names: names,
 		}, nil
-	}, Struct(Schema{
+	}, Struct(Shape{
 		"Id":    String().Min(1),
 		"Names": Slice(String().Min(1)),
 	}))
@@ -179,7 +179,7 @@ func TestPreprocessPtrStructValidate(t *testing.T) {
 	s := Preprocess(func(data **User, ctx Ctx) (out *User, err error) {
 		return &User{Id: (*data).Id + "!", Name: (*data).Name + "!"}, nil
 	}, Ptr(Struct(
-		Schema{
+		Shape{
 			"Id":   String().Min(1),
 			"Name": String().Min(1),
 		},
@@ -284,7 +284,7 @@ func TestPreprocessPartOfStructValidate(t *testing.T) {
 		Name string
 		Age  int
 	}
-	s := Struct(Schema{
+	s := Struct(Shape{
 		"Id": Preprocess(
 			func(data *string, ctx Ctx) (out string, err error) {
 				return strings.ToUpper(*data), nil

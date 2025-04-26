@@ -87,7 +87,7 @@ func TestPreprocessStruct(t *testing.T) {
 		parts := strings.Split(data, ",")
 		return User{Id: parts[0], Name: parts[1]}, nil
 	}, Struct(
-		Schema{
+		Shape{
 			"Id":   String().Min(1),
 			"Name": String().Min(1),
 		},
@@ -112,7 +112,7 @@ func TestPreprocessSliceOfStructs(t *testing.T) {
 			result[i] = User{Id: parts[0], Name: parts[1]}
 		}
 		return result, nil
-	}, Slice(Struct(Schema{
+	}, Slice(Struct(Shape{
 		"Id":   String().Min(1),
 		"Name": String().Min(1),
 	})))
@@ -138,7 +138,7 @@ func TestPreprocessStructWithSlice(t *testing.T) {
 			Id:    parts[0],
 			Names: strings.Split(parts[1], ","),
 		}, nil
-	}, Struct(Schema{
+	}, Struct(Shape{
 		"Id":    String().Min(1),
 		"Names": Slice(String().Min(1)),
 	}))
@@ -178,7 +178,7 @@ func TestPreprocessPtrStruct(t *testing.T) {
 		parts := strings.Split(data, ",")
 		return &User{Id: parts[0], Name: parts[1]}, nil
 	}, Ptr(Struct(
-		Schema{
+		Shape{
 			"Id":   String().Min(1),
 			"Name": String().Min(1),
 		},
@@ -268,7 +268,7 @@ func TestPreprocessPartOfStruct(t *testing.T) {
 		Name string
 		Age  int
 	}
-	s := Struct(Schema{
+	s := Struct(Shape{
 		"Id": Preprocess(
 			func(data string, ctx Ctx) (out string, err error) {
 				return strings.ToUpper(data), nil

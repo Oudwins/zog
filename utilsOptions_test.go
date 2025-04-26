@@ -60,7 +60,7 @@ func TestIssuePath(t *testing.T) {
 		Name string
 	}
 	var out User
-	schema := Struct(Schema{
+	schema := Struct(Shape{
 		"name": String().Min(5, IssuePath("foo"), Message("foo msg")),
 	})
 
@@ -107,7 +107,7 @@ func TestWithCoercer(t *testing.T) {
 		Bytes string
 	}
 
-	schema2 := Struct(Schema{
+	schema2 := Struct(Shape{
 		"bytes": schema,
 	})
 

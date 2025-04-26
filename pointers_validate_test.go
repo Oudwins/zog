@@ -44,7 +44,7 @@ func TestValidatePtrInStruct(t *testing.T) {
 
 	val := 10
 	out := TestStruct{Value: &val}
-	s := Struct(Schema{
+	s := Struct(Shape{
 		"value": Ptr(Int()),
 	})
 	errs := s.Validate(&out)
@@ -60,7 +60,7 @@ func TestValidatePtrPtrInStruct(t *testing.T) {
 	val := 10
 	pval := &val
 	out := TestStruct{Value: &pval}
-	s := Struct(Schema{
+	s := Struct(Shape{
 		"value": Ptr(Ptr(Int())),
 	})
 
@@ -85,8 +85,8 @@ func TestValidatePtrNestedStructs(t *testing.T) {
 	inner := Inner{Value: &val}
 	out := Outer{Inner: &inner}
 
-	schema := Struct(Schema{
-		"inner": Ptr(Struct(Schema{
+	schema := Struct(Shape{
+		"inner": Ptr(Struct(Shape{
 			"value": Ptr(Int()),
 		})),
 	})
@@ -115,7 +115,7 @@ func TestValidatePtrSliceStruct(t *testing.T) {
 		Value int
 	}
 
-	schema := Slice(Ptr(Struct(Schema{
+	schema := Slice(Ptr(Struct(Shape{
 		"value": Int(),
 	})))
 	out := []*TestStruct{
@@ -155,7 +155,7 @@ func TestValidatePtrToStruct(t *testing.T) {
 
 	val := 10
 	dest := &TestStruct{Value: &val}
-	s := Ptr(Struct(Schema{
+	s := Ptr(Struct(Shape{
 		"value": Ptr(Int()),
 	}))
 

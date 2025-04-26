@@ -12,7 +12,7 @@ import (
 var _ ComplexZogSchema = &StructSchema{}
 
 type StructSchema struct {
-	schema     Schema
+	schema     Shape
 	processors []p.ZProcessor
 	// defaultVal     any
 	required *Test
@@ -31,15 +31,15 @@ func (v *StructSchema) setCoercer(c conf.CoercerFunc) {
 
 // ! USER FACING FUNCTIONS
 
+// A map of field names to zog schemas
+type Shape map[string]ZogSchema
+
 // deprecated: use z.Struct(z.Shape{}) instead
 // A map of field names to zog schemas
-type Schema map[string]ZogSchema
-
-// A map of field names to zog schemas
-type Shape = Schema
+type Schema = Shape
 
 // Returns a new StructSchema which can be used to parse input data into a struct
-func Struct(schema Schema) *StructSchema {
+func Struct(schema Shape) *StructSchema {
 	return &StructSchema{
 		schema: schema,
 	}

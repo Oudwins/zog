@@ -23,7 +23,7 @@ type obj struct {
 	Tim time.Time
 }
 
-var objSchema = Struct(Schema{
+var objSchema = Struct(Shape{
 	"str": String().Required(),
 	"in":  Int().Required(),
 	"fl":  Float().Required(),
@@ -76,9 +76,9 @@ func TestStructTags(t *testing.T) {
 	assert.Equal(t, o.Tim, time.Date(2024, 8, 6, 0, 0, 0, 0, time.UTC))
 }
 
-var nestedSchema = Struct(Schema{
+var nestedSchema = Struct(Shape{
 	"str":    String().Required(),
-	"schema": Struct(Schema{"str": String().Required()}),
+	"schema": Struct(Shape{"str": String().Required()}),
 })
 
 func TestStructNestedStructs(t *testing.T) {
@@ -116,7 +116,7 @@ func TestStructOptional(t *testing.T) {
 		Tim time.Time
 	}
 
-	var objSchema = Ptr(Struct(Schema{
+	var objSchema = Ptr(Struct(Shape{
 		"str": String().Required(),
 		"in":  Int().Required(),
 		"fl":  Float().Required(),
@@ -138,7 +138,7 @@ func TestStructOptionalFields(t *testing.T) {
 		Tim time.Time
 	}
 
-	var objSchema = Struct(Schema{
+	var objSchema = Struct(Shape{
 		"str": String(),
 		"in":  Int().Required(),
 		"fl":  Float(),
@@ -178,7 +178,7 @@ func TestStructCustomTestInSchema(t *testing.T) {
 	}
 
 	// Create a schema with a custom test
-	schema := Struct(Schema{
+	schema := Struct(Shape{
 		"str": String().Required(),
 		"num": Int().TestFunc(customTest),
 	})
@@ -205,7 +205,7 @@ func TestStructCustomTest(t *testing.T) {
 		Str string `zog:"str"`
 	}
 
-	schema := Struct(Schema{
+	schema := Struct(Shape{
 		"str": String(),
 	}).TestFunc(func(val any, ctx Ctx) bool {
 		s := val.(*CustomStruct)
@@ -245,7 +245,7 @@ func TestStructFromIssue(t *testing.T) {
 		AluID    int    `zog:"alu_id"`
 		Password string `zog:"password"`
 	}
-	schema := Struct(Schema{
+	schema := Struct(Shape{
 		"nombre":   String().Required(),
 		"apellido": String().Required(),
 		"email":    String().Required(),
@@ -270,7 +270,7 @@ func TestStructFromIssue(t *testing.T) {
 
 func TestStructPanicsOnSchemaMismatch(t *testing.T) {
 
-	var objSchema = Struct(Schema{
+	var objSchema = Struct(Shape{
 		"str":         String().Required(),
 		"in":          Int().Required(),
 		"fl":          Float().Required(),
@@ -303,7 +303,7 @@ func TestStructPostTransforms(t *testing.T) {
 		return nil
 	}
 
-	schema := Struct(Schema{
+	schema := Struct(Shape{
 		"value": String().Required(),
 	}).PostTransform(postTransform)
 
@@ -320,7 +320,7 @@ func TestStructPassThroughRequired(t *testing.T) {
 		Somefield string
 	}
 
-	schema := Struct(Schema{
+	schema := Struct(Shape{
 		"somefield": String().Required(),
 	})
 
@@ -350,7 +350,7 @@ func TestStructCustomType(t *testing.T) {
 	s := struct {
 		Custom int
 	}{}
-	schema := Struct(Schema{
+	schema := Struct(Shape{
 		"custom": Int().OneOf([]int{int(Custom1), int(Custom2)}),
 	})
 	errs := schema.Parse(map[string]any{"custom": int(Custom1)}, &s)
@@ -369,7 +369,7 @@ func TestStructCustomType2(t *testing.T) {
 	s := struct {
 		Custom Customs
 	}{}
-	schema := Struct(Schema{
+	schema := Struct(Shape{
 		"custom": Int().OneOf([]int{Customs1, Customs2}),
 	})
 	errs := schema.Parse(map[string]any{"custom": Customs1}, &s)
@@ -378,7 +378,7 @@ func TestStructCustomType2(t *testing.T) {
 }
 
 func TestStructGetType(t *testing.T) {
-	s := Struct(Schema{
+	s := Struct(Shape{
 		"field": String(),
 	})
 	assert.Equal(t, zconst.TypeStruct, s.getType())

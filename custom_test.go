@@ -139,7 +139,7 @@ func TestCustomFuncInStruct(t *testing.T) {
 		ID ID
 	}
 
-	s := Struct(Schema{
+	s := Struct(Shape{
 		"ID": CustomFunc(func(ptr *ID, ctx Ctx) bool {
 			return len(ptr.ID) > 0
 		}, Message("invalid id")),
@@ -163,7 +163,7 @@ func TestCustomFuncInStructPtr(t *testing.T) {
 		ID *ID
 	}
 
-	s := Struct(Schema{
+	s := Struct(Shape{
 		"ID": Ptr(CustomFunc(func(ptr *ID, ctx Ctx) bool {
 			return len(ptr.ID) > 0
 		}, Message("invalid id"))),

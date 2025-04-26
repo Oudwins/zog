@@ -29,7 +29,7 @@ func TestSetLanguagesErrsMap(t *testing.T) {
 	}, "en")
 
 	// Define a schema for testing
-	schema := zog.Struct(zog.Schema{
+	schema := zog.Struct(zog.Shape{
 		"name": zog.String().Required().Min(1),
 	})
 

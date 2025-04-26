@@ -16,7 +16,7 @@ type Msgs struct {
 
 func TestErrorMessages(t *testing.T) {
 	// make schema
-	schema := Struct(Schema{
+	schema := Struct(Shape{
 		"name":  String().Min(3).Max(10).Required(),
 		"age":   Int().GT(18).Required(),
 		"time":  Time().Before(time.Now()).Required(),

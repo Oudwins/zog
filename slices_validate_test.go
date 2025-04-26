@@ -162,7 +162,7 @@ func TestValidateSliceCustomTest(t *testing.T) {
 // 		Name string
 // 	}
 
-// 	userSchema := Struct(Schema{
+// 	userSchema := Struct(Shape{
 // 		"name": String().Required(),
 // 	})
 

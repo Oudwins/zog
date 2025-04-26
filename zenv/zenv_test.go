@@ -14,7 +14,7 @@ func TestEnvParsing(t *testing.T) {
 		PORT int
 	}
 	env := TestStruct{}
-	schema := z.Struct(z.Schema{
+	schema := z.Struct(z.Shape{
 		"str":  z.String().Required(),
 		"PORT": z.Int().Default(8080),
 	})
@@ -33,7 +33,7 @@ func TestEnvParsingWithEnvTag(t *testing.T) {
 		PORT int
 	}
 	env := TestStruct{}
-	schema := z.Struct(z.Schema{
+	schema := z.Struct(z.Shape{
 		"str":  z.String().Required(),
 		"PORT": z.Int().Default(8080),
 	})
@@ -52,7 +52,7 @@ func TestEnvParsingWithConflictingTags(t *testing.T) {
 		PORT int
 	}
 	env := TestStruct{}
-	schema := z.Struct(z.Schema{
+	schema := z.Struct(z.Shape{
 		"str":  z.String().Required(),
 		"PORT": z.Int().Default(8080),
 	})
