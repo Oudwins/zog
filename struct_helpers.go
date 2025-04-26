@@ -23,7 +23,7 @@ func (v *StructSchema) Merge(other *StructSchema, others ...*StructSchema) *Stru
 		totalProcessors += len(o.processors)
 	}
 	new := &StructSchema{
-		processors: make([]p.ZProcessor, 0, totalProcessors),
+		processors: make([]p.ZProcessor[any], 0, totalProcessors),
 		required:   other.required,
 		schema:     Shape{},
 	}

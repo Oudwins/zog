@@ -11,17 +11,17 @@ type TestOption = p.TestOption
 
 // Message is a function that allows you to set a custom message for the test.
 func Message(msg string) TestOption {
-	return func(test *p.Test) {
-		test.IssueFmtFunc = func(e *ZogIssue, p Ctx) {
+	return func(test p.TestInterface) {
+		test.SetIssueFmtFunc(func(e *ZogIssue, p Ctx) {
 			e.SetMessage(msg)
-		}
+		})
 	}
 }
 
 // MessageFunc is a function that allows you to set a custom message formatter for the test.
-func MessageFunc(fn IssueFmtFunc) TestOption {
-	return func(test *Test) {
-		test.IssueFmtFunc = fn
+func MessageFunc(fn p.IssueFmtFunc) TestOption {
+	return func(test p.TestInterface) {
+		test.SetIssueFmtFunc(fn)
 	}
 }
 
@@ -30,8 +30,8 @@ func MessageFunc(fn IssueFmtFunc) TestOption {
 z.String().TestFunc(..., z.IssueCode("just_provide_a_string" or use values in zconst))
 */
 func IssueCode(code zconst.ZogIssueCode) TestOption {
-	return func(test *Test) {
-		test.IssueCode = code
+	return func(test p.TestInterface) {
+		test.SetIssueCode(code)
 	}
 }
 
@@ -47,16 +47,16 @@ z.Shape {
 )
 */
 func IssuePath(path string) TestOption {
-	return func(test *Test) {
-		test.IssuePath = path
+	return func(test p.TestInterface) {
+		test.SetIssuePath(path)
 	}
 }
 
 // Params is a function that allows you to set a custom params for the test.
 // You may then access these values when formatting test errors in the IssueFmtFunc
 func Params(params map[string]any) TestOption {
-	return func(test *Test) {
-		test.Params = params
+	return func(test p.TestInterface) {
+		test.SetParams(params)
 	}
 }
 

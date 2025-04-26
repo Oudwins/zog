@@ -53,14 +53,14 @@ func TestStructMergeWithPostTransforms(t *testing.T) {
 	}
 	var nameSchema = Struct(Shape{
 		"name": String().Contains("hello").Required(),
-	}).PostTransform(func(data any, ctx Ctx) error {
+	}).Transform(func(data any, ctx Ctx) error {
 		u := data.(*User)
 		u.Name = u.Name + "_post"
 		return nil
 	})
 	var ageSchema = Struct(Shape{
 		"age": Int().GT(18).Required(),
-	}).PostTransform(func(data any, ctx Ctx) error {
+	}).Transform(func(data any, ctx Ctx) error {
 		u := data.(*User)
 		u.Age = u.Age + 10
 		return nil
@@ -170,7 +170,7 @@ func TestStructPickWithTransforms(t *testing.T) {
 	var schema = Struct(Shape{
 		"name": String().Contains("hello").Required(),
 		"age":  Int().GT(18).Required(),
-	}).PostTransform(func(data any, ctx Ctx) error {
+	}).Transform(func(data any, ctx Ctx) error {
 		u := data.(*User)
 		u.Name = u.Name + "_post"
 		return nil
@@ -200,7 +200,7 @@ func TestStructOmitWithTransforms(t *testing.T) {
 	var schema = Struct(Shape{
 		"name": String().Contains("hello").Required(),
 		"age":  Int().GT(18).Required(),
-	}).PostTransform(func(data any, ctx Ctx) error {
+	}).Transform(func(data any, ctx Ctx) error {
 		u := data.(*User)
 		u.Name = u.Name + "_post"
 		return nil

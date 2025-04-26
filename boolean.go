@@ -9,9 +9,9 @@ import (
 var _ PrimitiveZogSchema[bool] = &BoolSchema[bool]{}
 
 type BoolSchema[T ~bool] struct {
-	processors []p.ZProcessor
+	processors []p.ZProcessor[*T]
 	defaultVal *T
-	required   *Test
+	required   *p.Test[*T]
 	catch      *T
 	coercer    CoercerFunc
 }
@@ -88,36 +88,28 @@ func (v *BoolSchema[T]) validate(ctx *p.SchemaCtx) {
 
 // GLOBAL METHODS
 
-func (v *BoolSchema[T]) Test(t Test) *BoolSchema[T] {
-	t.Func = customTestBackwardsCompatWrapper(t.Func)
+func (v *BoolSchema[T]) Test(t p.Test[*T]) *BoolSchema[T] {
 	v.processors = append(v.processors, &t)
 	return v
 }
 
 // Create a custom test function for the schema. This is similar to Zod's `.refine()` method.
-func (v *BoolSchema[T]) TestFunc(testFunc BoolTFunc, options ...TestOption) *BoolSchema[T] {
+func (v *BoolSchema[T]) TestFunc(testFunc p.BoolTFunc[*T], options ...p.TestOption) *BoolSchema[T] {
 	test := p.NewTestFunc("", testFunc, options...)
 	v.Test(*test)
 	return v
 }
 
-// deprecated: use schema.Transform instead. This no longer runs at the end of all validation steps but rather in the order it is called.
-// Adds posttransform function to schema
-func (v *BoolSchema[T]) PostTransform(transform PostTransform) *BoolSchema[T] {
-	v.processors = append(v.processors, &p.TransformProcessor{Transform: transform})
-	return v
-}
-
 // Adds a transform function to the schema. Runs in the order it is called (i.e schema.True().Transform(...) will run the transform after the True test)
-func (v *BoolSchema[T]) Transform(transform p.Transform) *BoolSchema[T] {
-	v.processors = append(v.processors, &p.TransformProcessor{Transform: transform})
+func (v *BoolSchema[T]) Transform(transform p.Transform[*T]) *BoolSchema[T] {
+	v.processors = append(v.processors, &p.TransformProcessor[*T]{Transform: transform})
 	return v
 }
 
 // ! MODIFIERS
 // marks field as required
 func (v *BoolSchema[T]) Required(options ...TestOption) *BoolSchema[T] {
-	r := p.Required()
+	r := p.Required[*T]()
 	for _, opt := range options {
 		opt(&r)
 	}

@@ -384,17 +384,15 @@ func TestBoolTransform(t *testing.T) {
 	tests := []struct {
 		name      string
 		data      interface{}
-		transform p.Transform
+		transform p.Transform[*bool]
 		expectErr bool
 		expected  bool
 	}{
 		{
 			name: "Invert boolean",
 			data: true,
-			transform: func(val any, ctx Ctx) error {
-				if b, ok := val.(*bool); ok {
-					*b = !*b
-				}
+			transform: func(val *bool, ctx Ctx) error {
+				*val = !*val
 				return nil
 			},
 			expected: false,
@@ -402,7 +400,7 @@ func TestBoolTransform(t *testing.T) {
 		{
 			name: "No change",
 			data: false,
-			transform: func(val any, ctx Ctx) error {
+			transform: func(val *bool, ctx Ctx) error {
 				return nil
 			},
 			expected: false,
@@ -410,7 +408,7 @@ func TestBoolTransform(t *testing.T) {
 		{
 			name: "Invalid transform",
 			data: true,
-			transform: func(val any, ctx Ctx) error {
+			transform: func(val *bool, ctx Ctx) error {
 				return fmt.Errorf("invalid operation")
 			},
 			expectErr: true,
@@ -440,9 +438,9 @@ func TestBoolTransform(t *testing.T) {
 }
 
 func TestBoolCustomTest(t *testing.T) {
-	validator := Bool().TestFunc(func(val any, ctx Ctx) bool {
+	validator := Bool().TestFunc(func(val *bool, ctx Ctx) bool {
 		// Custom test logic here
-		return val == true
+		return *val == true
 	}, Message("custom"))
 
 	tests := []struct {
