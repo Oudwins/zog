@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.20.0](https://github.com/Oudwins/zog/compare/v0.19.2...v0.20.0) (2025-04-26)
+
+
+### ⚠ BREAKING CHANGES
+
+* Deprecated z.Schema in favor of z.Shape. No plans to remove z.Schema for now
+* Allow empty strings during parsing to not trigger required. Instead do .Min(1). ([#148](https://github.com/Oudwins/zog/issues/148))
+* Transforms are now run sequentially with tests in the order they were defined in. schema.PostTransform has been deprecated and until it is removed it will work just like schema.Transform. Therefore schema.Min(1).Trim().Min(1) will work and first check string length > 1 then trim then check again for string len > 1
+* implemented preprocess, removed preTransforms
+
+### Features
+
+* Deprecated z.Schema in favor of z.Shape. No plans to remove z.Schema for now ([544f03d](https://github.com/Oudwins/zog/commit/544f03d092b1ff3e46a52f9cb246a0211d44964a))
+* implemented preprocess, removed preTransforms ([9dde9be](https://github.com/Oudwins/zog/commit/9dde9be47a11c5a584f85afd72ddb167bcc71325))
+* ordered transforms ([#147](https://github.com/Oudwins/zog/issues/147)) ([1db8140](https://github.com/Oudwins/zog/commit/1db81403e1a77bf74a024be59e109882a9d0c91c))
+
+
+### Bug Fixes
+
+* Allow empty strings during parsing to not trigger required. Instead do .Min(1). ([#148](https://github.com/Oudwins/zog/issues/148)) ([da1b680](https://github.com/Oudwins/zog/commit/da1b6802bc13acd604b7d99f2071f35ad891084d))
+
 ## [0.19.2](https://github.com/Oudwins/zog/compare/v0.19.1...v0.19.2) (2025-04-18)
 
 
