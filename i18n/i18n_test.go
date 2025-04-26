@@ -30,7 +30,7 @@ func TestSetLanguagesErrsMap(t *testing.T) {
 
 	// Define a schema for testing
 	schema := zog.Struct(zog.Schema{
-		"name": zog.String().Required(),
+		"name": zog.String().Required().Min(1),
 	})
 
 	// Test cases
@@ -44,21 +44,21 @@ func TestSetLanguagesErrsMap(t *testing.T) {
 		{
 			name:        "English error message",
 			lang:        "en",
-			input:       map[string]interface{}{"name": ""},
+			input:       map[string]interface{}{},
 			expectedErr: true,
 			expected:    "is required",
 		},
 		{
 			name:        "Spanish error message",
 			lang:        "es",
-			input:       map[string]interface{}{"name": ""},
+			input:       map[string]interface{}{},
 			expectedErr: true,
 			expected:    "es requerido",
 		},
 		{
 			name:        "Default to English when language not found",
 			lang:        "fr",
-			input:       map[string]interface{}{"name": ""},
+			input:       map[string]interface{}{},
 			expectedErr: true,
 			expected:    "is required",
 		},
@@ -76,12 +76,16 @@ func TestSetLanguagesErrsMap(t *testing.T) {
 			var dest struct {
 				Name string
 			}
+			n, ok := tc.input["name"]
+			if !ok {
+				n = ""
+			}
 			dest2 := struct {
 				Name string
 				Age  int
 			}{
 				Age:  1,
-				Name: tc.input["name"].(string),
+				Name: n.(string),
 			}
 			errs := schema.Parse(tc.input, &dest, zog.WithCtxValue(LangKey, tc.lang))
 			errs2 := schema.Validate(&dest2, zog.WithCtxValue(LangKey, tc.lang))
@@ -117,7 +121,7 @@ func TestLangErrsMapWithLangKey(t *testing.T) {
 	dest := ""
 	destSchema := zog.String().Required()
 
-	errs := destSchema.Parse("", &dest, zog.WithCtxValue("customLangKey", "es"))
+	errs := destSchema.Parse(nil, &dest, zog.WithCtxValue("customLangKey", "es"))
 
 	assert.NotNil(t, errs, "Expected errors, got nil")
 	assert.Equal(t, "es requerido", errs[0].Message, "Unexpected error message")
