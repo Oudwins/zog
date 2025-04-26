@@ -25,7 +25,7 @@ func (v *StructSchema) Merge(other *StructSchema, others ...*StructSchema) *Stru
 	new := &StructSchema{
 		processors: make([]p.ZProcessor, 0, totalProcessors),
 		required:   other.required,
-		schema:     Schema{},
+		schema:     Shape{},
 	}
 
 	// processors
@@ -63,7 +63,7 @@ func (v *StructSchema) cloneShallow() *StructSchema {
 // Returns a new schema with the specified fields removed
 func (v *StructSchema) Omit(vals ...any) *StructSchema {
 	new := v.cloneShallow()
-	new.schema = Schema{}
+	new.schema = Shape{}
 	maps.Copy(new.schema, v.schema)
 	for _, k := range vals {
 		switch k := k.(type) {
@@ -88,7 +88,7 @@ func (v *StructSchema) Omit(vals ...any) *StructSchema {
 // Returns a new schema containing only the specified fields
 func (v *StructSchema) Pick(picks ...any) *StructSchema {
 	new := v.cloneShallow()
-	new.schema = Schema{}
+	new.schema = Shape{}
 	for _, pick := range picks {
 		switch pick := pick.(type) {
 		case string:
@@ -111,9 +111,9 @@ func (v *StructSchema) Pick(picks ...any) *StructSchema {
 //   - schema: The schema containing fields to add
 //
 // Returns a new schema with the additional fields
-func (v *StructSchema) Extend(schema Schema) *StructSchema {
+func (v *StructSchema) Extend(schema Shape) *StructSchema {
 	new := v.cloneShallow()
-	new.schema = Schema{}
+	new.schema = Shape{}
 	maps.Copy(new.schema, v.schema)
 	maps.Copy(new.schema, schema)
 	return new

@@ -29,7 +29,7 @@ func TestRequest(t *testing.T) {
 		Cash      float64 `zog:"cash"`
 		Swagger   string  `zog:"swagger"`
 	}
-	schema := z.Struct(z.Schema{
+	schema := z.Struct(z.Shape{
 		"email":     z.String().Email(),
 		"name":      z.String().Min(3).Max(10),
 		"age":       z.Int().GT(18),
@@ -75,7 +75,7 @@ func TestRequestParams(t *testing.T) {
 		Q         string   `zog:"q"`
 	}
 
-	schema := z.Struct(z.Schema{
+	schema := z.Struct(z.Shape{
 		"email":     z.String().Email(),
 		"name":      z.String().Min(3).Max(10),
 		"age":       z.Int().GT(18),
@@ -123,7 +123,7 @@ func TestRequestParamsOnJsonContentType(t *testing.T) {
 		Q         string
 	}
 
-	schema := z.Struct(z.Schema{
+	schema := z.Struct(z.Shape{
 		"email":     z.String().Email(),
 		"name":      z.String().Min(3).Max(10),
 		"age":       z.Int().GT(18),
@@ -180,7 +180,7 @@ func TestRequestParamsOnDeleteMethodWithJsonContentType(t *testing.T) {
 		Q         string   `json:"userQuery"`
 	}
 
-	schema := z.Struct(z.Schema{
+	schema := z.Struct(z.Shape{
 		"email":     z.String().Email(),
 		"name":      z.String().Min(3).Max(10),
 		"age":       z.Int().GT(18),
@@ -344,11 +344,11 @@ func TestParseJsonWithEmptyObject(t *testing.T) {
 }
 
 func TestParseDeeplyNestedJson(t *testing.T) {
-	schema := z.Struct(z.Schema{
+	schema := z.Struct(z.Shape{
 		"name": z.String().Required(),
-		"nested1": z.Struct(z.Schema{
+		"nested1": z.Struct(z.Shape{
 			"name": z.String().Required(),
-			"nested3": z.Ptr(z.Struct(z.Schema{
+			"nested3": z.Ptr(z.Struct(z.Shape{
 				"name": z.String().Required(),
 			})),
 		}),
@@ -377,7 +377,7 @@ func TestParseDeeplyNestedJson(t *testing.T) {
 }
 
 func TestTopLevelOptionalStruct(t *testing.T) {
-	schema := z.Ptr(z.Struct(z.Schema{
+	schema := z.Ptr(z.Struct(z.Shape{
 		"name": z.String().Required(),
 	}))
 

@@ -40,7 +40,7 @@ func IssueCode(code zconst.ZogIssueCode) TestOption {
 // Usage:
 /*
 z.Struct(
-z.Schema {
+z.Shape {
     "Name": z.String().Required(z.IssuePath("fullname")),
 	"Fullname": z.String(),
 }

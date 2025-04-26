@@ -64,7 +64,7 @@ func (v *StringSchema[T]) setCoercer(c CoercerFunc) {
 
 // ! USER FACING FUNCTIONS
 
-// Returns a new String Schema
+// Returns a new String Shape
 func String(opts ...SchemaOption) *StringSchema[string] {
 	s := &StringSchema[string]{
 		coercer: conf.Coercers.String, // default coercer

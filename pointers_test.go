@@ -60,7 +60,7 @@ func TestPtrInStruct(t *testing.T) {
 		Value *int
 	}
 
-	s := Struct(Schema{
+	s := Struct(Shape{
 		"value": Ptr(Int()),
 	})
 	in := map[string]any{
@@ -81,7 +81,7 @@ func TestPtrPtrInStruct(t *testing.T) {
 		Value2 *int
 	}
 
-	s := Struct(Schema{
+	s := Struct(Shape{
 		"value":  Ptr(Ptr(Int())).NotNil(),
 		"value2": Ptr(Int()),
 	})
@@ -115,8 +115,8 @@ func TestPtrNestedStructs(t *testing.T) {
 		Inner *Inner
 	}
 
-	schema := Struct(Schema{
-		"inner": Ptr(Struct(Schema{
+	schema := Struct(Shape{
+		"inner": Ptr(Struct(Shape{
 			"value": Ptr(Int()),
 		})),
 	})
@@ -154,7 +154,7 @@ func TestPtrSliceStruct(t *testing.T) {
 		Value int
 	}
 
-	schema := Slice(Ptr(Struct(Schema{
+	schema := Slice(Ptr(Struct(Shape{
 		"value": Int(),
 	})))
 	var out []*TestStruct
@@ -203,7 +203,7 @@ func TestPtrToStruct(t *testing.T) {
 	}
 
 	var dest *TestStruct
-	s := Ptr(Struct(Schema{
+	s := Ptr(Struct(Shape{
 		"value": Ptr(Int()),
 	}))
 	in := map[string]any{

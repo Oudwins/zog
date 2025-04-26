@@ -22,8 +22,8 @@ type ZogIssueList = p.ZogIssueList
 // This is a type for the ZogIssueMap type. It is a map[string][]ZogIssue returned from parsing complex schemas. The type is map[string][]ZogIssue
 // All errors are returned in a flat map, not matter how deep the schema is. For example:
 /*
-schema := z.Struct(z.Schema{
-  "address": z.Struct(z.Schema{
+schema := z.Struct(z.Shape{
+  "address": z.Struct(z.Shape{
     "street": z.String().Min(3).Max(10),
     "city": z.String().Min(3).Max(10),
   }),

@@ -33,7 +33,7 @@ type TimeFunc func(opts ...SchemaOption) *TimeSchema
 
 // ! USER FACING FUNCTIONS
 
-// Returns a new Time Schema
+// Returns a new Time Shape
 var Time TimeFunc = func(opts ...SchemaOption) *TimeSchema {
 	t := &TimeSchema{
 		coercer: conf.Coercers.Time,
@@ -44,7 +44,7 @@ var Time TimeFunc = func(opts ...SchemaOption) *TimeSchema {
 	return t
 }
 
-// WARNING ONLY SUPPOORTS Schema.Parse!
+// WARNING ONLY SUPPOORTS Shape.Parse!
 // Sets the format function for the time schema.
 // Usage is:
 //
@@ -57,7 +57,7 @@ func (t TimeFunc) FormatFunc(format func(data string) (time.Time, error)) Schema
 	}
 }
 
-// WARNING ONLY SUPPOORTS Schema.Parse!
+// WARNING ONLY SUPPOORTS Shape.Parse!
 // Sets the string format for the  time schema
 // Usage is:
 // z.Time(z.Time.Format(time.RFC3339))

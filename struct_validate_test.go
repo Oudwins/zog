@@ -17,7 +17,7 @@ type validateObj struct {
 	Tim time.Time
 }
 
-var validateObjSchema = Struct(Schema{
+var validateObjSchema = Struct(Shape{
 	"str": String().Required(),
 	"in":  Int().Required(),
 	"fl":  Float().Required(),
@@ -39,9 +39,9 @@ func TestValidateStructExample(t *testing.T) {
 	assert.Equal(t, "hello", o.Str)
 }
 
-var validateNestedSchema = Struct(Schema{
+var validateNestedSchema = Struct(Shape{
 	"str":    String().Required(),
-	"schema": Struct(Schema{"str": String().Required()}),
+	"schema": Struct(Shape{"str": String().Required()}),
 })
 
 func TestValidateStructNestedStructs(t *testing.T) {
@@ -88,7 +88,7 @@ func TestValidateStructOptional(t *testing.T) {
 		Tim time.Time
 	}
 
-	var validateOptionalSchema = Ptr(Struct(Schema{
+	var validateOptionalSchema = Ptr(Struct(Shape{
 		"str": String().Required(),
 		"in":  Int().Required(),
 		"fl":  Float().Required(),
@@ -115,7 +115,7 @@ func TestValidateStructCustomTestInSchema(t *testing.T) {
 	}
 
 	// Create a schema with a custom test
-	schema := Struct(Schema{
+	schema := Struct(Shape{
 		"str": String().Required(),
 		"num": Int().TestFunc(customTest),
 	})
@@ -145,7 +145,7 @@ func TestValidateStructCustomTest(t *testing.T) {
 		Str string `zog:"str"`
 	}
 
-	schema := Struct(Schema{
+	schema := Struct(Shape{
 		"str": String(),
 	}).TestFunc(func(val any, ctx Ctx) bool {
 		s := val.(*CustomStruct)
@@ -177,7 +177,7 @@ func TestValidateStructPostTransforms(t *testing.T) {
 		return nil
 	}
 
-	schema := Struct(Schema{
+	schema := Struct(Shape{
 		"value": String().Required(),
 	}).PostTransform(postTransform)
 
@@ -193,7 +193,7 @@ func TestValidateStructPassThroughRequired(t *testing.T) {
 		Somefield string
 	}
 
-	schema := Struct(Schema{
+	schema := Struct(Shape{
 		"somefield": String().Required(),
 	})
 
@@ -212,7 +212,7 @@ func TestValidateStructPassThroughRequired(t *testing.T) {
 }
 
 func TestValidateStructGetType(t *testing.T) {
-	s := Struct(Schema{
+	s := Struct(Shape{
 		"field": String(),
 	})
 	assert.Equal(t, zconst.TypeStruct, s.getType())

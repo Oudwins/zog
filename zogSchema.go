@@ -28,7 +28,7 @@ type PrimitiveZogSchema[T p.ZogPrimitive] interface {
 	Parse(val any, dest *T, options ...ExecOption) ZogIssueList
 }
 
-// Schema Parts Export
+// Shape Parts Export
 
 // deprecated: use z.Transform instead
 // Function signature for postTransforms. Takes the value pointer and the context and returns an error.

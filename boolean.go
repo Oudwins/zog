@@ -30,7 +30,7 @@ func (v *BoolSchema[T]) setCoercer(c CoercerFunc) {
 
 // ! USER FACING FUNCTIONS
 
-// Returns a new Bool Schema
+// Returns a new Bool Shape
 func Bool(opts ...SchemaOption) *BoolSchema[bool] {
 	b := &BoolSchema[bool]{
 		coercer: conf.Coercers.Bool, // default coercer

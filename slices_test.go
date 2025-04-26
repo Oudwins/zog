@@ -22,11 +22,11 @@ type Team struct {
 
 func TestSliceOfStructs(t *testing.T) {
 
-	var userSchema = Struct(Schema{
+	var userSchema = Struct(Shape{
 		"name": String().Required(),
 	})
 
-	var teamSchema = Struct(Schema{
+	var teamSchema = Struct(Shape{
 		"users": Slice(userSchema),
 	})
 

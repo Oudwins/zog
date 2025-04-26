@@ -7,10 +7,10 @@ import (
 )
 
 func TestStructMergeSimple(t *testing.T) {
-	var nameSchema = Struct(Schema{
+	var nameSchema = Struct(Shape{
 		"name": String().Contains("hello").Required(),
 	})
-	var ageSchema = Struct(Schema{
+	var ageSchema = Struct(Shape{
 		"age": Int().GT(18).Required(),
 	})
 	var schema = nameSchema.Merge(ageSchema)
@@ -28,10 +28,10 @@ func TestStructMergeSimple(t *testing.T) {
 }
 
 func TestStructMergeOverride(t *testing.T) {
-	var nameSchema = Struct(Schema{
+	var nameSchema = Struct(Shape{
 		"name": String().Contains("hello").Required(),
 	})
-	var ageSchema = Struct(Schema{
+	var ageSchema = Struct(Shape{
 		"name": String().Contains("world").Required(),
 	})
 	var schema = nameSchema.Merge(ageSchema)
@@ -51,14 +51,14 @@ func TestStructMergeWithPostTransforms(t *testing.T) {
 		Name string
 		Age  int
 	}
-	var nameSchema = Struct(Schema{
+	var nameSchema = Struct(Shape{
 		"name": String().Contains("hello").Required(),
 	}).PostTransform(func(data any, ctx Ctx) error {
 		u := data.(*User)
 		u.Name = u.Name + "_post"
 		return nil
 	})
-	var ageSchema = Struct(Schema{
+	var ageSchema = Struct(Shape{
 		"age": Int().GT(18).Required(),
 	}).PostTransform(func(data any, ctx Ctx) error {
 		u := data.(*User)
@@ -76,13 +76,13 @@ func TestStructMergeWithPostTransforms(t *testing.T) {
 }
 
 func TestStructMergeMultiple(t *testing.T) {
-	var nameSchema = Struct(Schema{
+	var nameSchema = Struct(Shape{
 		"name": String().Contains("hello").Required(),
 	})
-	var ageSchema = Struct(Schema{
+	var ageSchema = Struct(Shape{
 		"age": Int().GT(18).Required(),
 	})
-	var emailSchema = Struct(Schema{
+	var emailSchema = Struct(Shape{
 		"email": String().Email().Required(),
 	})
 	var schema = nameSchema.Merge(ageSchema, emailSchema)
@@ -108,7 +108,7 @@ func TestStructPick(t *testing.T) {
 		Email string
 	}
 
-	var schema = Struct(Schema{
+	var schema = Struct(Shape{
 		"name":  String().Contains("hello").Required(),
 		"age":   Int().GT(18).Required(),
 		"email": String().Email().Required(),
@@ -138,7 +138,7 @@ func TestStructOmit(t *testing.T) {
 		Email string
 	}
 
-	var schema = Struct(Schema{
+	var schema = Struct(Shape{
 		"name":  String().Contains("hello").Required(),
 		"age":   Int().GT(18).Required(),
 		"email": String().Email().Required(),
@@ -167,7 +167,7 @@ func TestStructPickWithTransforms(t *testing.T) {
 		Age  int
 	}
 
-	var schema = Struct(Schema{
+	var schema = Struct(Shape{
 		"name": String().Contains("hello").Required(),
 		"age":  Int().GT(18).Required(),
 	}).PostTransform(func(data any, ctx Ctx) error {
@@ -197,7 +197,7 @@ func TestStructOmitWithTransforms(t *testing.T) {
 		Age  int
 	}
 
-	var schema = Struct(Schema{
+	var schema = Struct(Shape{
 		"name": String().Contains("hello").Required(),
 		"age":  Int().GT(18).Required(),
 	}).PostTransform(func(data any, ctx Ctx) error {
@@ -228,7 +228,7 @@ func TestStructPickIgnoresFalseKeys(t *testing.T) {
 		Email string
 	}
 
-	var schema = Struct(Schema{
+	var schema = Struct(Shape{
 		"name":  String().Contains("hello").Required(),
 		"age":   Int().GT(18).Required(),
 		"email": String().Email().Required(),
@@ -260,7 +260,7 @@ func TestStructOmitIgnoresFalseKeys(t *testing.T) {
 		Email string
 	}
 
-	var schema = Struct(Schema{
+	var schema = Struct(Shape{
 		"name":  String().Contains("hello").Required(),
 		"age":   Int().GT(18).Required(),
 		"email": String().Email().Required(),
@@ -291,11 +291,11 @@ func TestStructExtend(t *testing.T) {
 		Email string
 	}
 
-	var schema = Struct(Schema{
+	var schema = Struct(Shape{
 		"name": String().Contains("hello").Required(),
 	})
 
-	extendedSchema := schema.Extend(Schema{
+	extendedSchema := schema.Extend(Shape{
 		"name": String().Contains("world").Required(),
 		"age":  Int().GT(18).Required(),
 	})
