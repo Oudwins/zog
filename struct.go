@@ -31,8 +31,12 @@ func (v *StructSchema) setCoercer(c conf.CoercerFunc) {
 
 // ! USER FACING FUNCTIONS
 
+// deprecated: use z.Struct(z.Shape{}) instead
 // A map of field names to zog schemas
 type Schema map[string]ZogSchema
+
+// A map of field names to zog schemas
+type Shape = Schema
 
 // Returns a new StructSchema which can be used to parse input data into a struct
 func Struct(schema Schema) *StructSchema {
