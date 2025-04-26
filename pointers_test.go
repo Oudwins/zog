@@ -12,7 +12,7 @@ func TestPtrPrimitive(t *testing.T) {
 	// in := 10
 	var out *int
 	s := Ptr(Int().Required())
-	err := s.Parse("", &out)
+	err := s.Parse(nil, &out)
 	assert.Empty(t, err)
 	assert.Nil(t, out)
 

@@ -7,6 +7,7 @@ import (
 	"github.com/Oudwins/zog/conf"
 	"github.com/Oudwins/zog/internals"
 	"github.com/Oudwins/zog/tutils"
+	"github.com/Oudwins/zog/zconst"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -39,13 +40,14 @@ func TestCustomStringBasics(t *testing.T) {
 	assert.Equal(t, Env(""), data)
 
 	// Test required
-	s = MyStringSchema().Required()
+	s = MyStringSchema().Required().Min(1)
 	err = s.Parse("", &data)
 	assert.NotNil(t, err)
+	assert.Equal(t, zconst.IssueCodeMin, err[0].Code)
 
 	// Test default value
 	s = MyStringSchema().Default(A)
-	err = s.Parse("", &data)
+	err = s.Parse(nil, &data)
 	assert.Nil(t, err)
 	assert.Equal(t, A, data)
 
