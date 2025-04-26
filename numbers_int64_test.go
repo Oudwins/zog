@@ -54,13 +54,13 @@ func TestInt64Required(t *testing.T) {
 	if len(errs) == 0 {
 		t.Errorf("Expected errors, got none")
 	}
-	assert.Equal(t, "custom", errs[0].Message)
+	assert.Equal(t, zconst.IssueCodeCoerce, errs[0].Code)
 
 	errs = validator.Parse("     ", &dest)
 	if len(errs) == 0 {
 		t.Errorf("Expected errors, got none")
 	}
-	assert.Equal(t, "custom", errs[0].Message)
+	assert.Equal(t, zconst.IssueCodeCoerce, errs[0].Code)
 
 	errs = validator.Parse(nil, &dest)
 	if len(errs) == 0 {

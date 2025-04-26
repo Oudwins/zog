@@ -129,6 +129,41 @@ func TestStructOptional(t *testing.T) {
 	assert.Nil(t, errs)
 }
 
+func TestStructOptionalFields(t *testing.T) {
+	type TestStruct struct {
+		Str string `zog:"str"`
+		In  int    `zog:"in"`
+		Fl  float64
+		Bol bool
+		Tim time.Time
+	}
+
+	var objSchema = Struct(Schema{
+		"str": String(),
+		"in":  Int().Required(),
+		"fl":  Float(),
+		"bol": Bool().Required(),
+		"tim": Time(),
+	})
+
+	var o TestStruct
+	errs := objSchema.Parse(map[string]any{
+		"in":  10,
+		"bol": false,
+	}, &o)
+	assert.Nil(t, errs)
+	assert.Equal(t, o.In, 10)
+	assert.Equal(t, o.Str, "")
+	assert.Equal(t, o.Fl, 0.0)
+	assert.Equal(t, o.Bol, false)
+	assert.Equal(t, o.Tim, time.Time{})
+	errs = objSchema.Parse(map[string]any{}, &o)
+	assert.NotNil(t, errs)
+	assert.Equal(t, zconst.IssueCodeRequired, errs["in"][0].Code)
+	assert.Equal(t, zconst.IssueCodeRequired, errs["bol"][0].Code)
+	tutils.VerifyDefaultIssueMessagesMap(t, errs)
+}
+
 func TestStructCustomTestInSchema(t *testing.T) {
 	type CustomStruct struct {
 		Str string `zog:"str"`

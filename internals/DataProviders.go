@@ -72,7 +72,11 @@ type MapDataProvider[T any] struct {
 }
 
 func (m *MapDataProvider[T]) Get(key string) any {
-	return any(m.M[key])
+	v, ok := m.M[key]
+	if !ok {
+		return nil
+	}
+	return v
 }
 
 // returns value + key used

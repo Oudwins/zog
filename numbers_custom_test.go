@@ -73,7 +73,7 @@ func TestCustomNumberRequired(t *testing.T) {
 	}
 	assert.Equal(t, MyInt(5), dest)
 	dest = 0
-	errs = validator.Parse("", &dest)
+	errs = validator.Parse(nil, &dest)
 	if len(errs) == 0 {
 		t.Errorf("Expected errors, got none")
 	}
@@ -83,7 +83,7 @@ func TestCustomNumberRequired(t *testing.T) {
 	if len(errs) == 0 {
 		t.Errorf("Expected errors, got none")
 	}
-	assert.Equal(t, "custom", errs[0].Message)
+	assert.Equal(t, zconst.IssueCodeCoerce, errs[0].Code)
 
 	errs = validator.Parse(nil, &dest)
 	if len(errs) == 0 {

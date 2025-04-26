@@ -14,14 +14,14 @@ func TestStringOptionalByDefault(t *testing.T) {
 	field := String().Len(3).Contains("foo").HasPrefix("pre").HasSuffix("fix")
 	var dest string
 
-	errs := field.Parse("", &dest)
+	errs := field.Parse(nil, &dest)
 	assert.Empty(t, errs)
 
 	assert.Equal(t, "", dest)
 
 	field = field.Required()
 
-	errs = field.Parse("", &dest)
+	errs = field.Parse(nil, &dest)
 	assert.NotEmpty(t, errs)
 	tutils.VerifyDefaultIssueMessages(t, errs)
 
@@ -102,7 +102,7 @@ func TestStringRequired(t *testing.T) {
 	field := String().Required(Message("a"))
 	var dest string
 
-	errs := field.Parse("", &dest)
+	errs := field.Parse(nil, &dest)
 	assert.NotEmpty(t, errs)
 	assert.Equal(t, errs[0].Message, "a")
 
@@ -116,7 +116,7 @@ func TestStringDefault(t *testing.T) {
 	field := String().Default("bar")
 	var dest string
 
-	errs := field.Parse("", &dest)
+	errs := field.Parse(nil, &dest)
 	assert.Empty(t, errs)
 
 	assert.Equal(t, "bar", dest)
@@ -304,7 +304,7 @@ func TestStringOneOf(t *testing.T) {
 	// Test with empty string
 	errs = field.Parse("", &dest)
 	assert.NotEmpty(t, errs)
-	assert.Equal(t, "custom required", errs[0].Message)
+	assert.Equal(t, "custom one of", errs[0].Message)
 
 	// Test with nil
 	errs = field.Parse(nil, &dest)
