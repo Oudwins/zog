@@ -12,9 +12,9 @@ import (
 var _ PrimitiveZogSchema[time.Time] = &TimeSchema{}
 
 type TimeSchema struct {
-	processors []p.ZProcessor
+	processors []p.ZProcessor[*time.Time]
 	defaultVal *time.Time
-	required   *Test
+	required   *p.Test[*time.Time]
 	catch      *time.Time
 	coercer    conf.CoercerFunc
 }
@@ -113,15 +113,8 @@ func (v *TimeSchema) validate(ctx *p.SchemaCtx) {
 }
 
 // Adds posttransform function to schema
-func (v *TimeSchema) Transform(transform Transform) *TimeSchema {
-	v.processors = append(v.processors, &p.TransformProcessor{Transform: transform})
-	return v
-}
-
-// Deprecated: use schema.Transform instead. This no longer runs at the end of all validation steps but rather in the order it is called.
-// Adds posttransform function to schema
-func (v *TimeSchema) PostTransform(transform PostTransform) *TimeSchema {
-	v.processors = append(v.processors, &p.TransformProcessor{Transform: transform})
+func (v *TimeSchema) Transform(transform Transform[*time.Time]) *TimeSchema {
+	v.processors = append(v.processors, &p.TransformProcessor[*time.Time]{Transform: p.Transform[*time.Time](transform)})
 	return v
 }
 
@@ -129,7 +122,7 @@ func (v *TimeSchema) PostTransform(transform PostTransform) *TimeSchema {
 
 // marks field as required
 func (v *TimeSchema) Required(options ...TestOption) *TimeSchema {
-	r := p.Required()
+	r := p.Required[*time.Time]()
 	for _, opt := range options {
 		opt(&r)
 	}
@@ -157,19 +150,19 @@ func (v *TimeSchema) Catch(val time.Time) *TimeSchema {
 
 // GLOBAL METHODS
 
-// custom test function call it -> schema.Test(z.Test{Func: func (val any, ctx z.Ctx) {
+// custom test function call it -> schema.Test(z.Test{Func: func (val *time.Time, ctx z.Ctx) {
 // my test
 // }})
-func (v *TimeSchema) Test(t Test) *TimeSchema {
-	t.Func = customTestBackwardsCompatWrapper(t.Func)
-	v.processors = append(v.processors, &t)
+func (v *TimeSchema) Test(t Test[*time.Time]) *TimeSchema {
+	x := p.Test[*time.Time](t)
+	v.processors = append(v.processors, &x)
 	return v
 }
 
 // Create a custom test function for the schema. This is similar to Zod's `.refine()` method.
-func (v *TimeSchema) TestFunc(testFunc BoolTFunc, options ...TestOption) *TimeSchema {
-	test := p.NewTestFunc("", testFunc, options...)
-	v.Test(*test)
+func (v *TimeSchema) TestFunc(testFunc BoolTFunc[*time.Time], options ...TestOption) *TimeSchema {
+	test := p.NewTestFunc("", p.BoolTFunc[*time.Time](testFunc), options...)
+	v.Test(Test[*time.Time](*test))
 	return v
 }
 
@@ -177,15 +170,11 @@ func (v *TimeSchema) TestFunc(testFunc BoolTFunc, options ...TestOption) *TimeSc
 
 // Checks that the value is after the given time
 func (v *TimeSchema) After(t time.Time, opts ...TestOption) *TimeSchema {
-	fn := func(v any, ctx Ctx) bool {
-		val, ok := v.(*time.Time)
-		if !ok {
-			return false
-		}
-		return val.After(t)
+	fn := func(v *time.Time, ctx Ctx) bool {
+		return (*v).After(t)
 	}
 
-	r := Test{
+	r := p.Test[*time.Time]{
 		IssueCode: zconst.IssueCodeAfter,
 		Params:    make(map[string]any, 1),
 	}
@@ -200,19 +189,14 @@ func (v *TimeSchema) After(t time.Time, opts ...TestOption) *TimeSchema {
 
 // Checks that the value is before the given time
 func (v *TimeSchema) Before(t time.Time, opts ...TestOption) *TimeSchema {
-	fn := func(v any, ctx Ctx) bool {
-		val, ok := v.(*time.Time)
-		if !ok {
-			return false
-		}
-		return val.Before(t)
+	fn := func(v *time.Time, ctx Ctx) bool {
+		return (*v).Before(t)
 	}
 
-	r :=
-		Test{
-			IssueCode: zconst.IssueCodeBefore,
-			Params:    make(map[string]any, 1),
-		}
+	r := p.Test[*time.Time]{
+		IssueCode: zconst.IssueCodeBefore,
+		Params:    make(map[string]any, 1),
+	}
 	r.Params[zconst.IssueCodeBefore] = t
 	p.TestFuncFromBool(fn, &r)
 	for _, opt := range opts {
@@ -224,15 +208,11 @@ func (v *TimeSchema) Before(t time.Time, opts ...TestOption) *TimeSchema {
 
 // Checks that the value is equal to the given time
 func (v *TimeSchema) EQ(t time.Time, opts ...TestOption) *TimeSchema {
-	fn := func(v any, ctx Ctx) bool {
-		val, ok := v.(*time.Time)
-		if !ok {
-			return false
-		}
-		return val.Equal(t)
+	fn := func(v *time.Time, ctx Ctx) bool {
+		return (*v).Equal(t)
 	}
 
-	r := Test{
+	r := p.Test[*time.Time]{
 		IssueCode: zconst.IssueCodeEQ,
 		Params:    make(map[string]any, 1),
 	}

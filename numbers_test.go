@@ -115,14 +115,12 @@ func TestNumberCatch(t *testing.T) {
 }
 
 func TestNumberPostTransform(t *testing.T) {
-	postTransform := func(val any, ctx Ctx) error {
-		if v, ok := val.(*int); ok {
-			*v += 1
-		}
+	postTransform := func(val *int, ctx Ctx) error {
+		*val += 1
 		return nil
 	}
 
-	validator := Int().PostTransform(postTransform)
+	validator := Int().Transform(postTransform)
 	var dest int
 	errs := validator.Parse(5, &dest)
 	if len(errs) > 0 {
@@ -133,14 +131,12 @@ func TestNumberPostTransform(t *testing.T) {
 
 func TestNumberMultipleTransforms(t *testing.T) {
 
-	postTransform := func(val any, ctx Ctx) error {
-		if v, ok := val.(*int); ok {
-			*v += 1
-		}
+	postTransform := func(val *int, ctx Ctx) error {
+		*val += 1
 		return nil
 	}
 
-	validator := Int().PostTransform(postTransform).PostTransform(postTransform)
+	validator := Int().Transform(postTransform).Transform(postTransform)
 	var dest int
 	errs := validator.Parse(9, &dest)
 	if len(errs) > 0 {
@@ -259,9 +255,9 @@ func TestNumberLte(t *testing.T) {
 }
 
 func TestNumberCustomTest(t *testing.T) {
-	validator := Int().TestFunc(func(val any, ctx Ctx) bool {
+	validator := Int().TestFunc(func(val *int, ctx Ctx) bool {
 		// Custom test logic here
-		assert.Equal(t, 5, val)
+		assert.Equal(t, 5, *val)
 		return true
 	}, Message("custom"))
 	dest := 0

@@ -138,7 +138,7 @@ type SchemaCtx struct {
 	CanCatch  bool
 	Exit      bool
 	HasCaught bool
-	Processor ZProcessor
+	Processor any
 }
 
 func (c *SchemaCtx) AddIssue(e *ZogIssue) {
@@ -163,20 +163,20 @@ func (c *SchemaCtx) Issue() *ZogIssue {
 }
 
 // Please don't depend on this method it may change
-func (c *SchemaCtx) IssueFromTest(test *Test, val any) *ZogIssue {
+func (c *SchemaCtx) IssueFromTest(test TestInterface, val any) *ZogIssue {
 	e := ZogIssuePool.Get().(*ZogIssue)
-	e.Code = test.IssueCode
+	e.Code = test.GetIssueCode()
 	e.Path = c.Path.String()
 	e.Err = nil
 	e.Message = ""
 	e.Dtype = c.DType
 	e.Value = val
-	e.Params = test.Params
-	if test.IssueFmtFunc != nil {
-		test.IssueFmtFunc(e, c)
+	e.Params = test.GetParams()
+	if test.GetIssueFmtFunc() != nil {
+		test.GetIssueFmtFunc()(e, c)
 	}
-	if test.IssuePath != "" {
-		e.Path = test.IssuePath
+	if test.GetIssuePath() != "" {
+		e.Path = test.GetIssuePath()
 	}
 	return e
 }

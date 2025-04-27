@@ -200,8 +200,8 @@ func TestBoolValidateCatch(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			boolProc := Bool().TestFunc(func(val any, ctx Ctx) bool {
-				return val == true
+			boolProc := Bool().TestFunc(func(val *bool, ctx Ctx) bool {
+				return *val == true
 			}).Catch(test.catch).Required()
 			errs := boolProc.Validate(&test.data)
 			if len(errs) > 0 {
@@ -284,17 +284,15 @@ func TestBoolValidateTransform(t *testing.T) {
 	tests := []struct {
 		name      string
 		data      bool
-		transform p.Transform
+		transform p.Transform[*bool]
 		expectErr bool
 		expected  bool
 	}{
 		{
 			name: "Invert boolean",
 			data: true,
-			transform: func(val any, ctx Ctx) error {
-				if b, ok := val.(*bool); ok {
-					*b = !*b
-				}
+			transform: func(val *bool, ctx Ctx) error {
+				*val = !*val
 				return nil
 			},
 			expected: false,
@@ -302,7 +300,7 @@ func TestBoolValidateTransform(t *testing.T) {
 		{
 			name: "No change",
 			data: false,
-			transform: func(val any, ctx Ctx) error {
+			transform: func(val *bool, ctx Ctx) error {
 				return nil
 			},
 			expected: false,
@@ -310,7 +308,7 @@ func TestBoolValidateTransform(t *testing.T) {
 		{
 			name: "Invalid transform",
 			data: true,
-			transform: func(val any, ctx Ctx) error {
+			transform: func(val *bool, ctx Ctx) error {
 				return fmt.Errorf("invalid operation")
 			},
 			expectErr: true,
@@ -338,9 +336,9 @@ func TestBoolValidateTransform(t *testing.T) {
 }
 
 func TestBoolValidateCustomTest(t *testing.T) {
-	validator := Bool().TestFunc(func(val any, ctx Ctx) bool {
+	validator := Bool().TestFunc(func(val *bool, ctx Ctx) bool {
 		// Custom test logic here
-		assert.Equal(t, true, val)
+		assert.Equal(t, true, *val)
 		return true
 	}, Message("custom"))
 	dest := true
