@@ -108,10 +108,8 @@ func TestValidateStructCustomTestInSchema(t *testing.T) {
 	}
 
 	// Create a custom test function
-	customTest := func(val any, ctx Ctx) bool {
-		// Custom test logic here
-		num := val.(int)
-		return num > 0
+	customTest := func(val *int, ctx Ctx) bool {
+		return *val > 0
 	}
 
 	// Create a schema with a custom test
@@ -179,7 +177,7 @@ func TestValidateStructPostTransforms(t *testing.T) {
 
 	schema := Struct(Shape{
 		"value": String().Required(),
-	}).PostTransform(postTransform)
+	}).Transform(postTransform)
 
 	output := TestStruct{Value: "original"}
 

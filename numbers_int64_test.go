@@ -104,14 +104,12 @@ func TestInt64Catch(t *testing.T) {
 }
 
 func TestInt64PostTransform(t *testing.T) {
-	postTransform := func(val any, ctx Ctx) error {
-		if v, ok := val.(*int64); ok {
-			*v += 1
-		}
+	postTransform := func(val *int64, ctx Ctx) error {
+		*val += 1
 		return nil
 	}
 
-	validator := Int64().PostTransform(postTransform)
+	validator := Int64().Transform(postTransform)
 	var dest int64
 	errs := validator.Parse(int64(5), &dest)
 	if len(errs) > 0 {
@@ -122,14 +120,12 @@ func TestInt64PostTransform(t *testing.T) {
 
 func TestInt64MultipleTransforms(t *testing.T) {
 
-	postTransform := func(val any, ctx Ctx) error {
-		if v, ok := val.(*int64); ok {
-			*v += 1
-		}
+	postTransform := func(val *int64, ctx Ctx) error {
+		*val += 1
 		return nil
 	}
 
-	validator := Int64().PostTransform(postTransform).PostTransform(postTransform)
+	validator := Int64().Transform(postTransform).Transform(postTransform)
 	var dest int64
 	errs := validator.Parse(int64(9), &dest)
 	if len(errs) > 0 {
@@ -247,9 +243,9 @@ func TestInt64Lte(t *testing.T) {
 }
 
 func TestInt64CustomTest(t *testing.T) {
-	validator := Int64().TestFunc(func(val any, ctx Ctx) bool {
+	validator := Int64().TestFunc(func(val *int64, ctx Ctx) bool {
 		// Custom test logic here
-		assert.Equal(t, int64(5), val)
+		assert.Equal(t, int64(5), *val)
 		return true
 	}, Message("custom"))
 	dest := int64(0)

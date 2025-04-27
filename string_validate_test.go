@@ -59,9 +59,8 @@ func TestValidateStringTrim(t *testing.T) {
 }
 
 func TestValidateStringTransform(t *testing.T) {
-	field := String().Required().Transform(func(val any, ctx Ctx) error {
-		s := val.(*string)
-		*s = *s + "_transformed"
+	field := String().Required().Transform(func(val *string, ctx Ctx) error {
+		*val = *val + "_transformed"
 		return nil
 	})
 	var dest string = "hello"
@@ -82,8 +81,8 @@ func TestValidateStringRequiredAborts(t *testing.T) {
 }
 
 func TestValidateStringCustomTest(t *testing.T) {
-	field := String().TestFunc(func(val any, ctx Ctx) bool {
-		return val == "test"
+	field := String().TestFunc(func(val *string, ctx Ctx) bool {
+		return *val == "test"
 	}, Message("Invalid"))
 
 	var dest string = "test"

@@ -1,15 +1,15 @@
 package internals
 
 // Internal Processor interface
-type ZProcessor interface {
-	ZProcess(valPtr any, ctx Ctx)
+type ZProcessor[T any] interface {
+	ZProcess(valPtr T, ctx Ctx)
 }
 
-type TransformProcessor struct {
-	Transform Transform
+type TransformProcessor[T any] struct {
+	Transform Transform[T]
 }
 
-func (p *TransformProcessor) ZProcess(valPtr any, ctx Ctx) {
+func (p *TransformProcessor[T]) ZProcess(valPtr T, ctx Ctx) {
 	err := p.Transform(valPtr, ctx)
 	if err != nil {
 		s := ctx.(*SchemaCtx)

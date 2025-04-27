@@ -62,8 +62,7 @@ func TestCustomStringTransforms(t *testing.T) {
 	// Test pre-transform
 	var data Env = "test"
 	// Test post-transform
-	s := MyStringSchema().PostTransform(func(val any, ctx Ctx) error {
-		v := val.(*Env)
+	s := MyStringSchema().Transform(func(v *Env, ctx Ctx) error {
 		*v = Env(string(*v) + "_post")
 		return nil
 	})
@@ -95,6 +94,7 @@ func TestCustomStringValidators(t *testing.T) {
 	assert.Nil(t, err)
 	err = s.Parse("fail", &data)
 	assert.NotNil(t, err)
+	assert.Equal(t, zconst.IssueCodeContains, err[0].Code)
 
 	// Test prefix/suffix
 	s = MyStringSchema().HasPrefix("pre").HasSuffix("fix")
@@ -231,7 +231,7 @@ func TestCustomStringNot(t *testing.T) {
 			expectedErrMap: internals.ZogIssueList{
 				&internals.ZogIssue{
 					Code:    "not_prefix",
-					Params:  map[string]any{"prefix": Env("test_")},
+					Params:  map[string]any{"prefix": "test_"},
 					Dtype:   "string",
 					Value:   tutils.PtrOf[Env]("test_value"),
 					Message: "string must not start with test_",

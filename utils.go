@@ -1,8 +1,6 @@
 package zog
 
 import (
-	"reflect"
-
 	"github.com/Oudwins/zog/conf"
 	p "github.com/Oudwins/zog/internals"
 )
@@ -41,7 +39,7 @@ type CoercerFunc = conf.CoercerFunc
 // ! TESTS
 
 // Test is the test object. It is the struct that represents an individual validation. For example `z.String().Min(3)` is a test that checks if the string is at least 3 characters long.
-type Test = p.Test
+type Test[T any] p.Test[T]
 
 type issueHelpers struct {
 }
@@ -97,13 +95,4 @@ func (i *issueHelpers) CollectList(issues ZogIssueList) {
 // Collects a ZogIssue to be reused by Zog. This will "free" the issue. This can help make Zog more performant by reusing issue structs.
 func (i *issueHelpers) Collect(issue *ZogIssue) {
 	p.FreeIssue(issue)
-}
-
-// Backwards Compatibility
-
-func customTestBackwardsCompatWrapper(testFunc TFunc) func(val any, ctx Ctx) {
-	return func(val any, ctx Ctx) {
-		refVal := reflect.ValueOf(val).Elem()
-		testFunc(refVal.Interface(), ctx)
-	}
 }

@@ -13,9 +13,9 @@ var _ ComplexZogSchema = &StructSchema{}
 
 type StructSchema struct {
 	schema     Shape
-	processors []p.ZProcessor
+	processors []p.ZProcessor[any]
 	// defaultVal     any
-	required *Test
+	required *p.Test[any]
 	// catch          any
 }
 
@@ -190,16 +190,9 @@ func (v *StructSchema) validate(ctx *p.SchemaCtx) {
 	}
 }
 
-// Deprecated: use schema.Transform instead. This no longer runs at the end of all validation steps but rather in the order it is called.
 // Adds posttransform function to schema
-func (v *StructSchema) PostTransform(transform p.Transform) *StructSchema {
-	v.processors = append(v.processors, &p.TransformProcessor{Transform: transform})
-	return v
-}
-
-// Adds posttransform function to schema
-func (v *StructSchema) Transform(transform p.Transform) *StructSchema {
-	v.processors = append(v.processors, &p.TransformProcessor{Transform: transform})
+func (v *StructSchema) Transform(transform p.Transform[any]) *StructSchema {
+	v.processors = append(v.processors, &p.TransformProcessor[any]{Transform: transform})
 	return v
 }
 
@@ -232,14 +225,15 @@ func (v *StructSchema) Optional() *StructSchema {
 
 // ! VALIDATORS
 // custom test function call it -> schema.Test(t z.Test)
-func (v *StructSchema) Test(t Test) *StructSchema {
-	v.processors = append(v.processors, &t)
+func (v *StructSchema) Test(t Test[any]) *StructSchema {
+	x := p.Test[any](t)
+	v.processors = append(v.processors, &x)
 	return v
 }
 
 // Create a custom test function for the schema. This is similar to Zod's `.refine()` method.
-func (v *StructSchema) TestFunc(testFunc BoolTFunc, options ...TestOption) *StructSchema {
-	test := p.NewTestFunc("", testFunc, options...)
-	v.Test(*test)
+func (v *StructSchema) TestFunc(testFunc BoolTFunc[any], options ...TestOption) *StructSchema {
+	test := p.NewTestFunc("", p.BoolTFunc[any](testFunc), options...)
+	v.Test(Test[any](*test))
 	return v
 }

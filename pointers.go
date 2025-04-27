@@ -12,7 +12,7 @@ var _ ComplexZogSchema = &PointerSchema{}
 
 type PointerSchema struct {
 	schema   ZogSchema
-	required *Test
+	required *p.Test[any]
 	// postTransforms []PostTransform
 	// defaultVal     *any
 	// catch          *any
@@ -123,7 +123,7 @@ func (v *PointerSchema) validate(ctx *p.SchemaCtx) {
 // Validate Existing Pointer
 
 func (v *PointerSchema) NotNil(options ...TestOption) *PointerSchema {
-	r := Test{
+	r := p.Test[any]{
 		IssueCode: zconst.IssueCodeNotNil,
 	}
 	for _, opt := range options {

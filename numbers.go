@@ -12,9 +12,9 @@ type Numeric = constraints.Ordered
 var _ PrimitiveZogSchema[int] = &NumberSchema[int]{}
 
 type NumberSchema[T Numeric] struct {
-	processors []p.ZProcessor
+	processors []p.ZProcessor[*T]
 	defaultVal *T
-	required   *Test
+	required   *p.Test[*T]
 	catch      *T
 	coercer    CoercerFunc
 }
@@ -164,16 +164,9 @@ func (v *NumberSchema[T]) validate(ctx *p.SchemaCtx) {
 
 // GLOBAL METHODS
 
-// deprecated: use schema.Transform instead. This no longer runs at the end of all validation steps but rather in the order it is called.
-// Adds posttransform function to schema
-func (v *NumberSchema[T]) PostTransform(transform PostTransform) *NumberSchema[T] {
-	v.processors = append(v.processors, &p.TransformProcessor{Transform: transform})
-	return v
-}
-
 // Adds a transform function to the schema. Runs in the order it is called
-func (v *NumberSchema[T]) Transform(transform Transform) *NumberSchema[T] {
-	v.processors = append(v.processors, &p.TransformProcessor{Transform: transform})
+func (v *NumberSchema[T]) Transform(transform p.Transform[*T]) *NumberSchema[T] {
+	v.processors = append(v.processors, &p.TransformProcessor[*T]{Transform: transform})
 	return v
 }
 
@@ -181,7 +174,7 @@ func (v *NumberSchema[T]) Transform(transform Transform) *NumberSchema[T] {
 
 // marks field as required
 func (v *NumberSchema[T]) Required(options ...TestOption) *NumberSchema[T] {
-	r := p.Required()
+	r := p.Required[*T]()
 	for _, opt := range options {
 		opt(&r)
 	}
@@ -208,16 +201,16 @@ func (v *NumberSchema[T]) Catch(val T) *NumberSchema[T] {
 }
 
 // custom test function call it -> schema.Test(test, options)
-func (v *NumberSchema[T]) Test(t Test) *NumberSchema[T] {
-	t.Func = customTestBackwardsCompatWrapper(t.Func)
-	v.processors = append(v.processors, &t)
+func (v *NumberSchema[T]) Test(t Test[*T]) *NumberSchema[T] {
+	x := p.Test[*T](t)
+	v.processors = append(v.processors, &x)
 	return v
 }
 
 // Create a custom test function for the schema. This is similar to Zod's `.refine()` method.
-func (v *NumberSchema[T]) TestFunc(testFunc BoolTFunc, options ...TestOption) *NumberSchema[T] {
-	test := p.NewTestFunc("", testFunc, options...)
-	v.Test(*test)
+func (v *NumberSchema[T]) TestFunc(testFunc BoolTFunc[*T], options ...TestOption) *NumberSchema[T] {
+	test := p.NewTestFunc("", p.BoolTFunc[*T](testFunc), options...)
+	v.Test(Test[*T](*test))
 	return v
 }
 

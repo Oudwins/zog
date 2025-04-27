@@ -42,9 +42,9 @@ type NotStringSchema[T likeString] interface {
 }
 
 type StringSchema[T likeString] struct {
-	processors []p.ZProcessor
+	processors []p.ZProcessor[*T]
 	defaultVal *T
-	required   *Test
+	required   *p.Test[*T]
 	catch      *T
 	coercer    CoercerFunc
 	isNot      bool
@@ -125,14 +125,9 @@ func (v *StringSchema[T]) validate(ctx *p.SchemaCtx) {
 
 // Transform: trims the input data of whitespace if it is a string
 func (v *StringSchema[T]) Trim() *StringSchema[T] {
-	v.processors = append(v.processors, &p.TransformProcessor{
-		Transform: func(val any, ctx Ctx) error {
-			switch val := val.(type) {
-			case *T:
-				*val = T(strings.TrimSpace(string(*val)))
-			default:
-				return nil
-			}
+	v.processors = append(v.processors, &p.TransformProcessor[*T]{
+		Transform: func(val *T, ctx Ctx) error {
+			*val = T(strings.TrimSpace(string(*val)))
 			return nil
 		},
 	})
@@ -140,16 +135,9 @@ func (v *StringSchema[T]) Trim() *StringSchema[T] {
 	return v
 }
 
-// deprecated: use schema.Transform instead. This no longer runs at the end of all validation steps but rather in the order it is called.
-// Adds posttransform function to schema
-func (v *StringSchema[T]) PostTransform(transform Transform) *StringSchema[T] {
-	v.processors = append(v.processors, &p.TransformProcessor{Transform: transform})
-	return v
-}
-
 // Adds a transform function to the schema. Runs in the order it is called
-func (v *StringSchema[T]) Transform(transform p.Transform) *StringSchema[T] {
-	v.processors = append(v.processors, &p.TransformProcessor{Transform: transform})
+func (v *StringSchema[T]) Transform(transform p.Transform[*T]) *StringSchema[T] {
+	v.processors = append(v.processors, &p.TransformProcessor[*T]{Transform: transform})
 	return v
 }
 
@@ -157,7 +145,7 @@ func (v *StringSchema[T]) Transform(transform p.Transform) *StringSchema[T] {
 
 // marks field as required
 func (v *StringSchema[T]) Required(options ...TestOption) *StringSchema[T] {
-	r := p.Required()
+	r := p.Required[*T]()
 	for _, opt := range options {
 		opt(&r)
 	}
@@ -185,16 +173,16 @@ func (v *StringSchema[T]) Catch(val T) *StringSchema[T] {
 
 // ! Tests
 // custom test function call it -> schema.Test(t z.Test, opts ...TestOption)
-func (v *StringSchema[T]) Test(t Test) *StringSchema[T] {
-	t.Func = customTestBackwardsCompatWrapper(t.Func)
-	v.processors = append(v.processors, &t)
+func (v *StringSchema[T]) Test(t Test[*T]) *StringSchema[T] {
+	x := p.Test[*T](t)
+	v.processors = append(v.processors, &x)
 	return v
 }
 
 // Create a custom test function for the schema. This is similar to Zod's `.refine()` method.
-func (v *StringSchema[T]) TestFunc(testFunc BoolTFunc, options ...TestOption) *StringSchema[T] {
-	test := p.NewTestFunc("", testFunc, options...)
-	v.Test(*test)
+func (v *StringSchema[T]) TestFunc(testFunc BoolTFunc[*T], options ...TestOption) *StringSchema[T] {
+	test := p.NewTestFunc("", p.BoolTFunc[*T](testFunc), options...)
+	v.Test(Test[*T](*test))
 	return v
 }
 
@@ -224,28 +212,18 @@ func (v *StringSchema[T]) Len(n int, options ...TestOption) *StringSchema[T] {
 
 // Test: checks that the value is a valid email address
 func (v *StringSchema[T]) Email(options ...TestOption) *StringSchema[T] {
-	t := Test{IssueCode: zconst.IssueCodeEmail}
-	fn := func(v any, ctx Ctx) bool {
-		email, ok := v.(*T)
-		if !ok {
-			return false
-		}
-		return emailRegex.MatchString(string(*email))
+	t := p.Test[*T]{IssueCode: zconst.IssueCodeEmail}
+	fn := func(v *T, ctx Ctx) bool {
+		return emailRegex.MatchString(string(*v))
 	}
 	return v.addTest(t, fn, options...)
 }
 
 // Test: checks that the value is a valid URL
 func (v *StringSchema[T]) URL(options ...TestOption) *StringSchema[T] {
-	t := Test{
-		IssueCode: zconst.IssueCodeURL,
-	}
-	fn := func(v any, ctx Ctx) bool {
-		urlVal, ok := v.(*T)
-		if !ok {
-			return false
-		}
-		u, err := url.Parse(string(*urlVal))
+	t := p.Test[*T]{IssueCode: zconst.IssueCodeURL}
+	fn := func(v *T, ctx Ctx) bool {
+		u, err := url.Parse(string(*v))
 		return err == nil && u.Scheme != "" && u.Host != ""
 	}
 	return v.addTest(t, fn, options...)
@@ -253,66 +231,45 @@ func (v *StringSchema[T]) URL(options ...TestOption) *StringSchema[T] {
 
 // Test: checks that the value has the prefix
 func (v *StringSchema[T]) HasPrefix(s T, options ...TestOption) *StringSchema[T] {
-	t := Test{
-		IssueCode: zconst.IssueCodeHasPrefix,
-		Params:    make(map[string]any, 1),
-	}
-	t.Params[zconst.IssueCodeHasPrefix] = s
-	fn := func(v any, ctx Ctx) bool {
-		val, ok := v.(*T)
-		if !ok {
-			return false
-		}
-		return strings.HasPrefix(string(*val), string(s))
+	t := p.Test[*T]{IssueCode: zconst.IssueCodeHasPrefix, Params: make(map[string]any, 1)}
+	t.Params[zconst.IssueCodeHasPrefix] = string(s)
+	fn := func(v *T, ctx Ctx) bool {
+		return strings.HasPrefix(string(*v), string(s))
 	}
 	return v.addTest(t, fn, options...)
 }
 
 // Test: checks that the value has the suffix
 func (v *StringSchema[T]) HasSuffix(s T, options ...TestOption) *StringSchema[T] {
-	t := Test{
+	t := p.Test[*T]{
 		IssueCode: zconst.IssueCodeHasSuffix,
 		Params:    make(map[string]any, 1),
 	}
-	t.Params[zconst.IssueCodeHasSuffix] = s
-	fn := func(v any, ctx Ctx) bool {
-		val, ok := v.(*T)
-		if !ok {
-			return false
-		}
-		return strings.HasSuffix(string(*val), string(s))
+	t.Params[zconst.IssueCodeHasSuffix] = string(s)
+	fn := func(v *T, ctx Ctx) bool {
+		return strings.HasSuffix(string(*v), string(s))
 	}
 	return v.addTest(t, fn, options...)
 }
 
 // Test: checks that the value contains the substring
 func (v *StringSchema[T]) Contains(sub T, options ...TestOption) *StringSchema[T] {
-	t := Test{
+	t := p.Test[*T]{
 		IssueCode: zconst.IssueCodeContains,
 		Params:    make(map[string]any, 1),
 	}
-	t.Params[zconst.IssueCodeContains] = sub
-	fn := func(v any, ctx Ctx) bool {
-		val, ok := v.(*T)
-		if !ok {
-			return false
-		}
-		return strings.Contains(string(*val), string(sub))
+	t.Params[zconst.IssueCodeContains] = string(sub)
+	fn := func(v *T, ctx Ctx) bool {
+		return strings.Contains(string(*v), string(sub))
 	}
 	return v.addTest(t, fn, options...)
 }
 
 // Test: checks that the value contains an uppercase letter
 func (v *StringSchema[T]) ContainsUpper(options ...TestOption) *StringSchema[T] {
-	t := Test{
-		IssueCode: zconst.IssueCodeContainsUpper,
-	}
-	fn := func(v any, ctx Ctx) bool {
-		val, ok := v.(*T)
-		if !ok {
-			return false
-		}
-		for _, r := range string(*val) {
+	t := p.Test[*T]{IssueCode: zconst.IssueCodeContainsUpper}
+	fn := func(v *T, ctx Ctx) bool {
+		for _, r := range string(*v) {
 			if r >= 'A' && r <= 'Z' {
 				return true
 			}
@@ -325,15 +282,9 @@ func (v *StringSchema[T]) ContainsUpper(options ...TestOption) *StringSchema[T] 
 
 // Test: checks that the value contains a digit
 func (v *StringSchema[T]) ContainsDigit(options ...TestOption) *StringSchema[T] {
-	t := Test{
-		IssueCode: zconst.IssueCodeContainsDigit,
-	}
-	fn := func(v any, ctx Ctx) bool {
-		val, ok := v.(*T)
-		if !ok {
-			return false
-		}
-		for _, r := range string(*val) {
+	t := p.Test[*T]{IssueCode: zconst.IssueCodeContainsDigit}
+	fn := func(v *T, ctx Ctx) bool {
+		for _, r := range string(*v) {
 			if r >= '0' && r <= '9' {
 				return true
 			}
@@ -346,15 +297,9 @@ func (v *StringSchema[T]) ContainsDigit(options ...TestOption) *StringSchema[T] 
 
 // Test: checks that the value contains a special character
 func (v *StringSchema[T]) ContainsSpecial(options ...TestOption) *StringSchema[T] {
-	t := Test{
-		IssueCode: zconst.IssueCodeContainsSpecial,
-	}
-	fn := func(v any, ctx Ctx) bool {
-		val, ok := v.(*T)
-		if !ok {
-			return false
-		}
-		for _, r := range string(*val) {
+	t := p.Test[*T]{IssueCode: zconst.IssueCodeContainsSpecial}
+	fn := func(v *T, ctx Ctx) bool {
+		for _, r := range string(*v) {
 			if (r >= '!' && r <= '/') ||
 				(r >= ':' && r <= '@') ||
 				(r >= '[' && r <= '`') ||
@@ -370,15 +315,9 @@ func (v *StringSchema[T]) ContainsSpecial(options ...TestOption) *StringSchema[T
 
 // Test: checks that the value is a valid uuid
 func (v *StringSchema[T]) UUID(options ...TestOption) *StringSchema[T] {
-	t := Test{
-		IssueCode: zconst.IssueCodeUUID,
-	}
-	fn := func(v any, ctx Ctx) bool {
-		uuid, ok := v.(*T)
-		if !ok {
-			return false
-		}
-		return uuidRegex.MatchString(string(*uuid))
+	t := p.Test[*T]{IssueCode: zconst.IssueCodeUUID}
+	fn := func(v *T, ctx Ctx) bool {
+		return uuidRegex.MatchString(string(*v))
 	}
 
 	return v.addTest(t, fn, options...)
@@ -386,17 +325,10 @@ func (v *StringSchema[T]) UUID(options ...TestOption) *StringSchema[T] {
 
 // Test: checks that value matches to regex
 func (v *StringSchema[T]) Match(regex *regexp.Regexp, options ...TestOption) *StringSchema[T] {
-	t := Test{
-		IssueCode: zconst.IssueCodeMatch,
-		Params:    make(map[string]any, 1),
-	}
+	t := p.Test[*T]{IssueCode: zconst.IssueCodeMatch, Params: make(map[string]any, 1)}
 	t.Params[zconst.IssueCodeMatch] = regex.String()
-	fn := func(v any, ctx Ctx) bool {
-		s, ok := v.(*T)
-		if !ok {
-			return false
-		}
-		return regex.MatchString(string(*s))
+	fn := func(v *T, ctx Ctx) bool {
+		return regex.MatchString(string(*v))
 	}
 
 	return v.addTest(t, fn, options...)
@@ -410,7 +342,7 @@ func (v *StringSchema[T]) Not() NotStringSchema[T] {
 	return v
 }
 
-func (v *StringSchema[T]) addTest(t Test, fn BoolTFunc, options ...TestOption) *StringSchema[T] {
+func (v *StringSchema[T]) addTest(t p.Test[*T], fn p.BoolTFunc[*T], options ...TestOption) *StringSchema[T] {
 	if v.isNot {
 		p.TestNotFuncFromBool(fn, &t)
 		t.IssueCode = zconst.NotIssueCode(t.IssueCode)

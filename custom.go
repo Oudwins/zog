@@ -9,13 +9,13 @@ import (
 )
 
 type Custom[T any] struct {
-	test Test
+	test p.Test[*T]
 }
 
 func CustomFunc[T any](fn func(ptr *T, ctx Ctx) bool, opts ...TestOption) *Custom[T] {
-	test := &Test{}
-	p.TestFuncFromBool(func(val any, ctx Ctx) bool {
-		return fn(val.(*T), ctx)
+	test := &p.Test[*T]{}
+	p.TestFuncFromBool(func(val *T, ctx Ctx) bool {
+		return fn(val, ctx)
 	}, test)
 	for _, opt := range opts {
 		opt(test)
@@ -73,7 +73,7 @@ func (c *Custom[T]) Validate(dataPtr *T, options ...ExecOption) ZogIssueList {
 
 func (c *Custom[T]) validate(ctx *p.SchemaCtx) {
 	ctx.Processor = &c.test
-	c.test.Func(ctx.ValPtr, ctx)
+	c.test.Func(ctx.ValPtr.(*T), ctx)
 }
 
 func (c *Custom[T]) setCoercer(coercer CoercerFunc) {

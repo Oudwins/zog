@@ -13,9 +13,9 @@ import (
 var _ ComplexZogSchema = &SliceSchema{}
 
 type SliceSchema struct {
-	processors []p.ZProcessor
+	processors []p.ZProcessor[any]
 	schema     ZogSchema
-	required   *Test
+	required   *p.Test[any]
 	defaultVal any
 	// catch          any
 	coercer conf.CoercerFunc
@@ -179,18 +179,9 @@ func (v *SliceSchema) process(ctx *p.SchemaCtx) {
 }
 
 // Adds transform function to schema.
-func (v *SliceSchema) Transform(transform Transform) *SliceSchema {
-	v.processors = append(v.processors, &p.TransformProcessor{
-		Transform: transform,
-	})
-	return v
-}
-
-// Deprecated: Use schema.Transform() instead. This no longer executes after all tests are ran but rather in the order it is added.
-// Adds posttransform function to schema
-func (v *SliceSchema) PostTransform(transform PostTransform) *SliceSchema {
-	v.processors = append(v.processors, &p.TransformProcessor{
-		Transform: transform,
+func (v *SliceSchema) Transform(transform Transform[any]) *SliceSchema {
+	v.processors = append(v.processors, &p.TransformProcessor[any]{
+		Transform: p.Transform[any](transform),
 	})
 	return v
 }
@@ -199,7 +190,7 @@ func (v *SliceSchema) PostTransform(transform PostTransform) *SliceSchema {
 
 // marks field as required
 func (v *SliceSchema) Required(options ...TestOption) *SliceSchema {
-	r := p.Required()
+	r := p.Required[any]()
 	for _, opt := range options {
 		opt(&r)
 	}
@@ -229,15 +220,16 @@ func (v *SliceSchema) Default(val any) *SliceSchema {
 // !TESTS
 
 // custom test function call it -> schema.Test(t z.Test)
-func (v *SliceSchema) Test(t Test) *SliceSchema {
-	v.processors = append(v.processors, &t)
+func (v *SliceSchema) Test(t Test[any]) *SliceSchema {
+	x := p.Test[any](t)
+	v.processors = append(v.processors, &x)
 	return v
 }
 
 // Create a custom test function for the schema. This is similar to Zod's `.refine()` method.
-func (v *SliceSchema) TestFunc(testFunc BoolTFunc, opts ...TestOption) *SliceSchema {
-	t := p.NewTestFunc("", testFunc, opts...)
-	v.Test(*t)
+func (v *SliceSchema) TestFunc(testFunc BoolTFunc[any], opts ...TestOption) *SliceSchema {
+	t := p.NewTestFunc("", p.BoolTFunc[any](testFunc), opts...)
+	v.Test(Test[any](*t))
 	return v
 }
 
@@ -291,7 +283,7 @@ func (v *SliceSchema) Contains(value any, options ...TestOption) *SliceSchema {
 
 		return false
 	}
-	t := Test{
+	t := p.Test[any]{
 		IssueCode: zconst.IssueCodeContains,
 		Params:    make(map[string]any, 1),
 	}
@@ -304,7 +296,7 @@ func (v *SliceSchema) Contains(value any, options ...TestOption) *SliceSchema {
 	return v
 }
 
-func sliceMin(n int) (Test, BoolTFunc) {
+func sliceMin(n int) (p.Test[any], p.BoolTFunc[any]) {
 	fn := func(val any, ctx Ctx) bool {
 		rv := reflect.ValueOf(val).Elem()
 		if rv.Kind() != reflect.Slice {
@@ -313,7 +305,7 @@ func sliceMin(n int) (Test, BoolTFunc) {
 		return rv.Len() >= n
 	}
 
-	t := Test{
+	t := p.Test[any]{
 		IssueCode: zconst.IssueCodeMin,
 		Params:    make(map[string]any, 1),
 	}
@@ -321,7 +313,7 @@ func sliceMin(n int) (Test, BoolTFunc) {
 	return t, fn
 }
 
-func sliceMax(n int) (Test, BoolTFunc) {
+func sliceMax(n int) (p.Test[any], p.BoolTFunc[any]) {
 	fn := func(val any, ctx Ctx) bool {
 		rv := reflect.ValueOf(val).Elem()
 		if rv.Kind() != reflect.Slice {
@@ -330,14 +322,14 @@ func sliceMax(n int) (Test, BoolTFunc) {
 		return rv.Len() <= n
 	}
 
-	t := Test{
+	t := p.Test[any]{
 		IssueCode: zconst.IssueCodeMax,
 		Params:    make(map[string]any, 1),
 	}
 	t.Params[zconst.IssueCodeMax] = n
 	return t, fn
 }
-func sliceLength(n int) (Test, BoolTFunc) {
+func sliceLength(n int) (p.Test[any], p.BoolTFunc[any]) {
 	fn := func(val any, ctx Ctx) bool {
 		rv := reflect.ValueOf(val).Elem()
 		if rv.Kind() != reflect.Slice {
@@ -345,7 +337,7 @@ func sliceLength(n int) (Test, BoolTFunc) {
 		}
 		return rv.Len() == n
 	}
-	t := Test{
+	t := p.Test[any]{
 		IssueCode: zconst.IssueCodeLen,
 		Params:    make(map[string]any, 1),
 	}

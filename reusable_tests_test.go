@@ -7,12 +7,12 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func MyTest(opts ...TestOption) Test {
+func MyTest(opts ...TestOption) Test[*string] {
 	options := []TestOption{
 		Message("Default message"),
 	}
 	options = append(options, opts...)
-	return TestFunc(zconst.ZogIssueCode("customTest"), func(val any, ctx Ctx) bool {
+	return TestFunc(zconst.ZogIssueCode("customTest"), func(val *string, ctx Ctx) bool {
 		return false
 	}, options...)
 }
