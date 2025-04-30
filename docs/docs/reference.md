@@ -15,8 +15,7 @@ schema.Required()        // marks field as required
 schema.Optional()        // marks field as optional
 schema.Default(value)    // sets default value for field
 schema.Catch(value)      // sets catch value for field
-schema.PreTransform(fn)  // adds a pre-transformation function to the schema
-schema.PostTransform(fn) // adds a post-transformation function to the schema
+schema.Transform(func(valPtr *T or any, ctx z.Ctx) (any, error)) // adds a transformation function to the schema. This is useful for things like trimming strings, etc.
 
 // VALIDATION METHODS
 schema.Parse(data, destPtr) // parses the data into the destination
@@ -76,13 +75,24 @@ z.Slice(z.String())
 z.Ptr(z.String()) // pointer to string
 ```
 
+### Utility Schemas
+
+```go
+z.Preprocess()
+// Usage:
+z.Preprocess(func(data any, ctx z.ctx) (any, error) {
+	s := data.(string)
+	return strings.split(s, ","), nil
+}, z.slice(z.string())))
+```
+
 ### Primitive Types
 
 #### String
 
 ```go
-// PreTransforms
-z.String().Trim() // trims the input data of whitespace if it is a string (does nothing otherwise)
+// Transforms
+z.String().Trim() // trims the value of whitespace
 
 // Tests / Validations
 z.String().Test()                         // custom test
@@ -108,30 +118,12 @@ z.String().Not() // Negates the next test/validation
 #### Numbers / Ints & Floats
 
 ```go
-// Supported out of the box:
+// Supported out of the box (see custom schemas for comparable types):
 z.Int()
 z.Int32()
 z.Int64()
 z.Float32()
 z.Float64()
-
-// But you can use any comparable type like so:
-schema := (&NumberSchema[uint64]{}).Required().LTE(10)
-// or build your own function like Zog does:
-func Uint64() *NumberSchema[uint64] {
-	return &NumberSchema[uint64]{}
-}
-// Then call it like so:
-schema := Uint64().Required().LTE(10)
-
-/*
-If you are using parse. You may need to write your own coercion function for these weird types since zog won't have one built in. But this is quite easy, I recommend you checkout /conf/coercers.go for inspiration. Then you just have to provide that coercer to the schema like this:
-*/
-func Uint64() *z.NumberSchema[uint64] {
-	return &z.NumberSchema[uint64]{
-		Coercer: MyCustomCoercerFunc,
-	}
-}
 
 
 // Tests / Validators

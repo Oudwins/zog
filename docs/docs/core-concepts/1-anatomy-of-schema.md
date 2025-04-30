@@ -7,7 +7,7 @@ sidebar_position: 1
 A zog schema is an interface implemented by multiple custom structs that represent a set of `validation` and `transformation` logic for a variable of a given type. For example:
 
 ```go
-stringSchema := z.String().Min(3).Required().Trim()    // A zog schema that represents a required string of minimum 3 characters and will be trimmed for white space
+stringSchema := z.String().Trim().Min(3).Required()    // A zog schema that represents a required string which will first be trimmed then a test to ensure it has 3+ characters will be ran.
 userSchema := z.Struct(z.Schema{"name": stringSchema}) // a zog schema that represents a user struct. Also yes I know that z.Schema might be confusing but think of it as the schema for the struct not a ZogSchema
 ```
 
@@ -15,35 +15,12 @@ userSchema := z.Struct(z.Schema{"name": stringSchema}) // a zog schema that repr
 
 ```go
 type stringSchema struct {
-	preTransforms  []PreTransforms // transformations executed before the validation. For example trimming the string
 	isRequired     bool            // optional. Defaults to FALSE
 	defaultValue   string          // optional. if the input value is a "zero value" it will be replaced with this. Tests will still run on this value.
 	catchValue     string          // optional. If this is set it will "catch" any errors, set the destination value to this value and exit
-	tests          []Test          // These are your validation checks. Such as .Min(), .Contains(), etc
-	postTransforms []PostTransform // transformations executed after the validation.
+	testOrTransformation TestOrTransformation // This is the test or transformation that will be applied to the data.
 }
 ```
-
-## PreTransforms
-
-Pretransforms is a list of function that are applied to the data before the [tests](#tests) are run. You can think of it like a `pipeline` of pre validation transformations for a specific schema. These are similar to preprocess functions in zod. **PreTransforms are PURE functions**. They take in data and return new data. This is the function signature:
-
-```go
-// takes the data as input and returns the new data which will then be passed onto the next functions.
-// The function may return an error or a ZogIssue. In this case all validation will be skipped and the error will be wrapped into a ZogIssue and entire execution will return.
-type PreTransform = func(data any, ctx Ctx) (out any, err error)
-```
-
-You can use pretransforms for things like trimming whitespace, splitting strings, etc. Here is an example of splitting a string into a slice of strings:
-
-```go
-z.Slice(z.String()).PreTransform(func(data any, ctx Ctx) (any, error) {
-	return strings.Split(data.(string), ","), nil
-}).Parse("item1,item2,item3", &dest)
-```
-
-> **FOOTGUNS** > _Type Coercion_: Please note that pretransforms are executed before type coercion (if using `schema.Parse()`). This means that if you are responsible for checking that the data matches your expected type. If you blinding typecast the data to, for example, an int and your user provides a string as input you will cause a panic.
-> _Pure Functions_: Since pretransforms are pure functions. A copy of the data is passed in. So if you place a preTransform on a large struct it will copy the entire struct which is not efficient. Be careful!
 
 ## Required, Default and Catch
 
@@ -51,7 +28,7 @@ z.Slice(z.String()).PreTransform(func(data any, ctx Ctx) (any, error) {
 
 `schema.Default(value)` sets a default value for the field. If the data is a zero value it will be replaced with this value, this takes priority over required. Tests will still run on this value.
 
-`schema.Catch(value)` sets a catch value. If this is set it will "catch" any errors or ZogIssues with the catch value. Meaning it will set the destination value to the catch value and exit. When this is triggered, no matter what error triggers it code will automatically jump to the [PostTransforms](#posttransforms). For more information checkout the [parsing execution structure](/core-concepts/parsing#parsing-execution-structure).
+`schema.Catch(value)` sets a catch value. If this is set it will "catch" any errors or ZogIssues with the catch value. Meaning it will set the destination value to the catch value and exit. When this is triggered, no matter what error triggers it code will automatically exit. For more information checkout the [parsing execution structure](/core-concepts/parsing#parsing-execution-structure).
 
 ## Tests
 
@@ -71,18 +48,16 @@ z.String().Min(3, z.IssuePath("name"))                                    // Thi
 
 You are also free to create custom tests and pass them to the `schema.Test()` and `schema.TestFunc()` methods. For more details on this checkout the [Creating Custom Tests](/custom-tests) page.
 
-## PostTransforms
+## Transforms
 
-PostTransforms is a list of function that are applied to the data after the [tests](#tests) are run. You can think of it like a `pipeline` of transformations for a specific schema. This is the function signature:
+Transforms is a list of function that are applied to the data at any point. You can think of it like a `pipeline` of transformations for a specific schema. This is the function signature:
 
 ```go
-// type for functions called after validation & parsing is done
-type PostTransform = func(dataPtr any, ctx Ctx) error
+// Transforms are generic functions that take a pointer to the data as input. For primitive types you won't have to typecast but for complex types it will just be a any type and you will have to manually typecast it.
+type Transform[T any] func(dataPtr T, ctx Ctx) error
 ```
 
 As you can see the function takes a pointer to the data as input. This is to allow the function to modify the data.
-
-You can use posttransforms for any transformation you want to do but don't want it to affect the validation process. For example imagine you want to validate a phone number and afterwards separate the string into the area code and the rest of the number.
 
 ```go
 type User struct {
@@ -91,8 +66,11 @@ type User struct {
 }
 
 z.Struct(z.Schema{
-	"phone": z.String().Test(...),
-}).PostTransform(func(dataPtr any, ctx z.Ctx) error {
+	"phone": z.String().Test(...).Transform(func (valPtr *string, ctx z.Ctx) error{
+		*valPtr = strings.ReplaceAll(*valPtr, " ", "") // remove all spaces
+		return nil
+	}),
+}).Transform(func(dataPtr any, ctx z.Ctx) error {
 	user := dataPtr.(*User)
 	user.AreaCode = user.Phone[:3]
 	user.Phone = user.Phone[3:]

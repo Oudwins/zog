@@ -82,7 +82,7 @@ func main() {
 	u := User{}
 	m := map[string]string{
 		"name": "Zog",
-		"age":       "",    // won't return an error because fields are optional by default
+		"age":  "", // won't return an error because fields are optional by default
 	}
 	errsMap := userSchema.Parse(m, &u)
 	if errsMap != nil {
@@ -151,20 +151,15 @@ var t = time.Time
 errsList := Time().Required().Parse("2020-01-01T00:00:00Z", &t)
 ```
 
-#### **7 And do stuff before and after parsing**
+#### **7 Transform Data without limits**
 
 ```go
 var dest []string
-Slice(String().Email().Required()).PreTransform(func(data any, ctx z.Ctx) (any, error) {
-	s := data.(string)
+schema := z.Preprocess(func(data any, ctx z.Ctx) ([]string, error) {
+	s := data.(string) // don't do this, actually check the type
 	return strings.Split(s, ","), nil
-}).PostTransform(func(destPtr any, ctx z.Ctx) error {
-	s := destPtr.(*[]string)
-	for i, v := range *s {
-		(*s)[i] = strings.TrimSpace(v)
-	}
-	return nil
-}).Parse("foo@bar.com,bar@foo.com", &dest) // dest = [foo@bar.com bar@foo.com]
+}, z.Slice(z.String().Trim().Email().Required()))
+errs := schema.Parse("foo@bar.com,bar@foo.com", &dest) // dest = [foo@bar.com bar@foo.com]
 ```
 
 ## Roadmap
