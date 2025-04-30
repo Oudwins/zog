@@ -80,10 +80,10 @@ z.Ptr(z.String()) // pointer to string
 ```go
 z.Preprocess()
 // Usage:
-z.Preprocess(func(data any, ctx z.Ctx) (any, error) {
+z.Preprocess(func(data any, ctx z.ctx) (any, error) {
 	s := data.(string)
-	return strings.Split(s, ","), nil
-}, z.Slice(z.String())))
+	return strings.split(s, ","), nil
+}, z.slice(z.string())))
 ```
 
 ### Primitive Types
