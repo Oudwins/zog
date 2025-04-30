@@ -84,22 +84,14 @@ z.String(z.WithCoercer(func(data any) (any, error) {
 
 ## Parsing Execution Structure
 
-![Zog Schema Parsign Execution Structure](./img/parsing-workflow.png)
+Parsing execution structure is quite simple. It just does roughly this:
 
-1. Pretransforms
-   - On error all parsing and validation stops and [ZogIssues](/errors) are returned.
-   - Can be caught by catch
-2. Default Check -> Assigns default value if the value is nil value
-3. Optional Check -> Stops validation if the value is nil value
-4. Casting -> Attempts to cast the value to the correct type
-   - On error all parsing and validation stops and [ZogIssues](/errors) are returned
-   - Can be caught by catch
-5. Required check ->
-   - On error: aborts if the value is its nil value and returns a required [ZogIssue](/errors).
-   - Can be caught by catch
-6. Tests -> Run all tests on the value (including required)
-   - On error: validation [ZogIssues](/errors) are added to the [ZogIssueList](/errors#zogissuelist) or [ZogIssueMap](/errors#zogissuelist). All validation functions are run even if one of them fails.
-   - Can be caught by catch
-7. PostTransforms -> Run all postTransforms on the value.
-   - On error you return: aborts and adds your error to the list of [ZogIssues](/errors)
-   - Only run on valid values. Won't run if a [ZogIssue](/errors) was created before the postTransforms
+1. Check for nil value
+   - If nil take into account if schema has default value or is required
+2. Coerce value to the correct type otherwise
+3. Run validation loop
+   - If a test fails, an issue is added
+   - If you return an error from a transform, the execution stops and that error is returned.
+   - If catch is active any error triggers it and stops the execution.
+
+![Zog Schema Parsign Execution Structure](./img/parsing-workflow.png)
