@@ -34,7 +34,11 @@ func (s *PreprocessSchema[F, T]) process(ctx *p.SchemaCtx) {
 }
 
 func (s *PreprocessSchema[F, T]) validate(ctx *p.SchemaCtx) {
-	out, err := s.fn(ctx.ValPtr.(F), ctx)
+	v, ok := ctx.ValPtr.(F)
+	if !ok {
+		p.Panicf(p.PanicTypeCast, ctx.String(), new(F), ctx.ValPtr)
+	}
+	out, err := s.fn(v, ctx)
 	if err != nil {
 		ctx.AddIssue(ctx.Issue().SetMessage(err.Error()))
 		return
