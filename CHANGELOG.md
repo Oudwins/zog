@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.21.0](https://github.com/Oudwins/zog/compare/v0.20.0...v0.21.0) (2025-05-03)
+
+
+### ⚠ BREAKING CHANGES
+
+* transforms and tests are now typesafe for the schema you are using. No more typecasting in Zog! ([#149](https://github.com/Oudwins/zog/issues/149))
+
+### Features
+
+* provide better panic msgs and docs ([#153](https://github.com/Oudwins/zog/issues/153)) ([f605689](https://github.com/Oudwins/zog/commit/f605689511eabed2343e333379607bb0aea93937))
+* transforms and tests are now typesafe for the schema you are using. No more typecasting in Zog! ([#149](https://github.com/Oudwins/zog/issues/149)) ([2da0c0c](https://github.com/Oudwins/zog/commit/2da0c0c174a4976c6ab2ac33a05477d0c8454bcb))
+
 ## [0.20.0](https://github.com/Oudwins/zog/compare/v0.19.2...v0.20.0) (2025-04-26)
 
 
