@@ -12,7 +12,7 @@ toc_max_heading_level: 4
 - Errors returned by you (for example in a `Preprocess` or `Transform` function) can be the ZogIssue interface or an error. If you return an error, it will be wrapped in a ZogIssue. ZogIssue is just a struct that wraps around an error and adds a message field which is text that can be shown to the user. For more on this see [Errors](/errors)
 - You should not depend on test execution order. They might run in parallel in the future
 
-> **A WORD OF CAUTION. ZOG & PANICS**
+> **A WORD OF CAUTION. [ZOG & PANICS](/panics)**
 > In general Zog will never panic if the input data is wrong but it will panic if you configure it wrong. For example:
 >
 > - In parse mode Zog will never panic due to invalid input data but will always panic if invalid destination is passed to the `Parse` function. if the destination does not match the schema in terms of types or fields.

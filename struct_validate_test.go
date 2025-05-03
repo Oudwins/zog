@@ -215,3 +215,18 @@ func TestValidateStructGetType(t *testing.T) {
 	})
 	assert.Equal(t, zconst.TypeStruct, s.getType())
 }
+
+func TestValidateStructInvalidSchema(t *testing.T) {
+	schema := Struct(Shape{
+		"field": String(),
+	})
+
+	type TestStruct struct {
+		Field int
+	}
+
+	var dest TestStruct
+	assert.Panics(t, func() {
+		schema.Validate(&dest)
+	})
+}

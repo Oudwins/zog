@@ -11,7 +11,14 @@ func SafeString(x any) string {
 	if x == nil {
 		return defaultString
 	}
-	return fmt.Sprintf("%v", x)
+	refVal := reflect.ValueOf(x)
+	for refVal.Kind() == reflect.Ptr {
+		if refVal.IsNil() {
+			return defaultString
+		}
+		refVal = refVal.Elem()
+	}
+	return fmt.Sprintf("%v", refVal.Interface())
 }
 
 func SafeError(x error) string {

@@ -48,7 +48,10 @@ func (c *Custom[T]) process(ctx *p.SchemaCtx) {
 		ctx.AddIssue(ctx.IssueFromCoerce(fmt.Errorf("expected %T, got %T", new(T), ctx.Data)))
 		return
 	}
-	ptr := ctx.ValPtr.(*T)
+	ptr, ok := ctx.ValPtr.(*T)
+	if !ok {
+		p.Panicf(p.PanicTypeCast, ctx.String(), ctx.DType, ctx.ValPtr)
+	}
 	*ptr = d
 
 	// run the test
@@ -73,7 +76,11 @@ func (c *Custom[T]) Validate(dataPtr *T, options ...ExecOption) ZogIssueList {
 
 func (c *Custom[T]) validate(ctx *p.SchemaCtx) {
 	ctx.Processor = &c.test
-	c.test.Func(ctx.ValPtr.(*T), ctx)
+	ptr, ok := ctx.ValPtr.(*T)
+	if !ok {
+		p.Panicf(p.PanicTypeCast, ctx.String(), ctx.DType, ctx.ValPtr)
+	}
+	c.test.Func(ptr, ctx)
 }
 
 func (c *Custom[T]) setCoercer(coercer CoercerFunc) {

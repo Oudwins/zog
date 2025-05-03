@@ -1,6 +1,8 @@
 package internals
 
 import (
+	"fmt"
+
 	zconst "github.com/Oudwins/zog/zconst"
 )
 
@@ -206,6 +208,10 @@ func (c *SchemaCtx) IssueFromUnknownError(err error) *ZogIssue {
 // Frees the context to be reused
 func (c *SchemaCtx) Free() {
 	SchemaCtxPool.Put(c)
+}
+
+func (c *SchemaCtx) String() string {
+	return fmt.Sprintf("z.Ctx{Data: %v, ValPtr: %v, Path: %v, DType: %v, CanCatch: %v, Exit: %v, HasCaught: %v }", SafeString(c.Data), SafeString(c.ValPtr), c.Path, c.DType, c.CanCatch, c.Exit, c.HasCaught)
 }
 
 // func (c *TestCtx) Issue() *ZogIssue {

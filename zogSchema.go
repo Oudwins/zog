@@ -53,7 +53,10 @@ func TestFunc[T any](IssueCode zconst.ZogIssueCode, fn BoolTFunc[T], options ...
 func primitiveParsing[T p.ZogPrimitive](ctx *p.SchemaCtx, processors []p.ZProcessor[*T], defaultVal *T, required *p.Test[*T], catch *T, coercer CoercerFunc, isZeroFunc p.IsZeroValueFunc) {
 	ctx.CanCatch = catch != nil
 
-	destPtr := ctx.ValPtr.(*T)
+	destPtr, ok := ctx.ValPtr.(*T)
+	if !ok {
+		p.Panicf(p.PanicTypeCast, ctx.String(), ctx.DType, ctx.ValPtr)
+	}
 
 	// 2. cast data to string & handle default/required
 	isZeroVal := isZeroFunc(ctx.Data, ctx)
@@ -84,7 +87,11 @@ func primitiveParsing[T p.ZogPrimitive](ctx *p.SchemaCtx, processors []p.ZProces
 			ctx.AddIssue(ctx.IssueFromCoerce(err))
 			return
 		}
-		*destPtr = v.(T)
+		x, ok := v.(T)
+		if !ok {
+			p.Panicf(p.PanicTypeCastCoercer, ctx.String(), ctx.DType, v)
+		}
+		*destPtr = x
 	}
 
 	for _, processor := range processors {
@@ -103,7 +110,10 @@ func primitiveParsing[T p.ZogPrimitive](ctx *p.SchemaCtx, processors []p.ZProces
 func primitiveValidation[T p.ZogPrimitive](ctx *p.SchemaCtx, processors []p.ZProcessor[*T], defaultVal *T, required *p.Test[*T], catch *T) {
 	ctx.CanCatch = catch != nil
 
-	valPtr := ctx.ValPtr.(*T)
+	valPtr, ok := ctx.ValPtr.(*T)
+	if !ok {
+		p.Panicf(p.PanicTypeCast, ctx.String(), ctx.DType, ctx.ValPtr)
+	}
 
 	// 2. cast data to string & handle default/required
 	// Warning. This uses generic IsZeroValue because for Validate we treat zero values as invalid for required fields. This is different from Parse.

@@ -100,7 +100,7 @@ func (v *StructSchema) process(ctx *p.SchemaCtx) {
 
 		fieldMeta, ok := structVal.Type().FieldByName(key)
 		if !ok {
-			panic(fmt.Sprintf("Struct is missing expected schema key: %s\n see the zog FAQ for more info", key))
+			p.Panicf(p.PanicMissingStructField, ctx.String(), key)
 		}
 		destPtr := structVal.FieldByName(key).Addr().Interface()
 
