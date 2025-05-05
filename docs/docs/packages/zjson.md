@@ -13,7 +13,7 @@ import (
 	"github.com/Oudwins/zog/parsers/zjson"
 )
 
-var userSchema = z.Struct(z.Schema{
+var userSchema = z.Struct(z.Shape{
 	"name": z.String().Required(),
 	"age":  z.Int().Required().GT(18),
 })
@@ -26,7 +26,7 @@ type User struct {
 func ParseJson(json []byte) {
 	var user User
 	errs := userSchema.Parse(zjson.Decode(bytes.NewReader(json)), &user)
-  
+
 	if errs != nil {
 		// handle errors
 	}
@@ -37,7 +37,6 @@ func ParseJson(json []byte) {
 ```
 
 > **WARNING** The `zjson` package does NOT currently support parsing into any data type that is NOT a struct.
-
 
 ## Behaviour on unmarshal errors
 

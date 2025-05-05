@@ -25,7 +25,7 @@ type Name struct {
 
 data := new(Name)
 
-var schema = z.Struct(z.Schema{
+var schema = z.Struct(z.Shape{
 	"first_name": z.String().Required(z.Message("First name is required")), // here you are telling zog that your struct should have a First_name field, but this is incorrect because the struct has a FirstName field. The key here should be "firstName" or "FirstName" (both are valid)
 	"last_name":  z.String().Required(z.Message("Last name is required")),  // same issue here
 })
@@ -45,7 +45,7 @@ type Name struct {
 
 data := new(Name)
 
-var schema = z.Struct(z.Schema{
+var schema = z.Struct(z.Shape{
 	"first_name": z.String().Required(z.Message("First name is required")), // here you are telling zog that your struct should have a First_name field, but this is incorrect because the struct has a FirstName field. The key here should be "firstName" or "FirstName" (both are valid)
 	"last_name":  z.String().Required(z.Message("Last name is required")),  // same issue here
 })

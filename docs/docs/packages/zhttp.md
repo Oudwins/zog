@@ -12,7 +12,7 @@ import (
 	"github.com/Oudwins/zog/zhttp"
 )
 
-var userSchema = z.Struct(z.Schema{
+var userSchema = z.Struct(z.Shape{
 	"name": z.String().Required(),
 	"age":  z.Int().Required().GT(18),
 })
@@ -40,7 +40,6 @@ func handlePostRequest(w http.ResponseWriter, r *http.Request) {
 ```
 
 > **WARNING** The `zhttp` package does NOT currently support parsing into any data type that is NOT a struct.
-
 
 ## Behaviour on unmarshal errors
 

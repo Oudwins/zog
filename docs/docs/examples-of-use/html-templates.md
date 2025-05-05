@@ -15,7 +15,7 @@ type SignupFormData struct {
 	Password string
 }
 
-schema := z.Struct(z.Schema{
+schema := z.Struct(z.Shape{
 	"email":    z.String().Email().Required(),
 	"password": z.String().Min(8).Required(),
 })

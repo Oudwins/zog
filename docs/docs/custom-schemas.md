@@ -38,7 +38,7 @@ type S struct {
 }
 
 schema := z.Struct(
-	z.Schema{
+	z.Shape{
 		"Environment": EnvSchema(), // All string methods will now be typed to Env type
 	},
 )
@@ -86,11 +86,11 @@ Usage is very similar to the `schema.TestFunc()` function:
 
 ```go
 
-user := User{
+user := z.Struct(z.Shape{
 	"uuid": z.CustomFunc(func(valPtr *uuid.UUID, ctx z.Ctx) bool {
 		return (*valPtr).IsValid()
 	}, z.Message("invalid uuid"))
-}
+})
 ```
 
 > **Limitations**

@@ -19,7 +19,7 @@ toc_max_heading_level: 4
 > - In validate mode Zog will panic if the expected types or fields are not present in the structure you are validating.
 
 ```go
-var schema = z.Struct(z.Schema{
+var schema = z.Struct(z.Shape{
 	"name": z.String().Required(),
 })
 
@@ -48,6 +48,6 @@ Most of these things are issues we would like to address in future versions.
   - `z.Map()`
 
 - `zhttp` does not support parsing into any data type that is not a struct
-- Schema & pick, omit, etc are not really typesafe. i.e `z.Struct(z.Schema{"name"})` name is not typesafe
+- Schema & pick, omit, etc are not really typesafe. i.e `z.Struct(z.Shape{"name"})` name is not typesafe
 - structs and slices don't support catch, and structs don't support default values
 - It is not recommended to use very deeply nested schemas since that requires a lot of reflection and can have a negative impact on performance

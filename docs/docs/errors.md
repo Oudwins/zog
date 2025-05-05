@@ -29,13 +29,13 @@ Zog returns a map of `ZogIssue` instances. Which uses the field path as the key 
 
 ```go
 // will return map[string][]z.ZogIssue{"name": []z.ZogIssue{z.ZogIssue{Message: "min length is 5"}}}
-errMap := z.Struct(z.Schema{"name": z.String().Min(5)}).Parse(data, &dest)
+errMap := z.Struct(z.Shape{"name": z.String().Min(5)}).Parse(data, &dest)
 
 // will return map[string][]z.ZogIssue{"$root": []z.ZogIssue{{Message: "slice length is not 2"}, "[0]": []z.ZogIssue{{Message: "min length is 10"}}}}
 errsMap2 := z.Slice(z.String().Min(10)).Len(2).Parse([]string{"only_one"}, &dest)
 
 // nested schemas will use the . or the [] notation to access the issues
-errsMap3 := z.Struct(z.Schema{"name": z.String().Min(5), "address": z.Struct(z.Schema{"streets": z.Slice(z.String().Min(10))})}).Parse(data, &dest)
+errsMap3 := z.Struct(z.Shape{"name": z.String().Min(5), "address": z.Struct(z.Shape{"streets": z.Slice(z.String().Min(10))})}).Parse(data, &dest)
 errsMap3["address.streets[0]"] // will return []z.ZogIssue{{Message: "min length is 10"}}
 ```
 
