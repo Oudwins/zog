@@ -66,7 +66,7 @@ type User struct {
 	Age  int
 }
 
-var userSchema = z.Struct(z.Schema{
+var userSchema = z.Struct(z.Shape{
 	// its very important that schema keys like "name" match the struct field name NOT the input data
 	"name": z.String().Min(3, z.Message("Override default message")).Max(10),
 	"age":  z.Int().GT(18),

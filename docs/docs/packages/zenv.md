@@ -12,9 +12,9 @@ import (
 	"github.com/Oudwins/zog/zenv"
 )
 
-var envSchema = z.Struct(z.Schema{
+var envSchema = z.Struct(z.Shape{
 	"PORT": z.Int().GT(1000).LT(65535).Default(3000),
-	"DB": z.Struct(z.Schema{
+	"DB": z.Struct(z.Shape{
 		"Host": z.String().Default("localhost"),
 		"User": z.String().Default("root"),
 		"Pass": z.String().Default("root"),

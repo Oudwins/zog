@@ -20,7 +20,7 @@ data := "test"
 z.String().Min(3).Validate(&data)
 // structs
 user := User{Name: "test"}
-z.Struct(z.Schema{"name": z.String().Min(3)}).Validate(&user)
+z.Struct(z.Shape{"name": z.String().Min(3)}).Validate(&user)
 ```
 
 ## Required and Zero Values
@@ -53,7 +53,7 @@ type User struct {
 	Name string
 }
 
-var userSchema = z.Struct(z.Schema{
+var userSchema = z.Struct(z.Shape{
 	"ID":   z.Int().Required(),
 	"name": z.String().Required(),
 })

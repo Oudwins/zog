@@ -34,7 +34,7 @@ func (v *StructSchema) setCoercer(c conf.CoercerFunc) {
 // A map of field names to zog schemas
 type Shape map[string]ZogSchema
 
-// deprecated: use z.Struct(z.Shape{}) instead
+// Deprecated: use z.Struct(z.Shape{}) instead
 // A map of field names to zog schemas
 type Schema = Shape
 

@@ -68,7 +68,7 @@ z.Bool()
 z.Time()
 
 // Complex Types. Calling .Parse() on these will return map[string][]ZogIssue. Where the key is the field path ("user.email") & $root is the list of complex type level errors not the specific field errors
-z.Struct(z.Schema{
+z.Struct(z.Shape{
 	"name": z.String(),
 })
 z.Slice(z.String())
@@ -166,11 +166,11 @@ z.Time(z.Time.Format(time.RFC3339)) // If input is a string, it will be parsed a
 
 #### Structs
 
-> Note structs cannot be required or optional. They just pass through to the underlying ZogSchemas for their fields. If you need to express that a struct might exist and if it does it must be valid, you can use a pointer. i.e `z.Ptr(z.Struct(z.Schema{...}))`
+> Note structs cannot be required or optional. They just pass through to the underlying ZogSchemas for their fields. If you need to express that a struct might exist and if it does it must be valid, you can use a pointer. i.e `z.Ptr(z.Struct(z.Shape{...}))`
 
 ```go
 // usage
-s := z.Struct(z.Schema{
+s := z.Struct(z.Shape{
 	"name": String().Required(),
 	"age":  Int().Required(),
 })
@@ -179,7 +179,7 @@ s := z.Struct(z.Schema{
 schema.Pick("key1", map[string]bool{"a": true, "b": false}) // creates a new shallow copy of the schema with only the specified fields. It supports both string keys and map[string]bool
 schema.Omit("key1", map[string]bool{"a": true, "b": false}) // creates a new shallow copy of the schema omitting the specified fields. It supports both string keys and map[string]bool
 
-schema.Extend(z.Schema{"a": z.String()}) // creates a new shallow copy of the schema with the additional fields
+schema.Extend(z.Shape{"a": z.String()}) // creates a new shallow copy of the schema with the additional fields
 schema.Merge(otherSchema, otherSchema2)  // merges two or more schemas into a new schema. Last schema takes precedence for conflicting keys
 // Tests / Validators
 // None right now

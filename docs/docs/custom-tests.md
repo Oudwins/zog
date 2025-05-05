@@ -21,7 +21,7 @@ z.String().TestFunc(func(data *string, ctx z.Ctx) bool { // notice that here Zog
 Test funcs for structs and slices instead receive a pointer to the data to avoid copying large data structures. For example:
 
 ```go
-z.Struct(z.Schema{
+z.Struct(z.Shape{
 	"name": z.String(),
 }).TestFunc(func(dataPtr any, ctx z.Ctx) bool { // notice that here we have to cast the dataPtr because no inference for struct types
 	user := dataPtr.(*User)

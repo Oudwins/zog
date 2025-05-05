@@ -20,7 +20,7 @@ var dest string
 z.String().Min(3).Parse("test", &dest)
 // structs
 var dest User
-z.Struct(z.Schema{"name": z.String().Min(3)}).Parse(map[string]any{"name": "test"}, &dest)
+z.Struct(z.Shape{"name": z.String().Min(3)}).Parse(map[string]any{"name": "test"}, &dest)
 ```
 
 Under the hood Zog follows the [Parsing Execution Structure](#parsing-execution-structure) and does a bunch of things under the hood to make sure your data is parsed correctly. Such as checking for zero values, coercing types, etc...
@@ -34,13 +34,13 @@ type User struct {
 	Name string `zog:"name"`
 }
 
-z.Struct(z.Schema{"name": z.String()}).Parse(map[string]any{"name": "test"}, &User{}) // note zog will fetch the value as map[name]
+z.Struct(z.Shape{"name": z.String()}).Parse(map[string]any{"name": "test"}, &User{}) // note zog will fetch the value as map[name]
 
 type User struct {
 	Name string `zog:"name"`
 }
 
-z.Struct(z.Schema{"Name": z.String()}).Parse(map[string]any{"name": "test"}, &User{}) // note zog will fetch the value as map[Name]
+z.Struct(z.Shape{"Name": z.String()}).Parse(map[string]any{"name": "test"}, &User{}) // note zog will fetch the value as map[Name]
 ```
 
 However, this is not always practical. For example, you may have data coming in in kebab case and you want to parse it into camel case. For this Zog supports a few struct tags:
@@ -62,7 +62,7 @@ type User struct {
 	LastName string `query:"last_name" json:"last-name"`
 }
 
-z.Struct(z.Schema{"name": z.String(), "lastName": z.String()}).Parse(map[string]any{"first-name": "test", "lastName": "Doe"}, &User{})
+z.Struct(z.Shape{"name": z.String(), "lastName": z.String()}).Parse(map[string]any{"first-name": "test", "lastName": "Doe"}, &User{})
 ```
 
 ## Coercion

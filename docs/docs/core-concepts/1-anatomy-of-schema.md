@@ -8,7 +8,7 @@ A zog schema is an interface implemented by multiple custom structs that represe
 
 ```go
 stringSchema := z.String().Trim().Min(3).Required()    // A zog schema that represents a required string which will first be trimmed then a test to ensure it has 3+ characters will be ran.
-userSchema := z.Struct(z.Schema{"name": stringSchema}) // a zog schema that represents a user struct. Also yes I know that z.Schema might be confusing but think of it as the schema for the struct not a ZogSchema
+userSchema := z.Struct(z.Shape{"name": stringSchema}) // a zog schema that represents a user struct. Also yes I know that z.Schema might be confusing but think of it as the schema for the struct not a ZogSchema
 ```
 
 **The string schema, for example, looks something like this:**
@@ -65,7 +65,7 @@ type User struct {
 	AreaCode string
 }
 
-z.Struct(z.Schema{
+z.Struct(z.Shape{
 	"phone": z.String().Test(...).Transform(func (valPtr *string, ctx z.Ctx) error{
 		*valPtr = strings.ReplaceAll(*valPtr, " ", "") // remove all spaces
 		return nil
