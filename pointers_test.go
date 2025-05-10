@@ -136,7 +136,7 @@ func TestPtrNestedStructs(t *testing.T) {
 }
 
 func TestPtrInSlice(t *testing.T) {
-	schema := Slice(Ptr(Int()))
+	schema := Slice[*int](Ptr(Int()))
 	var out []*int
 
 	data := []any{10, 20, 30}
@@ -154,7 +154,7 @@ func TestPtrSliceStruct(t *testing.T) {
 		Value int
 	}
 
-	schema := Slice(Ptr(Struct(Shape{
+	schema := Slice[string](Ptr(Struct(Shape{
 		"value": Int(),
 	})))
 	var out []*TestStruct
@@ -218,7 +218,7 @@ func TestPtrToStruct(t *testing.T) {
 
 func TestPtrToSlice(t *testing.T) {
 	var dest *[]*int
-	s := Ptr(Slice(Ptr(Int())))
+	s := Ptr(Slice[int](Ptr(Int())))
 	err := s.Parse([]any{10, 20, 30}, &dest)
 	assert.Nil(t, err)
 	assert.NotNil(t, dest)

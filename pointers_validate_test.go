@@ -97,7 +97,7 @@ func TestValidatePtrNestedStructs(t *testing.T) {
 }
 
 func TestValidatePtrInSlice(t *testing.T) {
-	schema := Slice(Ptr(Int()).NotNil())
+	schema := Slice[*int](Ptr(Int()).NotNil())
 	v1, v2, v3 := 10, 20, 30
 	var v4 *int
 	out := []*int{&v1, &v2, &v3, v4}
@@ -115,7 +115,7 @@ func TestValidatePtrSliceStruct(t *testing.T) {
 		Value int
 	}
 
-	schema := Slice(Ptr(Struct(Shape{
+	schema := Slice[*Shape](Ptr(Struct(Shape{
 		"value": Int(),
 	})))
 	out := []*TestStruct{
@@ -167,7 +167,7 @@ func TestValidatePtrToStruct(t *testing.T) {
 func TestValidatePtrToSlice(t *testing.T) {
 	v1, v2, v3 := 10, 20, 30
 	dest := &[]*int{&v1, &v2, &v3}
-	s := Ptr(Slice(Ptr(Int())))
+	s := Ptr(Slice[*int](Ptr(Int())))
 
 	errs := s.Validate(&dest)
 	assert.Empty(t, errs)

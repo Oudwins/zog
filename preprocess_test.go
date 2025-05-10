@@ -68,7 +68,7 @@ func TestPreprocessTime(t *testing.T) {
 func TestPreprocessSlice(t *testing.T) {
 	s := Preprocess(func(data string, ctx Ctx) (out []string, err error) {
 		return strings.Split(data, ","), nil
-	}, Slice(String().Min(1)))
+	}, Slice[string](String().Min(1)))
 
 	out := []string{}
 	errs := s.Parse("hello,world", &out)
@@ -112,7 +112,7 @@ func TestPreprocessSliceOfStructs(t *testing.T) {
 			result[i] = User{Id: parts[0], Name: parts[1]}
 		}
 		return result, nil
-	}, Slice(Struct(Shape{
+	}, Slice[*Shape](Struct(Shape{
 		"Id":   String().Min(1),
 		"Name": String().Min(1),
 	})))
@@ -140,7 +140,7 @@ func TestPreprocessStructWithSlice(t *testing.T) {
 		}, nil
 	}, Struct(Shape{
 		"Id":    String().Min(1),
-		"Names": Slice(String().Min(1)),
+		"Names": Slice[string](String().Min(1)),
 	}))
 
 	var out User
@@ -254,7 +254,7 @@ func TestPreprocessPtrSlice(t *testing.T) {
 	s := Preprocess(func(data string, ctx Ctx) (out *[]string, err error) {
 		slice := strings.Split(data, ",")
 		return &slice, nil
-	}, Ptr(Slice(String().Min(1))))
+	}, Ptr(Slice[string](String().Min(1))))
 
 	var out *[]string
 	errs := s.Parse("a,b,c", &out)
@@ -291,7 +291,7 @@ func TestPreprocessPartOfStruct(t *testing.T) {
 
 func TestPreprocessInSlice(t *testing.T) {
 
-	s := Slice(
+	s := Slice[string](
 		Preprocess(func(data string, ctx Ctx) (out int, err error) {
 			return strconv.Atoi(data)
 		}, Int().GT(0)),

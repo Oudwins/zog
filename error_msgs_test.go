@@ -21,7 +21,7 @@ func TestErrorMessages(t *testing.T) {
 		"age":   Int().GT(18).Required(),
 		"time":  Time().Before(time.Now()).Required(),
 		"bool":  Bool().True().Required(),
-		"slice": Slice(String()).Contains("foo").Required(),
+		"slice": Slice[string](String()).Contains("foo").Required(),
 	})
 
 	var u Msgs

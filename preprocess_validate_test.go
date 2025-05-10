@@ -66,7 +66,7 @@ func TestPreprocessTimeValidate(t *testing.T) {
 func TestPreprocessSliceValidate(t *testing.T) {
 	s := Preprocess(func(data *[]string, ctx Ctx) (out []string, err error) {
 		return append(*data, "!"), nil
-	}, Slice(String().Min(1)))
+	}, Slice[string](String().Min(1)))
 
 	slice := []string{"hello", "world"}
 	errs := s.Validate(&slice)
@@ -105,7 +105,7 @@ func TestPreprocessSliceOfStructsValidate(t *testing.T) {
 			result[i] = User{Id: u.Id + "!", Name: u.Name + "!"}
 		}
 		return result, nil
-	}, Slice(Struct(Shape{
+	}, Slice[*Shape](Struct(Shape{
 		"Id":   String().Min(1),
 		"Name": String().Min(1),
 	})))
@@ -138,7 +138,7 @@ func TestPreprocessStructWithSliceValidate(t *testing.T) {
 		}, nil
 	}, Struct(Shape{
 		"Id":    String().Min(1),
-		"Names": Slice(String().Min(1)),
+		"Names": Slice[string](String().Min(1)),
 	}))
 
 	user := User{
@@ -268,7 +268,7 @@ func TestPreprocessPtrSliceValidate(t *testing.T) {
 			s[i] = str + "!"
 		}
 		return &s, nil
-	}, Ptr(Slice(String().Min(1))))
+	}, Ptr(Slice[string](String().Min(1))))
 
 	slice := []string{"a", "b", "c"}
 	pslice := &slice
