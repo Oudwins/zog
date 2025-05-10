@@ -9,7 +9,7 @@ import (
 )
 
 func TestValidateSliceRequired(t *testing.T) {
-	validator := Slice(String())
+	validator := Slice[string](String())
 	dest := []string{"test"}
 	errs := validator.Validate(&dest)
 	if len(errs) > 0 {
@@ -27,7 +27,7 @@ func TestValidateSliceRequired(t *testing.T) {
 }
 
 func TestValidateSliceOptional(t *testing.T) {
-	validator := Slice(String()).Optional()
+	validator := Slice[string](String()).Optional()
 	dest := []string{"test"}
 	errs := validator.Validate(&dest)
 	if len(errs) > 0 {
@@ -41,7 +41,7 @@ func TestValidateSliceOptional(t *testing.T) {
 }
 
 func TestValidateSliceDefault(t *testing.T) {
-	validator := Slice(String()).Default([]string{"default"})
+	validator := Slice[string](String()).Default([]string{"default"})
 	dest := []string{}
 	errs := validator.Validate(&dest)
 	if len(errs) > 0 {
@@ -51,16 +51,14 @@ func TestValidateSliceDefault(t *testing.T) {
 }
 
 func TestValidateSliceTransform(t *testing.T) {
-	transform := func(val any, ctx Ctx) error {
-		if v, ok := val.(*[]string); ok {
-			for i := range *v {
-				(*v)[i] = strings.ToUpper((*v)[i])
-			}
+	transform := func(val []string, ctx Ctx) error {
+		for i := range val {
+			val[i] = strings.ToUpper(val[i])
 		}
 		return nil
 	}
 
-	validator := Slice(String()).Transform(transform)
+	validator := Slice[string](String()).Transform(transform)
 	dest := []string{"test", "example"}
 	errs := validator.Validate(&dest)
 	if len(errs) > 0 {
@@ -70,7 +68,7 @@ func TestValidateSliceTransform(t *testing.T) {
 }
 
 func TestValidateSliceLen(t *testing.T) {
-	validator := Slice(String()).Len(2)
+	validator := Slice[string](String()).Len(2)
 	dest := []string{"test", "example"}
 	errs := validator.Validate(&dest)
 	if len(errs) > 0 {
@@ -86,7 +84,7 @@ func TestValidateSliceLen(t *testing.T) {
 }
 
 func TestValidateSliceMin(t *testing.T) {
-	validator := Slice(String()).Min(2)
+	validator := Slice[string](String()).Min(2)
 	dest := []string{"test", "example", "extra"}
 	errs := validator.Validate(&dest)
 	if len(errs) > 0 {
@@ -102,7 +100,7 @@ func TestValidateSliceMin(t *testing.T) {
 }
 
 func TestValidateSliceMax(t *testing.T) {
-	validator := Slice(String()).Max(2)
+	validator := Slice[string](String()).Max(2)
 	dest := []string{"test", "example"}
 	errs := validator.Validate(&dest)
 	if len(errs) > 0 {
@@ -118,7 +116,7 @@ func TestValidateSliceMax(t *testing.T) {
 }
 
 func TestValidateSliceContains(t *testing.T) {
-	validator := Slice(String()).Contains("test")
+	validator := Slice[string](String()).Contains("test")
 	dest := []string{"test", "example"}
 	errs := validator.Validate(&dest)
 	if len(errs) > 0 {
@@ -134,11 +132,8 @@ func TestValidateSliceContains(t *testing.T) {
 }
 
 func TestValidateSliceCustomTest(t *testing.T) {
-	validator := Slice(String()).TestFunc(func(val any, ctx Ctx) bool {
-		if v, ok := val.(*[]string); ok {
-			return len(*v) > 0 && (*v)[0] == "test"
-		}
-		return false
+	validator := Slice[string](String()).TestFunc(func(val []string, ctx Ctx) bool {
+		return len(val) > 0 && val[0] == "test"
 	}, Message("custom"))
 
 	dest := []string{"test", "example"}
@@ -189,7 +184,7 @@ func TestValidateSliceCustomTest(t *testing.T) {
 // }
 
 func TestValidateSliceMultipleValidators(t *testing.T) {
-	validator := Slice(String()).
+	validator := Slice[string](String()).
 		Min(2, Message("too short")).
 		Max(4, Message("too long")).
 		Contains("test", Message("must contain test"))

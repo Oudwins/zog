@@ -10,24 +10,24 @@ import (
 )
 
 // ! INTERNALS
-var _ ComplexZogSchema = &SliceSchema{}
+var _ ComplexZogSchema = &SliceSchema[int]{}
 
-type SliceSchema struct {
-	processors []p.ZProcessor[any]
+type SliceSchema[T comparable] struct {
+	processors []p.ZProcessor[[]T]
 	schema     ZogSchema
-	required   *p.Test[any]
-	defaultVal any
+	required   *p.Test[[]T]
+	defaultVal []T
 	// catch          any
 	coercer conf.CoercerFunc
 }
 
 // Returns the type of the schema
-func (v *SliceSchema) getType() zconst.ZogType {
+func (v *SliceSchema[T]) getType() zconst.ZogType {
 	return zconst.TypeSlice
 }
 
 // Sets the coercer for the schema
-func (v *SliceSchema) setCoercer(c conf.CoercerFunc) {
+func (v *SliceSchema[T]) setCoercer(c conf.CoercerFunc) {
 	v.coercer = c
 }
 
@@ -35,8 +35,8 @@ func (v *SliceSchema) setCoercer(c conf.CoercerFunc) {
 
 // Creates a slice schema. That is a Zog representation of a slice.
 // It takes a ZogSchema which will be used to validate against all the items in the slice.
-func Slice(schema ZogSchema, opts ...SchemaOption) *SliceSchema {
-	s := &SliceSchema{
+func Slice[T comparable](schema ZogSchema, opts ...SchemaOption) *SliceSchema[T] {
+	s := &SliceSchema[T]{
 		schema:  schema,
 		coercer: conf.Coercers.Slice, // default coercer
 	}
@@ -47,7 +47,7 @@ func Slice(schema ZogSchema, opts ...SchemaOption) *SliceSchema {
 }
 
 // Validates a slice
-func (v *SliceSchema) Validate(data any, options ...ExecOption) ZogIssueMap {
+func (v *SliceSchema[T]) Validate(data any, options ...ExecOption) ZogIssueMap {
 	errs := p.NewErrsMap()
 	defer errs.Free()
 
@@ -65,7 +65,7 @@ func (v *SliceSchema) Validate(data any, options ...ExecOption) ZogIssueMap {
 }
 
 // Internal function to validate the data
-func (v *SliceSchema) validate(ctx *p.SchemaCtx) {
+func (v *SliceSchema[T]) validate(ctx *p.SchemaCtx) {
 
 	refVal := reflect.ValueOf(ctx.ValPtr).Elem() // we use this to set the value to the ptr. But we still reference the ptr everywhere. This is correct even if it seems confusing.
 	// 2. cast data to string & handle default/required
@@ -107,7 +107,7 @@ func (v *SliceSchema) validate(ctx *p.SchemaCtx) {
 }
 
 // Only supports parsing from data=slice[any] to a dest =&slice[] (this can be typed. Doesn't have to be any)
-func (v *SliceSchema) Parse(data any, dest any, options ...ExecOption) ZogIssueMap {
+func (v *SliceSchema[T]) Parse(data any, dest any, options ...ExecOption) ZogIssueMap {
 	errs := p.NewErrsMap()
 	defer errs.Free()
 	ctx := p.NewExecCtx(errs, conf.IssueFormatter)
@@ -125,7 +125,7 @@ func (v *SliceSchema) Parse(data any, dest any, options ...ExecOption) ZogIssueM
 }
 
 // Internal function to process the data
-func (v *SliceSchema) process(ctx *p.SchemaCtx) {
+func (v *SliceSchema[T]) process(ctx *p.SchemaCtx) {
 
 	// 2. cast data to string & handle default/required
 	isZeroVal := p.IsParseZeroValue(ctx.Data, ctx)
@@ -179,9 +179,9 @@ func (v *SliceSchema) process(ctx *p.SchemaCtx) {
 }
 
 // Adds transform function to schema.
-func (v *SliceSchema) Transform(transform Transform[any]) *SliceSchema {
-	v.processors = append(v.processors, &p.TransformProcessor[any]{
-		Transform: p.Transform[any](transform),
+func (v *SliceSchema[T]) Transform(transform Transform[[]T]) *SliceSchema[T] {
+	v.processors = append(v.processors, &p.TransformProcessor[[]T]{
+		Transform: p.Transform[[]T](transform),
 	})
 	return v
 }
@@ -189,8 +189,8 @@ func (v *SliceSchema) Transform(transform Transform[any]) *SliceSchema {
 // !MODIFIERS
 
 // marks field as required
-func (v *SliceSchema) Required(options ...TestOption) *SliceSchema {
-	r := p.Required[any]()
+func (v *SliceSchema[T]) Required(options ...TestOption) *SliceSchema[T] {
+	r := p.Required[[]T]()
 	for _, opt := range options {
 		opt(&r)
 	}
@@ -199,13 +199,13 @@ func (v *SliceSchema) Required(options ...TestOption) *SliceSchema {
 }
 
 // marks field as optional
-func (v *SliceSchema) Optional() *SliceSchema {
+func (v *SliceSchema[T]) Optional() *SliceSchema[T] {
 	v.required = nil
 	return v
 }
 
 // sets the default value
-func (v *SliceSchema) Default(val any) *SliceSchema {
+func (v *SliceSchema[T]) Default(val []T) *SliceSchema[T] {
 	v.defaultVal = val
 	return v
 }
@@ -220,22 +220,22 @@ func (v *SliceSchema) Default(val any) *SliceSchema {
 // !TESTS
 
 // custom test function call it -> schema.Test(t z.Test)
-func (v *SliceSchema) Test(t Test[any]) *SliceSchema {
-	x := p.Test[any](t)
+func (v *SliceSchema[T]) Test(t Test[[]T]) *SliceSchema[T] {
+	x := p.Test[[]T](t)
 	v.processors = append(v.processors, &x)
 	return v
 }
 
 // Create a custom test function for the schema. This is similar to Zod's `.refine()` method.
-func (v *SliceSchema) TestFunc(testFunc BoolTFunc[any], opts ...TestOption) *SliceSchema {
-	t := p.NewTestFunc("", p.BoolTFunc[any](testFunc), opts...)
-	v.Test(Test[any](*t))
+func (v *SliceSchema[T]) TestFunc(testFunc BoolTFunc[[]T], opts ...TestOption) *SliceSchema[T] {
+	t := p.NewTestFunc("", p.BoolTFunc[[]T](testFunc), opts...)
+	v.Test(Test[[]T](*t))
 	return v
 }
 
 // Minimum number of items
-func (v *SliceSchema) Min(n int, options ...TestOption) *SliceSchema {
-	t, fn := sliceMin(n)
+func (v *SliceSchema[T]) Min(n int, options ...TestOption) *SliceSchema[T] {
+	t, fn := sliceMin[T](n)
 	p.TestFuncFromBool(fn, &t)
 	for _, opt := range options {
 		opt(&t)
@@ -245,8 +245,8 @@ func (v *SliceSchema) Min(n int, options ...TestOption) *SliceSchema {
 }
 
 // Maximum number of items
-func (v *SliceSchema) Max(n int, options ...TestOption) *SliceSchema {
-	t, fn := sliceMax(n)
+func (v *SliceSchema[T]) Max(n int, options ...TestOption) *SliceSchema[T] {
+	t, fn := sliceMax[T](n)
 	p.TestFuncFromBool(fn, &t)
 	for _, opt := range options {
 		opt(&t)
@@ -256,8 +256,8 @@ func (v *SliceSchema) Max(n int, options ...TestOption) *SliceSchema {
 }
 
 // Exact number of items
-func (v *SliceSchema) Len(n int, options ...TestOption) *SliceSchema {
-	t, fn := sliceLength(n)
+func (v *SliceSchema[T]) Len(n int, options ...TestOption) *SliceSchema[T] {
+	t, fn := sliceLength[T](n)
 	p.TestFuncFromBool(fn, &t)
 	for _, opt := range options {
 		opt(&t)
@@ -267,23 +267,17 @@ func (v *SliceSchema) Len(n int, options ...TestOption) *SliceSchema {
 }
 
 // Slice contains a specific value
-func (v *SliceSchema) Contains(value any, options ...TestOption) *SliceSchema {
-	fn := func(val any, ctx Ctx) bool {
-		rv := reflect.ValueOf(val).Elem()
-		if rv.Kind() != reflect.Slice {
-			return false
-		}
-		for idx := 0; idx < rv.Len(); idx++ {
-			v := rv.Index(idx).Interface()
-
-			if reflect.DeepEqual(v, value) {
+func (v *SliceSchema[T]) Contains(value T, options ...TestOption) *SliceSchema[T] {
+	fn := func(val []T, ctx Ctx) bool {
+		for _, v := range val {
+			if v == value {
 				return true
 			}
 		}
 
 		return false
 	}
-	t := p.Test[any]{
+	t := p.Test[[]T]{
 		IssueCode: zconst.IssueCodeContains,
 		Params:    make(map[string]any, 1),
 	}
@@ -296,16 +290,12 @@ func (v *SliceSchema) Contains(value any, options ...TestOption) *SliceSchema {
 	return v
 }
 
-func sliceMin(n int) (p.Test[any], p.BoolTFunc[any]) {
-	fn := func(val any, ctx Ctx) bool {
-		rv := reflect.ValueOf(val).Elem()
-		if rv.Kind() != reflect.Slice {
-			return false
-		}
-		return rv.Len() >= n
+func sliceMin[T comparable](n int) (p.Test[[]T], p.BoolTFunc[[]T]) {
+	fn := func(val []T, ctx Ctx) bool {
+		return len(val) >= n
 	}
 
-	t := p.Test[any]{
+	t := p.Test[[]T]{
 		IssueCode: zconst.IssueCodeMin,
 		Params:    make(map[string]any, 1),
 	}
@@ -313,31 +303,24 @@ func sliceMin(n int) (p.Test[any], p.BoolTFunc[any]) {
 	return t, fn
 }
 
-func sliceMax(n int) (p.Test[any], p.BoolTFunc[any]) {
-	fn := func(val any, ctx Ctx) bool {
-		rv := reflect.ValueOf(val).Elem()
-		if rv.Kind() != reflect.Slice {
-			return false
-		}
-		return rv.Len() <= n
+func sliceMax[T comparable](n int) (p.Test[[]T], p.BoolTFunc[[]T]) {
+	fn := func(val []T, ctx Ctx) bool {
+		return len(val) <= n
 	}
 
-	t := p.Test[any]{
+	t := p.Test[[]T]{
 		IssueCode: zconst.IssueCodeMax,
 		Params:    make(map[string]any, 1),
 	}
 	t.Params[zconst.IssueCodeMax] = n
 	return t, fn
 }
-func sliceLength(n int) (p.Test[any], p.BoolTFunc[any]) {
-	fn := func(val any, ctx Ctx) bool {
-		rv := reflect.ValueOf(val).Elem()
-		if rv.Kind() != reflect.Slice {
-			return false
-		}
-		return rv.Len() == n
+
+func sliceLength[T comparable](n int) (p.Test[[]T], p.BoolTFunc[[]T]) {
+	fn := func(val []T, ctx Ctx) bool {
+		return len(val) == n
 	}
-	t := p.Test[any]{
+	t := p.Test[[]T]{
 		IssueCode: zconst.IssueCodeLen,
 		Params:    make(map[string]any, 1),
 	}

@@ -82,7 +82,7 @@ func TestRequestParams(t *testing.T) {
 		"isMarried": z.Bool().True(),
 		"lights":    z.Bool().True(),
 		"cash":      z.Float64().GT(10.0),
-		"swagger": z.Slice(
+		"swagger": z.Slice[string](
 			z.String().Min(1)).Min(2),
 		"q": z.String().Required(),
 	})
@@ -130,7 +130,7 @@ func TestRequestParamsOnJsonContentType(t *testing.T) {
 		"isMarried": z.Bool().True(),
 		"lights":    z.Bool().True(),
 		"cash":      z.Float64().GT(10.0),
-		"swagger": z.Slice(
+		"swagger": z.Slice[string](
 			z.String().Min(1)).Min(2),
 		"q": z.String().Required(),
 	})
@@ -187,7 +187,7 @@ func TestRequestParamsOnDeleteMethodWithJsonContentType(t *testing.T) {
 		"isMarried": z.Bool().True(),
 		"lights":    z.Bool().True(),
 		"cash":      z.Float64().GT(10.0),
-		"swagger": z.Slice(
+		"swagger": z.Slice[string](
 			z.String().Min(1)).Min(2),
 		"q": z.String().Required(),
 	})
