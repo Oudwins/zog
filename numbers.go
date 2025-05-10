@@ -17,6 +17,12 @@ type NumberSchema[T Numeric] struct {
 	required   *p.Test[*T]
 	catch      *T
 	coercer    CoercerFunc
+	isNot      bool
+}
+
+type NotNumberSchema[T Numeric] interface {
+	OneOf(enum []T, options ...TestOption) *NumberSchema[T]
+	EQ(n T, options ...TestOption) *NumberSchema[T]
 }
 
 // ! INTERNALS
@@ -230,7 +236,14 @@ func (v *NumberSchema[T]) OneOf(enum []T, options ...TestOption) *NumberSchema[T
 // checks for equality
 func (v *NumberSchema[T]) EQ(n T, options ...TestOption) *NumberSchema[T] {
 	t, fn := p.EQ(n)
-	p.TestFuncFromBool(fn, &t)
+
+	if v.isNot {
+		p.TestNotFuncFromBool(fn, &t)
+		v.isNot = false
+	} else {
+		p.TestFuncFromBool(fn, &t)
+	}
+
 	for _, opt := range options {
 		opt(&t)
 	}
@@ -279,5 +292,10 @@ func (v *NumberSchema[T]) GT(n T, options ...TestOption) *NumberSchema[T] {
 		opt(&t)
 	}
 	v.processors = append(v.processors, &t)
+	return v
+}
+
+func (v *NumberSchema[T]) Not() NotNumberSchema[T] {
+	v.isNot = true
 	return v
 }
