@@ -106,7 +106,7 @@ func TestBoolValidateOptional(t *testing.T) {
 		expectErr bool
 	}{
 		{
-			name:     "Optiona by default",
+			name:     "Optional by default",
 			data:     false,
 			expected: false,
 			proc:     Bool(),
@@ -347,4 +347,34 @@ func TestBoolValidateCustomTest(t *testing.T) {
 		t.Errorf("Expected no errors, got %v", errs)
 	}
 	assert.Equal(t, true, dest)
+}
+
+func TestBoolValidateNot(t *testing.T) {
+	tests := map[string]struct {
+		data      bool
+		proc      *BoolSchema[bool]
+		expectErr bool
+	}{
+		"Not eq false": {
+			data:      true,
+			proc:      Bool().Not().EQ(false),
+			expectErr: false,
+		},
+
+		"Not eq true": {
+			data:      true,
+			proc:      Bool().Not().EQ(true),
+			expectErr: true,
+		},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			errs := tc.proc.Validate(&tc.data)
+			if tc.expectErr {
+				assert.NotEmpty(t, errs)
+				tutils.VerifyDefaultIssueMessages(t, errs)
+			}
+		})
+	}
 }
