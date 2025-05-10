@@ -8,12 +8,21 @@ import (
 
 var _ PrimitiveZogSchema[bool] = &BoolSchema[bool]{}
 
-type BoolSchema[T ~bool] struct {
+type likeBool interface {
+	~bool
+}
+
+type BoolSchema[T likeBool] struct {
 	processors []p.ZProcessor[*T]
 	defaultVal *T
 	required   *p.Test[*T]
 	catch      *T
 	coercer    CoercerFunc
+	isNot      bool
+}
+
+type NotBoolSchema[T likeBool] interface {
+	EQ(val T) *BoolSchema[T]
 }
 
 // ! INTERNALS
@@ -138,22 +147,41 @@ func (v *BoolSchema[T]) Catch(val T) *BoolSchema[T] {
 // UNIQUE METHODS
 
 func (v *BoolSchema[T]) True() *BoolSchema[T] {
-	t, fn := p.EQ[T](T(true))
-	p.TestFuncFromBool(fn, &t)
-	v.processors = append(v.processors, &t)
-	return v
+	t, fn := p.EQ(T(true))
+
+	return v.addTest(&t, fn)
 }
 
 func (v *BoolSchema[T]) False() *BoolSchema[T] {
-	t, fn := p.EQ[T](T(false))
-	p.TestFuncFromBool(fn, &t)
-	v.processors = append(v.processors, &t)
-	return v
+	t, fn := p.EQ(T(false))
+
+	return v.addTest(&t, fn)
 }
 
 func (v *BoolSchema[T]) EQ(val T) *BoolSchema[T] {
-	t, fn := p.EQ[T](val)
-	p.TestFuncFromBool(fn, &t)
-	v.processors = append(v.processors, &t)
+	t, fn := p.EQ(val)
+
+	return v.addTest(&t, fn)
+}
+
+func (v *BoolSchema[T]) Not() NotBoolSchema[T] {
+	v.isNot = true
+	return v
+}
+
+func (v *BoolSchema[T]) addTest(t *p.Test[*T], fn p.BoolTFunc[*T], options ...TestOption) *BoolSchema[T] {
+	if v.isNot {
+		p.TestNotFuncFromBool(fn, t)
+		t.IssueCode = zconst.NotIssueCode(t.IssueCode)
+		v.isNot = false
+	} else {
+		p.TestFuncFromBool(fn, t)
+	}
+
+	for _, opt := range options {
+		opt(t)
+	}
+
+	v.processors = append(v.processors, t)
 	return v
 }
