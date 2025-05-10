@@ -374,6 +374,8 @@ func TestBoolValidateNot(t *testing.T) {
 			if tc.expectErr {
 				assert.NotEmpty(t, errs)
 				tutils.VerifyDefaultIssueMessages(t, errs)
+			} else {
+				assert.Empty(t, errs)
 			}
 		})
 	}
