@@ -242,31 +242,22 @@ func (v *SliceSchema) TestFunc(testFunc BoolTFunc[any], opts ...TestOption) *Sli
 // Minimum number of items
 func (v *SliceSchema) Min(n int, options ...TestOption) *SliceSchema {
 	t, fn := sliceMin(n)
-	for _, opt := range options {
-		opt(&t)
-	}
 
-	return v.addTest(&t, fn)
+	return v.addTest(&t, fn, options...)
 }
 
 // Maximum number of items
 func (v *SliceSchema) Max(n int, options ...TestOption) *SliceSchema {
 	t, fn := sliceMax(n)
-	for _, opt := range options {
-		opt(&t)
-	}
 
-	return v.addTest(&t, fn)
+	return v.addTest(&t, fn, options...)
 }
 
 // Exact number of items
 func (v *SliceSchema) Len(n int, options ...TestOption) *SliceSchema {
 	t, fn := sliceLength(n)
-	for _, opt := range options {
-		opt(&t)
-	}
 
-	return v.addTest(&t, fn)
+	return v.addTest(&t, fn, options...)
 }
 
 // Slice contains a specific value
@@ -293,11 +284,7 @@ func (v *SliceSchema) Contains(value any, options ...TestOption) *SliceSchema {
 		},
 	}
 
-	for _, opt := range options {
-		opt(t)
-	}
-
-	return v.addTest(t, fn)
+	return v.addTest(t, fn, options...)
 }
 
 func sliceMin(n int) (p.Test[any], p.BoolTFunc[any]) {

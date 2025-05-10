@@ -169,17 +169,13 @@ func (v *BoolSchema[T]) Not() NotBoolSchema[T] {
 	return v
 }
 
-func (v *BoolSchema[T]) addTest(t *p.Test[*T], fn p.BoolTFunc[*T], options ...TestOption) *BoolSchema[T] {
+func (v *BoolSchema[T]) addTest(t *p.Test[*T], fn p.BoolTFunc[*T]) *BoolSchema[T] {
 	if v.isNot {
 		p.TestNotFuncFromBool(fn, t)
 		t.IssueCode = zconst.NotIssueCode(t.IssueCode)
 		v.isNot = false
 	} else {
 		p.TestFuncFromBool(fn, t)
-	}
-
-	for _, opt := range options {
-		opt(t)
 	}
 
 	v.processors = append(v.processors, t)
