@@ -242,34 +242,31 @@ func (v *SliceSchema) TestFunc(testFunc BoolTFunc[any], opts ...TestOption) *Sli
 // Minimum number of items
 func (v *SliceSchema) Min(n int, options ...TestOption) *SliceSchema {
 	t, fn := sliceMin(n)
-	p.TestFuncFromBool(fn, &t)
 	for _, opt := range options {
 		opt(&t)
 	}
-	v.processors = append(v.processors, &t)
-	return v
+
+	return v.addTest(&t, fn)
 }
 
 // Maximum number of items
 func (v *SliceSchema) Max(n int, options ...TestOption) *SliceSchema {
 	t, fn := sliceMax(n)
-	p.TestFuncFromBool(fn, &t)
 	for _, opt := range options {
 		opt(&t)
 	}
-	v.processors = append(v.processors, &t)
-	return v
+
+	return v.addTest(&t, fn)
 }
 
 // Exact number of items
 func (v *SliceSchema) Len(n int, options ...TestOption) *SliceSchema {
 	t, fn := sliceLength(n)
-	v.addTest(t, fn)
 	for _, opt := range options {
 		opt(&t)
 	}
-	v.processors = append(v.processors, &t)
-	return v
+
+	return v.addTest(&t, fn)
 }
 
 // Slice contains a specific value
@@ -289,17 +286,18 @@ func (v *SliceSchema) Contains(value any, options ...TestOption) *SliceSchema {
 
 		return false
 	}
-	t := p.Test[any]{
+	t := &p.Test[any]{
 		IssueCode: zconst.IssueCodeContains,
-		Params:    make(map[string]any, 1),
+		Params: map[string]any{
+			zconst.IssueCodeContains: value,
+		},
 	}
-	t.Params[zconst.IssueCodeContains] = value
-	p.TestFuncFromBool(fn, &t)
+
 	for _, opt := range options {
-		opt(&t)
+		opt(t)
 	}
-	v.processors = append(v.processors, &t)
-	return v
+
+	return v.addTest(t, fn)
 }
 
 func sliceMin(n int) (p.Test[any], p.BoolTFunc[any]) {
@@ -356,19 +354,19 @@ func (v *SliceSchema) Not() NotSliceSchema {
 	return v
 }
 
-func (v *SliceSchema) addTest(t p.Test[any], fn p.BoolTFunc[any], options ...TestOption) NotSliceSchema {
+func (v *SliceSchema) addTest(t *p.Test[any], fn p.BoolTFunc[any], options ...TestOption) *SliceSchema {
 	if v.isNot {
-		p.TestNotFuncFromBool(fn, &t)
+		p.TestNotFuncFromBool(fn, t)
 		t.IssueCode = zconst.NotIssueCode(t.IssueCode)
 		v.isNot = false
 	} else {
-		p.TestFuncFromBool(fn, &t)
+		p.TestFuncFromBool(fn, t)
 	}
 
 	for _, opt := range options {
-		opt(&t)
+		opt(t)
 	}
 
-	v.processors = append(v.processors, &t)
+	v.processors = append(v.processors, t)
 	return v
 }
