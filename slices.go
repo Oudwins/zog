@@ -19,6 +19,12 @@ type SliceSchema struct {
 	defaultVal any
 	// catch          any
 	coercer conf.CoercerFunc
+	isNot   bool
+}
+
+type NotSliceSchema interface {
+	Len(n int, options ...TestOption) *SliceSchema
+	Contains(value any, options ...TestOption) *SliceSchema
 }
 
 // Returns the type of the schema
@@ -236,34 +242,22 @@ func (v *SliceSchema) TestFunc(testFunc BoolTFunc[any], opts ...TestOption) *Sli
 // Minimum number of items
 func (v *SliceSchema) Min(n int, options ...TestOption) *SliceSchema {
 	t, fn := sliceMin(n)
-	p.TestFuncFromBool(fn, &t)
-	for _, opt := range options {
-		opt(&t)
-	}
-	v.processors = append(v.processors, &t)
-	return v
+
+	return v.addTest(&t, fn, options...)
 }
 
 // Maximum number of items
 func (v *SliceSchema) Max(n int, options ...TestOption) *SliceSchema {
 	t, fn := sliceMax(n)
-	p.TestFuncFromBool(fn, &t)
-	for _, opt := range options {
-		opt(&t)
-	}
-	v.processors = append(v.processors, &t)
-	return v
+
+	return v.addTest(&t, fn, options...)
 }
 
 // Exact number of items
 func (v *SliceSchema) Len(n int, options ...TestOption) *SliceSchema {
 	t, fn := sliceLength(n)
-	p.TestFuncFromBool(fn, &t)
-	for _, opt := range options {
-		opt(&t)
-	}
-	v.processors = append(v.processors, &t)
-	return v
+
+	return v.addTest(&t, fn, options...)
 }
 
 // Slice contains a specific value
@@ -283,17 +277,14 @@ func (v *SliceSchema) Contains(value any, options ...TestOption) *SliceSchema {
 
 		return false
 	}
-	t := p.Test[any]{
+	t := &p.Test[any]{
 		IssueCode: zconst.IssueCodeContains,
-		Params:    make(map[string]any, 1),
+		Params: map[string]any{
+			zconst.IssueCodeContains: value,
+		},
 	}
-	t.Params[zconst.IssueCodeContains] = value
-	p.TestFuncFromBool(fn, &t)
-	for _, opt := range options {
-		opt(&t)
-	}
-	v.processors = append(v.processors, &t)
-	return v
+
+	return v.addTest(t, fn, options...)
 }
 
 func sliceMin(n int) (p.Test[any], p.BoolTFunc[any]) {
@@ -343,4 +334,26 @@ func sliceLength(n int) (p.Test[any], p.BoolTFunc[any]) {
 	}
 	t.Params[zconst.IssueCodeLen] = n
 	return t, fn
+}
+
+func (v *SliceSchema) Not() NotSliceSchema {
+	v.isNot = true
+	return v
+}
+
+func (v *SliceSchema) addTest(t *p.Test[any], fn p.BoolTFunc[any], options ...TestOption) *SliceSchema {
+	if v.isNot {
+		p.TestNotFuncFromBool(fn, t)
+		t.IssueCode = zconst.NotIssueCode(t.IssueCode)
+		v.isNot = false
+	} else {
+		p.TestFuncFromBool(fn, t)
+	}
+
+	for _, opt := range options {
+		opt(t)
+	}
+
+	v.processors = append(v.processors, t)
+	return v
 }
