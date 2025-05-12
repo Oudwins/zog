@@ -214,3 +214,44 @@ func TestValidateSliceMultipleValidators(t *testing.T) {
 	assert.Contains(t, Issues.SanitizeList(errs["$root"]), "must contain test")
 	assert.Len(t, errs["$root"], 2)
 }
+
+func TestValidateSliceNot(t *testing.T) {
+	tests := map[string]struct {
+		schema    *SliceSchema
+		value     []int
+		expectErr bool
+	}{
+		"not len true": {
+			schema:    Slice(Int()).Not().Len(2),
+			value:     []int{1},
+			expectErr: false,
+		},
+		"not len false": {
+			schema:    Slice(Int()).Not().Len(2),
+			value:     []int{1, 2},
+			expectErr: true,
+		},
+		"not contains true": {
+			schema:    Slice(Int()).Not().Contains([]int{1, 3}),
+			value:     []int{1, 2},
+			expectErr: false,
+		},
+		"not contains false": {
+			schema:    Slice(Int()).Not().Contains(1),
+			value:     []int{1, 2},
+			expectErr: true,
+		},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			errs := tc.schema.Validate(&tc.value)
+			if tc.expectErr {
+				assert.NotEmpty(t, errs)
+				tutils.VerifyDefaultIssueMessagesMap(t, errs)
+			} else {
+				assert.Empty(t, errs)
+			}
+		})
+	}
+}

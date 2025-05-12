@@ -133,6 +133,10 @@ z.Int().LT(n)                             // validates int is less than n
 z.Float().LTE(n)                          // validates float is less than or equal to n
 z.Int().EQ(n)                             // validates int is equal to n
 z.Float().OneOf([]float64{1.0, 2.0, 3.0}) // validates float is one of the values. Similar to zod enums
+
+// Utilities
+z.Int().Not()   // Negates the next test/validation
+z.Float().Not() // Negates the next test/validation
 ```
 
 #### Booleans
@@ -192,6 +196,9 @@ z.Slice(Int()).Min(5)             // validates slice has at least 5 elements
 z.Slice(Float()).Max(5)           // validates slice has at most 5 elements
 z.Slice(Bool()).Length(5)         // validates slice has exactly 5 elements
 z.Slice(String()).Contains("foo") // validates slice contains the element "foo"
+
+// Utilities
+z.Slice(String()).Not() // Negates the next test/validation
 ```
 
 #### Pointers

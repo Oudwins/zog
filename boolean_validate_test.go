@@ -106,7 +106,7 @@ func TestBoolValidateOptional(t *testing.T) {
 		expectErr bool
 	}{
 		{
-			name:     "Optiona by default",
+			name:     "Optional by default",
 			data:     false,
 			expected: false,
 			proc:     Bool(),

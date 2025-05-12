@@ -17,6 +17,12 @@ type NumberSchema[T Numeric] struct {
 	required   *p.Test[*T]
 	catch      *T
 	coercer    CoercerFunc
+	isNot      bool
+}
+
+type NotNumberSchema[T Numeric] interface {
+	OneOf(enum []T, options ...TestOption) *NumberSchema[T]
+	EQ(n T, options ...TestOption) *NumberSchema[T]
 }
 
 // ! INTERNALS
@@ -219,65 +225,63 @@ func (v *NumberSchema[T]) TestFunc(testFunc BoolTFunc[*T], options ...TestOption
 // Check that the value is one of the enum values
 func (v *NumberSchema[T]) OneOf(enum []T, options ...TestOption) *NumberSchema[T] {
 	t, fn := p.In(enum)
-	p.TestFuncFromBool(fn, &t)
-	for _, opt := range options {
-		opt(&t)
-	}
-	v.processors = append(v.processors, &t)
-	return v
+
+	return v.addTest(&t, fn, options...)
 }
 
 // checks for equality
 func (v *NumberSchema[T]) EQ(n T, options ...TestOption) *NumberSchema[T] {
 	t, fn := p.EQ(n)
-	p.TestFuncFromBool(fn, &t)
-	for _, opt := range options {
-		opt(&t)
-	}
-	v.processors = append(v.processors, &t)
-	return v
+
+	return v.addTest(&t, fn, options...)
 }
 
 // checks for lesser or equal
 func (v *NumberSchema[T]) LTE(n T, options ...TestOption) *NumberSchema[T] {
 	t, fn := p.LTE(n)
-	p.TestFuncFromBool(fn, &t)
-	for _, opt := range options {
-		opt(&t)
-	}
-	v.processors = append(v.processors, &t)
-	return v
+
+	return v.addTest(&t, fn, options...)
 }
 
 // checks for greater or equal
 func (v *NumberSchema[T]) GTE(n T, options ...TestOption) *NumberSchema[T] {
 	t, fn := p.GTE(n)
-	p.TestFuncFromBool(fn, &t)
-	for _, opt := range options {
-		opt(&t)
-	}
-	v.processors = append(v.processors, &t)
-	return v
+
+	return v.addTest(&t, fn, options...)
 }
 
 // checks for lesser
 func (v *NumberSchema[T]) LT(n T, options ...TestOption) *NumberSchema[T] {
 	t, fn := p.LT(n)
-	p.TestFuncFromBool(fn, &t)
-	for _, opt := range options {
-		opt(&t)
-	}
-	v.processors = append(v.processors, &t)
-	return v
+
+	return v.addTest(&t, fn, options...)
 }
 
 // checks for greater
 func (v *NumberSchema[T]) GT(n T, options ...TestOption) *NumberSchema[T] {
 	t, fn := p.GT(n)
-	p.TestFuncFromBool(fn, &t)
-	for _, opt := range options {
-		opt(&t)
+
+	return v.addTest(&t, fn, options...)
+}
+
+func (v *NumberSchema[T]) Not() NotNumberSchema[T] {
+	v.isNot = true
+	return v
+}
+
+func (v *NumberSchema[T]) addTest(t *p.Test[*T], fn p.BoolTFunc[*T], options ...TestOption) *NumberSchema[T] {
+	if v.isNot {
+		p.TestNotFuncFromBool(fn, t)
+		t.IssueCode = zconst.NotIssueCode(t.IssueCode)
+		v.isNot = false
+	} else {
+		p.TestFuncFromBool(fn, t)
 	}
-	v.processors = append(v.processors, &t)
+
+	for _, opt := range options {
+		opt(t)
+	}
+
+	v.processors = append(v.processors, t)
 	return v
 }
