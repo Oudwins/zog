@@ -8,21 +8,12 @@ import (
 
 var _ PrimitiveZogSchema[bool] = &BoolSchema[bool]{}
 
-type likeBool interface {
-	~bool
-}
-
-type BoolSchema[T likeBool] struct {
+type BoolSchema[T ~bool] struct {
 	processors []p.ZProcessor[*T]
 	defaultVal *T
 	required   *p.Test[*T]
 	catch      *T
 	coercer    CoercerFunc
-	isNot      bool
-}
-
-type NotBoolSchema[T likeBool] interface {
-	EQ(val T) *BoolSchema[T]
 }
 
 // ! INTERNALS
@@ -164,20 +155,8 @@ func (v *BoolSchema[T]) EQ(val T) *BoolSchema[T] {
 	return v.addTest(&t, fn)
 }
 
-func (v *BoolSchema[T]) Not() NotBoolSchema[T] {
-	v.isNot = true
-	return v
-}
-
 func (v *BoolSchema[T]) addTest(t *p.Test[*T], fn p.BoolTFunc[*T]) *BoolSchema[T] {
-	if v.isNot {
-		p.TestNotFuncFromBool(fn, t)
-		t.IssueCode = zconst.NotIssueCode(t.IssueCode)
-		v.isNot = false
-	} else {
-		p.TestFuncFromBool(fn, t)
-	}
-
+	p.TestFuncFromBool(fn, t)
 	v.processors = append(v.processors, t)
 	return v
 }
