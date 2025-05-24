@@ -3,6 +3,7 @@ package zog
 import (
 	"testing"
 
+	"github.com/Oudwins/zog/tutils"
 	"github.com/Oudwins/zog/zconst"
 	"github.com/stretchr/testify/assert"
 )
@@ -263,4 +264,86 @@ func TestValidateIntGetType(t *testing.T) {
 func TestValidateFloatGetType(t *testing.T) {
 	f := Float()
 	assert.Equal(t, zconst.TypeNumber, f.getType())
+}
+
+func TestValidateIntNot(t *testing.T) {
+	tests := map[string]struct {
+		schema    *NumberSchema[int]
+		value     int
+		expectErr bool
+	}{
+		"Not eq true": {
+			schema:    Int().Not().EQ(1),
+			value:     2,
+			expectErr: false,
+		},
+		"Not eq false": {
+			schema:    Int().Not().EQ(1),
+			value:     1,
+			expectErr: true,
+		},
+		"Not one of true": {
+			schema:    Int().Not().OneOf([]int{1, 2, 3, 4}),
+			value:     5,
+			expectErr: false,
+		},
+		"Not one of false": {
+			schema:    Int().Not().OneOf([]int{1, 2, 3, 4}),
+			value:     2,
+			expectErr: true,
+		},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			errs := tc.schema.Validate(&tc.value)
+			if tc.expectErr {
+				assert.NotEmpty(t, errs)
+				tutils.VerifyDefaultIssueMessages(t, errs)
+			} else {
+				assert.Empty(t, errs)
+			}
+		})
+	}
+}
+
+func TestValidateFloatNot(t *testing.T) {
+	tests := map[string]struct {
+		schema    *NumberSchema[float64]
+		value     float64
+		expectErr bool
+	}{
+		"Not eq true": {
+			schema:    Float64().Not().EQ(1),
+			value:     2,
+			expectErr: false,
+		},
+		"Not eq false": {
+			schema:    Float64().Not().EQ(1),
+			value:     1,
+			expectErr: true,
+		},
+		"Not one of true": {
+			schema:    Float64().Not().OneOf([]float64{1, 2, 3, 4}),
+			value:     5,
+			expectErr: false,
+		},
+		"Not one of false": {
+			schema:    Float64().Not().OneOf([]float64{1, 2, 3, 4}),
+			value:     2,
+			expectErr: true,
+		},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			errs := tc.schema.Validate(&tc.value)
+			if tc.expectErr {
+				assert.NotEmpty(t, errs)
+				tutils.VerifyDefaultIssueMessages(t, errs)
+			} else {
+				assert.Empty(t, errs)
+			}
+		})
+	}
 }
