@@ -138,22 +138,25 @@ func (v *BoolSchema[T]) Catch(val T) *BoolSchema[T] {
 // UNIQUE METHODS
 
 func (v *BoolSchema[T]) True() *BoolSchema[T] {
-	t, fn := p.EQ[T](T(true))
-	p.TestFuncFromBool(fn, &t)
-	v.processors = append(v.processors, &t)
-	return v
+	t, fn := p.EQ(T(true))
+
+	return v.addTest(&t, fn)
 }
 
 func (v *BoolSchema[T]) False() *BoolSchema[T] {
-	t, fn := p.EQ[T](T(false))
-	p.TestFuncFromBool(fn, &t)
-	v.processors = append(v.processors, &t)
-	return v
+	t, fn := p.EQ(T(false))
+
+	return v.addTest(&t, fn)
 }
 
 func (v *BoolSchema[T]) EQ(val T) *BoolSchema[T] {
-	t, fn := p.EQ[T](val)
-	p.TestFuncFromBool(fn, &t)
-	v.processors = append(v.processors, &t)
+	t, fn := p.EQ(val)
+
+	return v.addTest(&t, fn)
+}
+
+func (v *BoolSchema[T]) addTest(t *p.Test[*T], fn p.BoolTFunc[*T]) *BoolSchema[T] {
+	p.TestFuncFromBool(fn, t)
+	v.processors = append(v.processors, t)
 	return v
 }
