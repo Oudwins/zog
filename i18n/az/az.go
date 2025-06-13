@@ -75,7 +75,7 @@ var Map zconst.LangMap = map[zconst.ZogType]map[zconst.ZogIssueCode]string{
 		zconst.IssueCodeLen:                           "siyahıda {{len}} element olmalıdır",
 		zconst.NotIssueCode(zconst.IssueCodeLen):      "siyahıda {{len}} element olmamalıdır",
 		zconst.IssueCodeContains:                      "siyahı daxilində '{{contained}}' olmalıdır",
-		zconst.NotIssueCode(zconst.IssueCodeContains): "siyahı daxilində '{{contained}}' olmalıdır",
+		zconst.NotIssueCode(zconst.IssueCodeContains): "siyahı daxilində '{{contained}}' olmamalıdır",
 		zconst.IssueCodeFallback:                      "siyahı yanlışdır",
 	},
 	zconst.TypeStruct: {
