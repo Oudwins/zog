@@ -7,15 +7,13 @@ import (
 
 	"github.com/Oudwins/zog/conf"
 	p "github.com/Oudwins/zog/internals"
+	"github.com/Oudwins/zog/internals/is"
 	"github.com/Oudwins/zog/zconst"
 )
 
 var (
 	_ PrimitiveZogSchema[string] = (*StringSchema[string])(nil)
 	_ NotStringSchema[string]    = (*StringSchema[string])(nil)
-
-	emailRegex = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
-	uuidRegex  = regexp.MustCompile(`^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$`)
 )
 
 type likeString interface {
@@ -214,7 +212,7 @@ func (v *StringSchema[T]) Len(n int, options ...TestOption) *StringSchema[T] {
 func (v *StringSchema[T]) Email(options ...TestOption) *StringSchema[T] {
 	t := p.Test[*T]{IssueCode: zconst.IssueCodeEmail}
 	fn := func(v *T, ctx Ctx) bool {
-		return emailRegex.MatchString(string(*v))
+		return is.Email(string(*v))
 	}
 	return v.addTest(t, fn, options...)
 }
@@ -317,7 +315,7 @@ func (v *StringSchema[T]) ContainsSpecial(options ...TestOption) *StringSchema[T
 func (v *StringSchema[T]) UUID(options ...TestOption) *StringSchema[T] {
 	t := p.Test[*T]{IssueCode: zconst.IssueCodeUUID}
 	fn := func(v *T, ctx Ctx) bool {
-		return uuidRegex.MatchString(string(*v))
+		return is.UUIDv4(string(*v))
 	}
 
 	return v.addTest(t, fn, options...)
