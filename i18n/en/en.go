@@ -55,8 +55,8 @@ var Map zconst.LangMap = map[zconst.ZogType]map[zconst.ZogIssueCode]string{
 		zconst.IssueCodeGT:                         "number must be greater than {{gt}}",
 		zconst.IssueCodeEQ:                         "number must be equal to {{eq}}",
 		zconst.NotIssueCode(zconst.IssueCodeEQ):    "number must not be equal to {{eq}}",
-		zconst.IssueCodeOneOf:                      "number must be one of {{options}}",
-		zconst.NotIssueCode(zconst.IssueCodeOneOf): "number must not be one of {{options}}",
+		zconst.IssueCodeOneOf:                      "number must be one of {{one_of_options}}",
+		zconst.NotIssueCode(zconst.IssueCodeOneOf): "number must not be one of {{one_of_options}}",
 		zconst.IssueCodeFallback:                   "number is invalid",
 	},
 	zconst.TypeTime: {
