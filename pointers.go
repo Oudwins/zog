@@ -66,9 +66,10 @@ func (v *PointerSchema) process(ctx *p.SchemaCtx) {
 		}
 		ctx.Data = val
 	}
+	_, isEmptyStruct := ctx.Data.(*p.EmptyDataProvider)
 	// End of messy code
 
-	isZero := p.IsParseZeroValue(ctx.Data, ctx)
+	isZero := p.IsParseZeroValue(ctx.Data, ctx) || isEmptyStruct
 	if isZero {
 		if v.required != nil {
 			// We set the destination type to the schema type because pointer doesn't have any issue messages. They pass through to the schema type

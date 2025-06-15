@@ -96,7 +96,7 @@ func (m *MapDataProvider[T]) GetUnderlying() any {
 
 func NewMapDataProvider[T any](m map[string]T, tag *string) DataProvider {
 	if len(m) == 0 {
-		return nil
+		return &EmptyDataProvider{}
 	}
 	return &MapDataProvider[T]{
 		M:   m,
