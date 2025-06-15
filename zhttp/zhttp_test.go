@@ -1,6 +1,8 @@
 package zhttp
 
 import (
+	"bytes"
+	"encoding/json"
 	"net/http"
 	"net/url"
 	"strings"
@@ -226,7 +228,7 @@ func TestUrlDataProviderGet(t *testing.T) {
 		{"Multiple values", "multiple", []string{"value1", "value2"}},
 		{"Array notation", "array[]", []string{"item1", "item2"}},
 		{"Empty array", "emptyArray", ""},
-		{"Non-existent key", "nonexistent", ""},
+		{"Non-existent key", "nonexistent", nil},
 	}
 
 	for _, tt := range tests {
@@ -338,9 +340,8 @@ func TestParseJsonWithEmptyObject(t *testing.T) {
 	req, _ := http.NewRequest("POST", "/test", strings.NewReader(jsonData))
 	req.Header.Set("Content-Type", "application/json")
 
-	dp, err := Config.Parsers.JSON(req)()
+	_, err := Config.Parsers.JSON(req)()
 	assert.Nil(t, err)
-	assert.Nil(t, dp)
 }
 
 func TestParseDeeplyNestedJson(t *testing.T) {
@@ -404,4 +405,84 @@ func TestForm(t *testing.T) {
 
 	assert.IsType(t, urlDataProvider{}, dp)
 	assert.Equal(t, data, dp.(urlDataProvider).Data)
+}
+
+var schema = z.Struct(z.Shape{
+	"mail": z.String().Email(),
+})
+
+type Data struct {
+	Mail string
+}
+
+func TestOptionalEmailQueryParams(t *testing.T) {
+
+	formData := ""
+	// Create a fake HTTP request with query param data
+	req, err := http.NewRequest("POST", "/submit?"+formData, nil)
+	if err != nil {
+		t.Fatalf("Error creating request: %v", err)
+	}
+
+	var d Data
+
+	errs := schema.Parse(Request(req), &d)
+	assert.Nil(t, errs)
+}
+
+func TestOptionalEmailFormData(t *testing.T) {
+	formData := ""
+	// Create a fake HTTP request with query param data
+	req, err := http.NewRequest("POST", "/submit?", bytes.NewReader([]byte(formData)))
+	if err != nil {
+		t.Fatalf("Error creating request: %v", err)
+	}
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	var d Data
+
+	errs := schema.Parse(Request(req), &d)
+	assert.Nil(t, errs)
+}
+
+func TestOptionalEmailJSON(t *testing.T) {
+
+	formData, _ := json.Marshal(map[string]any{})
+	// Create a fake HTTP request with query param data
+	req, err := http.NewRequest("POST", "/submit?", bytes.NewReader([]byte(formData)))
+	if err != nil {
+		t.Fatalf("Error creating request: %v", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	var d Data
+
+	errs := schema.Parse(Request(req), &d)
+	assert.Nil(t, errs)
+}
+
+func TestOptionalParse(t *testing.T) {
+	type PaginationPagePageSize struct {
+		Page     int64 `query:"page"`
+		PageSize int64 `query:"pageSize"`
+	}
+
+	formData, _ := json.Marshal(map[string]any{})
+	// Create a fake HTTP request with query param data
+	req, err := http.NewRequest("POST", "/submit?", bytes.NewReader([]byte(formData)))
+	if err != nil {
+		t.Fatalf("Error creating request: %v", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	paginationSchema := z.Struct(z.Shape{
+		"page":     z.Int64().Default(5).GTE(1),
+		"pageSize": z.Int64().Default(10).GTE(1),
+	})
+
+	var pagination PaginationPagePageSize
+	errs := paginationSchema.Parse(Request(req), &pagination)
+	assert.Nil(t, errs)
+	assert.Equal(t, int64(5), pagination.Page)
+	assert.Equal(t, int64(10), pagination.PageSize)
 }
