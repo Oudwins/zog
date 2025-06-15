@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.21.2](https://github.com/Oudwins/zog/compare/v0.21.1...v0.21.2) (2025-06-15)
+
+
+### Bug Fixes
+
+* error message for number().oneOf() ([5de48a3](https://github.com/Oudwins/zog/commit/5de48a3a6537271d2ba046b5ec3ccf9c5f9db95a))
+* optional in zhttp ([#167](https://github.com/Oudwins/zog/issues/167)) ([f1e621b](https://github.com/Oudwins/zog/commit/f1e621b65d07b5bd58de15faa2df9702c2e3b075))
+* regex for email ([#166](https://github.com/Oudwins/zog/issues/166)) ([954de17](https://github.com/Oudwins/zog/commit/954de178191db19302bc379cd2050b62b7bbcfba))
+
 ## [0.21.1](https://github.com/Oudwins/zog/compare/v0.21.0...v0.21.1) (2025-05-24)
 
 
