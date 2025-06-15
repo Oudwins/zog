@@ -460,3 +460,29 @@ func TestOptionalEmailJSON(t *testing.T) {
 	errs := schema.Parse(Request(req), &d)
 	assert.Nil(t, errs)
 }
+
+func TestOptionalParse(t *testing.T) {
+	type PaginationPagePageSize struct {
+		Page     int64 `query:"page"`
+		PageSize int64 `query:"pageSize"`
+	}
+
+	formData, _ := json.Marshal(map[string]any{})
+	// Create a fake HTTP request with query param data
+	req, err := http.NewRequest("POST", "/submit?", bytes.NewReader([]byte(formData)))
+	if err != nil {
+		t.Fatalf("Error creating request: %v", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	paginationSchema := z.Struct(z.Shape{
+		"page":     z.Int64().Default(5).GTE(1),
+		"pageSize": z.Int64().Default(10).GTE(1),
+	})
+
+	var pagination PaginationPagePageSize
+	errs := paginationSchema.Parse(Request(req), &pagination)
+	assert.Nil(t, errs)
+	assert.Equal(t, int64(5), pagination.Page)
+	assert.Equal(t, int64(10), pagination.PageSize)
+}
