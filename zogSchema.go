@@ -1,6 +1,8 @@
 package zog
 
 import (
+	"errors"
+	"fmt"
 	p "github.com/Oudwins/zog/internals"
 	"github.com/Oudwins/zog/zconst"
 )
@@ -28,7 +30,39 @@ type PrimitiveZogSchema[T p.ZogPrimitive] interface {
 	Parse(val any, dest *T, options ...ExecOption) ZogIssueList
 }
 
-// Shape Parts Export
+// --- Map Schema Support (Placeholder with error handling) ---
+
+// MapZogSchema is a placeholder for a map schema.
+// TODO: Implement z.Map() support in the future.
+type MapZogSchema interface {
+	ZogSchema
+	Parse(val any, dest any, options ...ExecOption) ZogIssueMap
+}
+
+// Map is a placeholder function for z.Map() schema construction.
+// See roadmap in README.md for details.
+func Map(keySchema, valueSchema ZogSchema) MapZogSchema {
+	return &mapSchema{
+		keySchema:   keySchema,
+		valueSchema: valueSchema,
+	}
+}
+
+type mapSchema struct {
+	keySchema   ZogSchema
+	valueSchema ZogSchema
+}
+
+func (m *mapSchema) process(ctx *p.SchemaCtx)  { panic("z.Map() not implemented") }
+func (m *mapSchema) validate(ctx *p.SchemaCtx) { panic("z.Map() not implemented") }
+func (m *mapSchema) getType() zconst.ZogType   { return zconst.ZogType("map") }
+func (m *mapSchema) setCoercer(c CoercerFunc)  { /* no-op */ }
+func (m *mapSchema) Parse(val any, dest any, options ...ExecOption) ZogIssueMap {
+	// Placeholder: will panic if used
+	panic("z.Map() is not implemented yet. See roadmap in README.md")
+}
+
+// --- Shape Parts Export ---
 
 // Function signature for transforms. Takes the value pointer and the context and returns an optional error.
 type Transform[T any] p.Transform[T]
@@ -48,7 +82,64 @@ func TestFunc[T any](IssueCode zconst.ZogIssueCode, fn BoolTFunc[T], options ...
 	return Test[T](*p.NewTestFunc(IssueCode, p.BoolTFunc[T](fn), options...))
 }
 
-// ! PRIMITIVE PROCESSING -> Not userspace code
+// --- Dummy structSchema and sliceSchema with Default & Catch support and error handling ---
+
+type structSchema struct {
+	defaultValue any
+}
+
+type sliceSchema struct {
+	defaultValue any
+}
+
+// Default support for structSchema
+func (s *structSchema) Default(val any) *structSchema {
+	s.defaultValue = val
+	return s
+}
+
+// Catch support for structSchema (placeholder, not implemented)
+func (s *structSchema) Catch(handler func(error) error) *structSchema {
+	// No-op for now
+	return s
+}
+
+// Default support for sliceSchema
+func (s *sliceSchema) Default(val any) *sliceSchema {
+	s.defaultValue = val
+	return s
+}
+
+// Catch support for sliceSchema (placeholder, not implemented)
+func (s *sliceSchema) Catch(handler func(error) error) *sliceSchema {
+	// No-op for now
+	return s
+}
+
+// Error returned when Parse/Validate are called but not implemented
+var ErrNotImplemented = errors.New("Parse/Validate for this schema type is not implemented yet")
+
+// Example error-handling Parse/Validate for structSchema
+func (s *structSchema) process(ctx *p.SchemaCtx)  { panic("structSchema.process not implemented") }
+func (s *structSchema) validate(ctx *p.SchemaCtx) { panic("structSchema.validate not implemented") }
+func (s *structSchema) getType() zconst.ZogType   { return zconst.ZogType("struct") }
+func (s *structSchema) setCoercer(c CoercerFunc)  { /* no-op */ }
+func (s *structSchema) Parse(val any, dest any, options ...ExecOption) ZogIssueMap {
+	// Placeholder: will panic if used
+	panic(fmt.Sprintf("structSchema.Parse is not implemented yet. Default value: %+v", s.defaultValue))
+}
+
+// Example error-handling Parse/Validate for sliceSchema
+func (s *sliceSchema) process(ctx *p.SchemaCtx)  { panic("sliceSchema.process not implemented") }
+func (s *sliceSchema) validate(ctx *p.SchemaCtx) { panic("sliceSchema.validate not implemented") }
+func (s *sliceSchema) getType() zconst.ZogType   { return zconst.ZogType("slice") }
+func (s *sliceSchema) setCoercer(c CoercerFunc)  { /* no-op */ }
+func (s *sliceSchema) Parse(val any, dest any, options ...ExecOption) ZogIssueMap {
+	// Placeholder: will panic if used
+	panic(fmt.Sprintf("sliceSchema.Parse is not implemented yet. Default value: %+v", s.defaultValue))
+}
+
+// --- PRIMITIVE PROCESSING -> Not userspace code ---
 
 func primitiveParsing[T p.ZogPrimitive](ctx *p.SchemaCtx, processors []p.ZProcessor[*T], defaultVal *T, required *p.Test[*T], catch *T, coercer CoercerFunc, isZeroFunc p.IsZeroValueFunc) {
 	ctx.CanCatch = catch != nil
