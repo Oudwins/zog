@@ -127,14 +127,29 @@ var DefaultCoercers = struct {
 		case uint:
 			return v, nil
 		case int:
+			if v < 0 {
+				return nil, fmt.Errorf("input data is an unsupported type to coerce to uint: %v", data)
+			}
 			return uint(v), nil
 		case int64:
+			if v < 0 {
+				return nil, fmt.Errorf("input data is an unsupported type to coerce to uint: %v", data)
+			}
 			return uint(v), nil
 		case int32:
+			if v < 0 {
+				return nil, fmt.Errorf("input data is an unsupported type to coerce to uint: %v", data)
+			}
 			return uint(v), nil
 		case int16:
+			if v < 0 {
+				return nil, fmt.Errorf("input data is an unsupported type to coerce to uint: %v", data)
+			}
 			return uint(v), nil
 		case int8:
+			if v < 0 {
+				return nil, fmt.Errorf("input data is an unsupported type to coerce to uint: %v", data)
+			}
 			return uint(v), nil
 		case uint64:
 			return uint(v), nil
@@ -145,21 +160,27 @@ var DefaultCoercers = struct {
 		case uint8:
 			return uint(v), nil
 		case float64:
+			if v < 0 {
+				return nil, fmt.Errorf("input data is an unsupported type to coerce to uint: %v", data)
+			}
 			return uint(v), nil
 		case float32:
+			if v < 0 {
+				return nil, fmt.Errorf("input data is an unsupported type to coerce to uint: %v", data)
+			}
 			return uint(v), nil
 		case bool:
 			if v {
-				return 1, nil
+				return uint(1), nil
 			} else {
-				return 0, nil
+				return uint(0), nil
 			}
 		case string:
 			convVal, err := strconv.ParseUint(v, 10, 64)
 			if err != nil {
 				return nil, fmt.Errorf("failed to coerce string to uint: %v", err)
 			}
-			return convVal, nil
+			return uint(convVal), nil
 		default:
 			return nil, fmt.Errorf("input data is an unsupported type to coerce to uint: %v", data)
 		}

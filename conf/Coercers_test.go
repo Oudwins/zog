@@ -88,6 +88,43 @@ func TestIntCoercer(t *testing.T) {
 	}
 }
 
+func TestUintCoercer(t *testing.T) {
+	var u any
+	var err error
+	tests := []struct {
+		input any
+		want  uint
+		err   bool
+	}{
+		{input: 123, want: uint(123)},
+		{input: "123", want: uint(123)},
+		{input: 1.23, want: uint(1)},
+		{input: true, want: uint(1)},
+		{input: false, want: uint(0)},
+		{input: "x", err: true},
+		{input: int64(123), want: uint(123)},
+		{input: int32(123), want: uint(123)},
+		{input: int16(123), want: uint(123)},
+		{input: int8(123), want: uint(123)},
+		{input: uint64(123), want: uint(123)},
+		{input: uint32(123), want: uint(123)},
+		{input: uint16(123), want: uint(123)},
+		{input: uint8(123), want: uint(123)},
+		{input: uint(123), want: uint(123)},
+		{input: -123, err: true},
+		{input: "-123", err: true},
+	}
+	for _, test := range tests {
+		u, err = Coercers.Uint(test.input)
+		if test.err {
+			assert.NotNil(t, err, "input: %v, output: %v, error: %v", test.input, u, err)
+		} else {
+			assert.Nil(t, err)
+			assert.Equal(t, test.want, u.(uint))
+		}
+	}
+}
+
 func TestFloat64Coercer(t *testing.T) {
 	var f any
 	var err error
