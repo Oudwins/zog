@@ -123,6 +123,17 @@ func Int32(opts ...SchemaOption) *NumberSchema[int32] {
 	return s
 }
 
+// creates a uint schema
+func Uint(opts ...SchemaOption) *NumberSchema[uint] {
+	s := &NumberSchema[uint]{
+		coercer: conf.Coercers.Uint,
+	}
+	for _, opt := range opts {
+		opt(s)
+	}
+	return s
+}
+
 // parses the value and stores it in the destination
 func (v *NumberSchema[T]) Parse(data any, dest *T, options ...ExecOption) ZogIssueList {
 	errs := p.NewErrsList()
