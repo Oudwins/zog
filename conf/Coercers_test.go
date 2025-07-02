@@ -68,6 +68,14 @@ func TestIntCoercer(t *testing.T) {
 		{input: 1.23, want: 1},
 		{input: true, want: 1},
 		{input: "x", err: true},
+		{input: int64(123), want: 123},
+		{input: int32(123), want: 123},
+		{input: int16(123), want: 123},
+		{input: int8(123), want: 123},
+		{input: uint64(123), want: 123},
+		{input: uint32(123), want: 123},
+		{input: uint16(123), want: 123},
+		{input: uint8(123), want: 123},
 	}
 	for _, test := range tests {
 		i, err = Coercers.Int(test.input)
