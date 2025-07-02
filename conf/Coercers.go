@@ -127,13 +127,13 @@ var DefaultCoercers = struct {
 		case uint:
 			return v, nil
 		case int:
-			return float64(v), nil
+			return uint(v), nil
 		case int64:
-			return float64(v), nil
+			return uint(v), nil
 		case int32:
-			return float64(v), nil
+			return uint(v), nil
 		case int16:
-			return float64(v), nil
+			return uint(v), nil
 		case int8:
 			return uint(v), nil
 		case uint64:
