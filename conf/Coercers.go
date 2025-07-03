@@ -2,6 +2,7 @@ package conf
 
 import (
 	"fmt"
+	"math"
 	"reflect"
 	"strconv"
 	"time"
@@ -37,6 +38,7 @@ var DefaultCoercers = struct {
 	String  CoercerFunc
 	Int     CoercerFunc
 	Float64 CoercerFunc
+	Uint    CoercerFunc
 	Time    CoercerFunc
 	Slice   CoercerFunc
 }{
@@ -58,7 +60,7 @@ var DefaultCoercers = struct {
 				}
 				return boolVal, nil
 			}
-		case int:
+		case int, int64, int32, int16, int8, uint, uint64, uint32, uint16, uint8:
 			if v == 0 {
 				return false, nil
 			} else if v == 1 {
@@ -80,13 +82,47 @@ var DefaultCoercers = struct {
 
 	},
 	Int: func(data any) (any, error) {
-
 		switch v := data.(type) {
 		case int:
 			return v, nil
 		case int64:
+			if v > math.MaxInt || v < math.MinInt {
+				return nil, fmt.Errorf("int64 value %d overflows int", v)
+			}
 			return int(v), nil
 		case int32:
+			// int32 always fits in int on 32-bit and 64-bit systems
+			return int(v), nil
+		case int16:
+			return int(v), nil
+		case int8:
+			return int(v), nil
+		case uint64:
+			if v > math.MaxInt {
+				return nil, fmt.Errorf("uint64 value %d overflows int", v)
+			}
+			return int(v), nil
+		case uint32:
+			if uint64(v) > math.MaxInt {
+				return nil, fmt.Errorf("uint32 value %d overflows int", v)
+			}
+			return int(v), nil
+		case uint16:
+			if uint64(v) > math.MaxInt {
+				return nil, fmt.Errorf("uint16 value %d overflows int", v)
+			}
+			return int(v), nil
+		case uint8:
+			return int(v), nil
+		case float64:
+			if v > math.MaxInt || v < math.MinInt {
+				return nil, fmt.Errorf("float64 value %g overflows int", v)
+			}
+			return int(v), nil
+		case float32:
+			if float64(v) > math.MaxInt || float64(v) < math.MinInt {
+				return nil, fmt.Errorf("float32 value %g overflows int", v)
+			}
 			return int(v), nil
 		case string:
 			convVal, err := strconv.Atoi(v)
@@ -94,22 +130,83 @@ var DefaultCoercers = struct {
 				return nil, fmt.Errorf("failed to coerce string int: %v", err)
 			}
 			return convVal, nil
-		case float64:
-			return int(v), nil
+
 		case bool:
 			if v {
 				return 1, nil
 			} else {
 				return 0, nil
 			}
+
 		default:
 			return nil, fmt.Errorf("input data is an unsupported type to coerce to int: %v", data)
 		}
 	},
+	Uint: func(data any) (any, error) {
+		switch v := data.(type) {
+		case uint:
+			return v, nil
+		case int:
+			if v < 0 {
+				return nil, fmt.Errorf("input data is an unsupported type to coerce to uint: %v", data)
+			}
+			return uint(v), nil
+		case int64:
+			if v < 0 {
+				return nil, fmt.Errorf("input data is an unsupported type to coerce to uint: %v", data)
+			}
+			return uint(v), nil
+		case int32:
+			if v < 0 {
+				return nil, fmt.Errorf("input data is an unsupported type to coerce to uint: %v", data)
+			}
+			return uint(v), nil
+		case int16:
+			if v < 0 {
+				return nil, fmt.Errorf("input data is an unsupported type to coerce to uint: %v", data)
+			}
+			return uint(v), nil
+		case int8:
+			if v < 0 {
+				return nil, fmt.Errorf("input data is an unsupported type to coerce to uint: %v", data)
+			}
+			return uint(v), nil
+		case uint64:
+			return uint(v), nil
+		case uint32:
+			return uint(v), nil
+		case uint16:
+			return uint(v), nil
+		case uint8:
+			return uint(v), nil
+		case float64:
+			if v < 0 {
+				return nil, fmt.Errorf("input data is an unsupported type to coerce to uint: %v", data)
+			}
+			return uint(v), nil
+		case float32:
+			if v < 0 {
+				return nil, fmt.Errorf("input data is an unsupported type to coerce to uint: %v", data)
+			}
+			return uint(v), nil
+		case bool:
+			if v {
+				return uint(1), nil
+			} else {
+				return uint(0), nil
+			}
+		case string:
+			convVal, err := strconv.ParseUint(v, 10, 64)
+			if err != nil {
+				return nil, fmt.Errorf("failed to coerce string to uint: %v", err)
+			}
+			return uint(convVal), nil
+		default:
+			return nil, fmt.Errorf("input data is an unsupported type to coerce to uint: %v", data)
+		}
+	},
 	Float64: func(data any) (any, error) {
 		switch v := data.(type) {
-		case int:
-			return float64(v), nil
 		case string:
 			convVal, err := strconv.ParseFloat(v, 64)
 			if err != nil {
@@ -119,6 +216,26 @@ var DefaultCoercers = struct {
 		case float64:
 			return v, nil
 		case float32:
+			return float64(v), nil
+		case int:
+			return float64(v), nil
+		case int64:
+			return float64(v), nil
+		case int32:
+			return float64(v), nil
+		case int16:
+			return float64(v), nil
+		case int8:
+			return float64(v), nil
+		case uint:
+			return float64(v), nil
+		case uint64:
+			return float64(v), nil
+		case uint32:
+			return float64(v), nil
+		case uint16:
+			return float64(v), nil
+		case uint8:
 			return float64(v), nil
 		default:
 			return nil, fmt.Errorf("input data is an unsupported type to coerce to float64: %v", data)
