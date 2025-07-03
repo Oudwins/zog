@@ -2,6 +2,7 @@ package conf
 
 import (
 	"fmt"
+	"math"
 	"reflect"
 	"strconv"
 	"time"
@@ -85,24 +86,43 @@ var DefaultCoercers = struct {
 		case int:
 			return v, nil
 		case int64:
+			if v > math.MaxInt || v < math.MinInt {
+				return nil, fmt.Errorf("int64 value %d overflows int", v)
+			}
 			return int(v), nil
 		case int32:
+			// int32 always fits in int on 32-bit and 64-bit systems
 			return int(v), nil
 		case int16:
 			return int(v), nil
 		case int8:
 			return int(v), nil
 		case uint64:
+			if v > math.MaxInt {
+				return nil, fmt.Errorf("uint64 value %d overflows int", v)
+			}
 			return int(v), nil
 		case uint32:
+			if uint64(v) > math.MaxInt {
+				return nil, fmt.Errorf("uint32 value %d overflows int", v)
+			}
 			return int(v), nil
 		case uint16:
+			if uint64(v) > math.MaxInt {
+				return nil, fmt.Errorf("uint16 value %d overflows int", v)
+			}
 			return int(v), nil
 		case uint8:
 			return int(v), nil
 		case float64:
+			if v > math.MaxInt || v < math.MinInt {
+				return nil, fmt.Errorf("float64 value %g overflows int", v)
+			}
 			return int(v), nil
 		case float32:
+			if float64(v) > math.MaxInt || float64(v) < math.MinInt {
+				return nil, fmt.Errorf("float32 value %g overflows int", v)
+			}
 			return int(v), nil
 		case string:
 			convVal, err := strconv.Atoi(v)
