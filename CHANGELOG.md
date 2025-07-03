@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.21.3](https://github.com/Oudwins/zog/compare/v0.21.2...v0.21.3) (2025-07-03)
+
+
+### Features
+
+* Add Azerbaijani language to i18n package ([#164](https://github.com/Oudwins/zog/issues/164)) ([6b75bad](https://github.com/Oudwins/zog/commit/6b75bad58c4e9901ee3f57f3ba9ba4f8a63f57e2))
+* uint ([#171](https://github.com/Oudwins/zog/issues/171)) ([97ce447](https://github.com/Oudwins/zog/commit/97ce44749d5b5077c86693583aed819140925aaf))
+
 ## [0.21.2](https://github.com/Oudwins/zog/compare/v0.21.1...v0.21.2) (2025-06-15)
 
 
