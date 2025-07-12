@@ -62,6 +62,22 @@ func (v *StringSchema[T]) setCoercer(c CoercerFunc) {
 
 // ! USER FACING FUNCTIONS
 
+func StringLike[T likeString](opts ...SchemaOption) *StringSchema[T] {
+	s := &StringSchema[T]{
+		coercer: func(val any) (any, error) {
+			v, err := conf.Coercers.String(val)
+			if err != nil {
+				return nil, err
+			}
+			return T(v.(string)), nil
+		},
+	}
+	for _, opt := range opts {
+		opt(s)
+	}
+	return s
+}
+
 // Returns a new String Shape
 func String(opts ...SchemaOption) *StringSchema[string] {
 	s := &StringSchema[string]{

@@ -7,7 +7,9 @@ import (
 	"golang.org/x/exp/constraints"
 )
 
-type Numeric = constraints.Ordered
+type Numeric interface {
+	constraints.Integer | constraints.Float
+}
 
 var _ PrimitiveZogSchema[int] = &NumberSchema[int]{}
 
@@ -40,9 +42,25 @@ func (v *NumberSchema[T]) setCoercer(c CoercerFunc) {
 // ! USER FACING FUNCTIONS
 
 // Deprecated: Use Float64 instead
-// creates a new float64 schema
+// creates a new float64 schema. No plans to remove it but recommended to use Float64 instead.
 func Float(opts ...SchemaOption) *NumberSchema[float64] {
 	return Float64(opts...)
+}
+
+func FloatLike[T Numeric](opts ...SchemaOption) *NumberSchema[T] {
+	s := &NumberSchema[T]{
+		coercer: func(data any) (any, error) {
+			x, err := conf.Coercers.Float64(data)
+			if err != nil {
+				return nil, err
+			}
+			return T(x.(float64)), nil
+		},
+	}
+	for _, opt := range opts {
+		opt(s)
+	}
+	return s
 }
 
 func Float64(opts ...SchemaOption) *NumberSchema[float64] {
@@ -78,6 +96,22 @@ func Float32(opts ...SchemaOption) *NumberSchema[float32] {
 func Int(opts ...SchemaOption) *NumberSchema[int] {
 	s := &NumberSchema[int]{
 		coercer: conf.Coercers.Int,
+	}
+	for _, opt := range opts {
+		opt(s)
+	}
+	return s
+}
+
+func IntLike[T Numeric](opts ...SchemaOption) *NumberSchema[T] {
+	s := &NumberSchema[T]{
+		coercer: func(data any) (any, error) {
+			x, err := conf.Coercers.Int(data)
+			if err != nil {
+				return nil, err
+			}
+			return T(x.(int)), nil
+		},
 	}
 	for _, opt := range opts {
 		opt(s)
@@ -127,6 +161,22 @@ func Int32(opts ...SchemaOption) *NumberSchema[int32] {
 func Uint(opts ...SchemaOption) *NumberSchema[uint] {
 	s := &NumberSchema[uint]{
 		coercer: conf.Coercers.Uint,
+	}
+	for _, opt := range opts {
+		opt(s)
+	}
+	return s
+}
+
+func UintLike[T Numeric](opts ...SchemaOption) *NumberSchema[T] {
+	s := &NumberSchema[T]{
+		coercer: func(data any) (any, error) {
+			x, err := conf.Coercers.Uint(data)
+			if err != nil {
+				return nil, err
+			}
+			return T(x.(uint)), nil
+		},
 	}
 	for _, opt := range opts {
 		opt(s)
