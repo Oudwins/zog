@@ -27,8 +27,9 @@ func TestStringLikeParse(t *testing.T) {
 	}{
 		{"Valid string value", "hello", false, CustomString("hello")},
 		{"Valid empty string", "", false, CustomString("")},
-		{"Invalid type (int)", 123, true, CustomString("")},
-		{"Invalid type (bool)", true, true, CustomString("")},
+		{"Valid type (int)", 123, false, CustomString("123")},
+		{"Valid type (bool)", true, false, CustomString("true")},
+		{"Invalid type nil optional so fine", nil, false, CustomString("")},
 	}
 
 	strProc := StringLike[CustomString]()
@@ -176,7 +177,7 @@ func TestStringLikeCatch(t *testing.T) {
 		expected  CustomString
 	}{
 		{"Valid string value", "abc", CustomString("catch"), false, CustomString("abc")},
-		{"Invalid type with catch", 123, CustomString("catch"), false, CustomString("catch")},
+		{"Valid type with catch", 123, CustomString("catch"), false, CustomString("123")},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
