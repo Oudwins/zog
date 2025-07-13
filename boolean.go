@@ -41,6 +41,22 @@ func Bool(opts ...SchemaOption) *BoolSchema[bool] {
 	return b
 }
 
+func BoolLike[T ~bool](opts ...SchemaOption) *BoolSchema[T] {
+	s := &BoolSchema[T]{
+		coercer: func(data any) (any, error) {
+			x, err := conf.Coercers.Bool(data)
+			if err != nil {
+				return nil, err
+			}
+			return T(x.(bool)), nil
+		},
+	}
+	for _, opt := range opts {
+		opt(s)
+	}
+	return s
+}
+
 // Parse data into destination pointer
 func (v *BoolSchema[T]) Parse(data any, dest *T, options ...ExecOption) ZogIssueList {
 	errs := p.NewErrsList()

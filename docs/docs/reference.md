@@ -67,6 +67,13 @@ z.Float64()
 z.Bool()
 z.Time()
 
+// Custom Primitive Schemas
+z.StringLike[T]()
+z.IntLike[T]()
+z.FloatLike[T]()
+z.UintLike[T]()
+z.BoolLike[T]()
+
 // Complex Types. Calling .Parse() on these will return map[string][]ZogIssue. Where the key is the field path ("user.email") & $root is the list of complex type level errors not the specific field errors
 z.Struct(z.Shape{
 	"name": z.String(),
