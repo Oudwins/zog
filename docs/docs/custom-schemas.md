@@ -27,10 +27,10 @@ const (
 	Dev  Env = "env"
 )
 
-type ActiveInactive int
+type Status int
 const (
-	Active int = 1
-	Inactive int = 0
+	Active Status = 1
+	Inactive Status = 0 // default value
 )
 
 func EnvSchema() *StringSchema[Env] {
@@ -40,12 +40,13 @@ func EnvSchema() *StringSchema[Env] {
 // usage
 type S struct {
 	Environment Env
+	Status Status
 }
 
 schema := z.Struct(
 	z.Shape{
 		"Environment": EnvSchema(), // All string methods will now be typed to Env type
-		"active": z.IntLike[ActiveInactive]().OneOf([]ActiveInactive{Active, Inactive}),
+		"Status": z.IntLike[Status]().OneOf([]Status{Active, Inactive}),
 	},
 )
 ```
