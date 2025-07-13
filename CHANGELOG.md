@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.21.4](https://github.com/Oudwins/zog/compare/v0.21.3...v0.21.4) (2025-07-13)
+
+
+### Features
+
+* like primitive types ([#172](https://github.com/Oudwins/zog/issues/172)) ([126d79b](https://github.com/Oudwins/zog/commit/126d79b72c9a0ca9c736761effda7a45d7451222))
+
 ## [0.21.3](https://github.com/Oudwins/zog/compare/v0.21.2...v0.21.3) (2025-07-03)
 
 
