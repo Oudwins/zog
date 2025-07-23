@@ -53,7 +53,7 @@ var Time TimeFunc = func(opts ...SchemaOption) *TimeSchema {
 //	}))
 func (t TimeFunc) FormatFunc(format func(data string) (time.Time, error)) SchemaOption {
 	return func(s ZogSchema) {
-		// s.setCoercer(conf.TimeCoercerFactory(format))
+		s.setCoercer(conf.TimeCoercerFactory(format))
 	}
 }
 
