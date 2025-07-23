@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.21.5](https://github.com/Oudwins/zog/compare/v0.21.4...v0.21.5) (2025-07-23)
+
+
+### Bug Fixes
+
+* z.time.Format() not working ([638ff57](https://github.com/Oudwins/zog/commit/638ff574c03e4cbf1ab3d4f2e28d3300a8bfa2c1))
+
 ## [0.21.4](https://github.com/Oudwins/zog/compare/v0.21.3...v0.21.4) (2025-07-13)
 
 
