@@ -13,7 +13,7 @@ const (
 
 // Takes a map[langKey]conf.LangMap
 // usage is i18n.SetLanguagesErrsMap(map[string]zconst.LangMap{
-// "es": es.Map, "en": en.Map,
+// "es": es.Map, "en": en.Map, "ja": ja.Map,
 // }, "en", i18n.WithLangKey("langKey"))
 // schema.Parse(data, &dest, z.WithCtxValue("langKey", "es"))
 func SetLanguagesErrsMap(m map[string]zconst.LangMap, defaultLang string, opts ...setLanguageOption) {

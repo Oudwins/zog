@@ -19,6 +19,11 @@ var esMap = zconst.LangMap{
 		zconst.IssueCodeRequired: "es requerido",
 	},
 }
+var jaMap = zconst.LangMap{
+	zconst.TypeString: {
+		zconst.IssueCodeRequired: "必須です",
+	},
+}
 
 func TestSetLanguagesErrsMap(t *testing.T) {
 
@@ -26,6 +31,7 @@ func TestSetLanguagesErrsMap(t *testing.T) {
 	SetLanguagesErrsMap(map[string]zconst.LangMap{
 		"en": enMap,
 		"es": esMap,
+		"ja": jaMap,
 	}, "en")
 
 	// Define a schema for testing
@@ -54,6 +60,13 @@ func TestSetLanguagesErrsMap(t *testing.T) {
 			input:       map[string]interface{}{},
 			expectedErr: true,
 			expected:    "es requerido",
+		},
+		{
+			name:        "Japanese error message",
+			lang:        "ja",
+			input:       map[string]interface{}{},
+			expectedErr: true,
+			expected:    "必須です",
 		},
 		{
 			name:        "Default to English when language not found",
