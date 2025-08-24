@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.21.6](https://github.com/Oudwins/zog/compare/v0.21.5...v0.21.6) (2025-08-24)
+
+
+### Features
+
+* add Japanese (ja) community translation ([#181](https://github.com/Oudwins/zog/issues/181)) ([aa0ca94](https://github.com/Oudwins/zog/commit/aa0ca94d03ed6274ea56811043701448a9d4c012))
+
 ## [0.21.5](https://github.com/Oudwins/zog/compare/v0.21.4...v0.21.5) (2025-07-23)
 
 
