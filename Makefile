@@ -15,3 +15,5 @@ docs-install:
 docs-dev:
 	cd ./docs && npm start
 
+json:
+	@go run ./cmd/toSchema/main.go
