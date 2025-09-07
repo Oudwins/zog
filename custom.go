@@ -90,3 +90,37 @@ func (c *Custom[T]) setCoercer(coercer CoercerFunc) {
 func (c *Custom[T]) getType() zconst.ZogType {
 	return "custom"
 }
+
+// Experimental API
+type EXPERIMENTAL_PUBLIC_ZOG_SCHEMA interface {
+	Process(ctx *p.SchemaCtx)
+	Validate(ctx *p.SchemaCtx)
+	GetType() zconst.ZogType
+	SetCoercer(c CoercerFunc)
+}
+
+// Experimental API
+func Use(schema EXPERIMENTAL_PUBLIC_ZOG_SCHEMA) *CustomSchema {
+	return &CustomSchema{schema: schema}
+}
+
+// Experimental API
+type CustomSchema struct {
+	schema EXPERIMENTAL_PUBLIC_ZOG_SCHEMA
+}
+
+func (c *CustomSchema) Process(ctx *p.SchemaCtx) {
+	c.schema.Process(ctx)
+}
+
+func (c *CustomSchema) Validate(ctx *p.SchemaCtx) {
+	c.schema.Validate(ctx)
+}
+
+func (c *CustomSchema) GetType() zconst.ZogType {
+	return c.schema.GetType()
+}
+
+func (c *CustomSchema) SetCoercer(coercer CoercerFunc) {
+	c.schema.SetCoercer(coercer)
+}
