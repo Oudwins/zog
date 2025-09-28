@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"maps"
 	"reflect"
-	"strings"
 
+	"github.com/Oudwins/zog/internals"
 	"github.com/Oudwins/zog/zconst"
 )
 
@@ -64,19 +64,26 @@ func processorToJson(p any) *JsonProcessor {
 }
 
 func processRVtoJson(rv reflect.Value) *JsonProcessor {
-	for rv.Kind() == reflect.Pointer {
-		if rv.IsNil() {
-			return nil
-		}
-		rv = rv.Elem()
-	}
-
-	tString := rv.Type().String()
+	// for rv.Kind() == reflect.Pointer {
+	// 	if rv.IsNil() {
+	// 		return nil
+	// 	}
+	// 	rv = rv.Elem()
+	// }
 
 	j := &JsonProcessor{}
 
 	// THE ISSUE I'M HAVING IS THAT ITS ACTUALLY A ZProcessor. THATS THE TYPE. So cannot tell between transformer and Test :(
-	if strings.HasPrefix(tString, "internals.Test") {
+	/*
+		Above is solved, I can do one of:
+		1. Make interface for Transfomer (actually not even needed because I already have one for the Test and we only have transformers and tests)
+		2. rv.FieldByName("IssueCode").IsValid() vs rv.FieldByName("Transform").IsValid()
+
+	*/
+	// Actually the issue is that the processor value was obtained by accessing a private field. Which causes value.Interface() to panic
+	// Maybe I just need to make ZProcessors property available in the schema? :(
+
+	if isTest(rv) {
 		fmt.Println("Its a test")
 		j.Type = zconst.ProcessorTest
 		c := rv.FieldByName("IssueCode").Interface().(string)
@@ -88,7 +95,7 @@ func processRVtoJson(rv reflect.Value) *JsonProcessor {
 		newParams := map[string]any{}
 		maps.Copy(newParams, params)
 		j.Params = newParams
-	} else if strings.HasPrefix(tString, "internals.TransformProcessor") {
+	} else if isTransformer(rv) {
 		fmt.Println("Its a transform")
 		j.Type = zconst.ProcessorTransform
 	} else {
@@ -107,6 +114,7 @@ func processorsToJson(v reflect.Value) []JsonProcessor {
 	out := []JsonProcessor{}
 	for i := 0; i < ln; i++ {
 		p := l.Index(i)
+		fmt.Println(l.CanInterface())
 		result := processRVtoJson(p)
 		if result == nil {
 			continue
@@ -130,4 +138,15 @@ func deepCopyPrimitivePtr(v any) any {
 
 	ptr.Elem().Set(e)
 	return ptr
+}
+
+func isTransformer(rv reflect.Value) bool {
+	_, ok := rv.Interface().(internals.TransfomerProcessor)
+	return ok
+}
+func isTest(rv reflect.Value) bool {
+	// return !isTransformer(rv)
+	fmt.Println(rv.CanInterface())
+	_, ok := rv.Interface().(internals.TestInterface)
+	return ok
 }
