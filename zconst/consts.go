@@ -47,6 +47,13 @@ const (
 	TypePtr    ZogType = "ptr"
 )
 
+type ZogProcessor = string
+
+const (
+	ProcessorTest      ZogProcessor = "test"
+	ProcessorTransform ZogProcessor = "transform"
+)
+
 // Deprecated: This will be removed in the future. Use z.ZogIssueCode instead
 type ZogErrCode = string
 
