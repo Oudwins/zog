@@ -77,6 +77,9 @@ type Test[T any] struct {
 func (t *Test[T]) ZProcess(valPtr T, ctx Ctx) {
 	t.Func(valPtr, ctx)
 }
+func (t *Test[T]) Type() string {
+	return "test"
+}
 
 func (t *Test[T]) GetIssueCode() zconst.ZogIssueCode {
 	return t.IssueCode
