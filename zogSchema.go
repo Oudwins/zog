@@ -12,6 +12,7 @@ type ZogSchema interface {
 	validate(ctx *p.SchemaCtx)
 	getType() zconst.ZogType
 	setCoercer(c CoercerFunc)
+	toJson() *JsonZogSchema
 }
 
 // This is a common interface for all complex schemas (i.e structs, slices, pointers...)
