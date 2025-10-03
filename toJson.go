@@ -10,6 +10,7 @@ import (
 	"github.com/Oudwins/zog/zconst"
 )
 
+// TODO make zog schemas for all of these to validate them!
 type JsonProcessor struct {
 	Type string // "transform", "validator", "required"
 
@@ -22,25 +23,26 @@ type JsonProcessor struct {
 	TransformId *string
 }
 
-type JsonZogSchema struct {
-	Type         string // "string"
-	Processors   []JsonProcessor
-	Child        *JsonZogSchema
-	Required     *JsonProcessor
-	DefaultValue any
-	CatchValue   any
+type JsonTest struct {
+	Type string // "test"
+	// Validator
+	IssueCode *string
+	IssuePath *string
+	Params    map[string]any
 }
 
-func (s *StringSchema[T]) toJson() *JsonZogSchema {
-	rv := reflect.ValueOf(s).Elem()
-	j := JsonZogSchema{
-		Type: zconst.TypeString,
-		// Required:     processorToJson(s.required),
-		DefaultValue: deepCopyPrimitivePtr(s.defaultVal),
-		CatchValue:   deepCopyPrimitivePtr(s.catch),
-		Processors:   processorsToJson(rv),
-	}
-	return &j
+type JsonTransformer struct {
+	Type        string // "transformer"
+	TransformId *string
+}
+
+type JsonZogSchema struct {
+	Type         string // "string"
+	Processors   []any  // JsonTest or JsonTransformer
+	Child        any    // *JsonZogSchema | map[string]JsonZogSchema
+	Required     *JsonTest
+	DefaultValue any
+	CatchValue   any
 }
 
 type JsonifyableSchema interface {
@@ -54,64 +56,138 @@ func ToJson(s JsonifyableSchema) ([]byte, error) {
 	return jsonSchema, err
 }
 
-func processorToJson(p any) *JsonProcessor {
-	if p == nil {
+func (s *StringSchema[T]) toJson() *JsonZogSchema {
+	rvP := reflect.ValueOf(s.processors)
+	j := JsonZogSchema{
+		Type:         zconst.TypeString,
+		Required:     toJsonTest(s.required),
+		DefaultValue: deepCopyPrimitivePtr(s.defaultVal),
+		CatchValue:   deepCopyPrimitivePtr(s.catch),
+		Processors:   processorsToJson(rvP),
+	}
+	return &j
+}
+
+func (s *NumberSchema[T]) toJson() *JsonZogSchema {
+	rvP := reflect.ValueOf(s.processors)
+	j := JsonZogSchema{
+		Type:         zconst.TypeNumber,
+		Required:     toJsonTest(s.required),
+		DefaultValue: deepCopyPrimitivePtr(s.defaultVal),
+		CatchValue:   deepCopyPrimitivePtr(s.catch),
+		Processors:   processorsToJson(rvP),
+	}
+	return &j
+}
+
+func (s *BoolSchema[T]) toJson() *JsonZogSchema {
+	rvP := reflect.ValueOf(s.processors)
+	j := JsonZogSchema{
+		Type:         zconst.TypeBool,
+		Required:     toJsonTest(s.required),
+		DefaultValue: deepCopyPrimitivePtr(s.defaultVal),
+		CatchValue:   deepCopyPrimitivePtr(s.catch),
+		Processors:   processorsToJson(rvP),
+	}
+	return &j
+}
+
+func (s *TimeSchema) toJson() *JsonZogSchema {
+	rvP := reflect.ValueOf(s.processors)
+	j := JsonZogSchema{
+		Type:         zconst.TypeTime,
+		Required:     toJsonTest(s.required),
+		DefaultValue: deepCopyPrimitivePtr(s.defaultVal),
+		CatchValue:   deepCopyPrimitivePtr(s.catch),
+		Processors:   processorsToJson(rvP),
+	}
+	return &j
+}
+
+func (s *PointerSchema) toJson() *JsonZogSchema {
+	j := JsonZogSchema{
+		Type:     zconst.TypePtr,
+		Required: toJsonTest(s.required),
+		Child:    s.schema.toJson(),
+	}
+	return &j
+}
+
+func (s *SliceSchema) toJson() *JsonZogSchema {
+	rvP := reflect.ValueOf(s.processors)
+	j := JsonZogSchema{
+		Type:         zconst.TypeSlice,
+		Required:     toJsonTest(s.required),
+		DefaultValue: deepCopyPrimitivePtr(s.defaultVal),
+		Processors:   processorsToJson(rvP),
+		Child:        s.schema.toJson(),
+	}
+	return &j
+}
+
+func (s *StructSchema) toJson() *JsonZogSchema {
+	rvP := reflect.ValueOf(s.processors)
+	j := JsonZogSchema{
+		Type:       zconst.TypeSlice,
+		Required:   toJsonTest(s.required),
+		Processors: processorsToJson(rvP),
+		Child:      toJsonShape(s.schema),
+	}
+	return &j
+}
+
+func (s *Custom[T]) toJson() *JsonZogSchema {
+	j := JsonZogSchema{
+		Type: "custom",
+		// TODO not sure this is the right place for this info
+		Required: toJsonTest(&s.test),
+	}
+	return &j
+}
+
+func toJsonShape(s Shape) (m map[string]JsonZogSchema) {
+	// iterate and return
+	// TODO forgot how to fucking do this
+	return m
+}
+
+func (s *PreprocessSchema[F, T]) toJson() *JsonZogSchema {
+	j := JsonZogSchema{
+		Type:  "preprocess",
+		Child: s.schema.toJson(),
+	}
+	return &j
+}
+
+func processRVtoJson(rv reflect.Value) any {
+
+	if !rv.CanInterface() {
+		// TODO add assert here
+		fmt.Println("THIS SHOULD NEVER HAPPEN")
 		return nil
 	}
 
-	rv := reflect.ValueOf(p)
-	return processRVtoJson(rv)
-}
+	rvi := rv.Interface()
 
-func processRVtoJson(rv reflect.Value) *JsonProcessor {
-	// for rv.Kind() == reflect.Pointer {
-	// 	if rv.IsNil() {
-	// 		return nil
-	// 	}
-	// 	rv = rv.Elem()
-	// }
+	var out any
 
-	j := &JsonProcessor{}
-
-	// THE ISSUE I'M HAVING IS THAT ITS ACTUALLY A ZProcessor. THATS THE TYPE. So cannot tell between transformer and Test :(
-	/*
-		Above is solved, I can do one of:
-		1. Make interface for Transfomer (actually not even needed because I already have one for the Test and we only have transformers and tests)
-		2. rv.FieldByName("IssueCode").IsValid() vs rv.FieldByName("Transform").IsValid()
-
-	*/
-	// Actually the issue is that the processor value was obtained by accessing a private field. Which causes value.Interface() to panic
-	// Maybe I just need to make ZProcessors property available in the schema? :(
-
-	if isTest(rv) {
-		fmt.Println("Its a test")
-		j.Type = zconst.ProcessorTest
-		c := rv.FieldByName("IssueCode").Interface().(string)
-		j.IssueCode = &c
-
-		path := rv.FieldByName("IssuePath").Interface().(string)
-		j.IssuePath = &path
-		params := rv.FieldByName("Params").Interface().(map[string]any)
-		newParams := map[string]any{}
-		maps.Copy(newParams, params)
-		j.Params = newParams
-	} else if isTransformer(rv) {
-		fmt.Println("Its a transform")
-		j.Type = zconst.ProcessorTransform
+	if test, ok := rvi.(internals.TestInterface); ok {
+		out = toJsonTest(test)
+	} else if trans, ok := rvi.(internals.TransformerInterface); ok {
+		out = toJsonTransformer(trans)
 	} else {
-		fmt.Println("This should neverh happen")
-		return nil
+		// TODO add assert here
+		fmt.Println("THIS SHOULD NEVER HAPPEN")
 	}
-	return j
+	return out
 }
 
-func processorsToJson(v reflect.Value) []JsonProcessor {
-	l := v.FieldByName("processors")
+func processorsToJson(l reflect.Value) []any {
 	if l.IsNil() {
 		return nil
 	}
 	ln := l.Len()
-	out := []JsonProcessor{}
+	out := []any{}
 	for i := 0; i < ln; i++ {
 		p := l.Index(i)
 		fmt.Println(l.CanInterface())
@@ -119,9 +195,37 @@ func processorsToJson(v reflect.Value) []JsonProcessor {
 		if result == nil {
 			continue
 		}
-		out = append(out, *result)
+		out = append(out, result)
 	}
 	return out
+}
+
+func toJsonTest(test internals.TestInterface) *JsonTest {
+	if test == nil {
+		return nil
+	}
+
+	j := JsonTest{}
+	j.Type = zconst.ProcessorTest
+	c := test.GetIssueCode()
+	j.IssueCode = &c
+	path := test.GetIssuePath()
+	j.IssuePath = &path
+	params := test.GetParams()
+	newParams := map[string]any{}
+	maps.Copy(newParams, params)
+	j.Params = newParams
+	return &j
+}
+
+func toJsonTransformer(transformer internals.TransformerInterface) *JsonTransformer {
+	// TODO issue here is that I can't get the code for the transformer and we currently do not have IDs so no way to actually know what this will be
+	if transformer == nil {
+		return nil
+	}
+	j := JsonTransformer{}
+	j.Type = zconst.ProcessorTransform
+	return &j
 }
 
 func deepCopyPrimitivePtr(v any) any {
@@ -138,15 +242,4 @@ func deepCopyPrimitivePtr(v any) any {
 
 	ptr.Elem().Set(e)
 	return ptr
-}
-
-func isTransformer(rv reflect.Value) bool {
-	_, ok := rv.Interface().(internals.TransfomerProcessor)
-	return ok
-}
-func isTest(rv reflect.Value) bool {
-	// return !isTransformer(rv)
-	fmt.Println(rv.CanInterface())
-	_, ok := rv.Interface().(internals.TestInterface)
-	return ok
 }
