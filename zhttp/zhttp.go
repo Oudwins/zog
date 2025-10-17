@@ -1,6 +1,7 @@
 package zhttp
 
 import (
+	"errors"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -20,26 +21,39 @@ var (
 
 var Config = struct {
 	Parsers struct {
-		JSON  ParserFunc
-		Form  ParserFunc
-		Query ParserFunc
+		JSON          ParserFunc
+		Form          ParserFunc
+		Query         ParserFunc
+		MultipartForm ParserFunc
 	}
 }{
 	Parsers: struct {
-		JSON  ParserFunc
-		Form  ParserFunc
-		Query ParserFunc
+		JSON          ParserFunc
+		Form          ParserFunc
+		Query         ParserFunc
+		MultipartForm ParserFunc
 	}{
 		JSON: func(r *http.Request) p.DpFactory {
 			return zjson.Decode(r.Body)
 		},
 		Form: func(r *http.Request) p.DpFactory {
 			return func() (p.DataProvider, *p.ZogIssue) {
-				err := r.ParseForm()
-				if err != nil {
-					return nil, &p.ZogIssue{Code: zconst.IssueCodeZHTTPInvalidForm, Err: err}
+				if r.Form == nil { // Check in case user already parsed the form
+					err := r.ParseForm()
+					if err != nil {
+						return nil, &p.ZogIssue{Code: zconst.IssueCodeZHTTPInvalidForm, Err: err}
+					}
 				}
 				return form(r.Form, &formTag), nil
+			}
+		},
+		MultipartForm: func(r *http.Request) p.DpFactory {
+			return func() (p.DataProvider, *p.ZogIssue) {
+				if r.MultipartForm == nil {
+					// See this article on why/how to correctly parse multipart form data: https://medium.com/@owlwalks/dont-parse-everything-from-client-multipart-post-golang-9280d23cd4ad
+					return nil, &p.ZogIssue{Code: zconst.IssueCodeZHTTPInvalidMultipartForm, Err: errors.New("You must parse multipart form data before using it with zhttp")}
+				}
+				return form(r.MultipartForm.Value, &formTag), nil
 			}
 		},
 		Query: func(r *http.Request) p.DpFactory {
@@ -105,6 +119,8 @@ func Request(r *http.Request) p.DpFactory {
 			return Config.Parsers.JSON(r)
 		case "application/x-www-form-urlencoded":
 			return Config.Parsers.Form(r)
+		case "multipart/form-data":
+			return Config.Parsers.MultipartForm(r)
 		default:
 			return Config.Parsers.Query(r)
 		}

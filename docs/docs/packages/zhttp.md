@@ -27,8 +27,14 @@ func handlePostRequest(w http.ResponseWriter, r *http.Request) {
 	errs := userSchema.Parse(zhttp.Request(r), &user)
 	// if using form data (i.e Content-Type header = application/x-www-form-urlencoded)
 	errs := userSchema.Parse(zhttp.Request(r), &user)
+	// if using multipart form data you are expected to parse the form yourself before using it with zhttp. See this article on why/how to correctly parse multipart form data: https://medium.com/@owlwalks/dont-parse-everything-from-client-multipart-post-golang-9280d23cd4ad
+	// After that you can just use it as normal
+	errs := userSchema.Parse(zhttp.Request(r), &user)
 	// if using query params (i.e no http Content-Type header)
 	errs := userSchema.Parse(zhttp.Request(r), &user)
+
+
+
 
 	if errs != nil {
 		// ...

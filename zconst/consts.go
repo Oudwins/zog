@@ -186,6 +186,8 @@ const (
 	ErrCodeZHTTPInvalidForm   ZogErrCode   = "invalid_form" // invalid form data
 	IssueCodeZHTTPInvalidForm ZogIssueCode = "invalid_form" // invalid form data
 
+	IssueCodeZHTTPInvalidMultipartForm ZogIssueCode = "invalid_multipart_form" // invalid multipart form data
+
 	// Deprecated: Use IssueCodeZHTTPInvalidQuery instead
 	ErrCodeZHTTPInvalidQuery   ZogErrCode   = "invalid_query" // invalid query params
 	IssueCodeZHTTPInvalidQuery ZogIssueCode = "invalid_query" // invalid query params
