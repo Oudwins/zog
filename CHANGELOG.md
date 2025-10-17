@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.21.7](https://github.com/Oudwins/zog/compare/v0.21.6...v0.21.7) (2025-10-17)
+
+
+### Features
+
+* zhttp now supports multipart form data ([3fae95f](https://github.com/Oudwins/zog/commit/3fae95f32e20d98c68f1180ad83bd2cda1329ea6))
+
 ## [0.21.6](https://github.com/Oudwins/zog/compare/v0.21.5...v0.21.6) (2025-08-24)
 
 
