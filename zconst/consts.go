@@ -134,6 +134,8 @@ const (
 	ErrCodeURL   ZogErrCode   = "url"
 	IssueCodeURL ZogIssueCode = "url"
 
+	IssueCodeIPv4 ZogIssueCode = "ipv4"
+
 	// Deprecated: Use IssueCodeHasPrefix instead
 	ErrCodeHasPrefix   ZogErrCode   = "prefix"
 	IssueCodeHasPrefix ZogIssueCode = "prefix"

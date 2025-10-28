@@ -207,6 +207,43 @@ func TestValidateStringURL(t *testing.T) {
 	assert.Equal(t, "http://example.com", dest)
 }
 
+func TestStringValidateIPv4(t *testing.T) {
+	field := String().IPv4()
+	var dest string
+
+	// Valid cases
+	dest = "192.168.1.1"
+	errs := field.Validate(&dest)
+	assert.Empty(t, errs)
+
+	dest = "127.0.0.1"
+	errs = field.Validate(&dest)
+	assert.Empty(t, errs)
+
+	// Empty string is valid for optional field
+	dest = ""
+	errs = field.Validate(&dest)
+	assert.Empty(t, errs)
+
+	// Invalid cases
+	dest = "256.1.1.1"
+	errs = field.Validate(&dest)
+	assert.NotEmpty(t, errs)
+	assert.Equal(t, zconst.IssueCodeIPv4, errs[0].Code)
+
+	dest = "not-an-ip"
+	errs = field.Validate(&dest)
+	assert.NotEmpty(t, errs)
+	assert.Equal(t, zconst.IssueCodeIPv4, errs[0].Code)
+
+	// Required field with empty string
+	requiredField := String().Required().IPv4()
+	dest = ""
+	errs = requiredField.Validate(&dest)
+	assert.NotEmpty(t, errs)
+	assert.Equal(t, zconst.IssueCodeRequired, errs[0].Code)
+}
+
 func TestValidateStringHasPrefix(t *testing.T) {
 	field := String().HasPrefix("pre")
 	var dest string = "not prefixed"

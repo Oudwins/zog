@@ -108,6 +108,7 @@ z.String().Max(10)                        // validates max length
 z.String().Len(5)                         // validates length
 z.String().Email()                        // validates email
 z.String().URL()                          // validates url
+z.String().IPv4()                         // validates IPv4 address
 z.String().UUID()                         // validates uuid v4
 z.String().Match(regex)                   // matches a regex
 z.String().Contains(substring)            // validates string contains substring

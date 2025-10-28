@@ -1,6 +1,7 @@
 package zog
 
 import (
+	"net"
 	"net/url"
 	"regexp"
 	"strings"
@@ -239,6 +240,16 @@ func (v *StringSchema[T]) URL(options ...TestOption) *StringSchema[T] {
 	fn := func(v *T, ctx Ctx) bool {
 		u, err := url.Parse(string(*v))
 		return err == nil && u.Scheme != "" && u.Host != ""
+	}
+	return v.addTest(t, fn, options...)
+}
+
+// Test: checks that the value is a valid IPv4 address
+func (v *StringSchema[T]) IPv4(options ...TestOption) *StringSchema[T] {
+	t := p.Test[*T]{IssueCode: zconst.IssueCodeIPv4}
+	fn := func(v *T, ctx Ctx) bool {
+		ip := net.ParseIP(string(*v))
+		return ip != nil && ip.To4() != nil
 	}
 	return v.addTest(t, fn, options...)
 }
