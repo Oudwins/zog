@@ -26,7 +26,6 @@ type NotStringSchema[T likeString] interface {
 	Len(n int, options ...TestOption) *StringSchema[T]
 	Email(options ...TestOption) *StringSchema[T]
 	URL(options ...TestOption) *StringSchema[T]
-	IPv4(options ...TestOption) *StringSchema[T]
 	HasPrefix(s T, options ...TestOption) *StringSchema[T]
 	HasSuffix(s T, options ...TestOption) *StringSchema[T]
 	Contains(sub T, options ...TestOption) *StringSchema[T]
