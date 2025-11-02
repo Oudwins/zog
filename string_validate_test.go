@@ -229,12 +229,40 @@ func TestStringValidateIPv4(t *testing.T) {
 	dest = "256.1.1.1"
 	errs = field.Validate(&dest)
 	assert.NotEmpty(t, errs)
-	assert.Equal(t, zconst.IssueCodeIPv4, errs[0].Code)
+	assert.Equal(t, zconst.IssueCodeIP, errs[0].Code)
 
 	dest = "not-an-ip"
 	errs = field.Validate(&dest)
 	assert.NotEmpty(t, errs)
-	assert.Equal(t, zconst.IssueCodeIPv4, errs[0].Code)
+	assert.Equal(t, zconst.IssueCodeIP, errs[0].Code)
+
+	// IPv6 addresses should fail IPv4 validation
+	dest = "2001:db8::1"
+	errs = field.Validate(&dest)
+	assert.NotEmpty(t, errs)
+	assert.Equal(t, zconst.IssueCodeIP, errs[0].Code)
+
+	dest = "::1"
+	errs = field.Validate(&dest)
+	assert.NotEmpty(t, errs)
+	assert.Equal(t, zconst.IssueCodeIP, errs[0].Code)
+
+	// IPv6-mapped IPv4 addresses should fail (rejected due to colon syntax)
+	dest = "::ffff:192.168.1.1"
+	errs = field.Validate(&dest)
+	assert.NotEmpty(t, errs)
+	assert.Equal(t, zconst.IssueCodeIP, errs[0].Code)
+
+	// Additional IPv6 test cases
+	dest = "2001:0db8:0000:0000:0000:ff00:0042:8329"
+	errs = field.Validate(&dest)
+	assert.NotEmpty(t, errs)
+	assert.Equal(t, zconst.IssueCodeIP, errs[0].Code)
+
+	dest = "fe80::1%lo0"
+	errs = field.Validate(&dest)
+	assert.NotEmpty(t, errs)
+	assert.Equal(t, zconst.IssueCodeIP, errs[0].Code)
 
 	// Required field with empty string
 	requiredField := String().Required().IPv4()

@@ -246,10 +246,11 @@ func (v *StringSchema[T]) URL(options ...TestOption) *StringSchema[T] {
 
 // Test: checks that the value is a valid IPv4 address
 func (v *StringSchema[T]) IPv4(options ...TestOption) *StringSchema[T] {
-	t := p.Test[*T]{IssueCode: zconst.IssueCodeIPv4}
+	t := p.Test[*T]{IssueCode: zconst.IssueCodeIP, Params: make(map[string]any, 1)}
+	t.Params[zconst.IssueCodeIP] = zconst.IPv4
 	fn := func(v *T, ctx Ctx) bool {
 		ip := net.ParseIP(string(*v))
-		return ip != nil && ip.To4() != nil
+		return ip != nil && ip.To4() != nil && (*v)[0] != ':'
 	}
 	return v.addTest(t, fn, options...)
 }

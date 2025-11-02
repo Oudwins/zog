@@ -28,7 +28,7 @@ var Map zconst.LangMap = map[zconst.ZogType]map[zconst.ZogIssueCode]string{
 		zconst.IssueCodeUUID:                                 "must be a valid UUID",
 		zconst.IssueCodeMatch:                                "string is invalid",
 		zconst.IssueCodeURL:                                  "must be a valid URL",
-		zconst.IssueCodeIPv4:                                 "must be a valid IPv4 address",
+		zconst.IssueCodeIP:                                   "must be a valid {{ip}} address",
 		zconst.IssueCodeHasPrefix:                            "string must start with {{prefix}}",
 		zconst.IssueCodeHasSuffix:                            "string must end with {{suffix}}",
 		zconst.IssueCodeContains:                             "string must contain {{contained}}",

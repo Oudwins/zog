@@ -28,6 +28,7 @@ var Map zconst.LangMap = map[zconst.ZogType]map[zconst.ZogIssueCode]string{
 		zconst.IssueCodeUUID:                                 "Debe ser un UUID válido",
 		zconst.IssueCodeMatch:                                "Cadena no es válida",
 		zconst.IssueCodeURL:                                  "Debe ser una URL válida",
+		zconst.IssueCodeIP:                                   "debe ser una dirección {{ip}} válida",
 		zconst.IssueCodeHasPrefix:                            "Cadena debe comenzar con {{prefix}}",
 		zconst.IssueCodeHasSuffix:                            "Cadena debe terminar con {{suffix}}",
 		zconst.IssueCodeContains:                             "Cadena debe contener {{contained}}",
