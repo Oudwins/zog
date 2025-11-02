@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.21.8](https://github.com/Oudwins/zog/compare/v0.21.7...v0.21.8) (2025-11-02)
+
+
+### Features
+
+* add IPv4 validator for strings ([#192](https://github.com/Oudwins/zog/issues/192)) ([3a64936](https://github.com/Oudwins/zog/commit/3a6493662f58a3b4fbbd9f5b493ec4e78fadf13a))
+
 ## [0.21.7](https://github.com/Oudwins/zog/compare/v0.21.6...v0.21.7) (2025-10-17)
 
 
