@@ -253,6 +253,17 @@ func TestStringValidateIPv4(t *testing.T) {
 	assert.NotEmpty(t, errs)
 	assert.Equal(t, zconst.IssueCodeIP, errs[0].Code)
 
+	// Additional IPv6-mapped IPv4 test cases (regression tests)
+	dest = "0:0:0:0:0:ffff:192.0.2.1"
+	errs = field.Validate(&dest)
+	assert.NotEmpty(t, errs)
+	assert.Equal(t, zconst.IssueCodeIP, errs[0].Code)
+
+	dest = "::ffff:192.0.2.1"
+	errs = field.Validate(&dest)
+	assert.NotEmpty(t, errs)
+	assert.Equal(t, zconst.IssueCodeIP, errs[0].Code)
+
 	// Additional IPv6 test cases
 	dest = "2001:0db8:0000:0000:0000:ff00:0042:8329"
 	errs = field.Validate(&dest)
