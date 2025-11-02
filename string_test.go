@@ -198,6 +198,28 @@ func TestStringURL(t *testing.T) {
 	assert.Equal(t, "http://example.com", dest)
 }
 
+func TestStringIPv4(t *testing.T) {
+	field := String().IPv4()
+	var dest string
+
+	errs := field.Parse("192.168.1.1", &dest)
+	assert.Empty(t, errs)
+	assert.Equal(t, "192.168.1.1", dest)
+
+	errs = field.Parse("not an ip", &dest)
+	assert.NotEmpty(t, errs)
+	tutils.VerifyDefaultIssueMessages(t, errs)
+
+	errs = field.Parse("256.1.1.1", &dest)
+	assert.NotEmpty(t, errs)
+	tutils.VerifyDefaultIssueMessages(t, errs)
+
+	// Test coercion from int
+	errs = field.Parse(123, &dest)
+	assert.NotEmpty(t, errs)
+	tutils.VerifyDefaultIssueMessages(t, errs)
+}
+
 func TestStringHasPrefix(t *testing.T) {
 	field := String().HasPrefix("pre")
 	var dest string

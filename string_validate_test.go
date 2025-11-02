@@ -207,6 +207,82 @@ func TestValidateStringURL(t *testing.T) {
 	assert.Equal(t, "http://example.com", dest)
 }
 
+func TestStringValidateIPv4(t *testing.T) {
+	field := String().IPv4()
+	var dest string
+
+	// Valid cases
+	dest = "192.168.1.1"
+	errs := field.Validate(&dest)
+	assert.Empty(t, errs)
+
+	dest = "127.0.0.1"
+	errs = field.Validate(&dest)
+	assert.Empty(t, errs)
+
+	// Empty string is valid for optional field
+	dest = ""
+	errs = field.Validate(&dest)
+	assert.Empty(t, errs)
+
+	// Invalid cases
+	dest = "256.1.1.1"
+	errs = field.Validate(&dest)
+	assert.NotEmpty(t, errs)
+	assert.Equal(t, zconst.IssueCodeIP, errs[0].Code)
+
+	dest = "not-an-ip"
+	errs = field.Validate(&dest)
+	assert.NotEmpty(t, errs)
+	assert.Equal(t, zconst.IssueCodeIP, errs[0].Code)
+
+	// IPv6 addresses should fail IPv4 validation
+	dest = "2001:db8::1"
+	errs = field.Validate(&dest)
+	assert.NotEmpty(t, errs)
+	assert.Equal(t, zconst.IssueCodeIP, errs[0].Code)
+
+	dest = "::1"
+	errs = field.Validate(&dest)
+	assert.NotEmpty(t, errs)
+	assert.Equal(t, zconst.IssueCodeIP, errs[0].Code)
+
+	// IPv6-mapped IPv4 addresses should fail (rejected due to colon syntax)
+	dest = "::ffff:192.168.1.1"
+	errs = field.Validate(&dest)
+	assert.NotEmpty(t, errs)
+	assert.Equal(t, zconst.IssueCodeIP, errs[0].Code)
+
+	// Additional IPv6-mapped IPv4 test cases (regression tests)
+	dest = "0:0:0:0:0:ffff:192.0.2.1"
+	errs = field.Validate(&dest)
+	assert.NotEmpty(t, errs)
+	assert.Equal(t, zconst.IssueCodeIP, errs[0].Code)
+
+	dest = "::ffff:192.0.2.1"
+	errs = field.Validate(&dest)
+	assert.NotEmpty(t, errs)
+	assert.Equal(t, zconst.IssueCodeIP, errs[0].Code)
+
+	// Additional IPv6 test cases
+	dest = "2001:0db8:0000:0000:0000:ff00:0042:8329"
+	errs = field.Validate(&dest)
+	assert.NotEmpty(t, errs)
+	assert.Equal(t, zconst.IssueCodeIP, errs[0].Code)
+
+	dest = "fe80::1%lo0"
+	errs = field.Validate(&dest)
+	assert.NotEmpty(t, errs)
+	assert.Equal(t, zconst.IssueCodeIP, errs[0].Code)
+
+	// Required field with empty string
+	requiredField := String().Required().IPv4()
+	dest = ""
+	errs = requiredField.Validate(&dest)
+	assert.NotEmpty(t, errs)
+	assert.Equal(t, zconst.IssueCodeRequired, errs[0].Code)
+}
+
 func TestValidateStringHasPrefix(t *testing.T) {
 	field := String().HasPrefix("pre")
 	var dest string = "not prefixed"
