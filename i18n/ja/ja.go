@@ -28,6 +28,7 @@ var Map zconst.LangMap = map[zconst.ZogType]map[zconst.ZogIssueCode]string{
 		zconst.IssueCodeUUID:                                 "有効なUUIDである必要があります",
 		zconst.IssueCodeMatch:                                "文字列が無効です",
 		zconst.IssueCodeURL:                                  "有効なURLである必要があります",
+		zconst.IssueCodeIP:                                   "有効な {{ip}} アドレスである必要があります",
 		zconst.IssueCodeHasPrefix:                            "文字列は {{prefix}} で始まる必要があります",
 		zconst.IssueCodeHasSuffix:                            "文字列は {{suffix}} で終わる必要があります",
 		zconst.IssueCodeContains:                             "文字列に {{contained}} を含める必要があります",
