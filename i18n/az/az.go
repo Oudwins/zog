@@ -28,6 +28,7 @@ var Map zconst.LangMap = map[zconst.ZogType]map[zconst.ZogIssueCode]string{
 		zconst.IssueCodeUUID:                                 "etibarlı UUID olmalıdır",
 		zconst.IssueCodeMatch:                                "sətir yanlışdır",
 		zconst.IssueCodeURL:                                  "etibarlı URL olmalıdır",
+		zconst.IssueCodeIP:                                   "etibarlı {{ip}} ünvanı olmalıdır",
 		zconst.IssueCodeHasPrefix:                            "sətir '{{prefix}}' ilə başlamalıdır",
 		zconst.IssueCodeHasSuffix:                            "sətir '{{suffix}}' ilə bitməlidir",
 		zconst.IssueCodeContains:                             "sətir daxilində '{{contained}}' olmalıdır",
