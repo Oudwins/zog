@@ -244,6 +244,17 @@ func (v *StringSchema[T]) URL(options ...TestOption) *StringSchema[T] {
 	return v.addTest(t, fn, options...)
 }
 
+// Test: checks that the value is a valid IP address (IPv4 or IPv6)
+func (v *StringSchema[T]) IP(options ...TestOption) *StringSchema[T] {
+	t := p.Test[*T]{IssueCode: zconst.IssueCodeIP, Params: make(map[string]any, 1)}
+	t.Params[zconst.IssueCodeIP] = zconst.IP
+	fn := func(v *T, ctx Ctx) bool {
+		ip := net.ParseIP(string(*v))
+		return ip != nil
+	}
+	return v.addTest(t, fn, options...)
+}
+
 // Test: checks that the value is a valid IPv4 address
 func (v *StringSchema[T]) IPv4(options ...TestOption) *StringSchema[T] {
 	t := p.Test[*T]{IssueCode: zconst.IssueCodeIP, Params: make(map[string]any, 1)}
@@ -251,6 +262,17 @@ func (v *StringSchema[T]) IPv4(options ...TestOption) *StringSchema[T] {
 	fn := func(v *T, ctx Ctx) bool {
 		ip := net.ParseIP(string(*v))
 		return ip != nil && ip.To4() != nil && !strings.ContainsRune(string(*v), ':')
+	}
+	return v.addTest(t, fn, options...)
+}
+
+// Test: checks that the value is a valid IPv6 address
+func (v *StringSchema[T]) IPv6(options ...TestOption) *StringSchema[T] {
+	t := p.Test[*T]{IssueCode: zconst.IssueCodeIP, Params: make(map[string]any, 1)}
+	t.Params[zconst.IssueCodeIP] = zconst.IPv6
+	fn := func(v *T, ctx Ctx) bool {
+		ip := net.ParseIP(string(*v))
+		return ip != nil && ip.To4() == nil
 	}
 	return v.addTest(t, fn, options...)
 }

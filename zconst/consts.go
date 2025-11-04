@@ -137,7 +137,9 @@ const (
 	IssueCodeIP ZogIssueCode = "ip"
 
 	// IP version constants
+	IP   = "IP"
 	IPv4 = "IPv4"
+	IPv6 = "IPv6"
 
 	// Deprecated: Use IssueCodeHasPrefix instead
 	ErrCodeHasPrefix   ZogErrCode   = "prefix"
