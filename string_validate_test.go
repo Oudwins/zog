@@ -207,6 +207,78 @@ func TestValidateStringURL(t *testing.T) {
 	assert.Equal(t, "http://example.com", dest)
 }
 
+func TestStringValidateIP(t *testing.T) {
+	field := String().IP()
+	var dest string
+
+	// Valid IPv4 cases
+	dest = "192.168.1.1"
+	errs := field.Validate(&dest)
+	assert.Empty(t, errs)
+
+	dest = "127.0.0.1"
+	errs = field.Validate(&dest)
+	assert.Empty(t, errs)
+
+	dest = "255.255.255.255"
+	errs = field.Validate(&dest)
+	assert.Empty(t, errs)
+
+	// Valid IPv6 cases
+	dest = "2001:db8::1"
+	errs = field.Validate(&dest)
+	assert.Empty(t, errs)
+
+	dest = "::1"
+	errs = field.Validate(&dest)
+	assert.Empty(t, errs)
+
+	dest = "2001:0db8:0000:0000:0000:ff00:0042:8329"
+	errs = field.Validate(&dest)
+	assert.Empty(t, errs)
+
+	dest = "::ffff:192.168.1.1"
+	errs = field.Validate(&dest)
+	assert.Empty(t, errs)
+
+	dest = "fe80::1"
+	errs = field.Validate(&dest)
+	assert.Empty(t, errs)
+
+	// Empty string is valid for optional field
+	dest = ""
+	errs = field.Validate(&dest)
+	assert.Empty(t, errs)
+
+	// Invalid cases
+	dest = "not-an-ip"
+	errs = field.Validate(&dest)
+	assert.NotEmpty(t, errs)
+	assert.Equal(t, zconst.IssueCodeIP, errs[0].Code)
+
+	dest = "256.1.1.1"
+	errs = field.Validate(&dest)
+	assert.NotEmpty(t, errs)
+	assert.Equal(t, zconst.IssueCodeIP, errs[0].Code)
+
+	dest = "192.168.1"
+	errs = field.Validate(&dest)
+	assert.NotEmpty(t, errs)
+	assert.Equal(t, zconst.IssueCodeIP, errs[0].Code)
+
+	dest = "gggg::1"
+	errs = field.Validate(&dest)
+	assert.NotEmpty(t, errs)
+	assert.Equal(t, zconst.IssueCodeIP, errs[0].Code)
+
+	// Required field with empty string
+	requiredField := String().Required().IP()
+	dest = ""
+	errs = requiredField.Validate(&dest)
+	assert.NotEmpty(t, errs)
+	assert.Equal(t, zconst.IssueCodeRequired, errs[0].Code)
+}
+
 func TestStringValidateIPv4(t *testing.T) {
 	field := String().IPv4()
 	var dest string
@@ -277,6 +349,71 @@ func TestStringValidateIPv4(t *testing.T) {
 
 	// Required field with empty string
 	requiredField := String().Required().IPv4()
+	dest = ""
+	errs = requiredField.Validate(&dest)
+	assert.NotEmpty(t, errs)
+	assert.Equal(t, zconst.IssueCodeRequired, errs[0].Code)
+}
+
+func TestStringValidateIPv6(t *testing.T) {
+	field := String().IPv6()
+	var dest string
+
+	// Valid IPv6 cases
+	dest = "2001:db8::1"
+	errs := field.Validate(&dest)
+	assert.Empty(t, errs)
+
+	dest = "::1"
+	errs = field.Validate(&dest)
+	assert.Empty(t, errs)
+
+	dest = "2001:0db8:0000:0000:0000:ff00:0042:8329"
+	errs = field.Validate(&dest)
+	assert.Empty(t, errs)
+
+	dest = "fe80::1"
+	errs = field.Validate(&dest)
+	assert.Empty(t, errs)
+
+	dest = "2001:db8:85a3::8a2e:370:7334"
+	errs = field.Validate(&dest)
+	assert.Empty(t, errs)
+
+	// Empty string is valid for optional field
+	dest = ""
+	errs = field.Validate(&dest)
+	assert.Empty(t, errs)
+
+	// Invalid cases - IPv4 addresses should fail IPv6 validation
+	dest = "192.168.1.1"
+	errs = field.Validate(&dest)
+	assert.NotEmpty(t, errs)
+	assert.Equal(t, zconst.IssueCodeIP, errs[0].Code)
+
+	dest = "127.0.0.1"
+	errs = field.Validate(&dest)
+	assert.NotEmpty(t, errs)
+	assert.Equal(t, zconst.IssueCodeIP, errs[0].Code)
+
+	// IPv6-mapped IPv4 addresses should fail pure IPv6 validation
+	dest = "::ffff:192.168.1.1"
+	errs = field.Validate(&dest)
+	assert.NotEmpty(t, errs)
+	assert.Equal(t, zconst.IssueCodeIP, errs[0].Code)
+
+	dest = "not-an-ip"
+	errs = field.Validate(&dest)
+	assert.NotEmpty(t, errs)
+	assert.Equal(t, zconst.IssueCodeIP, errs[0].Code)
+
+	dest = "256.1.1.1"
+	errs = field.Validate(&dest)
+	assert.NotEmpty(t, errs)
+	assert.Equal(t, zconst.IssueCodeIP, errs[0].Code)
+
+	// Required field with empty string
+	requiredField := String().Required().IPv6()
 	dest = ""
 	errs = requiredField.Validate(&dest)
 	assert.NotEmpty(t, errs)
