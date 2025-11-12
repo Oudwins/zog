@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.21.9](https://github.com/Oudwins/zog/compare/v0.21.8...v0.21.9) (2025-11-12)
+
+
+### Features
+
+* add IPv6 and generic IP validators for strings ([#199](https://github.com/Oudwins/zog/issues/199)) ([c6fe2a3](https://github.com/Oudwins/zog/commit/c6fe2a385c99cbf5bfb0e961aafdb3e1cf2ff86d))
+* **i18n:** add Azerbaijani message for IP validator ([#198](https://github.com/Oudwins/zog/issues/198)) ([272a6bf](https://github.com/Oudwins/zog/commit/272a6bf39f314f3b184854c2e522b5a78aaa106d))
+* **i18n:** add Japanese message for IP validator (IPv4) ([#195](https://github.com/Oudwins/zog/issues/195)) ([0d3278f](https://github.com/Oudwins/zog/commit/0d3278ff5e7ee7dd1d6aa2e01245631ecf083dca))
+
 ## [0.21.8](https://github.com/Oudwins/zog/compare/v0.21.7...v0.21.8) (2025-11-02)
 
 
