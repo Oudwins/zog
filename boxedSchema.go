@@ -54,11 +54,11 @@ func (s *BoxedSchema[B, T]) Validate(data B, options ...ExecOption) ZogIssueMap 
 }
 
 func (s *BoxedSchema[B, T]) validate(ctx *p.SchemaCtx) {
-	data, ok := ctx.ValPtr.(B)
+	box, ok := ctx.ValPtr.(B)
 	if !ok {
 		p.Panicf("BoxedSchema[%T, %T]: Expected valPtr type to correspond with type defined in schema. But it does not. Expected type: %T, got: %T", new(T), new(B), new(B), ctx.ValPtr)
 	}
-	unboxed, err := s.unbox(data, ctx)
+	unboxed, err := s.unbox(box, ctx)
 	if err != nil {
 		ctx.AddIssue(ctx.IssueFromUnknownError(err))
 		return
