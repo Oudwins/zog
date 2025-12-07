@@ -284,23 +284,24 @@ schema := z.Boxed(
 	},
 )
 
-// Example 3: Ommitable pattern
+// Example 3: Omittable pattern
 
-type Ommitable[T any] interface {
+type Omittable[T any] interface {
 	Value() T
 	IsSet() bool
 }
 
 schema := z.Boxed(
 	z.Ptr(z.String().Min(3)),
-	func(o Ommitable[string], ctx z.Ctx) (string, error) {
+	func(o Omittable[string], ctx z.Ctx) (*string, error) {
 		if o.IsSet() {
-			return o.Value(), nil
+			val := o.Value()
+			return &val, nil
 		}
 		return nil, nil
 	},
-	func(s string, ctx z.Ctx) (Ommitable[string], error) {
-		return createOmmitable(s), nil
+	func(s *string, ctx z.Ctx) (Omittable[string], error) {
+		return createOmittable(s), nil
 	},
 )
 ```
