@@ -125,6 +125,7 @@ func (s *BoxedSchema[B, T]) process(ctx *p.SchemaCtx) {
 		}
 		*boxPtr = newBox
 	}
+	// TODO maybe some kind of flag that you executed process with boxFunc is nil
 }
 
 func (s *BoxedSchema[B, T]) getType() zconst.ZogType {

@@ -255,8 +255,8 @@ type StringValuer interface {
 
 schema := z.Boxed(
 	z.String().Min(3),
-	func(b StringValuer, ctx z.Ctx) (string, error) { return b.Value() }, // you can pass nil here if you don't need to unbox
-	func(s string, ctx z.Ctx) (StringValuer, error) { return myStringValuer{v: s}, nil }, // you can pass nil here if you don't need to box
+	func(b StringValuer, ctx z.Ctx) (string, error) { return b.Value() },
+	func(s string, ctx z.Ctx) (StringValuer, error) { return myStringValuer{v: s}, nil }, // you can pass nil here if you don't need to box values.
 )
 
 var valuer StringValuer
