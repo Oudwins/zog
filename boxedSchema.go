@@ -69,8 +69,7 @@ func (s *BoxedSchema[B, T]) validate(ctx *p.SchemaCtx) {
 
 	// Re-box and propagate back
 	if s.box != nil {
-		x := *ctx.ValPtr.(*T)
-		newBox, err := s.box(x, ctx)
+		newBox, err := s.box(unboxed, ctx)
 		if err != nil {
 			ctx.AddIssue(ctx.IssueFromUnknownError(err))
 			return
