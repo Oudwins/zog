@@ -80,6 +80,7 @@ z.Struct(z.Shape{
 })
 z.Slice(z.String())
 z.Ptr(z.String()) // pointer to string
+z.Boxed[B, T](schema, unboxFunc, boxFunc) // boxed type wrapper
 ```
 
 ### Utility Schemas
@@ -218,3 +219,99 @@ z.Ptr(z.Slice(z.String())) // validates pointer to slice of strings
 // Tests / Validators
 z.Ptr(z.String()).NotNil() // Validates pointer is not nil. This is equivalent to Required() for other types
 ```
+
+#### Boxed Types
+
+Boxed schemas allow you to wrap any Zog schema with custom box/unbox logic. This is useful for working with types that wrap primitive values (like `sql.NullString`) or implementing custom value extraction patterns (like the `driver.Valuer` interface).
+
+```go
+// Function signatures
+type UnboxFunc[B any, T any] func(data B, ctx Ctx) (T, error)
+type CreateBoxFunc[T any, B any] func(data T, ctx Ctx) (B, error)
+
+z.Boxed[B, T](schema ZogSchema, unboxFunc UnboxFunc[B, T], boxFunc CreateBoxFunc[T, B]) *BoxedSchema[B, T]
+```
+
+**Parameters:**
+
+- `B`: The boxed type (the wrapper type)
+- `T`: The inner type (the type that the schema validates)
+- `schema`: The Zog schema to validate the inner type
+- `unboxFunc`: Function to extract the inner value from the box
+- `boxFunc`: Function to create a new box from the validated inner value
+
+**Usage Examples:**
+
+```go
+//
+//
+// Example 1: driver.Valuer pattern
+//
+//
+
+type StringValuer interface {
+	Value() (string, error)
+}
+
+schema := z.Boxed(
+	z.String().Min(3),
+	func(b StringValuer, ctx z.Ctx) (string, error) { return b.Value() }, // you can pass nil here if you don't need to unbox
+	func(s string, ctx z.Ctx) (StringValuer, error) { return myStringValuer{v: s}, nil }, // you can pass nil here if you don't need to box
+)
+
+var valuer StringValuer
+schema.Parse("hello", &valuer) // valuer.Value() will be "hello"
+valuer = createValuer("hello2")
+schema.Validate(&valuer) // valuer.Value() will be "hello2"
+
+
+// Example 2: Nullable pattern (like sql.NullString)
+type NullString struct {
+	String string
+	Valid  bool
+}
+
+schema := z.Boxed(
+	z.String().Min(3),
+	func(ns NullString, ctx z.Ctx) (string, error) {
+		if !ns.Valid {
+			return "", errors.New("null string is not valid")
+		}
+		return ns.String, nil
+	},
+	func(s string, ctx z.Ctx) (NullString, error) {
+		return NullString{String: s, Valid: true}, nil
+	},
+)
+
+// Example 3: Ommitable pattern
+
+type Ommitable[T any] interface {
+	Value() T
+	IsSet() bool
+}
+
+schema := z.Boxed(
+	z.Ptr(z.String().Min(3)),
+	func(o Ommitable[string], ctx z.Ctx) (string, error) {
+		if o.IsSet() {
+			return o.Value(), nil
+		}
+		return nil, nil
+	},
+	func(s string, ctx z.Ctx) (Ommitable[string], error) {
+		return createOmmitable(s), nil
+	},
+)
+```
+
+**Parse vs Validate:**
+
+- **Parse**: Accepts raw data, box values (`B`), or pointers to boxes (`*B`). If the input is a box, it unboxes it first before processing. The value will be boxed back into the original type if a `boxFunc` is provided.
+- **Validate**: Validates an existing box value, applies transformations, and re-boxes the result back into the original box if a `boxFunc` is provided.
+
+**Notes:**
+
+- Transforms, defaults, catch values, and all other schema features work normally and propagate back to the box
+- Boxed schemas can be nested inside Struct schemas
+- The `boxFunc` is called after validation/transformation to create the final boxed value
