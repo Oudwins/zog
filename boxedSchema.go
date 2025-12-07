@@ -37,7 +37,7 @@ func (s *BoxedSchema[B, T]) Parse(data any, dest B, options ...ExecOption) ZogIs
 	return errs.M
 }
 
-func (s *BoxedSchema[B, T]) Validate(data B, options ...ExecOption) ZogIssueMap {
+func (s *BoxedSchema[B, T]) Validate(dest *B, options ...ExecOption) ZogIssueMap {
 	errs := p.NewErrsMap()
 	defer errs.Free()
 	ctx := p.NewExecCtx(errs, conf.IssueFormatter)
@@ -47,25 +47,36 @@ func (s *BoxedSchema[B, T]) Validate(data B, options ...ExecOption) ZogIssueMap 
 	}
 	path := p.NewPathBuilder()
 	defer path.Free()
-	sctx := ctx.NewSchemaCtx(data, data, path, s.getType())
+	sctx := ctx.NewSchemaCtx(*dest, dest, path, s.getType())
 	defer sctx.Free()
 	s.validate(sctx)
 	return errs.M
 }
 
 func (s *BoxedSchema[B, T]) validate(ctx *p.SchemaCtx) {
-	box, ok := ctx.ValPtr.(B)
+	boxPtr, ok := ctx.ValPtr.(*B)
 	if !ok {
-		p.Panicf("BoxedSchema[%T, %T]: Expected valPtr type to correspond with type defined in schema. But it does not. Expected type: %T, got: %T", new(T), new(B), new(B), ctx.ValPtr)
+		p.Panicf("BoxedSchema[%T, %T]: Expected valPtr type to correspond with type defined in schema. But it does not. Expected type: %T, got: %T", new(T), new(B), new(*B), ctx.ValPtr)
 	}
-	unboxed, err := s.unbox(box, ctx)
+	unboxed, err := s.unbox(*boxPtr, ctx)
 	if err != nil {
 		ctx.AddIssue(ctx.IssueFromUnknownError(err))
 		return
 	}
-	ctx.Data = unboxed
+	ctx.Data = &unboxed
 	ctx.ValPtr = &unboxed
 	s.schema.validate(ctx)
+
+	// Re-box and propagate back
+	if s.box != nil {
+		x := *ctx.ValPtr.(*T)
+		newBox, err := s.box(x, ctx)
+		if err != nil {
+			ctx.AddIssue(ctx.IssueFromUnknownError(err))
+			return
+		}
+		*boxPtr = newBox
+	}
 }
 
 func (s *BoxedSchema[B, T]) process(ctx *p.SchemaCtx) {

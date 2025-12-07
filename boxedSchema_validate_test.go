@@ -108,7 +108,7 @@ func TestBoxedStringValidate(t *testing.T) {
 	)
 
 	box := StringBox{Value: "hello"}
-	errs := s.Validate(box)
+	errs := s.Validate(&box)
 	assert.Empty(t, errs)
 	assert.Equal(t, "hello", box.Value) // Original unchanged
 }
@@ -121,7 +121,7 @@ func TestBoxedStringValidateFailure(t *testing.T) {
 	)
 
 	box := StringBox{Value: "hi"} // too short
-	errs := s.Validate(box)
+	errs := s.Validate(&box)
 	assert.NotEmpty(t, errs)
 	assert.Equal(t, "hi", box.Value) // Original unchanged
 }
@@ -134,7 +134,7 @@ func TestBoxedBoolValidate(t *testing.T) {
 	)
 
 	box := BoolBox{Value: true}
-	errs := s.Validate(box)
+	errs := s.Validate(&box)
 	assert.Empty(t, errs)
 	assert.Equal(t, true, box.Value) // Original unchanged
 }
@@ -147,7 +147,7 @@ func TestBoxedIntValidate(t *testing.T) {
 	)
 
 	box := IntBox{Value: 42}
-	errs := s.Validate(box)
+	errs := s.Validate(&box)
 	assert.Empty(t, errs)
 	assert.Equal(t, 42, box.Value) // Original unchanged
 }
@@ -160,7 +160,7 @@ func TestBoxedIntValidateFailure(t *testing.T) {
 	)
 
 	box := IntBox{Value: -1} // violates GT(0)
-	errs := s.Validate(box)
+	errs := s.Validate(&box)
 	assert.NotEmpty(t, errs)
 	assert.Equal(t, -1, box.Value) // Original unchanged
 }
@@ -173,7 +173,7 @@ func TestBoxedFloat64Validate(t *testing.T) {
 	)
 
 	box := Float64Box{Value: 3.14}
-	errs := s.Validate(box)
+	errs := s.Validate(&box)
 	assert.Empty(t, errs)
 	assert.Equal(t, 3.14, box.Value) // Original unchanged
 }
@@ -187,7 +187,7 @@ func TestBoxedTimeValidate(t *testing.T) {
 
 	timestamp := time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC)
 	box := TimeBox{Value: timestamp}
-	errs := s.Validate(box)
+	errs := s.Validate(&box)
 	assert.Empty(t, errs)
 	assert.Equal(t, timestamp, box.Value) // Original unchanged
 }
@@ -203,10 +203,11 @@ func TestBoxedStringValuerValidate(t *testing.T) {
 		func(s string, ctx Ctx) (StringValuer, error) { return myStringValuer{v: s}, nil },
 	)
 
-	valuer := myStringValuer{v: "hello"}
-	errs := s.Validate(valuer)
+	var valuer StringValuer = myStringValuer{v: "hello"}
+	errs := s.Validate(&valuer)
 	assert.Empty(t, errs)
-	assert.Equal(t, "hello", valuer.v) // Original unchanged
+	val, _ := valuer.Value()
+	assert.Equal(t, "hello", val) // Original unchanged
 }
 
 func TestBoxedStringValuerValidateFailure(t *testing.T) {
@@ -216,10 +217,11 @@ func TestBoxedStringValuerValidateFailure(t *testing.T) {
 		func(s string, ctx Ctx) (StringValuer, error) { return myStringValuer{v: s}, nil },
 	)
 
-	valuer := myStringValuer{v: "hi"} // too short
-	errs := s.Validate(valuer)
+	var valuer StringValuer = myStringValuer{v: "hi"} // too short
+	errs := s.Validate(&valuer)
 	assert.NotEmpty(t, errs)
-	assert.Equal(t, "hi", valuer.v) // Original unchanged
+	val, _ := valuer.Value()
+	assert.Equal(t, "hi", val) // Original unchanged
 }
 
 func TestBoxedIntValuerValidate(t *testing.T) {
@@ -229,10 +231,11 @@ func TestBoxedIntValuerValidate(t *testing.T) {
 		func(v int, ctx Ctx) (IntValuer, error) { return myIntValuer{v: v}, nil },
 	)
 
-	valuer := myIntValuer{v: 42}
-	errs := s.Validate(valuer)
+	var valuer IntValuer = myIntValuer{v: 42}
+	errs := s.Validate(&valuer)
 	assert.Empty(t, errs)
-	assert.Equal(t, 42, valuer.v) // Original unchanged
+	val, _ := valuer.Value()
+	assert.Equal(t, 42, val) // Original unchanged
 }
 
 func TestBoxedIntValuerValidateFailure(t *testing.T) {
@@ -242,10 +245,11 @@ func TestBoxedIntValuerValidateFailure(t *testing.T) {
 		func(v int, ctx Ctx) (IntValuer, error) { return myIntValuer{v: v}, nil },
 	)
 
-	valuer := myIntValuer{v: -1} // violates GT(0)
-	errs := s.Validate(valuer)
+	var valuer IntValuer = myIntValuer{v: -1} // violates GT(0)
+	errs := s.Validate(&valuer)
 	assert.NotEmpty(t, errs)
-	assert.Equal(t, -1, valuer.v) // Original unchanged
+	val, _ := valuer.Value()
+	assert.Equal(t, -1, val) // Original unchanged
 }
 
 // ============================================================================
@@ -260,7 +264,7 @@ func TestBoxedSliceValidate(t *testing.T) {
 	)
 
 	box := SliceBox{Value: []string{"hello", "world"}}
-	errs := s.Validate(box)
+	errs := s.Validate(&box)
 	assert.Empty(t, errs)
 	assert.Equal(t, []string{"hello", "world"}, box.Value) // Original unchanged
 }
@@ -273,7 +277,7 @@ func TestBoxedSliceValidateFailure(t *testing.T) {
 	)
 
 	box := SliceBox{Value: []string{"hi"}} // too short
-	errs := s.Validate(box)
+	errs := s.Validate(&box)
 	assert.NotEmpty(t, errs)
 	assert.Equal(t, []string{"hi"}, box.Value) // Original unchanged
 }
@@ -289,7 +293,7 @@ func TestBoxedStructValidate(t *testing.T) {
 	)
 
 	box := UserBox{Value: BoxedUser{Id: "1", Name: "John Doe"}}
-	errs := s.Validate(box)
+	errs := s.Validate(&box)
 	assert.Empty(t, errs)
 	assert.Equal(t, BoxedUser{Id: "1", Name: "John Doe"}, box.Value) // Original unchanged
 }
@@ -305,7 +309,7 @@ func TestBoxedStructValidateFailure(t *testing.T) {
 	)
 
 	box := UserBox{Value: BoxedUser{Id: "1", Name: "Joe"}} // Name too short
-	errs := s.Validate(box)
+	errs := s.Validate(&box)
 	assert.NotEmpty(t, errs)
 	assert.Equal(t, BoxedUser{Id: "1", Name: "Joe"}, box.Value) // Original unchanged
 }
@@ -317,10 +321,11 @@ func TestBoxedSliceValuerValidate(t *testing.T) {
 		func(v []string, ctx Ctx) (SliceValuer, error) { return mySliceValuer{v: v}, nil },
 	)
 
-	valuer := mySliceValuer{v: []string{"hello", "world"}}
-	errs := s.Validate(valuer)
+	var valuer SliceValuer = mySliceValuer{v: []string{"hello", "world"}}
+	errs := s.Validate(&valuer)
 	assert.Empty(t, errs)
-	assert.Equal(t, []string{"hello", "world"}, valuer.v) // Original unchanged
+	val, _ := valuer.Value()
+	assert.Equal(t, []string{"hello", "world"}, val) // Original unchanged
 }
 
 // ============================================================================
@@ -340,7 +345,7 @@ func TestBoxedUnboxErrorStruct(t *testing.T) {
 	)
 
 	box := StringBox{Value: ""}
-	errs := s.Validate(box)
+	errs := s.Validate(&box)
 	assert.NotEmpty(t, errs)
 	assert.Equal(t, "", box.Value) // Original unchanged
 }
@@ -352,10 +357,11 @@ func TestBoxedUnboxErrorInterface(t *testing.T) {
 		func(s string, ctx Ctx) (StringValuer, error) { return errorStringValuer{v: s}, nil },
 	)
 
-	valuer := errorStringValuer{v: "hello"}
-	errs := s.Validate(valuer)
+	var valuer StringValuer = errorStringValuer{v: "hello"}
+	errs := s.Validate(&valuer)
 	assert.NotEmpty(t, errs)
-	assert.Equal(t, "hello", valuer.v) // Original unchanged
+	val, _ := valuer.Value()
+	assert.Equal(t, "", val) // ErrorStringValuer should return an empty string
 }
 
 // ============================================================================
@@ -378,14 +384,14 @@ func TestBoxedNullablePattern(t *testing.T) {
 
 	// Valid nullable string
 	ns := NullString{String: "hello", Valid: true}
-	errs := s.Validate(ns)
+	errs := s.Validate(&ns)
 	assert.Empty(t, errs)
 	assert.Equal(t, "hello", ns.String) // Original unchanged
 	assert.Equal(t, true, ns.Valid)     // Original unchanged
 
 	// Invalid nullable string (Valid = false)
 	ns2 := NullString{String: "hello", Valid: false}
-	errs2 := s.Validate(ns2)
+	errs2 := s.Validate(&ns2)
 	assert.NotEmpty(t, errs2)
 	assert.Equal(t, false, ns2.Valid) // Original unchanged
 }
@@ -406,7 +412,7 @@ func TestBoxedNullablePatternValidationFailure(t *testing.T) {
 
 	// Valid but too short
 	ns := NullString{String: "hi", Valid: true}
-	errs := s.Validate(ns)
+	errs := s.Validate(&ns)
 	assert.NotEmpty(t, errs)
 	assert.Equal(t, "hi", ns.String) // Original unchanged
 	assert.Equal(t, true, ns.Valid)  // Original unchanged
@@ -420,10 +426,11 @@ func TestBoxedValuerLikePattern(t *testing.T) {
 		func(s string, ctx Ctx) (StringValuer, error) { return myStringValuer{v: s}, nil },
 	)
 
-	valuer := myStringValuer{v: "hello world"}
-	errs := s.Validate(valuer)
+	var valuer StringValuer = myStringValuer{v: "hello world"}
+	errs := s.Validate(&valuer)
 	assert.Empty(t, errs)
-	assert.Equal(t, "hello world", valuer.v) // Original unchanged
+	val, _ := valuer.Value()
+	assert.Equal(t, "hello world", val) // Original unchanged
 }
 
 // ============================================================================
@@ -438,7 +445,7 @@ func TestBoxedStringWithCatch(t *testing.T) {
 	)
 
 	box := StringBox{Value: "x"} // too short, should trigger catch
-	errs := s.Validate(box)
+	errs := s.Validate(&box)
 	assert.Empty(t, errs)                // Catch should suppress errors
 	assert.Equal(t, "caught", box.Value) // Catch value should propagate back to box
 }
@@ -451,7 +458,7 @@ func TestBoxedStringWithCatchSuccess(t *testing.T) {
 	)
 
 	box := StringBox{Value: "hello"} // valid, should not trigger catch
-	errs := s.Validate(box)
+	errs := s.Validate(&box)
 	assert.Empty(t, errs)
 	assert.Equal(t, "hello", box.Value) // Original unchanged
 }
@@ -464,7 +471,7 @@ func TestBoxedIntWithCatch(t *testing.T) {
 	)
 
 	box := IntBox{Value: -1} // violates GT(0), should trigger catch
-	errs := s.Validate(box)
+	errs := s.Validate(&box)
 	assert.Empty(t, errs)
 	assert.Equal(t, 42, box.Value) // Catch value should propagate back to box
 }
@@ -476,10 +483,11 @@ func TestBoxedStringValuerWithCatch(t *testing.T) {
 		func(s string, ctx Ctx) (StringValuer, error) { return myStringValuer{v: s}, nil },
 	)
 
-	valuer := myStringValuer{v: "hi"} // too short, should trigger catch
-	errs := s.Validate(valuer)
+	var valuer StringValuer = myStringValuer{v: "hi"} // too short, should trigger catch
+	errs := s.Validate(&valuer)
 	assert.Empty(t, errs)
-	assert.Equal(t, "caught", valuer.v) // Catch value should propagate back to valuer
+	val, _ := valuer.Value()
+	assert.Equal(t, "caught", val) // Catch value should propagate back to valuer
 }
 
 func TestBoxedSliceWithInnerCatch(t *testing.T) {
@@ -491,7 +499,7 @@ func TestBoxedSliceWithInnerCatch(t *testing.T) {
 	)
 
 	box := SliceBox{Value: []string{"hi"}} // element too short, should trigger catch on inner schema
-	errs := s.Validate(box)
+	errs := s.Validate(&box)
 	assert.Empty(t, errs)                          // Catch should suppress errors
 	assert.Equal(t, []string{"caught"}, box.Value) // Catch value should propagate back to box
 }
@@ -513,7 +521,7 @@ func TestBoxedPtrStringValidate(t *testing.T) {
 
 	str := "hello"
 	box := StringPtrBox{Value: &str}
-	errs := s.Validate(box)
+	errs := s.Validate(&box)
 	assert.Empty(t, errs)
 	assert.Equal(t, "hello", *box.Value)
 }
@@ -526,7 +534,7 @@ func TestBoxedPtrStringNil(t *testing.T) {
 	)
 
 	box := StringPtrBox{Value: nil}
-	errs := s.Validate(box)
+	errs := s.Validate(&box)
 	assert.Empty(t, errs) // nil is valid for optional pointer
 }
 
@@ -538,7 +546,7 @@ func TestBoxedPtrStringNotNil(t *testing.T) {
 	)
 
 	box := StringPtrBox{Value: nil}
-	errs := s.Validate(box)
+	errs := s.Validate(&box)
 	assert.NotEmpty(t, errs) // nil is invalid when NotNil is required
 }
 
@@ -551,7 +559,7 @@ func TestBoxedPtrStringValidateFailure(t *testing.T) {
 
 	str := "hi"
 	box := StringPtrBox{Value: &str} // too short
-	errs := s.Validate(box)
+	errs := s.Validate(&box)
 	assert.NotEmpty(t, errs)
 	assert.Equal(t, "hi", *box.Value) // Original unchanged
 }
@@ -569,7 +577,7 @@ func TestBoxedPtrIntValidate(t *testing.T) {
 
 	val := 42
 	box := IntPtrBox{Value: &val}
-	errs := s.Validate(box)
+	errs := s.Validate(&box)
 	assert.Empty(t, errs)
 	assert.Equal(t, 42, *box.Value)
 }
@@ -582,7 +590,7 @@ func TestBoxedPtrIntNil(t *testing.T) {
 	)
 
 	box := IntPtrBox{Value: nil}
-	errs := s.Validate(box)
+	errs := s.Validate(&box)
 	assert.Empty(t, errs) // nil is valid for optional pointer
 }
 
@@ -598,7 +606,7 @@ func TestBoxedStringWithTrim(t *testing.T) {
 	)
 
 	box := StringBox{Value: "  hello  "}
-	errs := s.Validate(box)
+	errs := s.Validate(&box)
 	assert.Empty(t, errs)
 	assert.Equal(t, "hello", box.Value) // Trim transform should propagate back to box
 }
@@ -614,7 +622,7 @@ func TestBoxedStringWithTransform(t *testing.T) {
 	)
 
 	box := StringBox{Value: "hello"}
-	errs := s.Validate(box)
+	errs := s.Validate(&box)
 	assert.Empty(t, errs)
 	assert.Equal(t, "HELLO", box.Value) // Transform should propagate back to box
 }
@@ -630,7 +638,7 @@ func TestBoxedIntWithTransform(t *testing.T) {
 	)
 
 	box := IntBox{Value: 5}
-	errs := s.Validate(box)
+	errs := s.Validate(&box)
 	assert.Empty(t, errs)
 	assert.Equal(t, 10, box.Value) // Transform should propagate back to box
 }
@@ -647,7 +655,7 @@ func TestBoxedStringWithDefault(t *testing.T) {
 	)
 
 	box := StringBox{Value: ""} // zero value, should use default
-	errs := s.Validate(box)
+	errs := s.Validate(&box)
 	assert.Empty(t, errs)
 	assert.Equal(t, "default", box.Value) // Default value should propagate back to box
 }
@@ -660,7 +668,7 @@ func TestBoxedStringWithDefaultNonZero(t *testing.T) {
 	)
 
 	box := StringBox{Value: "hello"} // non-zero value, should not use default
-	errs := s.Validate(box)
+	errs := s.Validate(&box)
 	assert.Empty(t, errs)
 	assert.Equal(t, "hello", box.Value) // Original unchanged
 }
@@ -673,7 +681,7 @@ func TestBoxedIntWithDefault(t *testing.T) {
 	)
 
 	box := IntBox{Value: 0} // zero value, should use default
-	errs := s.Validate(box)
+	errs := s.Validate(&box)
 	assert.Empty(t, errs)
 	assert.Equal(t, 42, box.Value) // Default value should propagate back to box
 }
@@ -685,10 +693,11 @@ func TestBoxedStringValuerWithDefault(t *testing.T) {
 		func(s string, ctx Ctx) (StringValuer, error) { return myStringValuer{v: s}, nil },
 	)
 
-	valuer := myStringValuer{v: ""} // zero value, should use default
-	errs := s.Validate(valuer)
+	var valuer StringValuer = myStringValuer{v: ""} // zero value, should use default
+	errs := s.Validate(&valuer)
 	assert.Empty(t, errs)
-	assert.Equal(t, "default", valuer.v) // Default value should propagate back to valuer
+	val, _ := valuer.Value()
+	assert.Equal(t, "default", val) // Default value should propagate back to valuer
 }
 
 // ============================================================================
@@ -703,7 +712,7 @@ func TestBoxedStringRequired(t *testing.T) {
 	)
 
 	box := StringBox{Value: ""} // zero value, should fail required
-	errs := s.Validate(box)
+	errs := s.Validate(&box)
 	assert.NotEmpty(t, errs)
 	assert.Equal(t, "", box.Value) // Original unchanged
 }
@@ -716,7 +725,7 @@ func TestBoxedStringRequiredValid(t *testing.T) {
 	)
 
 	box := StringBox{Value: "hello"} // valid value
-	errs := s.Validate(box)
+	errs := s.Validate(&box)
 	assert.Empty(t, errs)
 	assert.Equal(t, "hello", box.Value) // Original unchanged
 }
@@ -729,7 +738,7 @@ func TestBoxedStringOptional(t *testing.T) {
 	)
 
 	box := StringBox{Value: ""} // zero value, should be valid for optional
-	errs := s.Validate(box)
+	errs := s.Validate(&box)
 	assert.Empty(t, errs)
 	assert.Equal(t, "", box.Value) // Original unchanged
 }
@@ -742,7 +751,7 @@ func TestBoxedIntRequired(t *testing.T) {
 	)
 
 	box := IntBox{Value: 0} // zero value, should fail required
-	errs := s.Validate(box)
+	errs := s.Validate(&box)
 	assert.NotEmpty(t, errs)
 	assert.Equal(t, 0, box.Value) // Original unchanged
 }
@@ -755,7 +764,7 @@ func TestBoxedIntRequiredValid(t *testing.T) {
 	)
 
 	box := IntBox{Value: 42} // valid value
-	errs := s.Validate(box)
+	errs := s.Validate(&box)
 	assert.Empty(t, errs)
 	assert.Equal(t, 42, box.Value) // Original unchanged
 }
@@ -768,7 +777,7 @@ func TestBoxedStringRequiredWithCatch(t *testing.T) {
 	)
 
 	box := StringBox{Value: ""} // zero value, should trigger catch
-	errs := s.Validate(box)
+	errs := s.Validate(&box)
 	assert.Empty(t, errs)                // Catch should suppress required error
 	assert.Equal(t, "caught", box.Value) // Catch value should propagate back to box
 }
