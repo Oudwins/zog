@@ -11,7 +11,15 @@ import (
 
 // Struct box types for testing
 type StringBox struct {
-	Value string
+	V string
+}
+
+func (b *StringBox) Value() string {
+	return b.V
+}
+
+type StringValuerBox interface {
+	Value() string
 }
 
 type BoolBox struct {
@@ -103,27 +111,27 @@ type NullString struct {
 func TestBoxedStringValidate(t *testing.T) {
 	s := Boxed(
 		String().Min(3),
-		func(b StringBox, ctx Ctx) (string, error) { return b.Value, nil },
-		func(s string, ctx Ctx) (StringBox, error) { return StringBox{Value: s}, nil },
+		func(b StringBox, ctx Ctx) (string, error) { return b.V, nil },
+		func(s string, ctx Ctx) (StringBox, error) { return StringBox{V: s}, nil },
 	)
 
-	box := StringBox{Value: "hello"}
+	box := StringBox{V: "hello"}
 	errs := s.Validate(&box)
 	assert.Empty(t, errs)
-	assert.Equal(t, "hello", box.Value) // Original unchanged
+	assert.Equal(t, "hello", box.V) // Original unchanged
 }
 
 func TestBoxedStringValidateFailure(t *testing.T) {
 	s := Boxed(
 		String().Min(5),
-		func(b StringBox, ctx Ctx) (string, error) { return b.Value, nil },
-		func(s string, ctx Ctx) (StringBox, error) { return StringBox{Value: s}, nil },
+		func(b StringBox, ctx Ctx) (string, error) { return b.V, nil },
+		func(s string, ctx Ctx) (StringBox, error) { return StringBox{V: s}, nil },
 	)
 
-	box := StringBox{Value: "hi"} // too short
+	box := StringBox{V: "hi"} // too short
 	errs := s.Validate(&box)
 	assert.NotEmpty(t, errs)
-	assert.Equal(t, "hi", box.Value) // Original unchanged
+	assert.Equal(t, "hi", box.V) // Original unchanged
 }
 
 func TestBoxedBoolValidate(t *testing.T) {
@@ -336,18 +344,18 @@ func TestBoxedUnboxErrorStruct(t *testing.T) {
 	s := Boxed(
 		String().Min(3),
 		func(b StringBox, ctx Ctx) (string, error) {
-			if b.Value == "" {
+			if b.V == "" {
 				return "", errors.New("cannot unbox empty string")
 			}
-			return b.Value, nil
+			return b.V, nil
 		},
-		func(s string, ctx Ctx) (StringBox, error) { return StringBox{Value: s}, nil },
+		func(s string, ctx Ctx) (StringBox, error) { return StringBox{V: s}, nil },
 	)
 
-	box := StringBox{Value: ""}
+	box := StringBox{V: ""}
 	errs := s.Validate(&box)
 	assert.NotEmpty(t, errs)
-	assert.Equal(t, "", box.Value) // Original unchanged
+	assert.Equal(t, "", box.V) // Original unchanged
 }
 
 func TestBoxedUnboxErrorInterface(t *testing.T) {
@@ -440,27 +448,27 @@ func TestBoxedValuerLikePattern(t *testing.T) {
 func TestBoxedStringWithCatch(t *testing.T) {
 	s := Boxed(
 		String().Min(3).Catch("caught"),
-		func(b StringBox, ctx Ctx) (string, error) { return b.Value, nil },
-		func(s string, ctx Ctx) (StringBox, error) { return StringBox{Value: s}, nil },
+		func(b StringBox, ctx Ctx) (string, error) { return b.V, nil },
+		func(s string, ctx Ctx) (StringBox, error) { return StringBox{V: s}, nil },
 	)
 
-	box := StringBox{Value: "x"} // too short, should trigger catch
+	box := StringBox{V: "x"} // too short, should trigger catch
 	errs := s.Validate(&box)
-	assert.Empty(t, errs)                // Catch should suppress errors
-	assert.Equal(t, "caught", box.Value) // Catch value should propagate back to box
+	assert.Empty(t, errs)            // Catch should suppress errors
+	assert.Equal(t, "caught", box.V) // Catch value should propagate back to box
 }
 
 func TestBoxedStringWithCatchSuccess(t *testing.T) {
 	s := Boxed(
 		String().Min(3).Catch("caught"),
-		func(b StringBox, ctx Ctx) (string, error) { return b.Value, nil },
-		func(s string, ctx Ctx) (StringBox, error) { return StringBox{Value: s}, nil },
+		func(b StringBox, ctx Ctx) (string, error) { return b.V, nil },
+		func(s string, ctx Ctx) (StringBox, error) { return StringBox{V: s}, nil },
 	)
 
-	box := StringBox{Value: "hello"} // valid, should not trigger catch
+	box := StringBox{V: "hello"} // valid, should not trigger catch
 	errs := s.Validate(&box)
 	assert.Empty(t, errs)
-	assert.Equal(t, "hello", box.Value) // Original unchanged
+	assert.Equal(t, "hello", box.V) // Original unchanged
 }
 
 func TestBoxedIntWithCatch(t *testing.T) {
@@ -601,14 +609,28 @@ func TestBoxedPtrIntNil(t *testing.T) {
 func TestBoxedStringWithTrim(t *testing.T) {
 	s := Boxed(
 		String().Trim().Min(3),
-		func(b StringBox, ctx Ctx) (string, error) { return b.Value, nil },
-		func(s string, ctx Ctx) (StringBox, error) { return StringBox{Value: s}, nil },
+		func(b StringBox, ctx Ctx) (string, error) { return b.V, nil },
+		func(s string, ctx Ctx) (StringBox, error) { return StringBox{V: s}, nil },
 	)
 
-	box := StringBox{Value: "  hello  "}
+	box := StringBox{V: "  hello  "}
 	errs := s.Validate(&box)
 	assert.Empty(t, errs)
-	assert.Equal(t, "hello", box.Value) // Trim transform should propagate back to box
+	assert.Equal(t, "hello", box.V) // Trim transform should propagate back to box
+}
+
+func TestBoxedStringWithTrimValuer(t *testing.T) {
+	s := Boxed(
+		String().Trim().Min(3),
+		func(b StringValuerBox, ctx Ctx) (string, error) { return b.Value(), nil },
+		func(s string, ctx Ctx) (StringValuerBox, error) { return &StringBox{V: s}, nil },
+	)
+
+	var box StringValuerBox = &StringBox{V: "  hello  "}
+	errs := s.Validate(&box)
+	assert.Empty(t, errs)
+	x := box.Value()
+	assert.Equal(t, "hello", x) // Trim transform should propagate back to box
 }
 
 func TestBoxedStringWithTransform(t *testing.T) {
@@ -617,14 +639,14 @@ func TestBoxedStringWithTransform(t *testing.T) {
 			*val = strings.ToUpper(*val)
 			return nil
 		}),
-		func(b StringBox, ctx Ctx) (string, error) { return b.Value, nil },
-		func(s string, ctx Ctx) (StringBox, error) { return StringBox{Value: s}, nil },
+		func(b StringBox, ctx Ctx) (string, error) { return b.V, nil },
+		func(s string, ctx Ctx) (StringBox, error) { return StringBox{V: s}, nil },
 	)
 
-	box := StringBox{Value: "hello"}
+	box := StringBox{V: "hello"}
 	errs := s.Validate(&box)
 	assert.Empty(t, errs)
-	assert.Equal(t, "HELLO", box.Value) // Transform should propagate back to box
+	assert.Equal(t, "HELLO", box.V) // Transform should propagate back to box
 }
 
 func TestBoxedIntWithTransform(t *testing.T) {
@@ -650,27 +672,27 @@ func TestBoxedIntWithTransform(t *testing.T) {
 func TestBoxedStringWithDefault(t *testing.T) {
 	s := Boxed(
 		String().Default("default").Min(3),
-		func(b StringBox, ctx Ctx) (string, error) { return b.Value, nil },
-		func(s string, ctx Ctx) (StringBox, error) { return StringBox{Value: s}, nil },
+		func(b StringBox, ctx Ctx) (string, error) { return b.V, nil },
+		func(s string, ctx Ctx) (StringBox, error) { return StringBox{V: s}, nil },
 	)
 
-	box := StringBox{Value: ""} // zero value, should use default
+	box := StringBox{V: ""} // zero value, should use default
 	errs := s.Validate(&box)
 	assert.Empty(t, errs)
-	assert.Equal(t, "default", box.Value) // Default value should propagate back to box
+	assert.Equal(t, "default", box.V) // Default value should propagate back to box
 }
 
 func TestBoxedStringWithDefaultNonZero(t *testing.T) {
 	s := Boxed(
 		String().Default("default").Min(3),
-		func(b StringBox, ctx Ctx) (string, error) { return b.Value, nil },
-		func(s string, ctx Ctx) (StringBox, error) { return StringBox{Value: s}, nil },
+		func(b StringBox, ctx Ctx) (string, error) { return b.V, nil },
+		func(s string, ctx Ctx) (StringBox, error) { return StringBox{V: s}, nil },
 	)
 
-	box := StringBox{Value: "hello"} // non-zero value, should not use default
+	box := StringBox{V: "hello"} // non-zero value, should not use default
 	errs := s.Validate(&box)
 	assert.Empty(t, errs)
-	assert.Equal(t, "hello", box.Value) // Original unchanged
+	assert.Equal(t, "hello", box.V) // Original unchanged
 }
 
 func TestBoxedIntWithDefault(t *testing.T) {
@@ -707,40 +729,40 @@ func TestBoxedStringValuerWithDefault(t *testing.T) {
 func TestBoxedStringRequired(t *testing.T) {
 	s := Boxed(
 		String().Required().Min(3),
-		func(b StringBox, ctx Ctx) (string, error) { return b.Value, nil },
-		func(s string, ctx Ctx) (StringBox, error) { return StringBox{Value: s}, nil },
+		func(b StringBox, ctx Ctx) (string, error) { return b.V, nil },
+		func(s string, ctx Ctx) (StringBox, error) { return StringBox{V: s}, nil },
 	)
 
-	box := StringBox{Value: ""} // zero value, should fail required
+	box := StringBox{V: ""} // zero value, should fail required
 	errs := s.Validate(&box)
 	assert.NotEmpty(t, errs)
-	assert.Equal(t, "", box.Value) // Original unchanged
+	assert.Equal(t, "", box.V) // Original unchanged
 }
 
 func TestBoxedStringRequiredValid(t *testing.T) {
 	s := Boxed(
 		String().Required().Min(3),
-		func(b StringBox, ctx Ctx) (string, error) { return b.Value, nil },
-		func(s string, ctx Ctx) (StringBox, error) { return StringBox{Value: s}, nil },
+		func(b StringBox, ctx Ctx) (string, error) { return b.V, nil },
+		func(s string, ctx Ctx) (StringBox, error) { return StringBox{V: s}, nil },
 	)
 
-	box := StringBox{Value: "hello"} // valid value
+	box := StringBox{V: "hello"} // valid value
 	errs := s.Validate(&box)
 	assert.Empty(t, errs)
-	assert.Equal(t, "hello", box.Value) // Original unchanged
+	assert.Equal(t, "hello", box.V) // Original unchanged
 }
 
 func TestBoxedStringOptional(t *testing.T) {
 	s := Boxed(
 		String().Optional().Min(3),
-		func(b StringBox, ctx Ctx) (string, error) { return b.Value, nil },
-		func(s string, ctx Ctx) (StringBox, error) { return StringBox{Value: s}, nil },
+		func(b StringBox, ctx Ctx) (string, error) { return b.V, nil },
+		func(s string, ctx Ctx) (StringBox, error) { return StringBox{V: s}, nil },
 	)
 
-	box := StringBox{Value: ""} // zero value, should be valid for optional
+	box := StringBox{V: ""} // zero value, should be valid for optional
 	errs := s.Validate(&box)
 	assert.Empty(t, errs)
-	assert.Equal(t, "", box.Value) // Original unchanged
+	assert.Equal(t, "", box.V) // Original unchanged
 }
 
 func TestBoxedIntRequired(t *testing.T) {
@@ -772,14 +794,14 @@ func TestBoxedIntRequiredValid(t *testing.T) {
 func TestBoxedStringRequiredWithCatch(t *testing.T) {
 	s := Boxed(
 		String().Required().Min(3).Catch("caught"),
-		func(b StringBox, ctx Ctx) (string, error) { return b.Value, nil },
-		func(s string, ctx Ctx) (StringBox, error) { return StringBox{Value: s}, nil },
+		func(b StringBox, ctx Ctx) (string, error) { return b.V, nil },
+		func(s string, ctx Ctx) (StringBox, error) { return StringBox{V: s}, nil },
 	)
 
-	box := StringBox{Value: ""} // zero value, should trigger catch
+	box := StringBox{V: ""} // zero value, should trigger catch
 	errs := s.Validate(&box)
-	assert.Empty(t, errs)                // Catch should suppress required error
-	assert.Equal(t, "caught", box.Value) // Catch value should propagate back to box
+	assert.Empty(t, errs)            // Catch should suppress required error
+	assert.Equal(t, "caught", box.V) // Catch value should propagate back to box
 }
 
 // ============================================================================
@@ -795,19 +817,19 @@ func TestBoxedSchemaInsideStruct(t *testing.T) {
 	s := Struct(Shape{
 		"BoxedField": Boxed(
 			String().Min(3),
-			func(b StringBox, ctx Ctx) (string, error) { return b.Value, nil },
-			func(s string, ctx Ctx) (StringBox, error) { return StringBox{Value: s}, nil },
+			func(b StringBox, ctx Ctx) (string, error) { return b.V, nil },
+			func(s string, ctx Ctx) (StringBox, error) { return StringBox{V: s}, nil },
 		),
 		"OtherField": String().Min(1),
 	})
 
 	container := ContainerStruct{
-		BoxedField: StringBox{Value: "hello"},
+		BoxedField: StringBox{V: "hello"},
 		OtherField: "test",
 	}
 	errs := s.Validate(&container)
 	assert.Empty(t, errs)
-	assert.Equal(t, "hello", container.BoxedField.Value)
+	assert.Equal(t, "hello", container.BoxedField.V)
 	assert.Equal(t, "test", container.OtherField)
 }
 
@@ -815,19 +837,19 @@ func TestBoxedSchemaInsideStructWithCatch(t *testing.T) {
 	s := Struct(Shape{
 		"BoxedField": Boxed(
 			String().Min(5).Catch("caught"),
-			func(b StringBox, ctx Ctx) (string, error) { return b.Value, nil },
-			func(s string, ctx Ctx) (StringBox, error) { return StringBox{Value: s}, nil },
+			func(b StringBox, ctx Ctx) (string, error) { return b.V, nil },
+			func(s string, ctx Ctx) (StringBox, error) { return StringBox{V: s}, nil },
 		),
 		"OtherField": String().Min(1),
 	})
 
 	container := ContainerStruct{
-		BoxedField: StringBox{Value: "hi"}, // too short, should trigger catch
+		BoxedField: StringBox{V: "hi"}, // too short, should trigger catch
 		OtherField: "test",
 	}
 	errs := s.Validate(&container)
-	assert.Empty(t, errs)                                 // Catch should suppress errors
-	assert.Equal(t, "caught", container.BoxedField.Value) // Catch value should propagate back
+	assert.Empty(t, errs)                             // Catch should suppress errors
+	assert.Equal(t, "caught", container.BoxedField.V) // Catch value should propagate back
 	assert.Equal(t, "test", container.OtherField)
 }
 
@@ -838,19 +860,19 @@ func TestBoxedSchemaInsideStructWithTransform(t *testing.T) {
 				*val = strings.ToUpper(*val)
 				return nil
 			}),
-			func(b StringBox, ctx Ctx) (string, error) { return b.Value, nil },
-			func(s string, ctx Ctx) (StringBox, error) { return StringBox{Value: s}, nil },
+			func(b StringBox, ctx Ctx) (string, error) { return b.V, nil },
+			func(s string, ctx Ctx) (StringBox, error) { return StringBox{V: s}, nil },
 		),
 		"OtherField": String().Min(1),
 	})
 
 	container := ContainerStruct{
-		BoxedField: StringBox{Value: "hello"},
+		BoxedField: StringBox{V: "hello"},
 		OtherField: "test",
 	}
 	errs := s.Validate(&container)
 	assert.Empty(t, errs)
-	assert.Equal(t, "HELLO", container.BoxedField.Value) // Transform should propagate back
+	assert.Equal(t, "HELLO", container.BoxedField.V) // Transform should propagate back
 	assert.Equal(t, "test", container.OtherField)
 }
 
@@ -858,19 +880,19 @@ func TestBoxedSchemaInsideStructValidationFailure(t *testing.T) {
 	s := Struct(Shape{
 		"BoxedField": Boxed(
 			String().Min(5),
-			func(b StringBox, ctx Ctx) (string, error) { return b.Value, nil },
-			func(s string, ctx Ctx) (StringBox, error) { return StringBox{Value: s}, nil },
+			func(b StringBox, ctx Ctx) (string, error) { return b.V, nil },
+			func(s string, ctx Ctx) (StringBox, error) { return StringBox{V: s}, nil },
 		),
 		"OtherField": String().Min(1),
 	})
 
 	container := ContainerStruct{
-		BoxedField: StringBox{Value: "hi"}, // too short
+		BoxedField: StringBox{V: "hi"}, // too short
 		OtherField: "test",
 	}
 	errs := s.Validate(&container)
-	assert.NotEmpty(t, errs)                          // Should have validation error
-	assert.Equal(t, "hi", container.BoxedField.Value) // Original unchanged on failure
+	assert.NotEmpty(t, errs)                      // Should have validation error
+	assert.Equal(t, "hi", container.BoxedField.V) // Original unchanged on failure
 	assert.Equal(t, "test", container.OtherField)
 }
 
