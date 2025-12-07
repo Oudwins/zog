@@ -891,26 +891,26 @@ type ContainerWithSlice struct {
 	OtherField string
 }
 
-// func TestBoxedSchemaInsideStructWithSlice(t *testing.T) {
-// 	s := Struct(Shape{
-// 		"BoxedSlice": Boxed(
-// 			Slice(String().Min(1)),
-// 			func(b *ValuerBox, ctx Ctx) ([]string, error) { return (*b).Value() },
-// 			func(v []string, ctx Ctx) (*ValuerBox, error) {
-// 				var x ValuerBox = &myValuerBox{v: v}
-// 				return &x, nil
+func TestBoxedSchemaInsideStructWithSlice(t *testing.T) {
+	s := Struct(Shape{
+		"BoxedSlice": Boxed(
+			Slice(String().Min(10).Catch("xyz")),
+			func(b ValuerBox, ctx Ctx) ([]string, error) { return b.Value() },
+			func(v []string, ctx Ctx) (ValuerBox, error) {
+				var x ValuerBox = &myValuerBox{v: v}
+				return x, nil
+			},
+		),
+		"OtherField": String().Min(1),
+	})
 
-// 			},
-// 		),
-// 		"OtherField": String().Min(1),
-// 	})
-
-// 	container := ContainerWithSlice{
-// 		BoxedSlice: &myValuerBox{v: []string{"hello", "world"}},
-// 		OtherField: "test",
-// 	}
-// 	errs := s.Validate(&container)
-// 	assert.Empty(t, errs)
-// 	assert.Equal(t, []string{"hello", "world"}, container.BoxedSlice.Value)
-// 	assert.Equal(t, "test", container.OtherField)
-// }
+	container := ContainerWithSlice{
+		BoxedSlice: &myValuerBox{v: []string{"hello", "world"}},
+		OtherField: "test",
+	}
+	errs := s.Validate(&container)
+	assert.Empty(t, errs)
+	v, _ := container.BoxedSlice.Value()
+	assert.Equal(t, []string{"xyz", "xyz"}, v)
+	assert.Equal(t, "test", container.OtherField)
+}
