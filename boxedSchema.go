@@ -21,7 +21,7 @@ func Boxed[B any, T any](schema ZogSchema, unboxFunc UnboxFunc[B, T], boxFunc Cr
 	return &BoxedSchema[B, T]{schema: schema, unbox: unboxFunc, box: boxFunc}
 }
 
-func (s *BoxedSchema[B, T]) Parse(data any, dest B, options ...ExecOption) ZogIssueMap {
+func (s *BoxedSchema[B, T]) Parse(data any, dest any, options ...ExecOption) ZogIssueMap {
 	errs := p.NewErrsMap()
 	defer errs.Free()
 	ctx := p.NewExecCtx(errs, conf.IssueFormatter)
@@ -79,7 +79,52 @@ func (s *BoxedSchema[B, T]) validate(ctx *p.SchemaCtx) {
 }
 
 func (s *BoxedSchema[B, T]) process(ctx *p.SchemaCtx) {
+	boxPtr, ok := ctx.ValPtr.(*B)
+	if !ok {
+		p.Panicf("BoxedSchema[%T, %T]: Expected valPtr type to correspond with type defined in schema. But it does not. Expected type: %T, got: %T", new(T), new(B), new(*B), ctx.ValPtr)
+	}
+
+	// 1. Handle ctx.Data - could be B, *B, or raw data
+	var innerData any
+	switch d := ctx.Data.(type) {
+	case B:
+		// Unbox B to get T
+		unboxed, err := s.unbox(d, ctx)
+		if err != nil {
+			ctx.AddIssue(ctx.IssueFromUnknownError(err))
+			return
+		}
+		innerData = unboxed
+	case *B:
+		// Dereference and unbox
+		unboxed, err := s.unbox(*d, ctx)
+		if err != nil {
+			ctx.AddIssue(ctx.IssueFromUnknownError(err))
+			return
+		}
+		innerData = unboxed
+	default:
+		// Raw data - pass directly to inner schema
+		innerData = d
+	}
+
+	// 2. Create temporary T for inner schema and pass data
+	var inner T
+	ctx.Data = innerData
+	ctx.ValPtr = &inner
+
+	// 3. Process through inner schema (keeps pointer to inner)
 	s.schema.process(ctx)
+
+	// 4. Re-box and set to original destination
+	if s.box != nil {
+		newBox, err := s.box(inner, ctx)
+		if err != nil {
+			ctx.AddIssue(ctx.IssueFromUnknownError(err))
+			return
+		}
+		*boxPtr = newBox
+	}
 }
 
 func (s *BoxedSchema[B, T]) getType() zconst.ZogType {
