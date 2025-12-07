@@ -9,7 +9,6 @@ import (
 // Merge combines two or more schemas into a new schema.
 // It performs a shallow merge, meaning:
 //   - Fields with the same key from later schemas override earlier ones
-//   - PreTransforms, PostTransforms and tests are concatenated in order
 //   - Modifying nested schemas may affect the original schemas
 //
 // Parameters:

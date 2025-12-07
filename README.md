@@ -170,10 +170,6 @@ These are some of the things I want to add to zog before v1.0.0
 - support for catch & default for structs & slices
 - Struct generation from the schemas
 
-## Support
-
-The damm domain costs me some outrageous amount like 100$ a year, so if any one wants to help cover that cost through github sponsors that is more than welcome.
-
 ## Acknowledgments
 
 - Big thank you to @AlexanderArvidsson for being there to talk about architecture and design decisions. It helped a lot to have someone to bounce ideas off of

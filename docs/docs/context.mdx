@@ -42,14 +42,14 @@ In any Zog function that has access to the context you may add issues manually. 
 
 #### Pass custom data to functions
 
-Here is an example with a pretransform
+Here is an example with a custom test
 
 ```go
-nameSchema := z.String().Min(3).PreTransform(func(data any, ctx z.Ctx) (any, error) {
-	char := ctx.Get("split_by")
-	return strings.Split(data.(string), char), nil
+nameSchema := z.String().Min(3).Test(func(data *string, ctx z.Ctx) (bool) {
+	b := ctx.Get("is_valid").(bool)
+	return b
 })
-nameSchema.Parse("Michael Jackson", &dest, z.WithCtxValue("split_by", " "))
+nameSchema.Parse("Michael Jackson", &dest, z.WithCtxValue("is_valid", true))
 ```
 
 #### Change the issue formatter for this execution
