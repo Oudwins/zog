@@ -17,3 +17,12 @@ func (p *TransformProcessor[T]) ZProcess(valPtr T, ctx Ctx) {
 		s.Exit = true
 	}
 }
+
+func (p *TransformProcessor[T]) GetName() string {
+	// Temporary. TODO actually implement this
+	return ""
+}
+
+type TransformerInterface interface {
+	GetName() string
+}
