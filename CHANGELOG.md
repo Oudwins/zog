@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.21.10](https://github.com/Oudwins/zog/compare/v0.21.9...v0.21.10) (2025-12-12)
+
+
+### Features
+
+* new boxed schema ([#201](https://github.com/Oudwins/zog/issues/201)) ([6bb4304](https://github.com/Oudwins/zog/commit/6bb4304cb5dbde409c5d63e943b557f62ac59b9a))
+
 ## [0.21.9](https://github.com/Oudwins/zog/compare/v0.21.8...v0.21.9) (2025-11-12)
 
 
