@@ -4,7 +4,7 @@ toc_min_heading_level: 2
 toc_max_heading_level: 4
 ---
 
-# Creating Custom Schemas
+# Custom Schemas
 
 > Please read the [Anatomy of a Schema](/core-concepts/anatomy-of-schema) page before continuing.
 

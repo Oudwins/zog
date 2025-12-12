@@ -54,6 +54,10 @@ const config: Config = {
           editUrl: "https://github.com/Oudwins/zog/tree/master/docs",
         },
         blog: false,
+        // pages: {
+        //   routeBasePath: "/",
+        //   path: "pages",
+        // },
         theme: {
           customCss: "./src/css/custom.css",
         },
@@ -86,6 +90,16 @@ const config: Config = {
           sidebarId: "tutorialSidebar",
           position: "left",
           label: "Docs",
+        },
+        {
+          href: "/reference",
+          position: "left",
+          label: "Reference",
+        },
+        {
+          href: "",
+          position: "left",
+          label: "GoDocs",
         },
         {
           href: "https://github.com/Oudwins/zog",
