@@ -14,24 +14,13 @@ type Ctx = p.Ctx
 // This is a type for the ZogIssue type. It is the type of all the errors returned from zog.
 type ZogIssue = p.ZogIssue
 
-// This is a type for the ZogErrList type. It is a list of ZogIssues returned from parsing primitive schemas. The type is []ZogIssue
+// ZogIssueList is the type returned by all schema Parse/Validate operations.
+// It is a slice of pointers to ZogIssue.
 type ZogIssueList = p.ZogIssueList
 
-// This is a type for the ZogIssueMap type. It is a map[string][]ZogIssue returned from parsing complex schemas. The type is map[string][]ZogIssue
-// All errors are returned in a flat map, not matter how deep the schema is. For example:
-/*
-schema := z.Struct(z.Shape{
-  "address": z.Struct(z.Shape{
-    "street": z.String().Min(3).Max(10),
-    "city": z.String().Min(3).Max(10),
-  }),
-  "fields": z.Slice(z.String().Min(3).Max(10)),
-})
-errors = map[string][]ZogIssue{
-  "address.street": []ZogIssue{....}, // error for the street field in the address struct
-  "fields[0]": []ZogIssue{...}, // error for the first field in the slice
-}
-*/
+// Deprecated: ZogIssueMap is deprecated. All schemas now return ZogIssueList.
+// Use z.Issues.GroupByPath() to convert a list to a map if needed for migration.
+// This type alias is kept for backward compatibility.
 type ZogIssueMap = p.ZogIssueMap
 
 type CoercerFunc = conf.CoercerFunc
@@ -46,53 +35,61 @@ type issueHelpers struct {
 
 var Issues = issueHelpers{}
 
-// SanitizeMap returns a map of issue messages for each key in the map. It keeps only the issue messages and strips out any other issue data.
-func (i *issueHelpers) SanitizeMap(m ZogIssueMap) map[string][]string {
-	errs := make(map[string][]string, len(m))
-	for k, v := range m {
-		errs[k] = i.SanitizeList(v)
-	}
-	return errs
+func (i *issueHelpers) Flatten(issues ZogIssueList) map[string][]string {
+	return p.Flatten(issues)
 }
 
-// Suger function that does both sanitize and collect.
-func (i issueHelpers) SanitizeMapAndCollect(m ZogIssueMap) map[string][]string {
-	errs := i.SanitizeMap(m)
-	i.CollectMap(m)
-	return errs
+func (i *issueHelpers) FlattenAndCollect(issues ZogIssueList) map[string][]string {
+	flattened := i.Flatten(issues)
+	i.Collect(issues)
+	return flattened
 }
 
-// SanitizeList returns a slice of issue messages for each issue in the list. It keeps only the issue messages and strips out any other issue data.
-func (i *issueHelpers) SanitizeList(l ZogIssueList) []string {
-	errs := make([]string, len(l))
-	for i, err := range l {
-		errs[i] = err.Message
-	}
-	return errs
-}
-
-// Suger function that does both sanitize and collect.
-func (i issueHelpers) SanitizeListAndCollect(l ZogIssueList) []string {
-	errs := i.SanitizeList(l)
-	i.CollectList(l)
-	return errs
-}
-
-// Collects a ZogIssueMap to be reused by Zog. This will "free" the issues in the map. This can help make Zog more performant by reusing issue structs.
-func (i *issueHelpers) CollectMap(issues ZogIssueMap) {
-	for _, list := range issues {
-		i.CollectList(list)
-	}
-}
-
-// Collects a ZogIssueList to be reused by Zog. This will "free" the issues in the list. This can help make Zog more performant by reusing issue structs.
-func (i *issueHelpers) CollectList(issues ZogIssueList) {
+// Collect returns issues to the pool for reuse.
+// This can help make Zog more performant by reusing issue structs.
+func (i *issueHelpers) Collect(issues ZogIssueList) {
 	for _, iss := range issues {
-		i.Collect(iss)
+		i.CollectOne(iss)
 	}
 }
 
-// Collects a ZogIssue to be reused by Zog. This will "free" the issue. This can help make Zog more performant by reusing issue structs.
-func (i *issueHelpers) Collect(issue *ZogIssue) {
+// CollectOne returns a single issue to the pool for reuse.
+func (i *issueHelpers) CollectOne(issue *ZogIssue) {
 	p.FreeIssue(issue)
+}
+
+// =========== DEPRECATED METHODS ===========
+
+// Deprecated: Use Flatten instead. SanitizeList is kept for backward compatibility.
+func (i *issueHelpers) SanitizeList(l ZogIssueList) []string {
+	return i.Sanitize(l)
+}
+
+// Deprecated: Use FlattenAndCollect instead.
+func (i issueHelpers) SanitizeListAndCollect(l ZogIssueList) []string {
+	return i.SanitizeAndCollect(l)
+}
+
+// Deprecated: Use Collect instead.
+func (i *issueHelpers) CollectList(issues ZogIssueList) {
+	i.Collect(issues)
+}
+
+// Deprecated: Use flatten instead or write this function yourself
+// Sanitize returns a slice of issue messages from a ZogIssueList.
+// This is the primary sanitization method now that all schemas return ZogIssueList.
+func (i *issueHelpers) Sanitize(l ZogIssueList) []string {
+	errs := make([]string, len(l))
+	for idx, err := range l {
+		errs[idx] = err.Message
+	}
+	return errs
+}
+
+// Deprecated: Use FlattenAndCollect instead
+// SanitizeAndCollect sanitizes the issues and returns them to the pool for reuse.
+func (i issueHelpers) SanitizeAndCollect(l ZogIssueList) []string {
+	errs := i.Sanitize(l)
+	i.Collect(l)
+	return errs
 }

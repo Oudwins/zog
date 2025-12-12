@@ -46,8 +46,8 @@ func Struct(schema Shape) *StructSchema {
 }
 
 // Parses val into destPtr and validates each field based on the schema. Only supports val = map[string]any & dest = &struct
-func (v *StructSchema) Parse(data any, destPtr any, options ...ExecOption) ZogIssueMap {
-	errs := p.NewErrsMap()
+func (v *StructSchema) Parse(data any, destPtr any, options ...ExecOption) ZogIssueList {
+	errs := p.NewErrsList()
 	defer errs.Free()
 	ctx := p.NewExecCtx(errs, conf.IssueFormatter)
 	defer ctx.Free()
@@ -60,7 +60,7 @@ func (v *StructSchema) Parse(data any, destPtr any, options ...ExecOption) ZogIs
 	defer sctx.Free()
 	v.process(sctx)
 
-	return errs.M
+	return errs.List
 }
 
 func (v *StructSchema) process(ctx *p.SchemaCtx) {
@@ -127,8 +127,8 @@ func (v *StructSchema) process(ctx *p.SchemaCtx) {
 
 // Validate a struct pointer given the struct schema. Usage:
 // userSchema.Validate(&User, ...options)
-func (v *StructSchema) Validate(dataPtr any, options ...ExecOption) ZogIssueMap {
-	errs := p.NewErrsMap()
+func (v *StructSchema) Validate(dataPtr any, options ...ExecOption) ZogIssueList {
+	errs := p.NewErrsList()
 	defer errs.Free()
 	ctx := p.NewExecCtx(errs, conf.IssueFormatter)
 	defer ctx.Free()
@@ -141,7 +141,7 @@ func (v *StructSchema) Validate(dataPtr any, options ...ExecOption) ZogIssueMap 
 	defer sctx.Free()
 	v.validate(sctx)
 
-	return errs.M
+	return errs.List
 }
 
 // Internal function to validate the data
