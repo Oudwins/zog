@@ -30,6 +30,10 @@ type issueHelpers struct {
 
 var Issues = issueHelpers{}
 
+func (i *issueHelpers) FlattenPath(path []string) string {
+	return p.FlattenPath(path)
+}
+
 func (i *issueHelpers) Flatten(issues ZogIssueList) map[string][]string {
 	return p.Flatten(issues)
 }

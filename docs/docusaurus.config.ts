@@ -97,9 +97,9 @@ const config: Config = {
           label: "Reference",
         },
         {
-          href: "",
-          position: "left",
-          label: "GoDocs",
+          href: "https://pkg.go.dev/github.com/Oudwins/zog",
+          position: "right",
+          label: "GoDoc",
         },
         {
           href: "https://github.com/Oudwins/zog",
