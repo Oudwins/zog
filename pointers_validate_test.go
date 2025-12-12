@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/Oudwins/zog/tutils"
-	"github.com/Oudwins/zog/zconst"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -31,10 +30,10 @@ func TestPtrValidateFormatter(t *testing.T) {
 	})
 	validator := Ptr(Int().GTE(10)).NotNil(Message("test1"))
 	errs := validator.Validate(&dest, fmt)
-	assert.Equal(t, "test1", errs[zconst.ISSUE_KEY_ROOT][0].Message)
+	assert.Equal(t, "test1", errs[0].Message)
 	validator2 := Ptr(Int()).NotNil()
 	errs2 := validator2.Validate(&dest, fmt)
-	assert.Equal(t, "test2", errs2[zconst.ISSUE_KEY_ROOT][0].Message)
+	assert.Equal(t, "test2", errs2[0].Message)
 }
 
 func TestValidatePtrInStruct(t *testing.T) {
@@ -104,7 +103,7 @@ func TestValidatePtrInSlice(t *testing.T) {
 
 	errs := schema.Validate(&out)
 	assert.NotEmpty(t, errs)
-	tutils.VerifyDefaultIssueMessagesMap(t, errs)
+	tutils.VerifyDefaultIssueMessages(t, errs)
 	assert.Equal(t, 10, *out[0])
 	assert.Equal(t, 20, *out[1])
 	assert.Equal(t, 30, *out[2])
@@ -140,7 +139,7 @@ func TestValidatePtrRequired(t *testing.T) {
 	schema = Ptr(String()).NotNil()
 	errs = schema.Validate(&dest)
 	assert.NotEmpty(t, errs)
-	tutils.VerifyDefaultIssueMessagesMap(t, errs)
+	tutils.VerifyDefaultIssueMessages(t, errs)
 
 	str := "test"
 	dest = &str

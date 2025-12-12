@@ -18,11 +18,6 @@ type ZogIssue = p.ZogIssue
 // It is a slice of pointers to ZogIssue.
 type ZogIssueList = p.ZogIssueList
 
-// Deprecated: ZogIssueMap is deprecated. All schemas now return ZogIssueList.
-// Use z.Issues.GroupByPath() to convert a list to a map if needed for migration.
-// This type alias is kept for backward compatibility.
-type ZogIssueMap = p.ZogIssueMap
-
 type CoercerFunc = conf.CoercerFunc
 
 // ! TESTS
@@ -43,6 +38,10 @@ func (i *issueHelpers) FlattenAndCollect(issues ZogIssueList) map[string][]strin
 	flattened := i.Flatten(issues)
 	i.Collect(issues)
 	return flattened
+}
+
+func (i *issueHelpers) GroupByFlattenedPath(issues ZogIssueList) map[string]ZogIssueList {
+	return p.GroupByFlattenedPath(issues)
 }
 
 // Collect returns issues to the pool for reuse.

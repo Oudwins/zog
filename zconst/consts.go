@@ -1,8 +1,8 @@
 package zconst
 
 const (
-	// Key for a list of one ZogIssue that contains the first ZogIssue that occurred in a schema
-	ISSUE_KEY_FIRST = "$first"
+	// ISSUE_KEY_ROOT is still valid - used for root-level issues on complex schemas
+	// When accessing from a slice, filter by Path == "" or Path == "zconst.ISSUE_KEY_ROOT"
 	// Key for a list of all ZogIssues that occurred in a schema at the root level for complex schemas. For example
 	/*
 			> Given this schema:
@@ -11,7 +11,7 @@ const (
 			}, z.Message("test"))
 			> And any input data. The output will contain:
 			{
-				"$root": [
+				"zconst.ISSUE_KEY_ROOT": [
 					{
 				     "message": "test"
 					 restOfErrorFields..
@@ -20,7 +20,7 @@ const (
 			}
 		    > This is also true for slices and even for pointers to primitive types.
 	*/
-	ISSUE_KEY_ROOT = "$root"
+	ISSUE_KEY_ROOT = "zconst.ISSUE_KEY_ROOT"
 )
 
 const (

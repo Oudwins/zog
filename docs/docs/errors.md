@@ -10,79 +10,103 @@ toc_max_heading_level: 4
 
 ## Issues in Zog
 
-In zog issues represent something that went wrong during any step of the [parsing execution structure](/core-concepts/parsing#parsing-execution-structure). Based on the schema you are using the returned issues will be in a different format:
+In zog issues represent something that went wrong during any step of the [parsing execution structure](/core-concepts/parsing#parsing-execution-structure).
 
-###### ZogIssueList
+### ZogIssueList
 
-**For Primitive Types**
-Zog returns a list of `ZogIssue` instances.
+All schemas return a `ZogIssueList`, which is a slice of `ZogIssue` instances:
 
 ```go
-// will return []z.ZogIssue{z.ZogIssue{Message: "min length is 5"}, z.ZogIssue{Message: "invalid email"}}
+type ZogIssueList = []*ZogIssue
+```
+
+Each issue contains a `Path` field that indicates where in your data structure the issue occurred:
+
+```go
+// String schema - Path is empty for root-level primitive
 errList := z.String().Min(5).Email().Parse("foo", &dest)
+// errList[0].Path = "", errList[0].Message = "min length is 5"
+
+// Struct schema - Path contains the field name
+errList := z.Struct(z.Shape{"name": z.String().Min(5)}).Parse(data, &dest)
+// errList[0].Path = "name", errList[0].Message = "min length is 5"
+
+// Nested structs use dot notation
+errList := z.Struct(z.Shape{
+    "address": z.Struct(z.Shape{
+        "streets": z.Slice(z.String().Min(10)),
+    }),
+}).Parse(data, &dest)
+// errList[0].Path = "address.streets[0]", errList[0].Message = "min length is 10"
 ```
 
-###### ZogIssueMap
+### Working with Issues
 
-**For Complex Types**
-Zog returns a map of `ZogIssue` instances. Which uses the field path as the key & the list of issues as the value.
+#### Getting the First Issue
 
 ```go
-// will return map[string][]z.ZogIssue{"name": []z.ZogIssue{z.ZogIssue{Message: "min length is 5"}}}
-errMap := z.Struct(z.Shape{"name": z.String().Min(5)}).Parse(data, &dest)
-
-// will return map[string][]z.ZogIssue{"$root": []z.ZogIssue{{Message: "slice length is not 2"}, "[0]": []z.ZogIssue{{Message: "min length is 10"}}}}
-errsMap2 := z.Slice(z.String().Min(10)).Len(2).Parse([]string{"only_one"}, &dest)
-
-// nested schemas will use the . or the [] notation to access the issues
-errsMap3 := z.Struct(z.Shape{"name": z.String().Min(5), "address": z.Struct(z.Shape{"streets": z.Slice(z.String().Min(10))})}).Parse(data, &dest)
-errsMap3["address.streets[0]"] // will return []z.ZogIssue{{Message: "min length is 10"}}
+errs := schema.Parse(data, &dest)
+if len(errs) > 0 {
+    firstIssue := errs[0]
+    // or use the helper:
+    firstIssue := z.Issues.First(errs)
+}
 ```
 
-`$root` & `$first` are reserved keys for complex type validation, they are used for root level issues and for the first issue found in a schema, for example:
+#### Getting Issues by Path
 
 ```go
-errsMap := z.Slice(z.String()).Min(2).Parse([]string{"only_one"}, &dest)
-errsMap["$root"]  // will return []z.ZogIssue{{Message: "slice length should at least be 2"}}
-errsMap["$first"] // will return the same in this case []z.ZogIssue{{Message: "slice length should at least be 2"}}
+errs := schema.Parse(data, &dest)
+nameIssues := z.Issues.ForPath(errs, "name")
 ```
 
-You can also use the zconst package which contains constants for both of these keys
+#### Grouping Issues by Path
+
+If you need issues grouped by path (similar to the old map format):
 
 ```go
-const (
-	// Key for a list of one ZogIssue that contains the first ZogIssue that occurred in a schema
-	ISSUE_KEY_FIRST = "$first"
-	// Key for a list of all ZogIssues that occurred in a schema at the root level for complex schemas. For example
-	/*
-			> Given this schema:
-			z.Struct(....).TestFunc(func (v any, ctx z.Ctx) {
-			   return false
-			}, z.Message("test"))
-			> And any input data. The output will contain:
-			{
-				"$root": [
-					{
-				     "message": "test"
-					 restOfErrorFields..
-					}
-				]
-			}
-		    > This is also true for slices and even for pointers to primitive types.
-	*/
-	ISSUE_KEY_ROOT = "$root"
-)
+errs := schema.Parse(data, &dest)
+issuesByPath := z.Issues.GroupByPath(errs)
+// issuesByPath["name"] = []*ZogIssue{...}
 ```
+
+### Special Paths
+
+- Empty string `""` or `"$root"`: Issues at the root level of a complex schema (e.g., from schema-level tests)
+- `"fieldName"`: Direct field issues
+- `"parent.child"`: Nested field issues
+- `"[0]"`, `"items[0]"`: Slice index issues
 
 ## Sanitizing ZogIssues
 
-If you want to return issues to the user without the possibility of exposing internal confidential information, you can use the Zog sanitizer functions `z.Issues.SanitizeMap(ZogIssueMap)` or `z.Issues.SanitizeSlice(ZogIssueList)`. These functions will return a map or slice of strings of the issue messages (stripping out all the internal data from the issues like the error that caused the issue, the path, params, etc).
+If you want to return issues to the user without the possibility of exposing internal confidential information, you can use the Zog sanitizer functions. These functions will return strings of the issue messages (stripping out all the internal data from the issues like the error that caused the issue, the path, params, etc).
+
+### Sanitize to Slice
 
 ```go
 errs := userSchema.Parse(data, &user)
-// errs = map[string][]ZogIssue{"name": []ZogIssue{{Message: "min length is 5"}, {Message: "max length is 10"}}, "email": []ZogIssue{{Message: "is not a valid email"}}}
-sanitized := z.Issues.SanitizeMap(errs)
-// sanitized = {"name": []string{"min length is 5", "max length is 10"}, "email": []string{"is not a valid email"}}
+// errs = []*ZogIssue{{Path: "name", Message: "min length is 5"}, {Path: "name", Message: "max length is 10"}, {Path: "email", Message: "is not a valid email"}}
+sanitized := z.Issues.Sanitize(errs)
+// sanitized = []string{"min length is 5", "max length is 10", "is not a valid email"}
+```
+
+### Sanitize by Path
+
+If you prefer the grouped format:
+
+```go
+errs := userSchema.Parse(data, &user)
+sanitizedByPath := z.Issues.SanitizeByPath(errs)
+// sanitizedByPath = {"name": []string{"min length is 5", "max length is 10"}, "email": []string{"is not a valid email"}}
+```
+
+### Sanitize and Collect
+
+To sanitize and return issues to the pool for reuse (for better performance):
+
+```go
+errs := userSchema.Parse(data, &user)
+sanitized := z.Issues.SanitizeAndCollect(errs) // Issues are returned to pool
 ```
 
 ## The ZogIssue
@@ -271,8 +295,17 @@ See how our issue messages were overridden? Be careful when using this!
 errs := userSchema.Parse(data, &user)
 msgs := FormatZogIssues(errs)
 
-func FormatZogIssues(errs z.ZogIssueMap) map[string][]string {
+func FormatZogIssues(errs z.ZogIssueList) map[string][]string {
 	// iterate over issues and create custom messages based on the issue code, the params and destination type
+	result := make(map[string][]string)
+	for _, issue := range errs {
+		path := issue.Path
+		if path == "" {
+			path = "$root"
+		}
+		result[path] = append(result[path], issue.Message)
+	}
+	return result
 }
 ```
 
@@ -307,3 +340,56 @@ conf.IssueFormatter = func(e *p.ZogIssue, ctx z.Ctx) {
 #### **6. Use the [i18n](/packages/i18n) package**
 
 Really this only makes sense if you are doing i18n. Please please check out the [i18n](/packages/i18n) section for more information.
+
+---
+
+## Migrating from ZogIssueMap
+
+If you're upgrading from a version that returned `ZogIssueMap` for complex schemas:
+
+### Before (v0.x)
+
+```go
+errs := userSchema.Parse(data, &user)
+if errs != nil {
+    // Check specific field
+    if nameErrs, ok := errs["name"]; ok {
+        for _, e := range nameErrs {
+            fmt.Println(e.Message)
+        }
+    }
+    // Get first error
+    first := errs["$first"][0]
+}
+```
+
+### After (v1.x)
+
+```go
+errs := userSchema.Parse(data, &user)
+if len(errs) > 0 {
+    // Check specific field
+    nameErrs := z.Issues.ForPath(errs, "name")
+    for _, e := range nameErrs {
+        fmt.Println(e.Message)
+    }
+    // Get first error
+    first := z.Issues.First(errs)
+}
+```
+
+### Using the Compatibility Helper
+
+If you have a lot of code to migrate, you can use the grouping helper:
+
+```go
+errs := userSchema.Parse(data, &user)
+// Convert to map format for compatibility
+errsMap := z.Issues.GroupByPath(errs)
+if errsMap != nil {
+    // Use like before
+    if nameErrs, ok := errsMap["name"]; ok {
+        // ...
+    }
+}
+```

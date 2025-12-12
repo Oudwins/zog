@@ -35,8 +35,8 @@ func Ptr(schema ZogSchema) *PointerSchema {
 }
 
 // Parse the data into the destination pointer
-func (v *PointerSchema) Parse(data any, dest any, options ...ExecOption) ZogIssueMap {
-	errs := p.NewErrsMap()
+func (v *PointerSchema) Parse(data any, dest any, options ...ExecOption) ZogIssueList {
+	errs := p.NewErrsList()
 	defer errs.Free()
 	ctx := p.NewExecCtx(errs, conf.IssueFormatter)
 	defer ctx.Free()
@@ -49,7 +49,7 @@ func (v *PointerSchema) Parse(data any, dest any, options ...ExecOption) ZogIssu
 	defer sctx.Free()
 	v.process(sctx)
 
-	return errs.M
+	return errs.List
 }
 
 func (v *PointerSchema) process(ctx *p.SchemaCtx) {
@@ -92,8 +92,8 @@ func (v *PointerSchema) process(ctx *p.SchemaCtx) {
 }
 
 // Validates a pointer pointer
-func (v *PointerSchema) Validate(data any, options ...ExecOption) ZogIssueMap {
-	errs := p.NewErrsMap()
+func (v *PointerSchema) Validate(data any, options ...ExecOption) ZogIssueList {
+	errs := p.NewErrsList()
 	defer errs.Free()
 	ctx := p.NewExecCtx(errs, conf.IssueFormatter)
 	defer ctx.Free()
@@ -103,7 +103,7 @@ func (v *PointerSchema) Validate(data any, options ...ExecOption) ZogIssueMap {
 	path := p.NewPathBuilder()
 	defer path.Free()
 	v.validate(ctx.NewValidateSchemaCtx(data, path, v.getType()))
-	return errs.M
+	return errs.List
 }
 
 func (v *PointerSchema) validate(ctx *p.SchemaCtx) {

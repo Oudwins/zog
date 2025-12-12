@@ -85,7 +85,7 @@ func main() {
 		"age":  "", // won't return an error because fields are optional by default
 	}
 	errsMap := userSchema.Parse(m, &u)
-	if errsMap != nil {
+	if errs != nil {
 		// handle errors -> see Errors section
 	}
 	u.Name // "Zog"
@@ -103,8 +103,8 @@ func main() {
 		Name: "Zog",
 		Age:  0, // wont return an error because fields are optional by default otherwise it will error
 	}
-	errsMap := userSchema.Validate(&u)
-	if errsMap != nil {
+	errs := userSchema.Validate(&u)
+	if errs != nil {
 		// handle errors -> see Errors section
 	}
 }
@@ -148,7 +148,8 @@ err := envSchema.Parse(zenv.NewDataProvider(), &envs)
 
 ```go
 var t = time.Time
-errsList := Time().Required().Parse("2020-01-01T00:00:00Z", &t)
+// All schemas now return ZogIssueList
+errs := Time().Required().Parse("2020-01-01T00:00:00Z", &t)
 ```
 
 #### **7 Transform Data without limits**

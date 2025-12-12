@@ -23,7 +23,7 @@ func TestValidateSliceRequired(t *testing.T) {
 	if len(errs) == 0 {
 		t.Errorf("Expected errors, got none")
 	}
-	tutils.VerifyDefaultIssueMessagesMap(t, errs)
+	tutils.VerifyDefaultIssueMessages(t, errs)
 }
 
 func TestValidateSliceOptional(t *testing.T) {
@@ -82,7 +82,7 @@ func TestValidateSliceLen(t *testing.T) {
 	if len(errs) == 0 {
 		t.Errorf("Expected errors, got none")
 	}
-	tutils.VerifyDefaultIssueMessagesMap(t, errs)
+	tutils.VerifyDefaultIssueMessages(t, errs)
 }
 
 func TestValidateSliceMin(t *testing.T) {
@@ -98,7 +98,7 @@ func TestValidateSliceMin(t *testing.T) {
 	if len(errs) == 0 {
 		t.Errorf("Expected errors, got none")
 	}
-	tutils.VerifyDefaultIssueMessagesMap(t, errs)
+	tutils.VerifyDefaultIssueMessages(t, errs)
 }
 
 func TestValidateSliceMax(t *testing.T) {
@@ -114,7 +114,7 @@ func TestValidateSliceMax(t *testing.T) {
 	if len(errs) == 0 {
 		t.Errorf("Expected errors, got none")
 	}
-	tutils.VerifyDefaultIssueMessagesMap(t, errs)
+	tutils.VerifyDefaultIssueMessages(t, errs)
 }
 
 func TestValidateSliceContains(t *testing.T) {
@@ -130,7 +130,7 @@ func TestValidateSliceContains(t *testing.T) {
 	if len(errs) == 0 {
 		t.Errorf("Expected errors, got none")
 	}
-	tutils.VerifyDefaultIssueMessagesMap(t, errs)
+	tutils.VerifyDefaultIssueMessages(t, errs)
 }
 
 func TestValidateSliceCustomTest(t *testing.T) {
@@ -152,8 +152,8 @@ func TestValidateSliceCustomTest(t *testing.T) {
 	if len(errs) == 0 {
 		t.Errorf("Expected errors, got none")
 	}
-	assert.Equal(t, "custom", errs["$root"][0].Message)
-	// assert.Equal(t, "custom_test", errs["$root"][0].Code())
+	assert.Equal(t, "custom", errs[0].Message)
+	// assert.Equal(t, "custom_test", rootErrs[0].Code())
 }
 
 // TODO not yet supported
@@ -203,16 +203,19 @@ func TestValidateSliceMultipleValidators(t *testing.T) {
 	dest = []string{"wrong"}
 	errs = validator.Validate(&dest)
 	assert.NotEmpty(t, errs)
-	assert.Contains(t, Issues.SanitizeList(errs["$root"]), "too short")
-	assert.Contains(t, Issues.SanitizeList(errs["$root"]), "must contain test")
-	assert.Len(t, errs["$root"], 2)
+	m := Issues.Flatten(errs)
+	rootErrs := m["zconst.ISSUE_KEY_ROOT"]
+	assert.Contains(t, rootErrs, "too short")
+	assert.Contains(t, rootErrs, "must contain test")
+	assert.Len(t, rootErrs, 2)
 
 	dest = []string{"a", "b", "c", "d", "e"}
 	errs = validator.Validate(&dest)
 	assert.NotEmpty(t, errs)
-	assert.Contains(t, Issues.SanitizeList(errs["$root"]), "too long")
-	assert.Contains(t, Issues.SanitizeList(errs["$root"]), "must contain test")
-	assert.Len(t, errs["$root"], 2)
+	rootErrs = Issues.Flatten(errs)["zconst.ISSUE_KEY_ROOT"]
+	assert.Contains(t, rootErrs, "too long")
+	assert.Contains(t, rootErrs, "must contain test")
+	assert.Len(t, rootErrs, 2)
 }
 
 func TestValidateSliceNot(t *testing.T) {
@@ -248,7 +251,7 @@ func TestValidateSliceNot(t *testing.T) {
 			errs := tc.schema.Validate(&tc.value)
 			if tc.expectErr {
 				assert.NotEmpty(t, errs)
-				tutils.VerifyDefaultIssueMessagesMap(t, errs)
+				tutils.VerifyDefaultIssueMessages(t, errs)
 			} else {
 				assert.Empty(t, errs)
 			}

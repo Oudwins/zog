@@ -106,20 +106,21 @@ func FreeIssue(i *ZogIssue) {
 	ZogIssuePool.Put(i)
 }
 
-// list of errors. This is returned by processors for simple types (e.g. strings, numbers, booleans)
+// ZogIssueList is the unified return type for all schema Parse/Validate operations
 type ZogIssueList = []*ZogIssue
 
-// map of errors. This is returned by processors for complex types (e.g. maps, slices, structs)
+// Deprecated: ZogIssueMap is deprecated. All schemas now return ZogIssueList.
+// Users should migrate to using ZogIssueList and access paths via issue.Path
 type ZogIssueMap = map[string]ZogIssueList
 
-// INTERNAL ONLY: Interface used to add errors during parsing & validation. It represents a group of errors (map or slice)
+// INTERNAL ONLY: Interface used to add errors during parsing & validation. It represents a group of errors
 type ZogIssues interface {
 	Add(path string, err *ZogIssue)
 	IsEmpty() bool
 	Free()
 }
 
-// internal only
+// ErrsList - internal structure for collecting issues during schema execution
 type ErrsList struct {
 	List ZogIssueList
 }
@@ -133,52 +134,16 @@ func NewErrsList() *ErrsList {
 
 func (e *ErrsList) Add(path string, err *ZogIssue) {
 	if e.List == nil {
-		e.List = make(ZogIssueList, 0, 2)
+		e.List = make(ZogIssueList, 0, 4) // Slightly larger initial capacity
 	}
+	// Path is already set on the issue by SchemaCtx.Issue() or IssueFrom* methods
 	e.List = append(e.List, err)
 }
 
 func (e *ErrsList) IsEmpty() bool {
-	return e.List == nil
+	return e.List == nil || len(e.List) == 0
 }
 
 func (e *ErrsList) Free() {
 	InternalIssueListPool.Put(e)
-}
-
-// map implementation of Errs
-type ErrsMap struct {
-	M ZogIssueMap
-}
-
-// Factory for errsMap
-func NewErrsMap() *ErrsMap {
-	m := InternalIssueMapPool.Get().(*ErrsMap)
-	m.M = nil
-	return m
-}
-
-func (s *ErrsMap) Add(p string, err *ZogIssue) {
-	// checking if its the first error
-	if s.M == nil {
-		s.M = ZogIssueMap{}
-		s.M[zconst.ISSUE_KEY_FIRST] = []*ZogIssue{err}
-	}
-
-	path := p
-	if path == "" {
-		path = zconst.ISSUE_KEY_ROOT
-	}
-	if _, ok := s.M[path]; !ok {
-		s.M[path] = []*ZogIssue{}
-	}
-	s.M[path] = append(s.M[path], err)
-}
-
-func (s *ErrsMap) IsEmpty() bool {
-	return s.M == nil
-}
-
-func (s *ErrsMap) Free() {
-	InternalIssueMapPool.Put(s)
 }

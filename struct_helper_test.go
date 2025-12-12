@@ -3,6 +3,7 @@ package zog
 import (
 	"testing"
 
+	"github.com/Oudwins/zog/tutils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -306,8 +307,8 @@ func TestStructExtend(t *testing.T) {
 		"age":  20,
 	}, &o)
 
-	assert.NotNil(t, errs)
-	assert.NotEmpty(t, errs["name"])
+	assert.NotEmpty(t, errs)
+	assert.NotEmpty(t, tutils.FindByPath(errs, "name"))
 
 	errs = extendedSchema.Parse(map[string]any{
 		"name": "world",
