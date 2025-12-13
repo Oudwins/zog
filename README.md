@@ -84,7 +84,7 @@ func main() {
 		"name": "Zog",
 		"age":  "", // won't return an error because fields are optional by default
 	}
-	errsMap := userSchema.Parse(m, &u)
+	errs := userSchema.Parse(m, &u)
 	if errs != nil {
 		// handle errors -> see Errors section
 	}

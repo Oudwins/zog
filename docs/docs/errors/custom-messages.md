@@ -51,13 +51,14 @@ See how our issue messages were overridden? Be careful when using this!
 
 ```go
 errs := userSchema.Parse(data, &user)
-msgs := FormatZogIssues(errs)
+msgs := FlattenZogIssues(errs)
 
-func FormatZogIssues(errs z.ZogIssueList) map[string][]string {
+// This is basically the implementation of the z.Issues.Flatten() method
+func FlattenZogIssues(errs z.ZogIssueList) map[string][]string {
 	// iterate over issues and create custom messages based on the issue code, the params and destination type
 	result := make(map[string][]string)
 	for _, issue := range errs {
-		path := issue.Path
+		path := issue.PathString()
 		if path == "" {
 			path = "$root"
 		}
