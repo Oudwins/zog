@@ -20,7 +20,7 @@ import "slices"
 
 func NewPathBuilder() *PathBuilder {
 	pb := PathBuilderPool.Get().(*PathBuilder)
-	*pb = (*pb)[:1]
+	*pb = (*pb)[:0]
 	return pb
 }
 
@@ -39,6 +39,9 @@ func (p *PathBuilder) Pop() {
 }
 
 func (p *PathBuilder) ToListClone() []string {
+	if len(*p) == 0 {
+		return nil
+	}
 	return slices.Clone(*p)
 }
 
