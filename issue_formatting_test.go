@@ -438,3 +438,224 @@ func TestTreeify_ArrayItemsWithoutErrorsShouldBeNil_Integration(t *testing.T) {
 	errors := item1["errors"].([]string)
 	assert.Greater(t, len(errors), 0, "Item at index 1 should have at least one error")
 }
+
+// ============================================
+// Tests for Prettify
+// ============================================
+
+func TestPrettify_EmptyList(t *testing.T) {
+	issues := ZogIssueList{}
+	result := Issues.Prettify(issues)
+
+	assert.Equal(t, "", result)
+}
+
+func TestPrettify_SingleIssueNoPath_NilPath(t *testing.T) {
+	issues := ZogIssueList{
+		{Path: nil, Message: "is required"},
+	}
+	result := Issues.Prettify(issues)
+
+	assert.Equal(t, "✖ is required", result)
+}
+
+func TestPrettify_SingleIssueNoPath_EmptySlice(t *testing.T) {
+	issues := ZogIssueList{
+		{Path: []string{}, Message: "validation failed"},
+	}
+	result := Issues.Prettify(issues)
+
+	assert.Equal(t, "✖ validation failed", result)
+}
+
+func TestPrettify_SingleIssueSimplePath(t *testing.T) {
+	issues := ZogIssueList{
+		{Path: []string{"name"}, Message: "is required"},
+	}
+	result := Issues.Prettify(issues)
+
+	assert.Equal(t, "✖ is required\n  → at name", result)
+}
+
+func TestPrettify_SingleIssueNestedPath(t *testing.T) {
+	issues := ZogIssueList{
+		{Path: []string{"user", "address", "city"}, Message: "is required"},
+	}
+	result := Issues.Prettify(issues)
+
+	assert.Equal(t, "✖ is required\n  → at user.address.city", result)
+}
+
+func TestPrettify_SingleIssueArrayIndexBracketNotation(t *testing.T) {
+	issues := ZogIssueList{
+		{Path: []string{"users", "[0]", "name"}, Message: "is required"},
+	}
+	result := Issues.Prettify(issues)
+
+	assert.Equal(t, "✖ is required\n  → at users[0].name", result)
+}
+
+func TestPrettify_SingleIssueNumericStringIndex(t *testing.T) {
+	issues := ZogIssueList{
+		{Path: []string{"items", "0"}, Message: "invalid value"},
+	}
+	result := Issues.Prettify(issues)
+
+	// Note: FlattenPath doesn't convert numeric strings to bracket notation
+	// It outputs them as-is: "items.0"
+	assert.Equal(t, "✖ invalid value\n  → at items.0", result)
+}
+
+func TestPrettify_MultipleIssuesBothNoPaths(t *testing.T) {
+	issues := ZogIssueList{
+		{Path: nil, Message: "error one"},
+		{Path: []string{}, Message: "error two"},
+	}
+	result := Issues.Prettify(issues)
+
+	assert.Equal(t, "✖ error one\n✖ error two", result)
+}
+
+func TestPrettify_MultipleIssuesBothWithPaths(t *testing.T) {
+	issues := ZogIssueList{
+		{Path: []string{"name"}, Message: "is required"},
+		{Path: []string{"email"}, Message: "must be valid"},
+	}
+	result := Issues.Prettify(issues)
+
+	expected := "✖ is required\n  → at name\n✖ must be valid\n  → at email"
+	assert.Equal(t, expected, result)
+}
+
+func TestPrettify_MultipleIssuesMixedPaths(t *testing.T) {
+	issues := ZogIssueList{
+		{Path: nil, Message: "root error"},
+		{Path: []string{"name"}, Message: "name error"},
+		{Path: []string{"user", "email"}, Message: "email error"},
+	}
+	result := Issues.Prettify(issues)
+
+	expected := "✖ root error\n✖ name error\n  → at name\n✖ email error\n  → at user.email"
+	assert.Equal(t, expected, result)
+}
+
+func TestPrettify_ManyIssuesNewlineSeparation(t *testing.T) {
+	issues := ZogIssueList{
+		{Path: []string{"field1"}, Message: "error 1"},
+		{Path: []string{"field2"}, Message: "error 2"},
+		{Path: []string{"field3"}, Message: "error 3"},
+		{Path: []string{"field4"}, Message: "error 4"},
+		{Path: []string{"field5"}, Message: "error 5"},
+	}
+	result := Issues.Prettify(issues)
+
+	expected := "✖ error 1\n  → at field1\n✖ error 2\n  → at field2\n✖ error 3\n  → at field3\n✖ error 4\n  → at field4\n✖ error 5\n  → at field5"
+	assert.Equal(t, expected, result)
+}
+
+func TestPrettify_PathWithEmptyStringSegment(t *testing.T) {
+	// Path with single empty string flattens to empty, so no path should be shown
+	issues := ZogIssueList{
+		{Path: []string{""}, Message: "some error"},
+	}
+	result := Issues.Prettify(issues)
+
+	assert.Equal(t, "✖ some error", result)
+}
+
+func TestPrettify_SpecialCharactersInMessage(t *testing.T) {
+	issues := ZogIssueList{
+		{Path: []string{"name"}, Message: `Unrecognized key: "extraKey"`},
+	}
+	result := Issues.Prettify(issues)
+
+	assert.Equal(t, `✖ Unrecognized key: "extraKey"`+"\n  → at name", result)
+}
+
+func TestPrettify_UnicodeCharactersInMessage(t *testing.T) {
+	issues := ZogIssueList{
+		{Path: []string{"name"}, Message: "Invalid character: 中文"},
+	}
+	result := Issues.Prettify(issues)
+
+	assert.Equal(t, "✖ Invalid character: 中文\n  → at name", result)
+}
+
+func TestPrettify_VeryLongMessage(t *testing.T) {
+	longMessage := "This is a very long error message that contains many words and should still be formatted correctly even though it is quite lengthy and might span multiple lines when displayed"
+	issues := ZogIssueList{
+		{Path: []string{"description"}, Message: longMessage},
+	}
+	result := Issues.Prettify(issues)
+
+	assert.Equal(t, "✖ "+longMessage+"\n  → at description", result)
+}
+
+func TestPrettify_DeeplyNestedPath(t *testing.T) {
+	issues := ZogIssueList{
+		{Path: []string{"a", "b", "c", "d", "e", "f"}, Message: "deep error"},
+	}
+	result := Issues.Prettify(issues)
+
+	assert.Equal(t, "✖ deep error\n  → at a.b.c.d.e.f", result)
+}
+
+func TestPrettify_MixedArrayIndicesAndProperties(t *testing.T) {
+	issues := ZogIssueList{
+		{Path: []string{"users", "[0]", "address", "city"}, Message: "city required"},
+	}
+	result := Issues.Prettify(issues)
+
+	assert.Equal(t, "✖ city required\n  → at users[0].address.city", result)
+}
+
+func TestPrettify_MultipleArrayIndices(t *testing.T) {
+	issues := ZogIssueList{
+		{Path: []string{"matrix", "[0]", "[1]", "value"}, Message: "invalid"},
+	}
+	result := Issues.Prettify(issues)
+
+	assert.Equal(t, "✖ invalid\n  → at matrix[0][1].value", result)
+}
+
+func TestPrettify_IssueWithQuotesInMessage(t *testing.T) {
+	issues := ZogIssueList{
+		{Path: []string{"key"}, Message: `Value must be one of: "option1", "option2", "option3"`},
+	}
+	result := Issues.Prettify(issues)
+
+	assert.Equal(t, `✖ Value must be one of: "option1", "option2", "option3"`+"\n  → at key", result)
+}
+
+func TestPrettify_IssueWithNewlineInMessage(t *testing.T) {
+	issues := ZogIssueList{
+		{Path: []string{"text"}, Message: "Line one\nLine two"},
+	}
+	result := Issues.Prettify(issues)
+
+	assert.Equal(t, "✖ Line one\nLine two\n  → at text", result)
+}
+
+func TestPrettify_IssueWithEmptyMessage(t *testing.T) {
+	issues := ZogIssueList{
+		{Path: []string{"field"}, Message: ""},
+	}
+	result := Issues.Prettify(issues)
+
+	assert.Equal(t, "✖ \n  → at field", result)
+}
+
+func TestPrettify_ComplexRealWorldExample(t *testing.T) {
+	// Example from utils.go documentation
+	issues := ZogIssueList{
+		{Path: nil, Message: `Unrecognized key: "extraKey"`},
+		{Path: []string{"username"}, Message: "Invalid input: expected string, received number"},
+		{Path: []string{"favoriteNumbers", "[1]"}, Message: "Invalid input: expected number, received string"},
+	}
+	result := Issues.Prettify(issues)
+
+	expected := `✖ Unrecognized key: "extraKey"` + "\n" +
+		"✖ Invalid input: expected string, received number\n  → at username\n" +
+		"✖ Invalid input: expected number, received string\n  → at favoriteNumbers[1]"
+	assert.Equal(t, expected, result)
+}
