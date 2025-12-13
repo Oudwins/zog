@@ -132,6 +132,28 @@ func (i *issueHelpers) Treeify(issues ZogIssueList) map[string]any {
 	return p.Treeify(issues)
 }
 
+// Prettify formats a ZogIssueList into a human-readable string representation.
+// Each issue is displayed with a "✖" prefix, and issues with paths include
+// the path information on a separate line with "→ at" prefix.
+//
+// Example:
+//
+//	errs := ZogIssueList{
+//		{Path: nil, Message: `Unrecognized key: "extraKey"`},
+//		{Path: []string{"username"}, Message: "Invalid input: expected string, received number"},
+//		{Path: []string{"favoriteNumbers", "[1]"}, Message: "Invalid input: expected number, received string"},
+//	}
+//	pretty := Issues.Prettify(errs)
+//	// Output:
+//	// ✖ Unrecognized key: "extraKey"
+//	// ✖ Invalid input: expected string, received number
+//	//   → at username
+//	// ✖ Invalid input: expected number, received string
+//	//   → at favoriteNumbers[1]
+func (i *issueHelpers) Prettify(issues ZogIssueList) string {
+	return p.Prettify(issues)
+}
+
 // Collect returns issues to the pool for reuse.
 // This can help make Zog more performant by reusing issue structs.
 func (i *issueHelpers) Collect(issues ZogIssueList) {

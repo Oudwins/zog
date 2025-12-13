@@ -149,3 +149,32 @@ func parseArrayIndex(segment string) (int, bool) {
 
 	return 0, false
 }
+
+func Prettify(issues ZogIssueList) string {
+	if len(issues) == 0 {
+		return ""
+	}
+
+	sb := NewStringBuilder()
+	defer FreeStringBuilder(sb)
+
+	for i, issue := range issues {
+		if i > 0 {
+			sb.WriteString("\n")
+		}
+
+		sb.WriteString("✖ ")
+		sb.WriteString(issue.Message)
+
+		if len(issue.Path) > 0 {
+			path := FlattenPath(issue.Path)
+			if path != "" {
+				sb.WriteString("\n")
+				sb.WriteString("  → at ")
+				sb.WriteString(path)
+			}
+		}
+	}
+
+	return sb.String()
+}
