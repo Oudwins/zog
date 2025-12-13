@@ -10,7 +10,7 @@ toc_max_heading_level: 4
 
 ## Simple Custom Tests - Aka Zod's `refine`
 
-All schemas contain the `TestFunc()` method which can be used to create a simple custom test in a similar way to Zod's `refine` method. The `TestFunc()` method takes a `ValidateFunc` as an argument. This is a function that takes the data as input and returns a boolean indicating if it is valid or not. If you return `false` from the function Zog will create a [ZogIssue](/errors). For example:
+All schemas contain the `TestFunc()` method which can be used to create a simple custom test in a similar way to Zod's `refine` method. The `TestFunc()` method takes a `ValidateFunc` as an argument. This is a function that takes the data as input and returns a boolean indicating if it is valid or not. If you return `false` from the function Zog will create a [ZogIssue](/errors/Overview). For example:
 
 ```go
 z.String().TestFunc(func(data *string, ctx z.Ctx) bool { // notice that here Zog already knows you need to pass a *string to the test.
@@ -34,7 +34,7 @@ z.Struct(z.Shape{
 
 ## Complex Custom Tests - Aka Zod's `superRefine`
 
-For complex tests you can use the `schema.TestFunc()` method but it is recommended that you use the `schema.Test()` method as it provides a bit more flexbility. This is quite simple to do using the [zog context](/context), lets look at an example that will execute a DB call to verify a user's session is valid:
+For complex tests you can use the `schema.TestFunc()` method but it is recommended that you use the `schema.Test()` method as it provides a bit more flexbility. This is quite simple to do using the [zog context](/advanced/context), lets look at an example that will execute a DB call to verify a user's session is valid:
 
 ```go
 sessionSchema := z.String().Test(z.Test{
