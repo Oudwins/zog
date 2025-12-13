@@ -27,7 +27,7 @@ type ZogIssue struct {
 	// Code is the unique identifier for the issue. Generally also the ID for the Test that caused the issue. See below for a full list
 	Code zconst.ZogIssueCode
 	// Path is the path to the field that caused the issue
-	Path string
+	Path []string
 	// Value is the data value that caused the issue.
 	// If using Schema.Parse(data, dest) then this will be the value of data.
 	Value any
@@ -56,21 +56,22 @@ type ZogIssueList = []*ZogIssue
 Each issue contains a `Path` field that indicates where in your data structure the issue occurred:
 
 ```go
-// String schema - Path is empty for root-level primitive
+// String schema - Path is nil for root-level primitive
 errList := z.String().Min(5).Email().Parse("foo", &dest)
-// errList[0].Path = "", errList[0].Message = "min length is 5"
+// errList[0].Path = nil, errList[0].Message = "min length is 5"
 
-// Struct schema - Path contains the field name
+// Struct schema - Path contains the field name as a slice
 errList := z.Struct(z.Shape{"name": z.String().Min(5)}).Parse(data, &dest)
-// errList[0].Path = "name", errList[0].Message = "min length is 5"
+// errList[0].Path = []string{"name"}, errList[0].Message = "min length is 5"
 
-// Nested structs use dot notation
+// Nested structs and slices - Path is a slice of path segments
 errList := z.Struct(z.Shape{
     "address": z.Struct(z.Shape{
         "streets": z.Slice(z.String().Min(10)),
     }),
 }).Parse(data, &dest)
-// errList[0].Path = "address.streets[0]", errList[0].Message = "min length is 10"
+// errList[0].Path = []string{"address", "streets", "[0]"}, errList[0].Message = "min length is 10"
+// You can convert Path to a string using Issues.FlattenPath(issue.Path) or issue.PathString()
 ```
 
 ## Issue Codes

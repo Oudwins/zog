@@ -24,17 +24,17 @@ errs;
 [
   {
     code: 'prefix',
-    path: "[0]"
+    path: []string{"[0]"}
     message: "string must start with 'PREFIX_'"
   },
   {
     code: 'prefix',
-    path: "[1]"
+    path: []string{"[1]"}
     message: "string must start with 'PREFIX_'"
   },
   {
 	code: "min",
-	path: "",
+	path: nil,
 	message: "slice must contain at least 3 items"
   }
 ]
@@ -55,6 +55,6 @@ This converts the errors list to a `map[path][]messages`. For the example above 
 > **How does flatten logic work?**
 > It follows a few simple rules:
 >
-> 1. issues with an empty path will be assigned to `$root` reserved key
-> 2. Struct/map keys are mapped to their key names and joined by `.` (For example `user.firstname` where the path is first user key inside struct/map then its firstname key)
-> 3. Slices are mapped to their index and can be appended to a previous struct/map key. For example `[0]`, `[0].firstname` and `users[0].firstname` are all valid keys
+> 1. issues with a nil or empty path will be assigned to `$root` reserved key
+> 2. Struct/map keys are mapped to their key names and joined by `.` (For example `user.firstname` where the path is `[]string{"user", "firstname"}`)
+> 3. Slices are mapped to their index and can be appended to a previous struct/map key. For example `[]string{"[0]"}`, `[]string{"[0]", "firstname"}` and `[]string{"users", "[0]", "firstname"}` are all valid paths

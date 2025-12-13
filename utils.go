@@ -30,20 +30,69 @@ type issueHelpers struct {
 
 var Issues = issueHelpers{}
 
+// FlattenPath converts a slice of path segments into a flattened string path.
+//
+// Example:
+//
+//	path := Issues.FlattenPath([]string{"user", "name"})
+//	// Before: []string{"user", "name"}
+//	// After:  "user.name"
 func (i *issueHelpers) FlattenPath(path []string) string {
 	return p.FlattenPath(path)
 }
 
+// Flatten converts a ZogIssueList into a map of flattened paths to error messages.
+//
+// Example:
+//
+//	errs := ZogIssueList{
+//		{Path: []string{"user", "name"}, Message: "must be at least 3 characters"},
+//		{Path: []string{"user", "email"}, Message: "invalid email format"},
+//		{Path: nil, Message: "validation failed"},
+//	}
+//	flattened := Issues.Flatten(errs)
+//	// Before: ZogIssueList with paths []string{"user", "name"}, []string{"user", "email"}, nil
+//	// After:  map[string][]string{
+//	//   "user.name":  []string{"must be at least 3 characters"},
+//	//   "user.email": []string{"invalid email format"},
+//	//   "zconst.ISSUE_KEY_ROOT": []string{"validation failed"},
+//	// }
 func (i *issueHelpers) Flatten(issues ZogIssueList) map[string][]string {
 	return p.Flatten(issues)
 }
 
+// FlattenAndCollect flattens issues and returns them to the pool for reuse.
+//
+// Example:
+//
+//	errs := ZogIssueList{
+//		{Path: []string{"user", "name"}, Message: "must be at least 3 characters"},
+//	}
+//	flattened := Issues.FlattenAndCollect(errs)
+//	// Before: ZogIssueList with issues
+//	// After:  map[string][]string{"user.name": []string{"must be at least 3 characters"}}
+//	//         Issues are now returned to the pool and can be reused
 func (i *issueHelpers) FlattenAndCollect(issues ZogIssueList) map[string][]string {
 	flattened := i.Flatten(issues)
 	i.Collect(issues)
 	return flattened
 }
 
+// GroupByFlattenedPath groups issues by their flattened path.
+//
+// Example:
+//
+//	errs := ZogIssueList{
+//		{Path: []string{"user", "name"}, Message: "must be at least 3 characters"},
+//		{Path: []string{"user", "name"}, Message: "cannot be empty"},
+//		{Path: []string{"user", "email"}, Message: "invalid email format"},
+//	}
+//	grouped := Issues.GroupByFlattenedPath(errs)
+//	// Before: ZogIssueList with mixed paths
+//	// After:  map[string]ZogIssueList{
+//	//   "user.name":  ZogIssueList{...}, // 2 issues
+//	//   "user.email": ZogIssueList{...}, // 1 issue
+//	// }
 func (i *issueHelpers) GroupByFlattenedPath(issues ZogIssueList) map[string]ZogIssueList {
 	return p.GroupByFlattenedPath(issues)
 }
