@@ -44,7 +44,7 @@ func VerifyDefaultIssueMessagesMap(t *testing.T, errs internals.ZogIssueMap) {
 func FindByPath(errs internals.ZogIssueList, path string) internals.ZogIssueList {
 	var result internals.ZogIssueList
 	for _, e := range errs {
-		if e.Path == path {
+		if internals.FlattenPath(e.Path) == path {
 			result = append(result, e)
 		}
 	}
@@ -54,7 +54,7 @@ func FindByPath(errs internals.ZogIssueList, path string) internals.ZogIssueList
 // HasPath checks if any issue has the given path
 func HasPath(errs internals.ZogIssueList, path string) bool {
 	for _, e := range errs {
-		if e.Path == path {
+		if internals.FlattenPath(e.Path) == path {
 			return true
 		}
 	}
