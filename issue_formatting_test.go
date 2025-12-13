@@ -392,3 +392,49 @@ func TestIssuesHelper_Treeify(t *testing.T) {
 	fieldProp := properties["field"].(map[string]any)
 	assert.Contains(t, fieldProp["errors"].([]string), "field error")
 }
+
+func TestTreeify_ArrayItemsWithoutErrorsShouldBeNil(t *testing.T) {
+	// Test that array items without errors remain nil instead of empty error objects
+	// This simulates: z.Slice(z.Int().Min(10)) with input [10, 1]
+	// Index 0 (10) passes validation, index 1 (1) fails
+	issues := ZogIssueList{
+		{Path: []string{"[1]"}, Message: "min 10"},
+	}
+	result := Issues.Treeify(issues)
+
+	properties := result["properties"].(map[string]any)
+	items := properties["items"].([]any)
+
+	// Should have 2 items: index 0 is nil (no error), index 1 has error
+	assert.Len(t, items, 2)
+	assert.Nil(t, items[0], "Item at index 0 should be nil when it has no errors")
+
+	item1 := items[1].(map[string]any)
+	assert.NotNil(t, item1)
+	errors := item1["errors"].([]string)
+	assert.Len(t, errors, 1)
+	assert.Equal(t, "min 10", errors[0])
+}
+
+func TestTreeify_ArrayItemsWithoutErrorsShouldBeNil_Integration(t *testing.T) {
+	// Integration test with actual schema: z.Slice(z.Int().GTE(10))
+	// Input: [10, 1] - first item passes, second fails
+	schema := Slice(Int().GTE(10))
+
+	input := []int{10, 1}
+	errs := schema.Validate(&input)
+
+	result := Issues.Treeify(errs)
+
+	properties := result["properties"].(map[string]any)
+	items := properties["items"].([]any)
+
+	// Should have 2 items: index 0 is nil (no error), index 1 has error
+	assert.Len(t, items, 2, "Should have 2 items in the array")
+	assert.Nil(t, items[0], "Item at index 0 should be nil when it has no errors")
+
+	item1 := items[1].(map[string]any)
+	assert.NotNil(t, item1, "Item at index 1 should have error structure")
+	errors := item1["errors"].([]string)
+	assert.Greater(t, len(errors), 0, "Item at index 1 should have at least one error")
+}
