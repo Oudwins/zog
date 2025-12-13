@@ -148,3 +148,65 @@ The resulting tree structure:
 > 3. Array indices create an `items` array within the parent property, with each index becoming an element in the array
 > 4. Numeric string segments (like `"0"`) are treated as array indices and create `items` arrays
 > 5. Each node in the tree has an `errors` array, even if empty, to maintain consistent structure
+
+## `z.Issues.Prettify()`
+
+This formats the errors list into a human-readable string representation. Each issue is displayed with a "✖" prefix, and issues with paths include the path information on a separate line with a "→ at" prefix. This format is ideal for displaying errors directly to users in console output or error messages.
+
+For the example above, `Prettify` would generate:
+
+```
+✖ string must start with 'PREFIX_'
+  → at [0]
+✖ string must start with 'PREFIX_'
+  → at [1]
+✖ slice must contain at least 3 items
+```
+
+Here's a more complex example:
+
+```go
+schema := z.Struct{
+  "user": z.Struct{
+    "name": z.String().Min(3),
+    "email": z.String().Email(),
+  },
+  "users": z.Slice(z.Struct{
+    "name": z.String().Required(),
+  }),
+}
+
+data := map[string]any{
+  "user": map[string]any{
+    "name": "ab",  // too short
+    "email": "invalid",  // not an email
+  },
+  "users": []any{
+    map[string]any{"name": ""},  // required
+  },
+}
+
+errs := schema.Parse(data, &dest)
+pretty := z.Issues.Prettify(errs)
+```
+
+The resulting formatted string:
+
+```
+✖ string must be at least 3 characters
+  → at user.name
+✖ string must be a valid email
+  → at user.email
+✖ string is required
+  → at users[0].name
+```
+
+> **How does prettify logic work?**
+> The formatting follows these rules:
+>
+> 1. Empty issue lists return an empty string
+> 2. Each issue message is prefixed with "✖ " (checkmark symbol)
+> 3. Issues with paths (that flatten to a non-empty string) include the path on a new line with " → at " prefix
+> 4. Multiple issues are separated by newlines (`\n`)
+> 5. Root-level errors (nil or empty path) are displayed without a path line
+> 6. Paths are flattened using the same logic as `Flatten()`, so nested properties use dot notation (e.g., `user.name`) and array indices use bracket notation (e.g., `users[0]`)
