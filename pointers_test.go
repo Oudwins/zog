@@ -17,8 +17,8 @@ func TestPtrPrimitive(t *testing.T) {
 	assert.Nil(t, out)
 
 	err = s.Parse("not_empty", &out)
-	assert.NotNil(t, err)
-	tutils.VerifyDefaultIssueMessagesMap(t, err)
+	assert.NotEmpty(t, err)
+	tutils.VerifyDefaultIssueMessages(t, err)
 	assert.Equal(t, 0, *out)
 
 	err = s.Parse(10, &out)
@@ -38,10 +38,10 @@ func TestPtrParseFormatter(t *testing.T) {
 	})
 	validator := Ptr(Int().GTE(10)).NotNil(Message("test1"))
 	errs := validator.Parse(nil, &dest, fmt)
-	assert.Equal(t, "test1", errs[zconst.ISSUE_KEY_ROOT][0].Message)
+	assert.Equal(t, "test1", errs[0].Message)
 	validator2 := Ptr(Int()).NotNil()
 	errs2 := validator2.Parse(nil, &dest, fmt)
-	assert.Equal(t, "test2", errs2[zconst.ISSUE_KEY_ROOT][0].Message)
+	assert.Equal(t, "test2", errs2[0].Message)
 }
 
 func TestPtrParseSetCoercerPassThrough(t *testing.T) {
@@ -88,9 +88,9 @@ func TestPtrPtrInStruct(t *testing.T) {
 	var out TestStruct
 	// empty input
 	err := s.Parse(nil, &out)
-	assert.NotNil(t, err)
-	assert.Equal(t, zconst.IssueCodeNotNil, err[zconst.ISSUE_KEY_FIRST][0].Code)
-	assert.Equal(t, 1, len(err[zconst.ISSUE_KEY_FIRST]))
+	assert.NotEmpty(t, err)
+	assert.Equal(t, zconst.IssueCodeNotNil, err[0].Code)
+	assert.Equal(t, 1, len(err))
 	assert.Nil(t, out.Value)
 	assert.Nil(t, out.Value2)
 	// good input
@@ -189,10 +189,10 @@ func TestPtrRequired(t *testing.T) {
 	for _, test := range tests {
 		err := schema.Parse(test.Val, &dest)
 		if test.ExpectedErr {
-			assert.NotNil(t, err)
-			assert.Equal(t, test.ErrCode, err[zconst.ISSUE_KEY_ROOT][0].Code)
+			assert.NotEmpty(t, err)
+			assert.Equal(t, test.ErrCode, err[0].Code)
 		} else {
-			assert.Nil(t, err)
+			assert.Empty(t, err)
 		}
 	}
 }

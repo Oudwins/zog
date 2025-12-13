@@ -29,9 +29,9 @@ var (
 
 // Decodes JSON data. Does not support json arrays or primitives
 /*
-- "null" -> nil -> Not accepted by zhttp -> errs["$root"]-> required issue
+- "null" -> nil -> Not accepted by zhttp -> errs["zconst.ISSUE_KEY_ROOT"]-> required issue
 - "{}" -> okay -> map[]{}
-- "" -> parsing error -> errs["$root"]-> parsing error
+- "" -> parsing error -> errs["zconst.ISSUE_KEY_ROOT"]-> parsing error
 - "1213" -> zhttp -> plain value
   - struct schema -> hey this valid input
   - "string is not an object"

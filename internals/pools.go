@@ -23,12 +23,6 @@ var InternalIssueListPool = sync.Pool{
 	},
 }
 
-var InternalIssueMapPool = sync.Pool{
-	New: func() any {
-		return &ErrsMap{}
-	},
-}
-
 var ZogIssuePool = sync.Pool{
 	New: func() any {
 		return &ZogIssue{}
@@ -73,11 +67,6 @@ func ClearPools() {
 	InternalIssueListPool = sync.Pool{
 		New: func() any {
 			return &ErrsList{}
-		},
-	}
-	InternalIssueMapPool = sync.Pool{
-		New: func() any {
-			return &ErrsMap{}
 		},
 	}
 	ZogIssuePool = sync.Pool{

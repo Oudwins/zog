@@ -102,20 +102,22 @@ func TestSetLanguagesErrsMap(t *testing.T) {
 			}
 			errs := schema.Parse(tc.input, &dest, zog.WithCtxValue(LangKey, tc.lang))
 			errs2 := schema.Validate(&dest2, zog.WithCtxValue(LangKey, tc.lang))
+			m1 := zog.Issues.Flatten(errs)
+			m2 := zog.Issues.Flatten(errs2)
 
 			if tc.expectedErr {
 				assert.NotNil(t, errs, "Expected errors, got nil")
 				assert.NotNil(t, errs2, "Expected errors, got nil")
 
-				nameErrs, ok := errs["name"]
+				nameErrs, ok := m1["name"]
 				assert.True(t, ok, "Expected errors for 'name' field")
 				assert.NotEmpty(t, nameErrs, "Expected at least one error for 'name' field")
-				assert.Equal(t, tc.expected, nameErrs[0].Message, "Unexpected error message")
+				assert.Equal(t, tc.expected, nameErrs[0], "Unexpected error message")
 
-				nameErrs2, ok2 := errs2["name"]
+				nameErrs2, ok2 := m2["name"]
 				assert.True(t, ok2, "Expected errors for 'name' field")
 				assert.NotEmpty(t, nameErrs2, "Expected at least one error for 'name' field")
-				assert.Equal(t, tc.expected, nameErrs2[0].Message, "Unexpected error message")
+				assert.Equal(t, tc.expected, nameErrs2[0], "Unexpected error message")
 			} else {
 				assert.Nil(t, errs, "Expected no errors, got: %v", errs)
 			}

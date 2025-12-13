@@ -69,7 +69,7 @@ z.Struct(z.Shape{"name": z.String(), "lastName": z.String()}).Parse(map[string]a
 
 Zog will attempt to coerce the data into the correct type. For example if you have a `z.Int()` schema and you pass in a `"1"` it will be coerced into an `int` type. This behaviour, like almost everything else in Zog, can be customized. Zog provides two main ways to customize coercion:
 
-- [Global Coercion](/configuration#coercion) - Change the default coercion behaviour for all schemas. More details on this in the [configuration page](/configuration#coercion).
+- [Global Coercion](/advanced/configuration#coercion) - Change the default coercion behaviour for all schemas. More details on this in the [configuration page](/advanced/configuration#coercion).
 - [Per schema coercers](#per-schema-coercers) - Define custom coercion functions for your schemas.
 
 #### Per schema coercers

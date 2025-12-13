@@ -42,8 +42,8 @@ func TestSliceOfStructs(t *testing.T) {
 	}
 	var team Team
 
-	errsMap := teamSchema.Parse(data, &team)
-	assert.Nil(t, errsMap)
+	errs := teamSchema.Parse(data, &team)
+	assert.Empty(t, errs)
 	assert.Len(t, team.Users, 2)
 	assert.Equal(t, team.Users[0].Name, "Jane")
 	assert.Equal(t, team.Users[1].Name, "John")
@@ -54,11 +54,12 @@ func TestSliceOfStructs(t *testing.T) {
 			map[string]interface{}{},
 		},
 	}
-	errsMap = teamSchema.Parse(data, &team)
+	errs = teamSchema.Parse(data, &team)
+	errsM := Issues.Flatten(errs)
 
-	assert.Len(t, errsMap["users[0].name"], 1)
-	assert.Len(t, errsMap["users[1].name"], 1)
-	tutils.VerifyDefaultIssueMessagesMap(t, errsMap)
+	assert.Len(t, errsM["users[0].name"], 1)
+	assert.Len(t, errsM["users[1].name"], 1)
+	tutils.VerifyDefaultIssueMessages(t, errs)
 }
 
 func TestSliceOptionalSlice(t *testing.T) {
@@ -83,7 +84,7 @@ func TestSliceRequired(t *testing.T) {
 	// Test with nil value
 	errs := schema.Parse(nil, &s)
 	assert.NotNil(t, errs)
-	assert.Equal(t, customMsg, errs["$root"][0].Message)
+	assert.Equal(t, customMsg, errs[0].Message)
 
 	// Test with empty slice
 	errs = schema.Parse([]string{}, &s)
@@ -129,11 +130,10 @@ func TestSliceErrors(t *testing.T) {
 	schema := Slice(String().Required().Min(2))
 
 	errs := schema.Parse([]any{"a", "b"}, &s)
-	assert.Len(t, errs, 3)
-	assert.NotEmpty(t, errs["[0]"])
-	assert.NotEmpty(t, errs["[1]"])
-	assert.Empty(t, errs["[2]"])
-	tutils.VerifyDefaultIssueMessagesMap(t, errs)
+	assert.Len(t, tutils.FindByPath(errs, "[0]"), 1)
+	assert.Len(t, tutils.FindByPath(errs, "[1]"), 1)
+	assert.Empty(t, tutils.FindByPath(errs, "[2]"))
+	tutils.VerifyDefaultIssueMessages(t, errs)
 }
 
 func TestSliceTransform(t *testing.T) {
@@ -165,21 +165,21 @@ func TestSliceLen(t *testing.T) {
 	assert.Nil(t, errs)
 	errs = schema.Parse(els[:1], &s)
 	assert.NotEmpty(t, errs)
-	tutils.VerifyDefaultIssueMessagesMap(t, errs)
+	tutils.VerifyDefaultIssueMessages(t, errs)
 	// min
 	schema = Slice(String().Required()).Min(2)
 	errs = schema.Parse(els[:4], &s)
 	assert.Nil(t, errs)
 	errs = schema.Parse(els[:1], &s)
 	assert.NotEmpty(t, errs)
-	tutils.VerifyDefaultIssueMessagesMap(t, errs)
+	tutils.VerifyDefaultIssueMessages(t, errs)
 	// max
 	schema = Slice(String().Required()).Max(3)
 	errs = schema.Parse(els[:1], &s)
 	assert.Nil(t, errs)
 	errs = schema.Parse(els[:4], &s)
-	assert.NotNil(t, errs)
-	tutils.VerifyDefaultIssueMessagesMap(t, errs)
+	assert.NotEmpty(t, errs)
+	tutils.VerifyDefaultIssueMessages(t, errs)
 }
 
 func TestSliceContains(t *testing.T) {
@@ -195,7 +195,7 @@ func TestSliceContains(t *testing.T) {
 	schema = Slice(String()).Contains("d")
 	errs = schema.Parse(items, &s)
 	assert.NotEmpty(t, errs)
-	tutils.VerifyDefaultIssueMessagesMap(t, errs)
+	tutils.VerifyDefaultIssueMessages(t, errs)
 }
 
 func TestSliceCustomTest(t *testing.T) {
@@ -207,12 +207,12 @@ func TestSliceCustomTest(t *testing.T) {
 		return reflect.DeepEqual(input, *x)
 	}, Message("custom"))
 	errs := schema.Parse(input, &s)
-	assert.Empty(t, errs)
+	assert.Nil(t, errs)
 	assert.Equal(t, input, s)
 	errs = schema.Parse(input[1:], &s)
 	assert.NotEmpty(t, errs)
-	assert.Equal(t, "custom", errs["$root"][0].Message)
-	// assert.Equal(t, "custom_test", errs["$root"][0].Code())
+	assert.Equal(t, "custom", errs[0].Message)
+	// assert.Equal(t, "custom_test", rootErrs[0].Code())
 }
 
 func TestSliceSchemaOption(t *testing.T) {

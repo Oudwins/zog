@@ -46,7 +46,7 @@ z.Shape {
 }
 )
 */
-func IssuePath(path string) TestOption {
+func IssuePath(path []string) TestOption {
 	return func(test p.TestInterface) {
 		test.SetIssuePath(path)
 	}

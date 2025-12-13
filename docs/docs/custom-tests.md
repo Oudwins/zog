@@ -4,7 +4,7 @@ toc_min_heading_level: 2
 toc_max_heading_level: 4
 ---
 
-# Creating Custom Tests
+# Custom Tests
 
 > Please read the [Anatomy of a Schema](/core-concepts/anatomy-of-schema) page before continuing.
 
@@ -34,7 +34,7 @@ z.Struct(z.Shape{
 
 ## Complex Custom Tests - Aka Zod's `superRefine`
 
-For complex tests you can use the `schema.TestFunc()` method but it is recommended that you use the `schema.Test()` method as it provides a bit more flexbility. This is quite simple to do using the [zog context](/context), lets look at an example that will execute a DB call to verify a user's session is valid:
+For complex tests you can use the `schema.TestFunc()` method but it is recommended that you use the `schema.Test()` method as it provides more flexibility. Use the [zog context](/advanced/context) for this—here's an example that executes a DB call to verify a user's session:
 
 ```go
 sessionSchema := z.String().Test(z.Test{

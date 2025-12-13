@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/Oudwins/zog/i18n/en"
+	"github.com/Oudwins/zog/tutils"
 	"github.com/Oudwins/zog/zconst"
 	"github.com/stretchr/testify/assert"
 )
@@ -76,7 +77,7 @@ func TestValidateStructNestedStructs(t *testing.T) {
 	}
 
 	errs = validateNestedSchema.Validate(&v2)
-	assert.NotNil(t, errs)
+	assert.NotEmpty(t, errs)
 }
 
 func TestValidateStructOptional(t *testing.T) {
@@ -135,7 +136,8 @@ func TestValidateStructCustomTestInSchema(t *testing.T) {
 
 	errs = schema.Validate(&obj)
 	assert.NotEmpty(t, errs)
-	assert.Equal(t, en.Map[zconst.TypeNumber][zconst.IssueCodeFallback], errs["num"][0].Message)
+	numErrs := tutils.FindByPath(errs, "num")
+	assert.Equal(t, en.Map[zconst.TypeNumber][zconst.IssueCodeFallback], numErrs[0].Message)
 }
 
 func TestValidateStructCustomTest(t *testing.T) {
@@ -156,7 +158,7 @@ func TestValidateStructCustomTest(t *testing.T) {
 
 	errs := schema.Validate(&obj)
 	assert.NotEmpty(t, errs)
-	assert.Equal(t, "customTest", errs["$root"][0].Message)
+	assert.Equal(t, "customTest", errs[0].Message)
 
 	obj.Str = "valid"
 	errs = schema.Validate(&obj)
@@ -206,7 +208,8 @@ func TestValidateStructPassThroughRequired(t *testing.T) {
 	var output2 TestStruct
 	errs = schema.Validate(&output2)
 	assert.NotEmpty(t, errs)
-	assert.Equal(t, zconst.IssueCodeRequired, errs["somefield"][0].Code)
+	somefieldErrs := tutils.FindByPath(errs, "somefield")
+	assert.Equal(t, zconst.IssueCodeRequired, somefieldErrs[0].Code)
 }
 
 func TestValidateStructGetType(t *testing.T) {

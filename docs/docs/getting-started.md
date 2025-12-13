@@ -43,9 +43,12 @@ func main() {
 		"name": "Zog",
 		"age":  "", // won't return an error because fields are optional by default
 	}
-	errsMap := userSchema.Parse(m, &u)
-	if errsMap != nil {
+	errs := userSchema.Parse(m, &u)
+	if errs != nil {
 		// handle errors -> see Errors section
+		for _, issue := range errs {
+			fmt.Printf("%s: %s\n", issue.Path, issue.Message)
+		}
 	}
 	u.Name // "Zog"
 	// note that this might look weird but we didn't say age was required so Zog just skipped the empty string and we are left with the uninitialized int
@@ -62,8 +65,8 @@ func main() {
 		Name: "Zog",
 		Age:  0, // wont return an error because fields are optional by default otherwise it will error
 	}
-	errsMap := userSchema.Validate(&u)
-	if errsMap != nil {
+	errs := userSchema.Validate(&u)
+	if errs != nil {
 		// handle errors -> see Errors section
 	}
 }
@@ -107,7 +110,8 @@ err := envSchema.Parse(zenv.NewDataProvider(), &envs)
 
 ```go
 var t = time.Time
-errsList := Time().Required().Parse("2020-01-01T00:00:00Z", &t)
+// All schemas now return ZogIssueList
+errs := Time().Required().Parse("2020-01-01T00:00:00Z", &t)
 ```
 
 #### **7 Transform Data without limits**

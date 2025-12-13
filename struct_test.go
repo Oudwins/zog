@@ -158,10 +158,14 @@ func TestStructOptionalFields(t *testing.T) {
 	assert.Equal(t, o.Bol, false)
 	assert.Equal(t, o.Tim, time.Time{})
 	errs = objSchema.Parse(map[string]any{}, &o)
-	assert.NotNil(t, errs)
-	assert.Equal(t, zconst.IssueCodeRequired, errs["in"][0].Code)
-	assert.Equal(t, zconst.IssueCodeRequired, errs["bol"][0].Code)
-	tutils.VerifyDefaultIssueMessagesMap(t, errs)
+	assert.NotEmpty(t, errs)
+	inErrs := tutils.FindByPath(errs, "in")
+	bolErrs := tutils.FindByPath(errs, "bol")
+	assert.NotEmpty(t, inErrs)
+	assert.NotEmpty(t, bolErrs)
+	assert.Equal(t, zconst.IssueCodeRequired, inErrs[0].Code)
+	assert.Equal(t, zconst.IssueCodeRequired, bolErrs[0].Code)
+	tutils.VerifyDefaultIssueMessages(t, errs)
 }
 
 func TestStructCustomTestInSchema(t *testing.T) {
@@ -190,7 +194,7 @@ func TestStructCustomTestInSchema(t *testing.T) {
 
 	errs := schema.Parse(data, &obj)
 	assert.NotNil(t, errs)
-	tutils.VerifyDefaultIssueMessagesMap(t, errs)
+	tutils.VerifyDefaultIssueMessages(t, errs)
 
 	data["num"] = 10
 	errs = schema.Parse(data, &obj)
@@ -217,9 +221,9 @@ func TestStructCustomTest(t *testing.T) {
 	}
 
 	errs := schema.Parse(data, &obj)
-	assert.NotNil(t, errs)
-	// assert.Equal(t, "customTest", errs["$root"][0].Code())
-	assert.Equal(t, "customTest", errs["$root"][0].Message)
+	assert.NotEmpty(t, errs)
+	// assert.Equal(t, "customTest", rootErrs[0].Code())
+	assert.Equal(t, "customTest", errs[0].Message)
 	data["str"] = "valid"
 	errs = schema.Parse(data, &obj)
 	assert.Nil(t, errs)
@@ -255,7 +259,7 @@ func TestStructFromIssue(t *testing.T) {
 	// Test with missing fields
 	errs := schema.Parse(map[string]any{}, &output)
 	assert.NotNil(t, errs)
-	tutils.VerifyDefaultIssueMessagesMap(t, errs)
+	tutils.VerifyDefaultIssueMessages(t, errs)
 
 	// Test with valid data
 	errs = schema.Parse(data, &output)
@@ -333,9 +337,9 @@ func TestStructPassThroughRequired(t *testing.T) {
 	assert.Equal(t, "someValue", output.Somefield)
 	var output2 TestStruct
 	errs = schema.Parse(nil, &output2)
-	assert.NotNil(t, errs)
-	tutils.VerifyDefaultIssueMessagesMap(t, errs)
-	assert.NotEmpty(t, errs["somefield"])
+	assert.NotEmpty(t, errs)
+	tutils.VerifyDefaultIssueMessages(t, errs)
+	assert.NotEmpty(t, tutils.FindByPath(errs, "somefield"))
 }
 
 type CustomType int

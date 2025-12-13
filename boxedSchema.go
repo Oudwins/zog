@@ -21,8 +21,8 @@ func Boxed[B any, T any](schema ZogSchema, unboxFunc UnboxFunc[B, T], boxFunc Cr
 	return &BoxedSchema[B, T]{schema: schema, unbox: unboxFunc, box: boxFunc}
 }
 
-func (s *BoxedSchema[B, T]) Parse(data any, dest any, options ...ExecOption) ZogIssueMap {
-	errs := p.NewErrsMap()
+func (s *BoxedSchema[B, T]) Parse(data any, dest any, options ...ExecOption) ZogIssueList {
+	errs := p.NewErrsList()
 	defer errs.Free()
 	ctx := p.NewExecCtx(errs, conf.IssueFormatter)
 	defer ctx.Free()
@@ -34,11 +34,11 @@ func (s *BoxedSchema[B, T]) Parse(data any, dest any, options ...ExecOption) Zog
 	sctx := ctx.NewSchemaCtx(data, dest, path, s.getType())
 	defer sctx.Free()
 	s.process(sctx)
-	return errs.M
+	return errs.List
 }
 
-func (s *BoxedSchema[B, T]) Validate(dest *B, options ...ExecOption) ZogIssueMap {
-	errs := p.NewErrsMap()
+func (s *BoxedSchema[B, T]) Validate(dest *B, options ...ExecOption) ZogIssueList {
+	errs := p.NewErrsList()
 	defer errs.Free()
 	ctx := p.NewExecCtx(errs, conf.IssueFormatter)
 	defer ctx.Free()
@@ -50,7 +50,7 @@ func (s *BoxedSchema[B, T]) Validate(dest *B, options ...ExecOption) ZogIssueMap
 	sctx := ctx.NewSchemaCtx(*dest, dest, path, s.getType())
 	defer sctx.Free()
 	s.validate(sctx)
-	return errs.M
+	return errs.List
 }
 
 func (s *BoxedSchema[B, T]) validate(ctx *p.SchemaCtx) {
