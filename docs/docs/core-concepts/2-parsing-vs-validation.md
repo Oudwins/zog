@@ -6,8 +6,8 @@ sidebar_position: 2
 
 Zog supports two main ways of processing data, both of which support the exact same schemas and can be used interchangeably without modifying the schema:
 
-- [`Schema.Parse(data, &dest, ...options)`](/core-concepts/parsing) - Parses the data into the destination pointer and returns a [ZogIssueList](/errors/Overview) if any.
-- [`Schema.Validate(&data, ...options)`](/core-concepts/validate) - Validates the data and returns a [ZogIssueList](/errors/Overview#zogissuelist) if any.
+- [`Schema.Parse(data, &dest, ...options)`](/core-concepts/parsing) - Parses the data into the destination pointer and returns a [ZogIssueList](/errors) if any.
+- [`Schema.Validate(&data, ...options)`](/core-concepts/validate) - Validates the data and returns a [ZogIssueList](/errors#zogissuelist) if any.
 
 > **You are probably wondering** > [What is the difference?](#what-is-the-difference) > [Which should I use?](#which-should-i-use)
 

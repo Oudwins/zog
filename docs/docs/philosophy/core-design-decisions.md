@@ -9,7 +9,7 @@ toc_max_heading_level: 4
 
 - All fields optional by default. Same as graphql
 - When parsing into structs, private fields are ignored (same as stdlib json.Unmarshal)
-- Errors returned by you (for example in a `Preprocess` or `Transform` function) can be the ZogIssue interface or an error. If you return an error, it will be wrapped in a ZogIssue. ZogIssue is just a struct that wraps around an error and adds a message field which is text that can be shown to the user. For more on this see [Errors](/errors/Overview)
+- Errors returned by you (for example in a `Preprocess` or `Transform` function) can be the ZogIssue interface or an error. If you return an error, it will be wrapped in a ZogIssue. ZogIssue is just a struct that wraps around an error and adds a message field which is text that can be shown to the user. For more on this see [Errors](/errors)
 - You should not depend on test execution order. They might run in parallel in the future
 
 > **A WORD OF CAUTION. [ZOG & PANICS](/philosophy/panics)**

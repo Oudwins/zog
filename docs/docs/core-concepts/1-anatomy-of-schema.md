@@ -24,7 +24,7 @@ type stringSchema struct {
 
 ## Required, Default and Catch
 
-`schema.Required()` is a boolean that indicates if the field is required. If it is required and the data is a zero value the schema will return a [ZogIssue](/errors/Overview).
+`schema.Required()` is a boolean that indicates if the field is required. If it is required and the data is a zero value the schema will return a [ZogIssue](/errors).
 
 `schema.Default(value)` sets a default value for the field. If the data is a zero value it will be replaced with this value, this takes priority over required. Tests will still run on this value.
 
