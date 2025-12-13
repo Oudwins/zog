@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/Oudwins/zog/tutils"
+	"github.com/Oudwins/zog/zconst"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -204,7 +205,7 @@ func TestValidateSliceMultipleValidators(t *testing.T) {
 	errs = validator.Validate(&dest)
 	assert.NotEmpty(t, errs)
 	m := Issues.Flatten(errs)
-	rootErrs := m["zconst.ISSUE_KEY_ROOT"]
+	rootErrs := m[zconst.ISSUE_KEY_ROOT]
 	assert.Contains(t, rootErrs, "too short")
 	assert.Contains(t, rootErrs, "must contain test")
 	assert.Len(t, rootErrs, 2)
@@ -212,7 +213,7 @@ func TestValidateSliceMultipleValidators(t *testing.T) {
 	dest = []string{"a", "b", "c", "d", "e"}
 	errs = validator.Validate(&dest)
 	assert.NotEmpty(t, errs)
-	rootErrs = Issues.Flatten(errs)["zconst.ISSUE_KEY_ROOT"]
+	rootErrs = Issues.Flatten(errs)[zconst.ISSUE_KEY_ROOT]
 	assert.Contains(t, rootErrs, "too long")
 	assert.Contains(t, rootErrs, "must contain test")
 	assert.Len(t, rootErrs, 2)

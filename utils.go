@@ -97,6 +97,41 @@ func (i *issueHelpers) GroupByFlattenedPath(issues ZogIssueList) map[string]ZogI
 	return p.GroupByFlattenedPath(issues)
 }
 
+// Treeify converts a ZogIssueList into a nested tree structure.
+// This is useful for representing errors in a hierarchical format that mirrors
+// the original data structure.
+//
+// Example:
+//
+//	errs := ZogIssueList{
+//		{Path: nil, Message: "validation failed"},
+//		{Path: []string{"user", "name"}, Message: "too short"},
+//		{Path: []string{"users", "[0]", "email"}, Message: "invalid email"},
+//	}
+//	tree := Issues.Treeify(errs)
+//	// Result:
+//	// map[string]any{
+//	//   "errors": []string{"validation failed"},
+//	//   "properties": map[string]any{
+//	//     "user": map[string]any{
+//	//       "errors": []string{},
+//	//       "name": map[string]any{"errors": []string{"too short"}},
+//	//     },
+//	//     "users": map[string]any{
+//	//       "errors": []string{},
+//	//       "items": []any{
+//	//         map[string]any{
+//	//           "errors": []string{},
+//	//           "email": map[string]any{"errors": []string{"invalid email"}},
+//	//         },
+//	//       },
+//	//     },
+//	//   },
+//	// }
+func (i *issueHelpers) Treeify(issues ZogIssueList) map[string]any {
+	return p.Treeify(issues)
+}
+
 // Collect returns issues to the pool for reuse.
 // This can help make Zog more performant by reusing issue structs.
 func (i *issueHelpers) Collect(issues ZogIssueList) {
@@ -107,6 +142,9 @@ func (i *issueHelpers) Collect(issues ZogIssueList) {
 
 // CollectOne returns a single issue to the pool for reuse.
 func (i *issueHelpers) CollectOne(issue *ZogIssue) {
+	if issue == nil {
+		return
+	}
 	p.FreeIssue(issue)
 }
 
