@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.22.0](https://github.com/Oudwins/zog/compare/v0.21.10...v0.22.0) (2025-12-14)
+
+
+### ⚠ BREAKING CHANGES
+
+* all schemas now return a issue list. Issue paths are now slices
+
+### Features
+
+* better panic message when user passes non pointer destination to parse/validate functions ([#205](https://github.com/Oudwins/zog/issues/205)) ([9570fec](https://github.com/Oudwins/zog/commit/9570fecfff4527e984c4eb7721093abc9cd7397a))
+* experimental custom schema API ([#187](https://github.com/Oudwins/zog/issues/187)) ([76a1d47](https://github.com/Oudwins/zog/commit/76a1d47c2a3827fc81df92e978a09c916c94ceeb))
+* new issue formatting utilities. ([1305e68](https://github.com/Oudwins/zog/commit/1305e689d5bc3f9a4d5e0d4cf54b8b9c3e90316f))
+
 ## [0.21.10](https://github.com/Oudwins/zog/compare/v0.21.9...v0.21.10) (2025-12-12)
 
 
