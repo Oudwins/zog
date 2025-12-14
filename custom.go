@@ -109,18 +109,20 @@ type CustomSchema struct {
 	schema EXPERIMENTAL_PUBLIC_ZOG_SCHEMA
 }
 
-func (c *CustomSchema) Process(ctx *p.SchemaCtx) {
+var _ ZogSchema = &CustomSchema{}
+
+func (c *CustomSchema) process(ctx *p.SchemaCtx) {
 	c.schema.Process(ctx)
 }
 
-func (c *CustomSchema) Validate(ctx *p.SchemaCtx) {
+func (c *CustomSchema) validate(ctx *p.SchemaCtx) {
 	c.schema.Validate(ctx)
 }
 
-func (c *CustomSchema) GetType() zconst.ZogType {
+func (c *CustomSchema) getType() zconst.ZogType {
 	return c.schema.GetType()
 }
 
-func (c *CustomSchema) SetCoercer(coercer CoercerFunc) {
+func (c *CustomSchema) setCoercer(coercer CoercerFunc) {
 	c.schema.SetCoercer(coercer)
 }
