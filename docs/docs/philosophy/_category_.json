@@ -1,0 +1,8 @@
+{
+  "label": "Philosophy",
+  "position": 400,
+  "link": {
+    "type": "generated-index",
+    "slug": "philosophy"
+  }
+}

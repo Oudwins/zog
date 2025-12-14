@@ -18,7 +18,7 @@ type ZogSchema interface {
 // You can use this to pass any complex schema around
 type ComplexZogSchema interface {
 	ZogSchema
-	Parse(val any, dest any, options ...ExecOption) ZogIssueMap
+	Parse(val any, dest any, options ...ExecOption) ZogIssueList
 }
 
 // This is a common interface for all primitive schemas (i.e strings, numbers, booleans, time.Time...)

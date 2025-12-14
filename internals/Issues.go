@@ -16,7 +16,7 @@ type ZogIssue struct {
 	// Code is the unique identifier for the issue. Generally also the ID for the Test that caused the issue.
 	Code zconst.ZogIssueCode
 	// Path is the path to the field that caused the issue
-	Path string
+	Path []string
 	// Value is the data value that caused the issue.
 	// If using Schema.Parse(data, dest) then this will be the value of data.
 	Value any
@@ -36,7 +36,7 @@ type ZogIssue struct {
 func NewZogIssue() *ZogIssue {
 	e := ZogIssuePool.Get().(*ZogIssue)
 	e.Code = ""
-	e.Path = ""
+	e.Path = nil
 	e.Value = nil
 	e.Dtype = ""
 	e.Params = nil
@@ -52,7 +52,7 @@ func (i *ZogIssue) SetCode(c zconst.ZogIssueCode) *ZogIssue {
 }
 
 // SetPath sets the path for the issue and returns the issue for chaining
-func (i *ZogIssue) SetPath(p string) *ZogIssue {
+func (i *ZogIssue) SetPath(p []string) *ZogIssue {
 	i.Path = p
 	return i
 }
@@ -102,24 +102,30 @@ func (i *ZogIssue) String() string {
 	return fmt.Sprintf("ZogIssue{Code: %v, Params: %v, Type: %v, Value: %v, Message: '%v', Error: %v}", SafeString(i.Code), SafeString(i.Params), SafeString(i.Dtype), SafeString(i.Value), SafeString(i.Message), SafeError(i.Err))
 }
 
+// Returns a stringified version of the path based on the flatten path string logic
+func (i *ZogIssue) PathString() string {
+	return FlattenPath(i.Path)
+}
+
 func FreeIssue(i *ZogIssue) {
 	ZogIssuePool.Put(i)
 }
 
-// list of errors. This is returned by processors for simple types (e.g. strings, numbers, booleans)
+// ZogIssueList is the unified return type for all schema Parse/Validate operations
 type ZogIssueList = []*ZogIssue
 
-// map of errors. This is returned by processors for complex types (e.g. maps, slices, structs)
+// Deprecated: ZogIssueMap is deprecated. All schemas now return ZogIssueList.
+// Users should migrate to using ZogIssueList and access paths via issue.Path
 type ZogIssueMap = map[string]ZogIssueList
 
-// INTERNAL ONLY: Interface used to add errors during parsing & validation. It represents a group of errors (map or slice)
+// INTERNAL ONLY: Interface used to add errors during parsing & validation. It represents a group of errors
 type ZogIssues interface {
-	Add(path string, err *ZogIssue)
+	Add(err *ZogIssue)
 	IsEmpty() bool
 	Free()
 }
 
-// internal only
+// ErrsList - internal structure for collecting issues during schema execution
 type ErrsList struct {
 	List ZogIssueList
 }
@@ -131,54 +137,18 @@ func NewErrsList() *ErrsList {
 	return l
 }
 
-func (e *ErrsList) Add(path string, err *ZogIssue) {
+func (e *ErrsList) Add(err *ZogIssue) {
 	if e.List == nil {
-		e.List = make(ZogIssueList, 0, 2)
+		e.List = make(ZogIssueList, 0, 4) // Slightly larger initial capacity
 	}
+	// Path is already set on the issue by SchemaCtx.Issue() or IssueFrom* methods
 	e.List = append(e.List, err)
 }
 
 func (e *ErrsList) IsEmpty() bool {
-	return e.List == nil
+	return len(e.List) == 0
 }
 
 func (e *ErrsList) Free() {
 	InternalIssueListPool.Put(e)
-}
-
-// map implementation of Errs
-type ErrsMap struct {
-	M ZogIssueMap
-}
-
-// Factory for errsMap
-func NewErrsMap() *ErrsMap {
-	m := InternalIssueMapPool.Get().(*ErrsMap)
-	m.M = nil
-	return m
-}
-
-func (s *ErrsMap) Add(p string, err *ZogIssue) {
-	// checking if its the first error
-	if s.M == nil {
-		s.M = ZogIssueMap{}
-		s.M[zconst.ISSUE_KEY_FIRST] = []*ZogIssue{err}
-	}
-
-	path := p
-	if path == "" {
-		path = zconst.ISSUE_KEY_ROOT
-	}
-	if _, ok := s.M[path]; !ok {
-		s.M[path] = []*ZogIssue{}
-	}
-	s.M[path] = append(s.M[path], err)
-}
-
-func (s *ErrsMap) IsEmpty() bool {
-	return s.M == nil
-}
-
-func (s *ErrsMap) Free() {
-	InternalIssueMapPool.Put(s)
 }

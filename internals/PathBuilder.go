@@ -1,5 +1,7 @@
 package internals
 
+import "slices"
+
 // type PathBuilder string
 
 // func (p PathBuilder) Push(path string) PathBuilder {
@@ -18,7 +20,7 @@ package internals
 
 func NewPathBuilder() *PathBuilder {
 	pb := PathBuilderPool.Get().(*PathBuilder)
-	*pb = (*pb)[:1]
+	*pb = (*pb)[:0]
 	return pb
 }
 
@@ -36,11 +38,22 @@ func (p *PathBuilder) Pop() {
 	*p = (*p)[:len(*p)-1]
 }
 
+func (p *PathBuilder) ToListClone() []string {
+	if len(*p) == 0 {
+		return nil
+	}
+	return slices.Clone(*p)
+}
+
 func (p *PathBuilder) String() string {
+	return FlattenPath(*p)
+}
+
+func FlattenPath(s []string) string {
 	sb := NewStringBuilder()
 	defer FreeStringBuilder(sb)
-	for i, v := range *p {
-		if i > 0 && (*p)[i-1] != "" && v[0] != '[' {
+	for i, v := range s {
+		if i > 0 && s[i-1] != "" && v[0] != '[' {
 			sb.WriteString(".")
 		}
 		sb.WriteString(v)

@@ -44,11 +44,11 @@ func TestReusableTestWithParams(t *testing.T) {
 
 func TestReusableTestWithPath(t *testing.T) {
 	s := String().Test(MyTest(
-		IssuePath("user.name"),
+		IssuePath([]string{"user", "name"}),
 	))
 	v := "test"
 	errs := s.Validate(&v)
-	assert.Equal(t, "user.name", errs[0].Path)
+	assert.Equal(t, "user.name", Issues.FlattenPath(errs[0].Path))
 }
 
 func TestReusableTestWithMultipleOptions(t *testing.T) {
@@ -56,7 +56,7 @@ func TestReusableTestWithMultipleOptions(t *testing.T) {
 		Message("custom message"),
 		IssueCode("custom_code"),
 		Params(map[string]any{"key": "value"}),
-		IssuePath("field.path"),
+		IssuePath([]string{"field", "path"}),
 	))
 	v := "test"
 	errs := s.Validate(&v)
@@ -64,5 +64,5 @@ func TestReusableTestWithMultipleOptions(t *testing.T) {
 	assert.Equal(t, "custom message", errs[0].Message)
 	assert.Equal(t, "custom_code", errs[0].Code)
 	assert.Equal(t, map[string]any{"key": "value"}, errs[0].Params)
-	assert.Equal(t, "field.path", errs[0].Path)
+	assert.Equal(t, "field.path", Issues.FlattenPath(errs[0].Path))
 }

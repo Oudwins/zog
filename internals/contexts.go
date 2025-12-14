@@ -80,7 +80,7 @@ func (c *ExecCtx) AddIssue(e *ZogIssue) {
 	if e.Message == "" {
 		c.Fmter(e, c)
 	}
-	c.Errors.Add(e.Path, e)
+	c.Errors.Add(e)
 }
 
 func (c *ExecCtx) Issue() *ZogIssue {
@@ -90,7 +90,7 @@ func (c *ExecCtx) Issue() *ZogIssue {
 // Deprecated: Use Ctx.AddIssue() instead
 // This is old interface. It will be removed soon
 func (c *ExecCtx) NewError(path *PathBuilder, e *ZogIssue) {
-	c.Errors.Add(path.String(), e)
+	c.Errors.Add(e)
 }
 
 // Internal. Used to format errors
@@ -161,14 +161,14 @@ func (c *SchemaCtx) Issue() *ZogIssue {
 	// e.Params = nil
 	// e.Dtype = c.DType
 	// e.Value = c.Data
-	return NewZogIssue().SetPath(c.Path.String()).SetDType(c.DType).SetValue(c.Data)
+	return NewZogIssue().SetPath(c.Path.ToListClone()).SetDType(c.DType).SetValue(c.Data)
 }
 
 // Please don't depend on this method it may change
 func (c *SchemaCtx) IssueFromTest(test TestInterface, val any) *ZogIssue {
 	e := ZogIssuePool.Get().(*ZogIssue)
 	e.Code = test.GetIssueCode()
-	e.Path = c.Path.String()
+	e.Path = c.Path.ToListClone()
 	e.Err = nil
 	e.Message = ""
 	e.Dtype = c.DType
@@ -177,7 +177,7 @@ func (c *SchemaCtx) IssueFromTest(test TestInterface, val any) *ZogIssue {
 	if test.GetIssueFmtFunc() != nil {
 		test.GetIssueFmtFunc()(e, c)
 	}
-	if test.GetIssuePath() != "" {
+	if test.GetIssuePath() != nil {
 		e.Path = test.GetIssuePath()
 	}
 	return e
@@ -187,7 +187,7 @@ func (c *SchemaCtx) IssueFromTest(test TestInterface, val any) *ZogIssue {
 func (c *SchemaCtx) IssueFromCoerce(err error) *ZogIssue {
 	e := ZogIssuePool.Get().(*ZogIssue)
 	e.Code = zconst.IssueCodeCoerce
-	e.Path = c.Path.String()
+	e.Path = c.Path.ToListClone()
 	e.Message = ""
 	e.Dtype = c.DType
 	e.Value = c.Data

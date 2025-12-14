@@ -40,3 +40,7 @@
   white-space: pre-wrap;
   word-break: break-word;
 }
+
+.sidebar-item--hidden {
+  display: none !important;
+}

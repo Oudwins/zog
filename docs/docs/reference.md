@@ -1,5 +1,5 @@
 ---
-sidebar_position: 8
+sidebar_class_name: sidebar-item--hidden
 ---
 
 # Reference
@@ -74,7 +74,7 @@ z.FloatLike[T]()
 z.UintLike[T]()
 z.BoolLike[T]()
 
-// Complex Types. Calling .Parse() on these will return map[string][]ZogIssue. Where the key is the field path ("user.email") & $root is the list of complex type level errors not the specific field errors
+// Complex Types. Calling .Parse() on these will return ZogIssueList (same as primitives). Each issue has a Path field ([]string) indicating where the issue occurred. Root-level issues have a nil Path.
 z.Struct(z.Shape{
 	"name": z.String(),
 })

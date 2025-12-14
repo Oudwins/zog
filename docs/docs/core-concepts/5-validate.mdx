@@ -58,15 +58,17 @@ var userSchema = z.Struct(z.Shape{
 	"name": z.String().Required(),
 })
 
-func (u *User) Validate() z.ZogIssueMap {
+func (u *User) Validate() z.ZogIssueList {
 	return userSchema.Validate(u)
 }
 
 // in some handler somewhere
 user := User{ID: 1, Name: "Alice"}
-err := user.Validate()
+errs := user.Validate()
 
-if err != nil {
-	fmt.Println(err)
+if len(errs) > 0 {
+	for _, issue := range errs {
+		fmt.Printf("%s: %s\n", issue.Path, issue.Message)
+	}
 }
 ```

@@ -1,25 +1,7 @@
 package zconst
 
 const (
-	// Key for a list of one ZogIssue that contains the first ZogIssue that occurred in a schema
-	ISSUE_KEY_FIRST = "$first"
-	// Key for a list of all ZogIssues that occurred in a schema at the root level for complex schemas. For example
-	/*
-			> Given this schema:
-			z.Struct(....).TestFunc(func (v any, ctx z.Ctx) {
-			   return false
-			}, z.Message("test"))
-			> And any input data. The output will contain:
-			{
-				"$root": [
-					{
-				     "message": "test"
-					 restOfErrorFields..
-					}
-				]
-			}
-		    > This is also true for slices and even for pointers to primitive types.
-	*/
+	// ISSUE_KEY_ROOT is the key for root-level issues on complex schemas on flattened maps
 	ISSUE_KEY_ROOT = "$root"
 )
 

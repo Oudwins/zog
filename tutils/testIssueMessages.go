@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// VerifyDefaultIssueMessages verifies that all issues have valid default messages
 func VerifyDefaultIssueMessages(t *testing.T, errs internals.ZogIssueList) {
 	for _, err := range errs {
 		c := err.Code
@@ -31,8 +32,31 @@ func VerifyDefaultIssueMessages(t *testing.T, errs internals.ZogIssueList) {
 	}
 }
 
+// Deprecated: Use VerifyDefaultIssueMessages instead.
+// All schemas now return ZogIssueList.
 func VerifyDefaultIssueMessagesMap(t *testing.T, errs internals.ZogIssueMap) {
 	for _, errList := range errs {
 		VerifyDefaultIssueMessages(t, errList)
 	}
+}
+
+// FindByPath returns all issues with the given path
+func FindByPath(errs internals.ZogIssueList, path string) internals.ZogIssueList {
+	var result internals.ZogIssueList
+	for _, e := range errs {
+		if internals.FlattenPath(e.Path) == path {
+			result = append(result, e)
+		}
+	}
+	return result
+}
+
+// HasPath checks if any issue has the given path
+func HasPath(errs internals.ZogIssueList, path string) bool {
+	for _, e := range errs {
+		if internals.FlattenPath(e.Path) == path {
+			return true
+		}
+	}
+	return false
 }

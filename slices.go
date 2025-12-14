@@ -53,8 +53,8 @@ func Slice(schema ZogSchema, opts ...SchemaOption) *SliceSchema {
 }
 
 // Validates a slice
-func (v *SliceSchema) Validate(data any, options ...ExecOption) ZogIssueMap {
-	errs := p.NewErrsMap()
+func (v *SliceSchema) Validate(data any, options ...ExecOption) ZogIssueList {
+	errs := p.NewErrsList()
 	defer errs.Free()
 
 	ctx := p.NewExecCtx(errs, conf.IssueFormatter)
@@ -67,7 +67,7 @@ func (v *SliceSchema) Validate(data any, options ...ExecOption) ZogIssueMap {
 	sctx := ctx.NewSchemaCtx(data, data, path, v.getType())
 	defer sctx.Free()
 	v.validate(sctx)
-	return errs.M
+	return errs.List
 }
 
 // Internal function to validate the data
@@ -113,8 +113,8 @@ func (v *SliceSchema) validate(ctx *p.SchemaCtx) {
 }
 
 // Only supports parsing from data=slice[any] to a dest =&slice[] (this can be typed. Doesn't have to be any)
-func (v *SliceSchema) Parse(data any, dest any, options ...ExecOption) ZogIssueMap {
-	errs := p.NewErrsMap()
+func (v *SliceSchema) Parse(data any, dest any, options ...ExecOption) ZogIssueList {
+	errs := p.NewErrsList()
 	defer errs.Free()
 	ctx := p.NewExecCtx(errs, conf.IssueFormatter)
 	defer ctx.Free()
@@ -127,7 +127,7 @@ func (v *SliceSchema) Parse(data any, dest any, options ...ExecOption) ZogIssueM
 	defer sctx.Free()
 	v.process(sctx)
 
-	return errs.M
+	return errs.List
 }
 
 // Internal function to process the data
