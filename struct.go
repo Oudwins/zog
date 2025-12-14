@@ -86,7 +86,11 @@ func (v *StructSchema) process(ctx *p.SchemaCtx) {
 	}
 
 	// 3. Process / validate struct fields
-	structVal := reflect.ValueOf(ctx.ValPtr).Elem()
+	structRefVal := reflect.ValueOf(ctx.ValPtr)
+	if !structRefVal.CanAddr() {
+		p.Panicf(p.PanicInvalidArgumentsExpectedPointer)
+	}
+	structVal := structRefVal.Elem()
 	subCtx := ctx.NewSchemaCtx(ctx.Data, ctx.ValPtr, ctx.Path, v.getType())
 	defer subCtx.Free()
 	for key, processor := range v.schema {
