@@ -87,7 +87,8 @@ func (v *StructSchema) process(ctx *p.SchemaCtx) {
 
 	// 3. Process / validate struct fields
 	structRefVal := reflect.ValueOf(ctx.ValPtr)
-	if !structRefVal.CanAddr() {
+	kind := structRefVal.Kind()
+	if kind != reflect.Pointer && kind != reflect.Interface {
 		p.Panicf(p.PanicInvalidArgumentsExpectedPointer)
 	}
 	structVal := structRefVal.Elem()
