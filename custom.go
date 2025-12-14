@@ -91,7 +91,7 @@ func (c *Custom[T]) getType() zconst.ZogType {
 	return "custom"
 }
 
-// Experimental API
+// Experimental API. Expect breaking changes and no documentation unfortunately for now
 type EXPERIMENTAL_PUBLIC_ZOG_SCHEMA interface {
 	Process(ctx *p.SchemaCtx)
 	Validate(ctx *p.SchemaCtx)
