@@ -54,6 +54,11 @@ func BoolLike[T ~bool](opts ...SchemaOption) *BoolSchema[T] {
 	for _, opt := range opts {
 		opt(s)
 	}
+
+	if EXHAUSTIVE_METADATA {
+		typ := getGenericTypeName[T]()
+		registryAdd(EX_META_REGISTRY, s, "typeName", typ)
+	}
 	return s
 }
 
