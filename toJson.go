@@ -10,17 +10,46 @@ import (
 	"github.com/Oudwins/zog/zconst"
 )
 
+type ExMetaRegistry map[any]map[string]any
+
+func registryAdd(r ExMetaRegistry, key any, path string, value any) {
+	if _, ok := r[key]; !ok {
+		r[key] = map[string]any{}
+	}
+	r[key][path] = value
+}
+
+func getGenericTypeName[T any]() string {
+	var zero T
+	t := reflect.TypeOf(zero)
+
+	// If T is a pointer or interface, handle nil case
+	if t == nil {
+		t = reflect.TypeOf((*T)(nil)).Elem()
+	}
+
+	return t.Name()
+}
+
+func (r ExMetaRegistry) Add(key any, path string, value any) {
+	if _, ok := r[key]; !ok {
+		r[key] = map[string]any{}
+	}
+
+}
+
+// EXPERIMENTAL. PLEASE DO NOT USE UNLESS YOU KNOW WHAT YOU ARE DOING!
+var EX_META_REGISTRY = map[any]map[string]any{}
+
 // TODO make zog schemas for all of these to validate them!
 type JsonProcessor struct {
 	Type string // "transform", "validator", "required"
 
 	// Validator
-	IssueCode *string
+	ID        string // issue code or transform ID
 	IssuePath *string
+	Message   *string
 	Params    map[string]any
-
-	// transform
-	TransformId *string
 }
 
 type JsonTest struct {
@@ -39,7 +68,8 @@ type JsonTransformer struct {
 type JsonZogSchema struct {
 	Type         string // "string"
 	Processors   []any  // JsonTest or JsonTransformer
-	Child        any    // *JsonZogSchema | map[string]JsonZogSchema
+	Format       *string
+	Child        any // *JsonZogSchema | map[string]JsonZogSchema
 	Required     *JsonTest
 	DefaultValue any
 	CatchValue   any
@@ -93,13 +123,18 @@ func (s *BoolSchema[T]) toJson() *JsonZogSchema {
 }
 
 func (s *TimeSchema) toJson() *JsonZogSchema {
-	rvP := reflect.ValueOf(s.processors)
+	// rvP := reflect.ValueOf(s.processors)
 	j := JsonZogSchema{
-		Type:         zconst.TypeTime,
-		Required:     toJsonTest(s.required),
-		DefaultValue: deepCopyPrimitivePtr(s.defaultVal),
-		CatchValue:   deepCopyPrimitivePtr(s.catch),
-		Processors:   processorsToJson(rvP),
+		Type: zconst.TypeTime,
+		// Required:     toJsonTest(s.required),
+		// DefaultValue: deepCopyPrimitivePtr(s.defaultVal),
+		// CatchValue:   deepCopyPrimitivePtr(s.catch),
+		// Processors:   processorsToJson(rvP),
+	}
+	exmeta, ok := EX_META_REGISTRY[s]
+	if ok {
+		x := exmeta["format"].(string)
+		j.Format = &x
 	}
 	return &j
 }
@@ -154,6 +189,14 @@ func toJsonShape(s Shape) (m map[string]JsonZogSchema) {
 func (s *PreprocessSchema[F, T]) toJson() *JsonZogSchema {
 	j := JsonZogSchema{
 		Type:  "preprocess",
+		Child: s.schema.toJson(),
+	}
+	return &j
+}
+
+func (s *BoxedSchema[B, T]) toJson() *JsonZogSchema {
+	j := JsonZogSchema{
+		Type:  "boxed",
 		Child: s.schema.toJson(),
 	}
 	return &j
