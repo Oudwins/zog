@@ -76,7 +76,8 @@ var schema = z.Struct(z.Shape{
 })
 ```
 
-This comes from a misunderstanding of how the zog struct tag works.</br>The zog struct tag is used to _define the name of the field in the input data_ (i.e json key), **not** the name of the schema key. The schema is only aware of what the struct looks like, and **it is not** aware of the source of the input data.
+This comes from a misunderstanding of how the zog struct tag works.
+The zog struct tag is used to _define the name of the field in the input data_ (i.e json key), **not** the name of the schema key. The schema is only aware of what the struct looks like, and **it is not** aware of the source of the input data.
 
 ## Why does zog have an internals package?
 
