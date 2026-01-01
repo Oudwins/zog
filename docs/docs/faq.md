@@ -28,15 +28,15 @@ errMap := models.UserSchema.Parse(zhttp.Request(c.Request), &payload) // ✅ Cor
 
 ```go
 type Name struct {
-	FirstName string `json:"first_name" zog:"first_name"` // The zog/json tags define the INPUT (e.g. JSON) key, not the schema key. The schema only matches Go struct field names.
-	LastName  string `json:"last_name" zog:"last_name"`
+    FirstName string `json:"first_name" zog:"first_name"` // The zog/json tags define the INPUT (e.g. JSON) key, not the schema key. The schema only matches Go struct field names.
+    LastName  string `json:"last_name" zog:"last_name"`
 }
 
 data := new(Name)
 
 var schema = z.Struct(z.Shape{
-	"first_name": z.String().Required(z.Message("First name is required")), // ❌ Incorrect: schema keys must match the Go struct field name (FirstName), not the JSON/input key
-	"last_name":  z.String().Required(z.Message("Last name is required")),  // ❌ Same issue: this refers to the JSON key, but the struct field is LastName
+    "first_name": z.String().Required(z.Message("First name is required")), // ❌ Incorrect: schema keys must match the Go struct field name (FirstName), not the JSON/input key
+    "last_name":  z.String().Required(z.Message("Last name is required")),  // ❌ Same issue: this refers to the JSON key, but the struct field is LastName
 })
 ```
 
@@ -64,15 +64,15 @@ This error is telling you that you are defining your schema keys incorrectly. Fo
 
 ```go
 type Name struct {
-	FirstName string `json:"first_name" zog:"first_name"` // zog struct tag is used to define the name of the field in the input data (i.e json key) not the name of the schema key (common mistake)
-	LastName  string `json:"last_name" zog:"last_name"`
+    FirstName string `json:"first_name" zog:"first_name"` // zog struct tag is used to define the name of the field in the input data (i.e json key) not the name of the schema key (common mistake)
+    LastName  string `json:"last_name" zog:"last_name"`
 }
 
 data := new(Name)
 
 var schema = z.Struct(z.Shape{
-	"first_name": z.String().Required(z.Message("First name is required")), // ❌ Incorrect: here you are telling zog that your struct should have a `first_name` field, but this is incorrect because the struct has a `FirstName` field. The key here should be "firstName" or "FirstName" (both are valid)
-	"last_name":  z.String().Required(z.Message("Last name is required")),  // ❌ Same issue here: the struct has a `LastName` field, so the key here should be "lastName" or "LastName"
+    "first_name": z.String().Required(z.Message("First name is required")), // ❌ Incorrect: here you are telling zog that your struct should have a `first_name` field, but this is incorrect because the struct has a `FirstName` field. The key here should be "firstName" or "FirstName" (both are valid)
+    "last_name":  z.String().Required(z.Message("Last name is required")),  // ❌ Same issue here: the struct has a `LastName` field, so the key here should be "lastName" or "LastName"
 })
 ```
 
