@@ -8,7 +8,7 @@ sidebar_position: 300
 
 Please make sure that you are using Zog properly. The expectation is that if Zog causes a panic, you are doing something wrong.
 
-So before reporting an issue please check this common mistakes:
+So before reporting an issue please check these common mistakes:
 
 ### 1. ❌ Not passing a pointer to the struct you are parsing into
 
