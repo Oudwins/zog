@@ -139,3 +139,331 @@ func TestToJsonStructShape(t *testing.T) {
 	assert.True(t, ok)
 	assert.Equal(t, "string", nameMap["kind"])
 }
+
+func TestToJsonNumber(t *testing.T) {
+	s := zog.Int().Required().Default(42).GT(0)
+	d := zog.EXPERIMENTAL_TO_ZSS(s)
+	serialized, err := json.Marshal(d)
+	assert.Nil(t, err)
+	assert.NotNil(t, serialized)
+
+	expected := baseZSSJson(`{
+		"kind": "number",
+		"goType": null,
+		"format": null,
+		"processors": [
+			{
+				"kind": "test",
+				"test": {
+					"id": "gt",
+					"message": "number must be greater than 0",
+					"issuePath": null,
+					"params": {
+						"gt": 0
+					}
+				},
+				"transformer": null
+			}
+		],
+		"child": null,
+		"required": {
+			"id": "required",
+			"message": "is required",
+			"issuePath": null,
+			"params": {}
+		},
+		"defaultValue": 42,
+		"catchValue": null
+	}`)
+
+	assert.Equal(t, normalize(expected), normalize(string(serialized)))
+}
+
+func TestToJsonBool(t *testing.T) {
+	s := zog.Bool().Required().Default(true)
+	d := zog.EXPERIMENTAL_TO_ZSS(s)
+	serialized, err := json.Marshal(d)
+	assert.Nil(t, err)
+	assert.NotNil(t, serialized)
+
+	expected := baseZSSJson(`{
+		"kind": "bool",
+		"goType": null,
+		"format": null,
+		"processors": null,
+		"child": null,
+		"required": {
+			"id": "required",
+			"message": "is required",
+			"issuePath": null,
+			"params": {}
+		},
+		"defaultValue": true,
+		"catchValue": null
+	}`)
+
+	assert.Equal(t, normalize(expected), normalize(string(serialized)))
+}
+
+func TestToJsonTime(t *testing.T) {
+	s := zog.Time().Required()
+	d := zog.EXPERIMENTAL_TO_ZSS(s)
+	serialized, err := json.Marshal(d)
+	assert.Nil(t, err)
+	assert.NotNil(t, serialized)
+
+	expected := baseZSSJson(`{
+		"kind": "time",
+		"goType": null,
+		"format": null,
+		"processors": null,
+		"child": null,
+		"required": {
+			"id": "required",
+			"message": "is required",
+			"issuePath": null,
+			"params": {}
+		},
+		"defaultValue": null,
+		"catchValue": null
+	}`)
+
+	assert.Equal(t, normalize(expected), normalize(string(serialized)))
+}
+
+func TestToJsonSlice(t *testing.T) {
+	s := zog.Slice(zog.String().Min(1)).Required().Min(1)
+	d := zog.EXPERIMENTAL_TO_ZSS(s)
+	serialized, err := json.Marshal(d)
+	assert.Nil(t, err)
+	assert.NotNil(t, serialized)
+
+	expected := baseZSSJson(`{
+		"kind": "slice",
+		"goType": null,
+		"format": null,
+		"processors": [
+			{
+				"kind": "test",
+				"test": {
+					"id": "min",
+					"message": "slice must contain at least 1 items",
+					"issuePath": null,
+					"params": {
+						"min": 1
+					}
+				},
+				"transformer": null
+			}
+		],
+		"child": {
+			"kind": "string",
+			"goType": null,
+			"format": null,
+			"processors": [
+				{
+					"kind": "test",
+					"test": {
+						"id": "min",
+						"message": "string must contain at least 1 character(s)",
+						"issuePath": null,
+						"params": {
+							"min": 1
+						}
+					},
+					"transformer": null
+				}
+			],
+			"child": null,
+			"required": null,
+			"defaultValue": null,
+			"catchValue": null
+		},
+		"required": {
+			"id": "required",
+			"message": "is required",
+			"issuePath": null,
+			"params": {}
+		},
+		"defaultValue": null,
+		"catchValue": null
+	}`)
+
+	assert.Equal(t, normalize(expected), normalize(string(serialized)))
+}
+
+func TestToJsonStruct(t *testing.T) {
+	s := zog.Struct(zog.Shape{
+		"name": zog.String().Required(),
+		"age":  zog.Int().Optional(),
+	})
+	d := zog.EXPERIMENTAL_TO_ZSS(s)
+	serialized, err := json.Marshal(d)
+	assert.Nil(t, err)
+	assert.NotNil(t, serialized)
+
+	expected := baseZSSJson(`{
+		"kind": "struct",
+		"goType": null,
+		"format": null,
+		"processors": null,
+		"child": {
+			"age": {
+				"kind": "number",
+				"goType": null,
+				"format": null,
+				"processors": null,
+				"child": null,
+				"required": null,
+				"defaultValue": null,
+				"catchValue": null
+			},
+			"name": {
+				"kind": "string",
+				"goType": null,
+				"format": null,
+				"processors": null,
+				"child": null,
+				"required": {
+					"id": "required",
+					"message": "is required",
+					"issuePath": null,
+					"params": {}
+				},
+				"defaultValue": null,
+				"catchValue": null
+			}
+		},
+		"required": null,
+		"defaultValue": null,
+		"catchValue": null
+	}`)
+
+	assert.Equal(t, normalize(expected), normalize(string(serialized)))
+}
+
+func TestToJsonPreprocess(t *testing.T) {
+	s := zog.Preprocess(
+		func(data any, ctx zog.Ctx) (any, error) {
+			return data, nil
+		},
+		zog.String().Min(1),
+	)
+	d := zog.EXPERIMENTAL_TO_ZSS(s)
+	serialized, err := json.Marshal(d)
+	assert.Nil(t, err)
+	assert.NotNil(t, serialized)
+
+	expected := baseZSSJson(`{
+		"kind": "preprocess",
+		"goType": null,
+		"format": null,
+		"processors": null,
+		"child": {
+			"kind": "string",
+			"goType": null,
+			"format": null,
+			"processors": [
+				{
+					"kind": "test",
+					"test": {
+						"id": "min",
+						"message": "string must contain at least 1 character(s)",
+						"issuePath": null,
+						"params": {
+							"min": 1
+						}
+					},
+					"transformer": null
+				}
+			],
+			"child": null,
+			"required": null,
+			"defaultValue": null,
+			"catchValue": null
+		},
+		"required": null,
+		"defaultValue": null,
+		"catchValue": null
+	}`)
+
+	assert.Equal(t, normalize(expected), normalize(string(serialized)))
+}
+
+func TestToJsonBoxed(t *testing.T) {
+	type StringBox struct {
+		V string
+	}
+	s := zog.Boxed(
+		zog.String().Min(1),
+		func(b StringBox, ctx zog.Ctx) (string, error) { return b.V, nil },
+		func(s string, ctx zog.Ctx) (StringBox, error) { return StringBox{V: s}, nil },
+	)
+	d := zog.EXPERIMENTAL_TO_ZSS(s)
+	serialized, err := json.Marshal(d)
+	assert.Nil(t, err)
+	assert.NotNil(t, serialized)
+
+	expected := baseZSSJson(`{
+		"kind": "boxed",
+		"goType": null,
+		"format": null,
+		"processors": null,
+		"child": {
+			"kind": "string",
+			"goType": null,
+			"format": null,
+			"processors": [
+				{
+					"kind": "test",
+					"test": {
+						"id": "min",
+						"message": "string must contain at least 1 character(s)",
+						"issuePath": null,
+						"params": {
+							"min": 1
+						}
+					},
+					"transformer": null
+				}
+			],
+			"child": null,
+			"required": null,
+			"defaultValue": null,
+			"catchValue": null
+		},
+		"required": null,
+		"defaultValue": null,
+		"catchValue": null
+	}`)
+
+	assert.Equal(t, normalize(expected), normalize(string(serialized)))
+}
+
+func TestToJsonCustom(t *testing.T) {
+	s := zog.CustomFunc(func(valPtr *string, ctx zog.Ctx) bool {
+		return *valPtr == "valid"
+	})
+	d := zog.EXPERIMENTAL_TO_ZSS(s)
+	serialized, err := json.Marshal(d)
+	assert.Nil(t, err)
+	assert.NotNil(t, serialized)
+
+	expected := baseZSSJson(`{
+		"kind": "custom",
+		"goType": null,
+		"format": null,
+		"processors": null,
+		"child": null,
+		"required": {
+			"id": "required",
+			"message": "",
+			"issuePath": null,
+			"params": {}
+		},
+		"defaultValue": null,
+		"catchValue": null
+	}`)
+
+	assert.Equal(t, normalize(expected), normalize(string(serialized)))
+}

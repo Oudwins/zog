@@ -159,7 +159,8 @@ func (s *Custom[T]) toZSS() *zss.ZSSSchema {
 	j := zss.ZSSSchema{
 		Kind: zconst.TypeCustom,
 		// TODO not sure this is the right place for this info
-		Required: toZSSRequired(&s.test, zconst.TypeCustom),
+		// TODO THIS create this
+		Processors: toZSSProcessorList(&s.test, zconst.TypeCustom),
 	}
 	if EXHAUSTIVE_METADATA {
 		j.GoType = getGenericTypeName[T]()
@@ -226,24 +227,6 @@ func processRVtoZSS(rv reflect.Value, dtype zconst.ZogType) *zss.ZSSProcessor {
 	return &out
 }
 
-func processorsToZSS(l reflect.Value, dtype zconst.ZogType) []zss.ZSSProcessor {
-	if l.IsNil() {
-		return nil
-	}
-	ln := l.Len()
-	out := []zss.ZSSProcessor{}
-	for i := 0; i < ln; i++ {
-		p := l.Index(i)
-		fmt.Println(l.CanInterface())
-		result := processRVtoZSS(p, dtype)
-		if result == nil {
-			continue
-		}
-		out = append(out, *result)
-	}
-	return out
-}
-
 func toZSSRequired(test any, dtype zconst.ZogType) *zss.ZSSTest {
 	if test == nil {
 		return nil
@@ -259,6 +242,42 @@ func toZSSRequired(test any, dtype zconst.ZogType) *zss.ZSSTest {
 	j := toZSSTest(test.(internals.TestInterface), dtype)
 	(*j).ID = zconst.ZogProcessorRequired
 	return j
+}
+
+func processorsToZSS(l reflect.Value, dtype zconst.ZogType) []zss.ZSSProcessor {
+	if l.IsNil() {
+		return nil
+	}
+	ln := l.Len()
+	out := []zss.ZSSProcessor{}
+	for i := 0; i < ln; i++ {
+		p := l.Index(i)
+		result := processRVtoZSS(p, dtype)
+		if result == nil {
+			continue
+		}
+		out = append(out, *result)
+	}
+	return out
+}
+
+func toZSSProcessorList(test any, dtype zconst.ZogType) []zss.ZSSProcessor {
+	if test == nil {
+		return nil
+	}
+
+	// Check if the underlying value is actually nil using reflection
+	// This handles the case where a nil pointer is passed as an interface
+	rv := reflect.ValueOf(test)
+	if rv.Kind() == reflect.Ptr && rv.IsNil() {
+		return nil
+	}
+	p := processRVtoZSS(rv, dtype)
+	if p == nil {
+		return nil
+	}
+	return []zss.ZSSProcessor{*p}
+
 }
 
 // fakeCtx is a minimal implementation of Ctx interface for extracting default messages
