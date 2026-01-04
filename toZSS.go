@@ -210,15 +210,15 @@ func processorsToZSS(l reflect.Value) []any {
 	return out
 }
 
-func toZSSTest(test internals.TestInterface) *zss.ZSSTest {
+func toZSSRequired(test internals.TestInterface) *zss.ZSSRequired {
 	if test == nil {
 		return nil
 	}
 
-	j := zss.ZSSTest{}
+	j := zss.ZSSRequired{}
 	j.Type = zconst.ProcessorTest
 	c := test.GetIssueCode()
-	j.IssueCode = &c
+	j.ID = c
 	path := test.GetIssuePath()
 	j.IssuePath = &path
 	params := test.GetParams()
