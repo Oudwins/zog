@@ -21,10 +21,10 @@ func lazy(fn func() ZogSchema) *lazySchema {
 	return &lazySchema{fn: fn}
 }
 
-func Recursive[T ZogSchema](build func(ZogSchema) T) T {
-	var self any
-	self = lazy(func() ZogSchema { return self.(ZogSchema) })
-	real := build(self.(ZogSchema))
+func Recursive[T ZogSchema](build func(self ZogSchema) T) T {
+	var self ZogSchema
+	self = lazy(func() ZogSchema { return self })
+	real := build(self)
 	self = real
 	return real
 }
