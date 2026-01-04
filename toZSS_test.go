@@ -14,7 +14,7 @@ func normalize(s string) string {
 
 func TestToJsonString(t *testing.T) {
 	s := String().Required().Default("Testing!").Catch("Testing2!").Min(1)
-	serialized, err := ToJson(s)
+	serialized, err := EXPERIMENTAL_TO_ZSS(s)
 	assert.Nil(t, err)
 	assert.NotNil(t, serialized)
 
@@ -25,7 +25,7 @@ func TestToJsonString(t *testing.T) {
 
 func TestToJsonPtr(t *testing.T) {
 	s := Ptr(String().Required().Default("Testing!").Catch("Testing2!").Min(1))
-	serialized, err := ToJson(s)
+	serialized, err := EXPERIMENTAL_TO_ZSS(s)
 	fmt.Println(string(serialized))
 	assert.Nil(t, err)
 	assert.NotNil(t, serialized)
