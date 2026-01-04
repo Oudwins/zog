@@ -4,7 +4,6 @@ import (
 	"github.com/Oudwins/zog/conf"
 	p "github.com/Oudwins/zog/internals"
 	"github.com/Oudwins/zog/zconst"
-	"github.com/Oudwins/zog/zss"
 )
 
 type Numeric = p.Numeric
@@ -58,10 +57,6 @@ func FloatLike[T Numeric](opts ...SchemaOption) *NumberSchema[T] {
 	for _, opt := range opts {
 		opt(s)
 	}
-	if EXHAUSTIVE_METADATA {
-		typ := getGenericTypeName[T]()
-		registryAdd(EX_META_REGISTRY, s, zss.ZSS_TYPE_KEY, typ)
-	}
 	return s
 }
 
@@ -71,9 +66,6 @@ func Float64(opts ...SchemaOption) *NumberSchema[float64] {
 	}
 	for _, opt := range opts {
 		opt(s)
-	}
-	if EXHAUSTIVE_METADATA {
-		registryAdd(EX_META_REGISTRY, s, zss.ZSS_TYPE_KEY, zss.ZSS_TYPE_FLOAT64)
 	}
 	return s
 }
@@ -94,9 +86,6 @@ func Float32(opts ...SchemaOption) *NumberSchema[float32] {
 	for _, opt := range opts {
 		opt(s)
 	}
-	if EXHAUSTIVE_METADATA {
-		registryAdd(EX_META_REGISTRY, s, zss.ZSS_TYPE_KEY, zss.ZSS_TYPE_FLOAT32)
-	}
 	return s
 }
 
@@ -107,9 +96,6 @@ func Int(opts ...SchemaOption) *NumberSchema[int] {
 	}
 	for _, opt := range opts {
 		opt(s)
-	}
-	if EXHAUSTIVE_METADATA {
-		registryAdd(EX_META_REGISTRY, s, zss.ZSS_TYPE_KEY, zss.ZSS_TYPE_INT)
 	}
 	return s
 }
@@ -126,10 +112,6 @@ func IntLike[T Numeric](opts ...SchemaOption) *NumberSchema[T] {
 	}
 	for _, opt := range opts {
 		opt(s)
-	}
-	if EXHAUSTIVE_METADATA {
-		typeName := getGenericTypeName[T]()
-		registryAdd(EX_META_REGISTRY, s, zss.ZSS_TYPE_KEY, typeName)
 	}
 	return s
 }
@@ -150,9 +132,6 @@ func Int64(opts ...SchemaOption) *NumberSchema[int64] {
 	for _, opt := range opts {
 		opt(s)
 	}
-	if EXHAUSTIVE_METADATA {
-		registryAdd(EX_META_REGISTRY, s, zss.ZSS_TYPE_KEY, zss.ZSS_TYPE_INT64)
-	}
 	return s
 }
 
@@ -172,9 +151,6 @@ func Int32(opts ...SchemaOption) *NumberSchema[int32] {
 	for _, opt := range opts {
 		opt(s)
 	}
-	if EXHAUSTIVE_METADATA {
-		registryAdd(EX_META_REGISTRY, s, zss.ZSS_TYPE_KEY, zss.ZSS_TYPE_INT32)
-	}
 	return s
 }
 
@@ -187,9 +163,6 @@ func Uint(opts ...SchemaOption) *NumberSchema[uint] {
 		opt(s)
 	}
 
-	if EXHAUSTIVE_METADATA {
-		registryAdd(EX_META_REGISTRY, s, zss.ZSS_TYPE_KEY, zss.ZSS_TYPE_UINT)
-	}
 	return s
 }
 
@@ -207,10 +180,6 @@ func UintLike[T Numeric](opts ...SchemaOption) *NumberSchema[T] {
 		opt(s)
 	}
 
-	if EXHAUSTIVE_METADATA {
-		typeName := getGenericTypeName[T]()
-		registryAdd(EX_META_REGISTRY, s, zss.ZSS_TYPE_KEY, typeName)
-	}
 	return s
 }
 

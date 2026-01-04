@@ -17,16 +17,20 @@ const (
 // Map used to format errors in Zog. Both ZogType & ZogErrCode are just strings
 type LangMap = map[ZogType]map[ZogIssueCode]string
 
+// Zog Schema Types
 type ZogType = string
 
 const (
-	TypeString ZogType = "string"
-	TypeNumber ZogType = "number"
-	TypeBool   ZogType = "bool"
-	TypeTime   ZogType = "time"
-	TypeSlice  ZogType = "slice"
-	TypeStruct ZogType = "struct"
-	TypePtr    ZogType = "ptr"
+	TypeString     ZogType = "string"
+	TypeNumber     ZogType = "number"
+	TypeBool       ZogType = "bool"
+	TypeTime       ZogType = "time"
+	TypeSlice      ZogType = "slice"
+	TypeStruct     ZogType = "struct"
+	TypePtr        ZogType = "ptr"
+	TypeCustom     ZogType = "custom"
+	TypePreprocess ZogType = "preprocess"
+	TypeBoxed      ZogType = "boxed"
 )
 
 // Deprecated: This will be removed in the future. Use z.ZogIssueCode instead

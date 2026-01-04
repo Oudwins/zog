@@ -11,7 +11,15 @@ import (
 	"github.com/Oudwins/zog/zss"
 )
 
+// EXPERIMENTAL. PLEASE DO NOT USE UNLESS YOU KNOW WHAT YOU ARE DOING!
 type ExMetaRegistry map[any]map[string]any
+
+const (
+	EX_META_KEY_FORMAT = "format"
+)
+
+// EXPERIMENTAL. PLEASE DO NOT USE UNLESS YOU KNOW WHAT YOU ARE DOING!
+var EX_META_REGISTRY = map[any]map[string]any{}
 
 func registryAdd(r ExMetaRegistry, key any, path string, value any) {
 	if _, ok := r[key]; !ok {
@@ -32,16 +40,6 @@ func getGenericTypeName[T any]() string {
 	return t.Name()
 }
 
-func (r ExMetaRegistry) Add(key any, path string, value any) {
-	if _, ok := r[key]; !ok {
-		r[key] = map[string]any{}
-	}
-
-}
-
-// EXPERIMENTAL. PLEASE DO NOT USE UNLESS YOU KNOW WHAT YOU ARE DOING!
-var EX_META_REGISTRY = map[any]map[string]any{}
-
 type ZSSSerializable interface {
 	toZSS() *zss.ZSSSchema
 }
@@ -49,30 +47,38 @@ type ZSSSerializable interface {
 func EXPERIMENTAL_TO_ZSS(s ZSSSerializable) ([]byte, error) {
 	j := s.toZSS()
 	jsonSchema, err := json.Marshal(j)
-	fmt.Println(string(jsonSchema))
 	return jsonSchema, err
 }
 
 func (s *StringSchema[T]) toZSS() *zss.ZSSSchema {
 	rvP := reflect.ValueOf(s.processors)
 	j := zss.ZSSSchema{
-		GoType:       zconst.TypeString,
+		Kind:         zconst.TypeString,
 		Required:     toZSSTest(s.required),
 		DefaultValue: deepCopyPrimitivePtr(s.defaultVal),
 		CatchValue:   deepCopyPrimitivePtr(s.catch),
 		Processors:   processorsToZSS(rvP),
 	}
+
+	if EXHAUSTIVE_METADATA {
+		j.GoType = getGenericTypeName[T]()
+	}
+
 	return &j
 }
 
 func (s *NumberSchema[T]) toZSS() *zss.ZSSSchema {
 	rvP := reflect.ValueOf(s.processors)
 	j := zss.ZSSSchema{
-		GoType:       zconst.TypeNumber,
+		Kind:         zconst.TypeNumber,
 		Required:     toZSSTest(s.required),
 		DefaultValue: deepCopyPrimitivePtr(s.defaultVal),
 		CatchValue:   deepCopyPrimitivePtr(s.catch),
 		Processors:   processorsToZSS(rvP),
+	}
+
+	if EXHAUSTIVE_METADATA {
+		j.GoType = getGenericTypeName[T]()
 	}
 	return &j
 }
@@ -80,23 +86,27 @@ func (s *NumberSchema[T]) toZSS() *zss.ZSSSchema {
 func (s *BoolSchema[T]) toZSS() *zss.ZSSSchema {
 	rvP := reflect.ValueOf(s.processors)
 	j := zss.ZSSSchema{
-		GoType:       zconst.TypeBool,
+		Kind:         zconst.TypeBool,
 		Required:     toZSSTest(s.required),
 		DefaultValue: deepCopyPrimitivePtr(s.defaultVal),
 		CatchValue:   deepCopyPrimitivePtr(s.catch),
 		Processors:   processorsToZSS(rvP),
 	}
+
+	if EXHAUSTIVE_METADATA {
+		j.GoType = getGenericTypeName[T]()
+	}
 	return &j
 }
 
 func (s *TimeSchema) toZSS() *zss.ZSSSchema {
-	// rvP := reflect.ValueOf(s.processors)
+	rvP := reflect.ValueOf(s.processors)
 	j := zss.ZSSSchema{
-		GoType: zconst.TypeTime,
-		// Required:     toZSSTest(s.required),
-		// DefaultValue: deepCopyPrimitivePtr(s.defaultVal),
-		// CatchValue:   deepCopyPrimitivePtr(s.catch),
-		// Processors:   processorsToZSS(rvP),
+		Kind:         zconst.TypeTime,
+		Required:     toZSSTest(s.required),
+		DefaultValue: deepCopyPrimitivePtr(s.defaultVal),
+		CatchValue:   deepCopyPrimitivePtr(s.catch),
+		Processors:   processorsToZSS(rvP),
 	}
 	exmeta, ok := EX_META_REGISTRY[s]
 	if ok {
@@ -108,9 +118,12 @@ func (s *TimeSchema) toZSS() *zss.ZSSSchema {
 
 func (s *PointerSchema) toZSS() *zss.ZSSSchema {
 	j := zss.ZSSSchema{
-		GoType:   zconst.TypePtr,
+		Kind:     zconst.TypePtr,
 		Required: toZSSTest(s.required),
-		Child:    s.schema.toZSS(),
+		// DefaultValue: deepCopyPrimitivePtr(s.defaultVal),
+		// CatchValue:   deepCopyPrimitivePtr(s.catch),
+		// Processors:   processorsToZSS(rvP),
+		Child: s.schema.toZSS(),
 	}
 	return &j
 }
@@ -118,7 +131,7 @@ func (s *PointerSchema) toZSS() *zss.ZSSSchema {
 func (s *SliceSchema) toZSS() *zss.ZSSSchema {
 	rvP := reflect.ValueOf(s.processors)
 	j := zss.ZSSSchema{
-		GoType:       zconst.TypeSlice,
+		Kind:         zconst.TypeSlice,
 		Required:     toZSSTest(s.required),
 		DefaultValue: deepCopyPrimitivePtr(s.defaultVal),
 		Processors:   processorsToZSS(rvP),
@@ -130,7 +143,7 @@ func (s *SliceSchema) toZSS() *zss.ZSSSchema {
 func (s *StructSchema) toZSS() *zss.ZSSSchema {
 	rvP := reflect.ValueOf(s.processors)
 	j := zss.ZSSSchema{
-		GoType:     zconst.TypeSlice,
+		Kind:       zconst.TypeStruct,
 		Required:   toZSSTest(s.required),
 		Processors: processorsToZSS(rvP),
 		Child:      toZSSShape(s.schema),
@@ -140,9 +153,12 @@ func (s *StructSchema) toZSS() *zss.ZSSSchema {
 
 func (s *Custom[T]) toZSS() *zss.ZSSSchema {
 	j := zss.ZSSSchema{
-		GoType: "custom",
+		Kind: zconst.TypeCustom,
 		// TODO not sure this is the right place for this info
 		Required: toZSSTest(&s.test),
+	}
+	if EXHAUSTIVE_METADATA {
+		j.GoType = getGenericTypeName[T]()
 	}
 	return &j
 }
@@ -155,16 +171,26 @@ func toZSSShape(s Shape) (m map[string]zss.ZSSSchema) {
 
 func (s *PreprocessSchema[F, T]) toZSS() *zss.ZSSSchema {
 	j := zss.ZSSSchema{
-		GoType: "preprocess",
-		Child:  s.schema.toZSS(),
+		Kind:  zconst.TypePreprocess,
+		Child: s.schema.toZSS(),
+	}
+
+	// TODO this is not great, we cannot store information regarding the extra T type here.
+	if EXHAUSTIVE_METADATA {
+		j.GoType = getGenericTypeName[F]()
 	}
 	return &j
 }
 
 func (s *BoxedSchema[B, T]) toZSS() *zss.ZSSSchema {
 	j := zss.ZSSSchema{
-		GoType: "boxed",
-		Child:  s.schema.toZSS(),
+		Kind:  zconst.TypeBoxed,
+		Child: s.schema.toZSS(),
+	}
+
+	// TODO this is not great, we cannot store information regarding the extra T type here.
+	if EXHAUSTIVE_METADATA {
+		j.GoType = getGenericTypeName[B]()
 	}
 	return &j
 }
