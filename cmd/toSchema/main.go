@@ -10,5 +10,5 @@ func main() {
 
 	t := z.Time(z.Time.Format("Hello world"))
 	fmt.Println("HELLO WORLD")
-	fmt.Println(z.ToJson(t))
+	fmt.Println(z.EXPERIMENTAL_TO_ZSS(t))
 }
