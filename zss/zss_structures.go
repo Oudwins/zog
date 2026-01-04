@@ -1,23 +1,15 @@
 package zss // Zog Schema Specification
 
 import "github.com/Oudwins/zog/zconst" // TODO make zog schemas for all of these to validate them!
-type ZSSProcessor struct {
-	Type string // "transform", "validator", "required"
 
-	// Validator
-	ID        string // issue code or transform ID
-	IssuePath *string
-	Message   *string
-	Params    map[string]any
+type ZSSDocument struct {
+	Version string
+	Schema  *ZSSSchema
 }
-
-type ZSSRequired struct {
-	Type    string // "required"
-	ID      zconst.ZogIssueCode
-	Message string
-	// optional
-	IssuePath *string
-	Params    map[string]any
+type ZSSProcessor struct {
+	Type        string // "transform", "validator"
+	Test        *ZSSTest
+	Transformer *ZSSTransformer
 }
 
 type ZSSTest struct {
@@ -28,17 +20,17 @@ type ZSSTest struct {
 }
 
 type ZSSTransformer struct {
-	Type        string // "transformer"
-	TransformId *string
+	Type string // "transformer"
+	ID   zconst.ZogTransformID
 }
 
 type ZSSSchema struct {
 	Kind         string  // "string", "number", "bool", "time", "slice", "struct", "ptr"
-	Type         string  // Custom type if available (only if ZSS Exhaustive Metadata is enabled)
+	GoType       string  // Custom type if available (only if ZSS Exhaustive Metadata is enabled)
 	Format       *string // Used for time.Time schemas only right now. (Only if ZSS Exhaustive Metadata is enabled)
-	Processors   []any   // ZSSTest or ZSSTransformer
-	Child        any     // *ZSSSchema | map[string]ZSSSchema
-	Required     *ZSSRequired
+	Processors   []ZSSProcessor
+	Child        any // *ZSSSchema | map[string]ZSSSchema
+	Required     *ZSSTest
 	DefaultValue any
 	CatchValue   any
 }
