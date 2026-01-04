@@ -6,6 +6,7 @@ import (
 	"maps"
 	"reflect"
 
+	"github.com/Oudwins/zog/conf"
 	"github.com/Oudwins/zog/internals"
 	"github.com/Oudwins/zog/zconst"
 	zss "github.com/Oudwins/zog/zss/core"
@@ -60,10 +61,10 @@ func (s *StringSchema[T]) toZSS() *zss.ZSSSchema {
 	rvP := reflect.ValueOf(s.processors)
 	j := zss.ZSSSchema{
 		Kind:         zconst.TypeString,
-		Required:     toZSSRequired(s.required),
+		Required:     toZSSRequired(s.required, zconst.TypeString),
 		DefaultValue: deepCopyPrimitivePtr(s.defaultVal),
 		CatchValue:   deepCopyPrimitivePtr(s.catch),
-		Processors:   processorsToZSS(rvP),
+		Processors:   processorsToZSS(rvP, zconst.TypeString),
 	}
 
 	if EXHAUSTIVE_METADATA {
@@ -77,10 +78,10 @@ func (s *NumberSchema[T]) toZSS() *zss.ZSSSchema {
 	rvP := reflect.ValueOf(s.processors)
 	j := zss.ZSSSchema{
 		Kind:         zconst.TypeNumber,
-		Required:     toZSSRequired(s.required),
+		Required:     toZSSRequired(s.required, zconst.TypeNumber),
 		DefaultValue: deepCopyPrimitivePtr(s.defaultVal),
 		CatchValue:   deepCopyPrimitivePtr(s.catch),
-		Processors:   processorsToZSS(rvP),
+		Processors:   processorsToZSS(rvP, zconst.TypeNumber),
 	}
 
 	if EXHAUSTIVE_METADATA {
@@ -93,10 +94,10 @@ func (s *BoolSchema[T]) toZSS() *zss.ZSSSchema {
 	rvP := reflect.ValueOf(s.processors)
 	j := zss.ZSSSchema{
 		Kind:         zconst.TypeBool,
-		Required:     toZSSRequired(s.required),
+		Required:     toZSSRequired(s.required, zconst.TypeBool),
 		DefaultValue: deepCopyPrimitivePtr(s.defaultVal),
 		CatchValue:   deepCopyPrimitivePtr(s.catch),
-		Processors:   processorsToZSS(rvP),
+		Processors:   processorsToZSS(rvP, zconst.TypeBool),
 	}
 
 	if EXHAUSTIVE_METADATA {
@@ -109,10 +110,10 @@ func (s *TimeSchema) toZSS() *zss.ZSSSchema {
 	rvP := reflect.ValueOf(s.processors)
 	j := zss.ZSSSchema{
 		Kind:         zconst.TypeTime,
-		Required:     toZSSRequired(s.required),
+		Required:     toZSSRequired(s.required, zconst.TypeTime),
 		DefaultValue: deepCopyPrimitivePtr(s.defaultVal),
 		CatchValue:   deepCopyPrimitivePtr(s.catch),
-		Processors:   processorsToZSS(rvP),
+		Processors:   processorsToZSS(rvP, zconst.TypeTime),
 	}
 	if exmeta, ok := EX_META_REGISTRY[s]; ok {
 		x := exmeta[EX_META_KEY_FORMAT].(string)
@@ -124,7 +125,7 @@ func (s *TimeSchema) toZSS() *zss.ZSSSchema {
 func (s *PointerSchema) toZSS() *zss.ZSSSchema {
 	j := zss.ZSSSchema{
 		Kind:     zconst.TypePtr,
-		Required: toZSSRequired(s.required),
+		Required: toZSSRequired(s.required, s.schema.getType()),
 		// DefaultValue: deepCopyPrimitivePtr(s.defaultVal),
 		// CatchValue:   deepCopyPrimitivePtr(s.catch),
 		// Processors:   processorsToZSS(rvP),
@@ -137,9 +138,9 @@ func (s *SliceSchema) toZSS() *zss.ZSSSchema {
 	rvP := reflect.ValueOf(s.processors)
 	j := zss.ZSSSchema{
 		Kind:         zconst.TypeSlice,
-		Required:     toZSSRequired(s.required),
+		Required:     toZSSRequired(s.required, zconst.TypeSlice),
 		DefaultValue: deepCopyPrimitivePtr(s.defaultVal),
-		Processors:   processorsToZSS(rvP),
+		Processors:   processorsToZSS(rvP, zconst.TypeSlice),
 		Child:        s.schema.toZSS(),
 	}
 	return &j
@@ -149,8 +150,8 @@ func (s *StructSchema) toZSS() *zss.ZSSSchema {
 	rvP := reflect.ValueOf(s.processors)
 	j := zss.ZSSSchema{
 		Kind:       zconst.TypeStruct,
-		Required:   toZSSRequired(s.required),
-		Processors: processorsToZSS(rvP),
+		Required:   toZSSRequired(s.required, zconst.TypeStruct),
+		Processors: processorsToZSS(rvP, zconst.TypeStruct),
 		Child:      toZSSShape(s.schema),
 	}
 	return &j
@@ -160,7 +161,7 @@ func (s *Custom[T]) toZSS() *zss.ZSSSchema {
 	j := zss.ZSSSchema{
 		Kind: zconst.TypeCustom,
 		// TODO not sure this is the right place for this info
-		Required: toZSSRequired(&s.test),
+		Required: toZSSRequired(&s.test, zconst.TypeCustom),
 	}
 	if EXHAUSTIVE_METADATA {
 		j.GoType = getGenericTypeName[T]()
@@ -202,7 +203,7 @@ func (s *BoxedSchema[B, T]) toZSS() *zss.ZSSSchema {
 	return &j
 }
 
-func processRVtoZSS(rv reflect.Value) *zss.ZSSProcessor {
+func processRVtoZSS(rv reflect.Value, dtype zconst.ZogType) *zss.ZSSProcessor {
 
 	if !rv.CanInterface() {
 		// TODO add assert here
@@ -215,7 +216,7 @@ func processRVtoZSS(rv reflect.Value) *zss.ZSSProcessor {
 	out := zss.ZSSProcessor{}
 
 	if test, ok := rvi.(internals.TestInterface); ok {
-		out.Test = toZSSTest(test)
+		out.Test = toZSSTest(test, dtype)
 		out.Kind = zconst.ZogProcessorTest
 	} else if trans, ok := rvi.(internals.TransformerInterface); ok {
 		out.Transformer = toZSSTransformer(trans)
@@ -227,7 +228,7 @@ func processRVtoZSS(rv reflect.Value) *zss.ZSSProcessor {
 	return &out
 }
 
-func processorsToZSS(l reflect.Value) []zss.ZSSProcessor {
+func processorsToZSS(l reflect.Value, dtype zconst.ZogType) []zss.ZSSProcessor {
 	if l.IsNil() {
 		return nil
 	}
@@ -236,7 +237,7 @@ func processorsToZSS(l reflect.Value) []zss.ZSSProcessor {
 	for i := 0; i < ln; i++ {
 		p := l.Index(i)
 		fmt.Println(l.CanInterface())
-		result := processRVtoZSS(p)
+		result := processRVtoZSS(p, dtype)
 		if result == nil {
 			continue
 		}
@@ -245,7 +246,7 @@ func processorsToZSS(l reflect.Value) []zss.ZSSProcessor {
 	return out
 }
 
-func toZSSRequired(test any) *zss.ZSSTest {
+func toZSSRequired(test any, dtype zconst.ZogType) *zss.ZSSTest {
 	if test == nil {
 		return nil
 	}
@@ -257,12 +258,23 @@ func toZSSRequired(test any) *zss.ZSSTest {
 		return nil
 	}
 
-	j := toZSSTest(test.(internals.TestInterface))
+	j := toZSSTest(test.(internals.TestInterface), dtype)
 	(*j).ID = zconst.ZogProcessorRequired
 	return j
 }
 
-func toZSSTest(test internals.TestInterface) *zss.ZSSTest {
+// fakeCtx is a minimal implementation of Ctx interface for extracting default messages
+type fakeCtx struct{}
+
+func (f *fakeCtx) Get(key string) any                                       { return nil }
+func (f *fakeCtx) AddIssue(e *internals.ZogIssue)                           {}
+func (f *fakeCtx) Issue() *internals.ZogIssue                               { return internals.NewZogIssue() }
+func (f *fakeCtx) NewError(p *internals.PathBuilder, e *internals.ZogIssue) {}
+func (f *fakeCtx) HasErrored() bool                                         { return false }
+
+var fakeCtxInstance = &fakeCtx{}
+
+func toZSSTest(test internals.TestInterface, dtype zconst.ZogType) *zss.ZSSTest {
 	if test == nil {
 		return nil
 	}
@@ -279,13 +291,24 @@ func toZSSTest(test internals.TestInterface) *zss.ZSSTest {
 	maps.Copy(newParams, params)
 	j.Params = newParams
 
-	// extra
+	// Check for custom message in registry first
 	if m, ok := EX_META_REGISTRY[test]; ok {
 		if message, ok := m[EX_META_KEY_MESSAGE]; ok {
 			j.Message = message.(string)
 		}
-
 	}
+
+	// If no message is set, extract default message using the default formatter
+	if j.Message == "" {
+		fakeIssue := internals.NewZogIssue().
+			SetCode(c).
+			SetDType(dtype).
+			SetParams(params)
+		conf.DefaultIssueFormatter(fakeIssue, fakeCtxInstance)
+		j.Message = fakeIssue.Message
+		internals.FreeIssue(fakeIssue)
+	}
+
 	return &j
 }
 
