@@ -206,3 +206,10 @@ const (
 	ErrCodeZHTTPInvalidQuery   ZogErrCode   = "invalid_query" // invalid query params
 	IssueCodeZHTTPInvalidQuery ZogIssueCode = "invalid_query" // invalid query params
 )
+
+type ZogTransformID = string
+
+const (
+	ZogTransformIDTrim   ZogTransformID = "trim"
+	ZogTransformIDCustom ZogTransformID = "custom"
+)
