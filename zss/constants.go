@@ -11,3 +11,9 @@ const (
 	ZSS_TYPE_UINT64  = "uint64"
 	ZSS_TYPE_UINT32  = "uint32"
 )
+
+type ZSSVersion = string
+
+const (
+	ZSS_VERSION_0_0_1 ZSSVersion = "0.0.1"
+)
