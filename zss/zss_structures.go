@@ -3,7 +3,7 @@ package zss // Zog Schema Specification
 import "github.com/Oudwins/zog/zconst" // TODO make zog schemas for all of these to validate them!
 
 type ZSSDocument struct {
-	Version string
+	Version ZSSVersion // "1.0.0"
 	Schema  *ZSSSchema
 }
 type ZSSProcessor struct {
