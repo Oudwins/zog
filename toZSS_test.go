@@ -4,6 +4,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Oudwins/zog/zss"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -18,49 +19,8 @@ func TestToJsonString(t *testing.T) {
 	assert.NotNil(t, serialized)
 
 	expected := `{
-		"kind": "string",
-		"goType": null,
-		"format": null,
-		"processors": [
-			{
-				"kind": "test",
-				"test": {
-					"id": "min",
-					"message": "",
-					"issuePath": null,
-					"params": {
-						"min": 1
-					}
-				},
-				"transformer": null
-			}
-		],
-		"child": null,
-		"required": {
-			"id": "required",
-			"message": "",
-			"issuePath": null,
-			"params": {}
-		},
-		"defaultValue": "Testing!",
-		"catchValue": "Testing2!"
-	}`
-
-	assert.Equal(t, normalize(expected), normalize(string(serialized)))
-}
-
-func TestToJsonPtr(t *testing.T) {
-	s := Ptr(String().Required().Default("Testing!").Catch("Testing2!").Min(1))
-	serialized, err := EXPERIMENTAL_TO_ZSS(s)
-	assert.Nil(t, err)
-	assert.NotNil(t, serialized)
-
-	expected := `{
-		"kind": "ptr",
-		"goType": null,
-		"format": null,
-		"processors": null,
-		"child": {
+		"version": "` + string(zss.ZSS_VERSION_LATEST) + `",
+		"schema": {
 			"kind": "string",
 			"goType": null,
 			"format": null,
@@ -87,10 +47,57 @@ func TestToJsonPtr(t *testing.T) {
 			},
 			"defaultValue": "Testing!",
 			"catchValue": "Testing2!"
-		},
-		"required": null,
-		"defaultValue": null,
-		"catchValue": null
+		}
+	}`
+
+	assert.Equal(t, normalize(expected), normalize(string(serialized)))
+}
+
+func TestToJsonPtr(t *testing.T) {
+	s := Ptr(String().Required().Default("Testing!").Catch("Testing2!").Min(1))
+	serialized, err := EXPERIMENTAL_TO_ZSS(s)
+	assert.Nil(t, err)
+	assert.NotNil(t, serialized)
+
+	expected := `{
+		"version": "` + string(zss.ZSS_VERSION_LATEST) + `",
+		"schema": {
+			"kind": "ptr",
+			"goType": null,
+			"format": null,
+			"processors": null,
+			"child": {
+				"kind": "string",
+				"goType": null,
+				"format": null,
+				"processors": [
+					{
+						"kind": "test",
+						"test": {
+							"id": "min",
+							"message": "",
+							"issuePath": null,
+							"params": {
+								"min": 1
+							}
+						},
+						"transformer": null
+					}
+				],
+				"child": null,
+				"required": {
+					"id": "required",
+					"message": "",
+					"issuePath": null,
+					"params": {}
+				},
+				"defaultValue": "Testing!",
+				"catchValue": "Testing2!"
+			},
+			"required": null,
+			"defaultValue": null,
+			"catchValue": null
+		}
 	}`
 
 	assert.Equal(t, normalize(expected), normalize(string(serialized)))

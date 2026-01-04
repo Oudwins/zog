@@ -47,7 +47,10 @@ type ZSSSerializable interface {
 
 func EXPERIMENTAL_TO_ZSS(s ZSSSerializable) ([]byte, error) {
 	j := s.toZSS()
-	jsonSchema, err := json.Marshal(j)
+	jsonSchema, err := json.Marshal(zss.ZSSDocument{
+		Version: zss.ZSS_VERSION_LATEST,
+		Schema:  j,
+	})
 	return jsonSchema, err
 }
 
