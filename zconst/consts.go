@@ -181,3 +181,20 @@ const (
 	ErrCodeZHTTPInvalidQuery   ZogErrCode   = "invalid_query" // invalid query params
 	IssueCodeZHTTPInvalidQuery ZogIssueCode = "invalid_query" // invalid query params
 )
+
+// ZSS Related Constants
+
+type ZogTransformID = string
+
+const (
+	ZogTransformIDTrim   ZogTransformID = "trim"
+	ZogTransformIDCustom ZogTransformID = "custom"
+)
+
+type ZogProcessor = string
+
+const (
+	ZogProcessorTest      ZogProcessor = "test"
+	ZogProcessorTransform ZogProcessor = "transform"
+	ZogProcessorRequired  ZogProcessor = "required"
+)

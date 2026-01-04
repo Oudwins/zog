@@ -15,3 +15,6 @@ docs-install:
 docs-dev:
 	cd ./docs && npm start
 
+json:
+	@go run -tags zogmeta ./cmd/toSchema/main.go
+
