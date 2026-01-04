@@ -1,7 +1,6 @@
 package zog
 
 import (
-	"fmt"
 	"strings"
 	"testing"
 
@@ -18,7 +17,34 @@ func TestToJsonString(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, serialized)
 
-	expected := `{"Type":"string","Processors":[{"Type":"test","IssueCode":"min","IssuePath":"","Params":{"min":1}}],"Child":null,"Required":{"Type":"test","IssueCode":"required","IssuePath":"","Params":{}},"DefaultValue":{},"CatchValue":{}}`
+	expected := `{
+		"Kind": "string",
+		"GoType": "",
+		"Format": null,
+		"Processors": [
+			{
+				"Kind": "test",
+				"Test": {
+					"ID": "min",
+					"Message": "",
+					"IssuePath": "",
+					"Params": {
+						"min": 1
+					}
+				},
+				"Transformer": null
+			}
+		],
+		"Child": null,
+		"Required": {
+			"ID": "required",
+			"Message": "",
+			"IssuePath": "",
+			"Params": {}
+		},
+		"DefaultValue": {},
+		"CatchValue": {}
+	}`
 
 	assert.Equal(t, normalize(expected), normalize(string(serialized)))
 }
@@ -26,7 +52,46 @@ func TestToJsonString(t *testing.T) {
 func TestToJsonPtr(t *testing.T) {
 	s := Ptr(String().Required().Default("Testing!").Catch("Testing2!").Min(1))
 	serialized, err := EXPERIMENTAL_TO_ZSS(s)
-	fmt.Println(string(serialized))
 	assert.Nil(t, err)
 	assert.NotNil(t, serialized)
+
+	expected := `{
+		"Kind": "ptr",
+		"GoType": "",
+		"Format": null,
+		"Processors": null,
+		"Child": {
+			"Kind": "string",
+			"GoType": "",
+			"Format": null,
+			"Processors": [
+				{
+					"Kind": "test",
+					"Test": {
+						"ID": "min",
+						"Message": "",
+						"IssuePath": "",
+						"Params": {
+							"min": 1
+						}
+					},
+					"Transformer": null
+				}
+			],
+			"Child": null,
+			"Required": {
+				"ID": "required",
+				"Message": "",
+				"IssuePath": "",
+				"Params": {}
+			},
+			"DefaultValue": {},
+			"CatchValue": {}
+		},
+		"Required": null,
+		"DefaultValue": null,
+		"CatchValue": null
+	}`
+
+	assert.Equal(t, normalize(expected), normalize(string(serialized)))
 }
