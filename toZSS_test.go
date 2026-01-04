@@ -42,8 +42,8 @@ func TestToJsonString(t *testing.T) {
 			"IssuePath": "",
 			"Params": {}
 		},
-		"DefaultValue": {},
-		"CatchValue": {}
+		"DefaultValue": "Testing!",
+		"CatchValue": "Testing2!"
 	}`
 
 	assert.Equal(t, normalize(expected), normalize(string(serialized)))
@@ -85,8 +85,8 @@ func TestToJsonPtr(t *testing.T) {
 				"IssuePath": "",
 				"Params": {}
 			},
-			"DefaultValue": {},
-			"CatchValue": {}
+			"DefaultValue": "Testing!",
+			"CatchValue": "Testing2!"
 		},
 		"Required": null,
 		"DefaultValue": null,

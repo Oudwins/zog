@@ -294,5 +294,5 @@ func deepCopyPrimitivePtr(v any) any {
 	ptr := reflect.New(e.Type())
 
 	ptr.Elem().Set(e)
-	return ptr
+	return ptr.Interface()
 }
