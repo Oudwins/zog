@@ -167,10 +167,12 @@ func (s *Custom[T]) toZSS() *zss.ZSSSchema {
 	return &j
 }
 
-func toZSSShape(s Shape) (m map[string]zss.ZSSSchema) {
-	// iterate and return
-	// TODO forgot how to fucking do this
-	return m
+func toZSSShape(m Shape) map[string]zss.ZSSSchema {
+	out := map[string]zss.ZSSSchema{}
+	for k, v := range m {
+		out[k] = *v.toZSS()
+	}
+	return out
 }
 
 func (s *PreprocessSchema[F, T]) toZSS() *zss.ZSSSchema {
