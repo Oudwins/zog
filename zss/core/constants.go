@@ -1,4 +1,4 @@
-package zss // Zog Schema Specification
+package zsscore // Zog Schema Specification
 
 const (
 	ZSS_TYPE_KEY     = "typeName"
@@ -18,3 +18,4 @@ const (
 	ZSS_VERSION_0_0_1  ZSSVersion = "0.0.1"
 	ZSS_VERSION_LATEST ZSSVersion = ZSS_VERSION_0_0_1
 )
+

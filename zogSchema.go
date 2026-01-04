@@ -3,7 +3,7 @@ package zog
 import (
 	p "github.com/Oudwins/zog/internals"
 	"github.com/Oudwins/zog/zconst"
-	"github.com/Oudwins/zog/zss"
+	"github.com/Oudwins/zog/zss/core"
 )
 
 // The ZogSchema is the interface all schemas must implement
@@ -13,7 +13,7 @@ type ZogSchema interface {
 	validate(ctx *p.SchemaCtx)
 	getType() zconst.ZogType
 	setCoercer(c CoercerFunc)
-	toZSS() *zss.ZSSSchema
+	toZSS() *zsscore.ZSSSchema
 }
 
 // This is a common interface for all complex schemas (i.e structs, slices, pointers...)

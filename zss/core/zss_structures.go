@@ -1,4 +1,4 @@
-package zss // Zog Schema Specification
+package zsscore // Zog Schema Specification
 
 import "github.com/Oudwins/zog/zconst" // TODO make zog schemas for all of these to validate them!
 
@@ -33,3 +33,4 @@ type ZSSSchema struct {
 	DefaultValue any            `json:"defaultValue"`
 	CatchValue   any            `json:"catchValue"`
 }
+

@@ -1,10 +1,11 @@
-package zog
+package zss_test
 
 import (
 	"strings"
 	"testing"
 
-	"github.com/Oudwins/zog/zss"
+	"github.com/Oudwins/zog"
+	zss "github.com/Oudwins/zog/zss/core"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -20,8 +21,8 @@ func baseZSSJson(schema string) string {
 }
 
 func TestToJsonString(t *testing.T) {
-	s := String().Required().Default("Testing!").Catch("Testing2!").Min(1)
-	serialized, err := EXPERIMENTAL_TO_ZSS(s)
+	s := zog.String().Required().Default("Testing!").Catch("Testing2!").Min(1)
+	serialized, err := zog.EXPERIMENTAL_TO_ZSS(s)
 	assert.Nil(t, err)
 	assert.NotNil(t, serialized)
 
@@ -58,8 +59,8 @@ func TestToJsonString(t *testing.T) {
 }
 
 func TestToJsonPtr(t *testing.T) {
-	s := Ptr(String().Required().Default("Testing!").Catch("Testing2!").Min(1))
-	serialized, err := EXPERIMENTAL_TO_ZSS(s)
+	s := zog.Ptr(zog.String().Required().Default("Testing!").Catch("Testing2!").Min(1))
+	serialized, err := zog.EXPERIMENTAL_TO_ZSS(s)
 	assert.Nil(t, err)
 	assert.NotNil(t, serialized)
 
@@ -103,3 +104,4 @@ func TestToJsonPtr(t *testing.T) {
 
 	assert.Equal(t, normalize(expected), normalize(string(serialized)))
 }
+
