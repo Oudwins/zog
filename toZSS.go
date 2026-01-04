@@ -183,10 +183,10 @@ func processRVtoZSS(rv reflect.Value) *zss.ZSSProcessor {
 
 	if test, ok := rvi.(internals.TestInterface); ok {
 		out.Test = toZSSTest(test)
-		out.Type = zconst.ZogProcessorTest
+		out.Kind = zconst.ZogProcessorTest
 	} else if trans, ok := rvi.(internals.TransformerInterface); ok {
 		out.Transformer = toZSSTransformer(trans)
-		out.Type = zconst.ZogProcessorTransform
+		out.Kind = zconst.ZogProcessorTransform
 	} else {
 		// TODO add assert here
 		fmt.Println("THIS SHOULD NEVER HAPPEN")
@@ -245,7 +245,6 @@ func toZSSTransformer(transformer internals.TransformerInterface) *zss.ZSSTransf
 		return nil
 	}
 	j := zss.ZSSTransformer{}
-	j.Type = zconst.ZogProcessorTransform
 	return &j
 }
 
