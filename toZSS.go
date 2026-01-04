@@ -15,7 +15,9 @@ import (
 type ExMetaRegistry map[any]map[string]any
 
 const (
-	EX_META_KEY_FORMAT = "format"
+	EX_META_KEY_FORMAT  = "format"
+	EX_META_KEY_MESSAGE = "message"
+	EX_META_KEY_ID      = "id"
 )
 
 // EXPERIMENTAL. PLEASE DO NOT USE UNLESS YOU KNOW WHAT YOU ARE DOING!
@@ -112,9 +114,8 @@ func (s *TimeSchema) toZSS() *zss.ZSSSchema {
 		CatchValue:   deepCopyPrimitivePtr(s.catch),
 		Processors:   processorsToZSS(rvP),
 	}
-	exmeta, ok := EX_META_REGISTRY[s]
-	if ok {
-		x := exmeta["format"].(string)
+	if exmeta, ok := EX_META_REGISTRY[s]; ok {
+		x := exmeta[EX_META_KEY_FORMAT].(string)
 		j.Format = &x
 	}
 	return &j
@@ -277,6 +278,14 @@ func toZSSTest(test internals.TestInterface) *zss.ZSSTest {
 	newParams := map[string]any{}
 	maps.Copy(newParams, params)
 	j.Params = newParams
+
+	// extra
+	if m, ok := EX_META_REGISTRY[test]; ok {
+		if message, ok := m[EX_META_KEY_MESSAGE]; ok {
+			j.Message = message.(string)
+		}
+
+	}
 	return &j
 }
 
@@ -285,7 +294,16 @@ func toZSSTransformer(transformer internals.TransformerInterface) *zss.ZSSTransf
 	if transformer == nil {
 		return nil
 	}
-	j := zss.ZSSTransformer{}
+	j := zss.ZSSTransformer{
+		ID: zconst.ZogTransformIDCustom,
+	}
+
+	// extra
+	if m, ok := EX_META_REGISTRY[transformer]; ok {
+		if id, ok := m[EX_META_KEY_ID]; ok {
+			j.ID = id.(zconst.ZogTransformID)
+		}
+	}
 	return &j
 }
 

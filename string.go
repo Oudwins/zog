@@ -147,7 +147,7 @@ func (v *StringSchema[T]) Trim() *StringSchema[T] {
 		},
 	})
 	if EXHAUSTIVE_METADATA {
-		registryAdd(EX_META_REGISTRY, v.processors[len(v.processors)-1], "ID", zconst.ZogTransformIDTrim)
+		registryAdd(EX_META_REGISTRY, v.processors[len(v.processors)-1], EX_META_KEY_ID, zconst.ZogTransformIDTrim)
 	}
 
 	return v

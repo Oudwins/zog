@@ -64,7 +64,7 @@ func (t TimeFunc) FormatFunc(format func(data string) (time.Time, error)) Schema
 func (t TimeFunc) Format(format string) SchemaOption {
 	return func(s ZogSchema) {
 		if EXHAUSTIVE_METADATA {
-			registryAdd(EX_META_REGISTRY, s, "format", format)
+			registryAdd(EX_META_REGISTRY, s, EX_META_KEY_FORMAT, format)
 		}
 		s.setCoercer(conf.TimeCoercerFactory(func(data string) (time.Time, error) {
 			return time.Parse(format, data)
