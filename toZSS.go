@@ -1,7 +1,6 @@
 package zog
 
 import (
-	"encoding/json"
 	"fmt"
 	"maps"
 	"reflect"
@@ -48,13 +47,12 @@ type ZSSSerializable interface {
 	toZSS() *zss.ZSSSchema
 }
 
-func EXPERIMENTAL_TO_ZSS(s ZSSSerializable) ([]byte, error) {
+func EXPERIMENTAL_TO_ZSS(s ZSSSerializable) zss.ZSSDocument {
 	j := s.toZSS()
-	jsonSchema, err := json.Marshal(zss.ZSSDocument{
+	return zss.ZSSDocument{
 		Version: zss.ZSS_VERSION_LATEST,
 		Schema:  j,
-	})
-	return jsonSchema, err
+	}
 }
 
 func (s *StringSchema[T]) toZSS() *zss.ZSSSchema {

@@ -1,6 +1,7 @@
 package zss_test
 
 import (
+	"encoding/json"
 	"strings"
 	"testing"
 
@@ -22,7 +23,8 @@ func baseZSSJson(schema string) string {
 
 func TestToJsonString(t *testing.T) {
 	s := zog.String().Required().Default("Testing!").Catch("Testing2!").Min(1)
-	serialized, err := zog.EXPERIMENTAL_TO_ZSS(s)
+	d := zog.EXPERIMENTAL_TO_ZSS(s)
+	serialized, err := json.Marshal(d)
 	assert.Nil(t, err)
 	assert.NotNil(t, serialized)
 
@@ -35,7 +37,7 @@ func TestToJsonString(t *testing.T) {
 				"kind": "test",
 				"test": {
 					"id": "min",
-					"message": "",
+					"message": "string must contain at least 1 character(s)",
 					"issuePath": null,
 					"params": {
 						"min": 1
@@ -47,7 +49,7 @@ func TestToJsonString(t *testing.T) {
 		"child": null,
 		"required": {
 			"id": "required",
-			"message": "",
+			"message": "is required",
 			"issuePath": null,
 			"params": {}
 		},
@@ -60,7 +62,8 @@ func TestToJsonString(t *testing.T) {
 
 func TestToJsonPtr(t *testing.T) {
 	s := zog.Ptr(zog.String().Required().Default("Testing!").Catch("Testing2!").Min(1))
-	serialized, err := zog.EXPERIMENTAL_TO_ZSS(s)
+	d := zog.EXPERIMENTAL_TO_ZSS(s)
+	serialized, err := json.Marshal(d)
 	assert.Nil(t, err)
 	assert.NotNil(t, serialized)
 
@@ -78,7 +81,7 @@ func TestToJsonPtr(t *testing.T) {
 					"kind": "test",
 					"test": {
 						"id": "min",
-						"message": "",
+						"message": "string must contain at least 1 character(s)",
 						"issuePath": null,
 						"params": {
 							"min": 1
@@ -90,7 +93,7 @@ func TestToJsonPtr(t *testing.T) {
 			"child": null,
 			"required": {
 				"id": "required",
-				"message": "",
+				"message": "is required",
 				"issuePath": null,
 				"params": {}
 			},
@@ -104,4 +107,3 @@ func TestToJsonPtr(t *testing.T) {
 
 	assert.Equal(t, normalize(expected), normalize(string(serialized)))
 }
-
