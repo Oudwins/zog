@@ -47,13 +47,6 @@ const (
 	TypePtr    ZogType = "ptr"
 )
 
-type ZogProcessor = string
-
-const (
-	ProcessorTest      ZogProcessor = "test"
-	ProcessorTransform ZogProcessor = "transform"
-)
-
 // Deprecated: This will be removed in the future. Use z.ZogIssueCode instead
 type ZogErrCode = string
 
@@ -207,9 +200,19 @@ const (
 	IssueCodeZHTTPInvalidQuery ZogIssueCode = "invalid_query" // invalid query params
 )
 
+// ZSS Related Constants
+
 type ZogTransformID = string
 
 const (
 	ZogTransformIDTrim   ZogTransformID = "trim"
 	ZogTransformIDCustom ZogTransformID = "custom"
+)
+
+type ZogProcessor = string
+
+const (
+	ZogProcessorTest      ZogProcessor = "test"
+	ZogProcessorTransform ZogProcessor = "transform"
+	ZogProcessorRequired  ZogProcessor = "required"
 )

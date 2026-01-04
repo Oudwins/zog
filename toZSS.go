@@ -56,7 +56,7 @@ func EXPERIMENTAL_TO_ZSS(s ZSSSerializable) ([]byte, error) {
 func (s *StringSchema[T]) toZSS() *zss.ZSSSchema {
 	rvP := reflect.ValueOf(s.processors)
 	j := zss.ZSSSchema{
-		Type:         zconst.TypeString,
+		GoType:       zconst.TypeString,
 		Required:     toZSSTest(s.required),
 		DefaultValue: deepCopyPrimitivePtr(s.defaultVal),
 		CatchValue:   deepCopyPrimitivePtr(s.catch),
@@ -68,7 +68,7 @@ func (s *StringSchema[T]) toZSS() *zss.ZSSSchema {
 func (s *NumberSchema[T]) toZSS() *zss.ZSSSchema {
 	rvP := reflect.ValueOf(s.processors)
 	j := zss.ZSSSchema{
-		Type:         zconst.TypeNumber,
+		GoType:       zconst.TypeNumber,
 		Required:     toZSSTest(s.required),
 		DefaultValue: deepCopyPrimitivePtr(s.defaultVal),
 		CatchValue:   deepCopyPrimitivePtr(s.catch),
@@ -80,7 +80,7 @@ func (s *NumberSchema[T]) toZSS() *zss.ZSSSchema {
 func (s *BoolSchema[T]) toZSS() *zss.ZSSSchema {
 	rvP := reflect.ValueOf(s.processors)
 	j := zss.ZSSSchema{
-		Type:         zconst.TypeBool,
+		GoType:       zconst.TypeBool,
 		Required:     toZSSTest(s.required),
 		DefaultValue: deepCopyPrimitivePtr(s.defaultVal),
 		CatchValue:   deepCopyPrimitivePtr(s.catch),
@@ -92,7 +92,7 @@ func (s *BoolSchema[T]) toZSS() *zss.ZSSSchema {
 func (s *TimeSchema) toZSS() *zss.ZSSSchema {
 	// rvP := reflect.ValueOf(s.processors)
 	j := zss.ZSSSchema{
-		Type: zconst.TypeTime,
+		GoType: zconst.TypeTime,
 		// Required:     toZSSTest(s.required),
 		// DefaultValue: deepCopyPrimitivePtr(s.defaultVal),
 		// CatchValue:   deepCopyPrimitivePtr(s.catch),
@@ -108,7 +108,7 @@ func (s *TimeSchema) toZSS() *zss.ZSSSchema {
 
 func (s *PointerSchema) toZSS() *zss.ZSSSchema {
 	j := zss.ZSSSchema{
-		Type:     zconst.TypePtr,
+		GoType:   zconst.TypePtr,
 		Required: toZSSTest(s.required),
 		Child:    s.schema.toZSS(),
 	}
@@ -118,7 +118,7 @@ func (s *PointerSchema) toZSS() *zss.ZSSSchema {
 func (s *SliceSchema) toZSS() *zss.ZSSSchema {
 	rvP := reflect.ValueOf(s.processors)
 	j := zss.ZSSSchema{
-		Type:         zconst.TypeSlice,
+		GoType:       zconst.TypeSlice,
 		Required:     toZSSTest(s.required),
 		DefaultValue: deepCopyPrimitivePtr(s.defaultVal),
 		Processors:   processorsToZSS(rvP),
@@ -130,7 +130,7 @@ func (s *SliceSchema) toZSS() *zss.ZSSSchema {
 func (s *StructSchema) toZSS() *zss.ZSSSchema {
 	rvP := reflect.ValueOf(s.processors)
 	j := zss.ZSSSchema{
-		Type:       zconst.TypeSlice,
+		GoType:     zconst.TypeSlice,
 		Required:   toZSSTest(s.required),
 		Processors: processorsToZSS(rvP),
 		Child:      toZSSShape(s.schema),
@@ -140,7 +140,7 @@ func (s *StructSchema) toZSS() *zss.ZSSSchema {
 
 func (s *Custom[T]) toZSS() *zss.ZSSSchema {
 	j := zss.ZSSSchema{
-		Type: "custom",
+		GoType: "custom",
 		// TODO not sure this is the right place for this info
 		Required: toZSSTest(&s.test),
 	}
@@ -155,21 +155,21 @@ func toZSSShape(s Shape) (m map[string]zss.ZSSSchema) {
 
 func (s *PreprocessSchema[F, T]) toZSS() *zss.ZSSSchema {
 	j := zss.ZSSSchema{
-		Type:  "preprocess",
-		Child: s.schema.toZSS(),
+		GoType: "preprocess",
+		Child:  s.schema.toZSS(),
 	}
 	return &j
 }
 
 func (s *BoxedSchema[B, T]) toZSS() *zss.ZSSSchema {
 	j := zss.ZSSSchema{
-		Type:  "boxed",
-		Child: s.schema.toZSS(),
+		GoType: "boxed",
+		Child:  s.schema.toZSS(),
 	}
 	return &j
 }
 
-func processRVtoZSS(rv reflect.Value) any {
+func processRVtoZSS(rv reflect.Value) *zss.ZSSProcessor {
 
 	if !rv.CanInterface() {
 		// TODO add assert here
@@ -179,25 +179,27 @@ func processRVtoZSS(rv reflect.Value) any {
 
 	rvi := rv.Interface()
 
-	var out any
+	out := zss.ZSSProcessor{}
 
 	if test, ok := rvi.(internals.TestInterface); ok {
-		out = toZSSTest(test)
+		out.Test = toZSSTest(test)
+		out.Type = zconst.ZogProcessorTest
 	} else if trans, ok := rvi.(internals.TransformerInterface); ok {
-		out = toZSSTransformer(trans)
+		out.Transformer = toZSSTransformer(trans)
+		out.Type = zconst.ZogProcessorTransform
 	} else {
 		// TODO add assert here
 		fmt.Println("THIS SHOULD NEVER HAPPEN")
 	}
-	return out
+	return &out
 }
 
-func processorsToZSS(l reflect.Value) []any {
+func processorsToZSS(l reflect.Value) []zss.ZSSProcessor {
 	if l.IsNil() {
 		return nil
 	}
 	ln := l.Len()
-	out := []any{}
+	out := []zss.ZSSProcessor{}
 	for i := 0; i < ln; i++ {
 		p := l.Index(i)
 		fmt.Println(l.CanInterface())
@@ -205,18 +207,27 @@ func processorsToZSS(l reflect.Value) []any {
 		if result == nil {
 			continue
 		}
-		out = append(out, result)
+		out = append(out, *result)
 	}
 	return out
 }
 
-func toZSSRequired(test internals.TestInterface) *zss.ZSSRequired {
+func toZSSRequired(test internals.TestInterface) *zss.ZSSTest {
 	if test == nil {
 		return nil
 	}
 
-	j := zss.ZSSRequired{}
-	j.Type = zconst.ProcessorTest
+	j := toZSSTest(test)
+	(*j).ID = zconst.ZogProcessorRequired
+	return j
+}
+
+func toZSSTest(test internals.TestInterface) *zss.ZSSTest {
+	if test == nil {
+		return nil
+	}
+
+	j := zss.ZSSTest{}
 	c := test.GetIssueCode()
 	j.ID = c
 	path := test.GetIssuePath()
@@ -234,7 +245,7 @@ func toZSSTransformer(transformer internals.TransformerInterface) *zss.ZSSTransf
 		return nil
 	}
 	j := zss.ZSSTransformer{}
-	j.Type = zconst.ProcessorTransform
+	j.Type = zconst.ZogProcessorTransform
 	return &j
 }
 
