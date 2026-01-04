@@ -7,7 +7,7 @@ type ZSSDocument struct {
 	Schema  *ZSSSchema
 }
 type ZSSProcessor struct {
-	Type        string // "transform", "validator"
+	Kind        zconst.ZogProcessor // "transform", "validator"
 	Test        *ZSSTest
 	Transformer *ZSSTransformer
 }
@@ -20,8 +20,7 @@ type ZSSTest struct {
 }
 
 type ZSSTransformer struct {
-	Type string // "transformer"
-	ID   zconst.ZogTransformID
+	ID zconst.ZogTransformID
 }
 
 type ZSSSchema struct {
