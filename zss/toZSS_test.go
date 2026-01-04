@@ -107,3 +107,35 @@ func TestToJsonPtr(t *testing.T) {
 
 	assert.Equal(t, normalize(expected), normalize(string(serialized)))
 }
+
+// TestToJsonStructShape tests JSON stability for struct shapes
+func TestToJsonStructShape(t *testing.T) {
+	s := zog.Struct(zog.Shape{
+		"name": zog.String().Required().Min(1),
+		"age":  zog.Int().Optional(),
+	})
+	d := zog.EXPERIMENTAL_TO_ZSS(s)
+	serialized, err := json.Marshal(d)
+	assert.Nil(t, err)
+	assert.NotNil(t, serialized)
+
+	// Verify JSON can be unmarshaled back into a document
+	var doc zss.ZSSDocument
+	err = json.Unmarshal(serialized, &doc)
+	assert.Nil(t, err, "JSON should unmarshal successfully")
+	assert.Equal(t, zss.ZSS_VERSION_LATEST, doc.Version)
+	assert.NotNil(t, doc.Schema)
+	assert.Equal(t, "struct", doc.Schema.Kind)
+
+	// Verify child shape exists
+	childShape, ok := doc.Schema.Child.(map[string]interface{})
+	assert.True(t, ok, "child should be a map")
+	assert.Len(t, childShape, 2, "should have 2 fields")
+
+	// Verify name field
+	nameField, nameExists := childShape["name"]
+	assert.True(t, nameExists, "name field should exist")
+	nameMap, ok := nameField.(map[string]interface{})
+	assert.True(t, ok)
+	assert.Equal(t, "string", nameMap["kind"])
+}
