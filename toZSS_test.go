@@ -18,32 +18,32 @@ func TestToJsonString(t *testing.T) {
 	assert.NotNil(t, serialized)
 
 	expected := `{
-		"Kind": "string",
-		"GoType": "",
-		"Format": null,
-		"Processors": [
+		"kind": "string",
+		"goType": null,
+		"format": null,
+		"processors": [
 			{
-				"Kind": "test",
-				"Test": {
-					"ID": "min",
-					"Message": "",
-					"IssuePath": "",
-					"Params": {
+				"kind": "test",
+				"test": {
+					"id": "min",
+					"message": "",
+					"issuePath": null,
+					"params": {
 						"min": 1
 					}
 				},
-				"Transformer": null
+				"transformer": null
 			}
 		],
-		"Child": null,
-		"Required": {
-			"ID": "required",
-			"Message": "",
-			"IssuePath": "",
-			"Params": {}
+		"child": null,
+		"required": {
+			"id": "required",
+			"message": "",
+			"issuePath": null,
+			"params": {}
 		},
-		"DefaultValue": "Testing!",
-		"CatchValue": "Testing2!"
+		"defaultValue": "Testing!",
+		"catchValue": "Testing2!"
 	}`
 
 	assert.Equal(t, normalize(expected), normalize(string(serialized)))
@@ -56,41 +56,41 @@ func TestToJsonPtr(t *testing.T) {
 	assert.NotNil(t, serialized)
 
 	expected := `{
-		"Kind": "ptr",
-		"GoType": "",
-		"Format": null,
-		"Processors": null,
-		"Child": {
-			"Kind": "string",
-			"GoType": "",
-			"Format": null,
-			"Processors": [
+		"kind": "ptr",
+		"goType": null,
+		"format": null,
+		"processors": null,
+		"child": {
+			"kind": "string",
+			"goType": null,
+			"format": null,
+			"processors": [
 				{
-					"Kind": "test",
-					"Test": {
-						"ID": "min",
-						"Message": "",
-						"IssuePath": "",
-						"Params": {
+					"kind": "test",
+					"test": {
+						"id": "min",
+						"message": "",
+						"issuePath": null,
+						"params": {
 							"min": 1
 						}
 					},
-					"Transformer": null
+					"transformer": null
 				}
 			],
-			"Child": null,
-			"Required": {
-				"ID": "required",
-				"Message": "",
-				"IssuePath": "",
-				"Params": {}
+			"child": null,
+			"required": {
+				"id": "required",
+				"message": "",
+				"issuePath": null,
+				"params": {}
 			},
-			"DefaultValue": "Testing!",
-			"CatchValue": "Testing2!"
+			"defaultValue": "Testing!",
+			"catchValue": "Testing2!"
 		},
-		"Required": null,
-		"DefaultValue": null,
-		"CatchValue": null
+		"required": null,
+		"defaultValue": null,
+		"catchValue": null
 	}`
 
 	assert.Equal(t, normalize(expected), normalize(string(serialized)))

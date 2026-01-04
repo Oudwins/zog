@@ -25,7 +25,7 @@ type ZSSTransformer struct {
 
 type ZSSSchema struct {
 	Kind         string         `json:"kind"`   // "string", "number", "bool", "time", "slice", "struct", "ptr"
-	GoType       string         `json:"goType"` // Custom type if available (only if ZSS Exhaustive Metadata is enabled)
+	GoType       *string        `json:"goType"` // Custom type if available (only if ZSS Exhaustive Metadata is enabled)
 	Format       *string        `json:"format"` // Used for time.Time schemas only right now. (Only if ZSS Exhaustive Metadata is enabled)
 	Processors   []ZSSProcessor `json:"processors"`
 	Child        any            `json:"child"` // *ZSSSchema | map[string]ZSSSchema

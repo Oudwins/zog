@@ -28,7 +28,7 @@ func registryAdd(r ExMetaRegistry, key any, path string, value any) {
 	r[key][path] = value
 }
 
-func getGenericTypeName[T any]() string {
+func getGenericTypeName[T any]() *string {
 	var zero T
 	t := reflect.TypeOf(zero)
 
@@ -36,8 +36,9 @@ func getGenericTypeName[T any]() string {
 	if t == nil {
 		t = reflect.TypeOf((*T)(nil)).Elem()
 	}
+	name := t.Name()
 
-	return t.Name()
+	return &name
 }
 
 type ZSSSerializable interface {
@@ -264,7 +265,9 @@ func toZSSTest(test internals.TestInterface) *zss.ZSSTest {
 	c := test.GetIssueCode()
 	j.ID = c
 	path := test.GetIssuePath()
-	j.IssuePath = &path
+	if path != "" {
+		j.IssuePath = &path
+	}
 	params := test.GetParams()
 	newParams := map[string]any{}
 	maps.Copy(newParams, params)
