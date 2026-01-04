@@ -238,12 +238,19 @@ func processorsToZSS(l reflect.Value) []zss.ZSSProcessor {
 	return out
 }
 
-func toZSSRequired(test internals.TestInterface) *zss.ZSSTest {
+func toZSSRequired(test any) *zss.ZSSTest {
 	if test == nil {
 		return nil
 	}
 
-	j := toZSSTest(test)
+	// Check if the underlying value is actually nil using reflection
+	// This handles the case where a nil pointer is passed as an interface
+	rv := reflect.ValueOf(test)
+	if rv.Kind() == reflect.Ptr && rv.IsNil() {
+		return nil
+	}
+
+	j := toZSSTest(test.(internals.TestInterface))
 	(*j).ID = zconst.ZogProcessorRequired
 	return j
 }
