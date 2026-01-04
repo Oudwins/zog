@@ -1,3 +1,4 @@
 node_modules/
 .docusaurus/
 build/
+static/llms.txt
