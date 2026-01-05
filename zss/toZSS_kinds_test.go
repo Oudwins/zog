@@ -314,7 +314,8 @@ func TestCustomSchema(t *testing.T) {
 
 	assertDocumentBasics(t, doc)
 	assertSchemaKind(t, doc.Schema, "custom")
-	assertRequired(t, doc.Schema, true) // CustomFunc creates a required test
-	assertProcessorsCount(t, doc.Schema, 0)
+	assertRequired(t, doc.Schema, false) // CustomFunc does not set required
+	assertProcessorsCount(t, doc.Schema, 1)
+	assertTestProcessor(t, doc.Schema.Processors, 0, "", nil) // CustomFunc test has empty issue code by default
 	assertChildIsNil(t, doc.Schema)
 }
