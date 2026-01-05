@@ -453,14 +453,20 @@ func TestToJsonCustom(t *testing.T) {
 		"kind": "custom",
 		"goType": null,
 		"format": null,
-		"processors": null,
+		"processors": [
+			{
+				"kind": "test",
+				"test": {
+					"id": "",
+					"message": "",
+					"issuePath": null,
+					"params": {}
+				},
+				"transformer": null
+			}
+		],
 		"child": null,
-		"required": {
-			"id": "required",
-			"message": "",
-			"issuePath": null,
-			"params": {}
-		},
+		"required": null,
 		"defaultValue": null,
 		"catchValue": null
 	}`)
