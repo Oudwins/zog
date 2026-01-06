@@ -23,9 +23,15 @@ type ZSSTransformer struct {
 	ID zconst.ZogTransformID `json:"id"`
 }
 
+type ZSSGoType struct {
+	PkgPath string `json:"pkgPath"` // Package path, empty for builtins
+	Name    string `json:"name"`    // Type name, may be empty for unnamed types
+	Display string `json:"display"` // Full type string (e.g., "*mypkg.User", "[]string")
+}
+
 type ZSSSchema struct {
 	Kind         string         `json:"kind"`   // "string", "number", "bool", "time", "slice", "struct", "ptr"
-	GoType       *string        `json:"goType"` // Custom type if available (only if ZSS Exhaustive Metadata is enabled)
+	GoTypes      []ZSSGoType    `json:"goTypes,omitempty"` // Type metadata (only if ZSS Exhaustive Metadata is enabled)
 	Format       *string        `json:"format"` // Used for time.Time schemas only right now. (Only if ZSS Exhaustive Metadata is enabled)
 	Processors   []ZSSProcessor `json:"processors"`
 	Child        any            `json:"child"` // *ZSSSchema | map[string]ZSSSchema

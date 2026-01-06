@@ -16,7 +16,7 @@ func TestStringSchemaNoMeta_GoTypeIsNil(t *testing.T) {
 	doc := zog.EXPERIMENTAL_TO_ZSS(s)
 
 	assertDocumentBasics(t, doc)
-	assert.Nil(t, doc.Schema.GoType, "GoType should be nil when zogmeta build tag is not set")
+	assert.Nil(t, doc.Schema.GoTypes, "GoTypes should be nil when zogmeta build tag is not set")
 }
 
 func TestStringLikeSchemaNoMeta_GoTypeIsNil(t *testing.T) {
@@ -25,7 +25,7 @@ func TestStringLikeSchemaNoMeta_GoTypeIsNil(t *testing.T) {
 	doc := zog.EXPERIMENTAL_TO_ZSS(s)
 
 	assertDocumentBasics(t, doc)
-	assert.Nil(t, doc.Schema.GoType, "GoType should be nil when zogmeta build tag is not set")
+	assert.Nil(t, doc.Schema.GoTypes, "GoTypes should be nil when zogmeta build tag is not set")
 }
 
 func TestIntLikeSchemaNoMeta_GoTypeIsNil(t *testing.T) {
@@ -34,7 +34,7 @@ func TestIntLikeSchemaNoMeta_GoTypeIsNil(t *testing.T) {
 	doc := zog.EXPERIMENTAL_TO_ZSS(s)
 
 	assertDocumentBasics(t, doc)
-	assert.Nil(t, doc.Schema.GoType, "GoType should be nil when zogmeta build tag is not set")
+	assert.Nil(t, doc.Schema.GoTypes, "GoTypes should be nil when zogmeta build tag is not set")
 }
 
 func TestFloatLikeSchemaNoMeta_GoTypeIsNil(t *testing.T) {
@@ -43,7 +43,7 @@ func TestFloatLikeSchemaNoMeta_GoTypeIsNil(t *testing.T) {
 	doc := zog.EXPERIMENTAL_TO_ZSS(s)
 
 	assertDocumentBasics(t, doc)
-	assert.Nil(t, doc.Schema.GoType, "GoType should be nil when zogmeta build tag is not set")
+	assert.Nil(t, doc.Schema.GoTypes, "GoTypes should be nil when zogmeta build tag is not set")
 }
 
 func TestBoolLikeSchemaNoMeta_GoTypeIsNil(t *testing.T) {
@@ -52,7 +52,7 @@ func TestBoolLikeSchemaNoMeta_GoTypeIsNil(t *testing.T) {
 	doc := zog.EXPERIMENTAL_TO_ZSS(s)
 
 	assertDocumentBasics(t, doc)
-	assert.Nil(t, doc.Schema.GoType, "GoType should be nil when zogmeta build tag is not set")
+	assert.Nil(t, doc.Schema.GoTypes, "GoTypes should be nil when zogmeta build tag is not set")
 }
 
 func TestTimeSchemaNoMeta_FormatBehavior(t *testing.T) {
@@ -79,7 +79,7 @@ func TestPreprocessSchemaNoMeta_GoTypeIsNil(t *testing.T) {
 
 	assertDocumentBasics(t, doc)
 	assertSchemaKind(t, doc.Schema, "preprocess")
-	assert.Nil(t, doc.Schema.GoType, "GoType should be nil when zogmeta build tag is not set")
+	assert.Nil(t, doc.Schema.GoTypes, "GoTypes should be nil when zogmeta build tag is not set")
 }
 
 func TestBoxedSchemaNoMeta_GoTypeIsNil(t *testing.T) {
@@ -95,7 +95,7 @@ func TestBoxedSchemaNoMeta_GoTypeIsNil(t *testing.T) {
 
 	assertDocumentBasics(t, doc)
 	assertSchemaKind(t, doc.Schema, "boxed")
-	assert.Nil(t, doc.Schema.GoType, "GoType should be nil when zogmeta build tag is not set")
+	assert.Nil(t, doc.Schema.GoTypes, "GoTypes should be nil when zogmeta build tag is not set")
 }
 
 func TestCustomSchemaNoMeta_GoTypeIsNil(t *testing.T) {
@@ -107,7 +107,7 @@ func TestCustomSchemaNoMeta_GoTypeIsNil(t *testing.T) {
 
 	assertDocumentBasics(t, doc)
 	assertSchemaKind(t, doc.Schema, "custom")
-	assert.Nil(t, doc.Schema.GoType, "GoType should be nil when zogmeta build tag is not set")
+	assert.Nil(t, doc.Schema.GoTypes, "GoTypes should be nil when zogmeta build tag is not set")
 }
 
 func TestTimeSchemaWithFormatNoMeta_FormatMayBeNil(t *testing.T) {

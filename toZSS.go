@@ -30,7 +30,7 @@ func registryAdd(r ExMetaRegistry, key any, path string, value any) {
 	r[key][path] = value
 }
 
-func getGenericTypeName[T any]() *string {
+func getZSSGoType[T any]() zss.ZSSGoType {
 	var zero T
 	t := reflect.TypeOf(zero)
 
@@ -38,9 +38,12 @@ func getGenericTypeName[T any]() *string {
 	if t == nil {
 		t = reflect.TypeOf((*T)(nil)).Elem()
 	}
-	name := t.Name()
 
-	return &name
+	return zss.ZSSGoType{
+		PkgPath: t.PkgPath(),
+		Name:    t.Name(),
+		Display: t.String(),
+	}
 }
 
 type ZSSSerializable interface {
@@ -66,7 +69,7 @@ func (s *StringSchema[T]) toZSS() *zss.ZSSSchema {
 	}
 
 	if EXHAUSTIVE_METADATA {
-		j.GoType = getGenericTypeName[T]()
+		j.GoTypes = []zss.ZSSGoType{getZSSGoType[T]()}
 	}
 
 	return &j
@@ -83,7 +86,7 @@ func (s *NumberSchema[T]) toZSS() *zss.ZSSSchema {
 	}
 
 	if EXHAUSTIVE_METADATA {
-		j.GoType = getGenericTypeName[T]()
+		j.GoTypes = []zss.ZSSGoType{getZSSGoType[T]()}
 	}
 	return &j
 }
@@ -99,7 +102,7 @@ func (s *BoolSchema[T]) toZSS() *zss.ZSSSchema {
 	}
 
 	if EXHAUSTIVE_METADATA {
-		j.GoType = getGenericTypeName[T]()
+		j.GoTypes = []zss.ZSSGoType{getZSSGoType[T]()}
 	}
 	return &j
 }
@@ -163,7 +166,7 @@ func (s *Custom[T]) toZSS() *zss.ZSSSchema {
 		Processors: toZSSProcessorList(&s.test, zconst.TypeCustom),
 	}
 	if EXHAUSTIVE_METADATA {
-		j.GoType = getGenericTypeName[T]()
+		j.GoTypes = []zss.ZSSGoType{getZSSGoType[T]()}
 	}
 	return &j
 }
@@ -182,9 +185,8 @@ func (s *PreprocessSchema[F, T]) toZSS() *zss.ZSSSchema {
 		Child: s.schema.toZSS(),
 	}
 
-	// TODO this is not great, we cannot store information regarding the extra T type here.
 	if EXHAUSTIVE_METADATA {
-		j.GoType = getGenericTypeName[F]()
+		j.GoTypes = []zss.ZSSGoType{getZSSGoType[F](), getZSSGoType[T]()}
 	}
 	return &j
 }
@@ -195,9 +197,8 @@ func (s *BoxedSchema[B, T]) toZSS() *zss.ZSSSchema {
 		Child: s.schema.toZSS(),
 	}
 
-	// TODO this is not great, we cannot store information regarding the extra T type here.
 	if EXHAUSTIVE_METADATA {
-		j.GoType = getGenericTypeName[B]()
+		j.GoTypes = []zss.ZSSGoType{getZSSGoType[B](), getZSSGoType[T]()}
 	}
 	return &j
 }

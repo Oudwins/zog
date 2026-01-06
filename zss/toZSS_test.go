@@ -30,7 +30,6 @@ func TestToJsonString(t *testing.T) {
 
 	expected := baseZSSJson(`{
 		"kind": "string",
-		"goType": null,
 		"format": null,
 		"processors": [
 			{
@@ -69,12 +68,10 @@ func TestToJsonPtr(t *testing.T) {
 
 	expected := baseZSSJson(`{
 		"kind": "ptr",
-		"goType": null,
 		"format": null,
 		"processors": null,
 		"child": {
 			"kind": "string",
-			"goType": null,
 			"format": null,
 			"processors": [
 				{
@@ -149,7 +146,6 @@ func TestToJsonNumber(t *testing.T) {
 
 	expected := baseZSSJson(`{
 		"kind": "number",
-		"goType": null,
 		"format": null,
 		"processors": [
 			{
@@ -188,7 +184,6 @@ func TestToJsonBool(t *testing.T) {
 
 	expected := baseZSSJson(`{
 		"kind": "bool",
-		"goType": null,
 		"format": null,
 		"processors": null,
 		"child": null,
@@ -214,7 +209,6 @@ func TestToJsonTime(t *testing.T) {
 
 	expected := baseZSSJson(`{
 		"kind": "time",
-		"goType": null,
 		"format": null,
 		"processors": null,
 		"child": null,
@@ -240,7 +234,6 @@ func TestToJsonSlice(t *testing.T) {
 
 	expected := baseZSSJson(`{
 		"kind": "slice",
-		"goType": null,
 		"format": null,
 		"processors": [
 			{
@@ -258,7 +251,6 @@ func TestToJsonSlice(t *testing.T) {
 		],
 		"child": {
 			"kind": "string",
-			"goType": null,
 			"format": null,
 			"processors": [
 				{
@@ -304,13 +296,11 @@ func TestToJsonStruct(t *testing.T) {
 
 	expected := baseZSSJson(`{
 		"kind": "struct",
-		"goType": null,
 		"format": null,
 		"processors": null,
 		"child": {
 			"age": {
 				"kind": "number",
-				"goType": null,
 				"format": null,
 				"processors": null,
 				"child": null,
@@ -320,7 +310,6 @@ func TestToJsonStruct(t *testing.T) {
 			},
 			"name": {
 				"kind": "string",
-				"goType": null,
 				"format": null,
 				"processors": null,
 				"child": null,
@@ -356,12 +345,10 @@ func TestToJsonPreprocess(t *testing.T) {
 
 	expected := baseZSSJson(`{
 		"kind": "preprocess",
-		"goType": null,
 		"format": null,
 		"processors": null,
 		"child": {
 			"kind": "string",
-			"goType": null,
 			"format": null,
 			"processors": [
 				{
@@ -406,12 +393,10 @@ func TestToJsonBoxed(t *testing.T) {
 
 	expected := baseZSSJson(`{
 		"kind": "boxed",
-		"goType": null,
 		"format": null,
 		"processors": null,
 		"child": {
 			"kind": "string",
-			"goType": null,
 			"format": null,
 			"processors": [
 				{
@@ -451,7 +436,6 @@ func TestToJsonCustom(t *testing.T) {
 
 	expected := baseZSSJson(`{
 		"kind": "custom",
-		"goType": null,
 		"format": null,
 		"processors": [
 			{

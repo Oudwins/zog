@@ -22,7 +22,13 @@ func TestToJsonStringLike(t *testing.T) {
 
 	expected := baseZSSJson(`{
 		"kind": "string",
-		"goType": "CustomString",
+		"goTypes": [
+			{
+				"pkgPath": "",
+				"name": "CustomString",
+				"display": "CustomString"
+			}
+		],
 		"format": null,
 		"processors": [
 			{
@@ -62,7 +68,13 @@ func TestToJsonIntLike(t *testing.T) {
 
 	expected := baseZSSJson(`{
 		"kind": "number",
-		"goType": "CustomInt",
+		"goTypes": [
+			{
+				"pkgPath": "",
+				"name": "CustomInt",
+				"display": "CustomInt"
+			}
+		],
 		"format": null,
 		"processors": [
 			{
@@ -102,7 +114,13 @@ func TestToJsonBoolLike(t *testing.T) {
 
 	expected := baseZSSJson(`{
 		"kind": "bool",
-		"goType": "CustomBool",
+		"goTypes": [
+			{
+				"pkgPath": "",
+				"name": "CustomBool",
+				"display": "CustomBool"
+			}
+		],
 		"format": null,
 		"processors": null,
 		"child": null,
@@ -128,7 +146,6 @@ func TestToJsonTimeWithFormat(t *testing.T) {
 
 	expected := baseZSSJson(`{
 		"kind": "time",
-		"goType": null,
 		"format": "2006-01-02T15:04:05Z07:00",
 		"processors": null,
 		"child": null,
@@ -155,12 +172,17 @@ func TestToJsonPtrWithStringLike(t *testing.T) {
 
 	expected := baseZSSJson(`{
 		"kind": "ptr",
-		"goType": null,
 		"format": null,
 		"processors": null,
 		"child": {
 			"kind": "string",
-			"goType": "CustomString",
+			"goTypes": [
+				{
+					"pkgPath": "",
+					"name": "CustomString",
+					"display": "CustomString"
+				}
+			],
 			"format": null,
 			"processors": null,
 			"child": null,
@@ -196,12 +218,29 @@ func TestToJsonPreprocessWithGoType(t *testing.T) {
 
 	expected := baseZSSJson(`{
 		"kind": "preprocess",
-		"goType": "FromType",
+		"goTypes": [
+			{
+				"pkgPath": "",
+				"name": "FromType",
+				"display": "FromType"
+			},
+			{
+				"pkgPath": "",
+				"name": "string",
+				"display": "string"
+			}
+		],
 		"format": null,
 		"processors": null,
 		"child": {
 			"kind": "string",
-			"goType": "string",
+			"goTypes": [
+				{
+					"pkgPath": "",
+					"name": "string",
+					"display": "string"
+				}
+			],
 			"format": null,
 			"processors": [
 				{
@@ -246,12 +285,29 @@ func TestToJsonBoxedWithGoType(t *testing.T) {
 
 	expected := baseZSSJson(`{
 		"kind": "boxed",
-		"goType": "StringBox",
+		"goTypes": [
+			{
+				"pkgPath": "",
+				"name": "StringBox",
+				"display": "StringBox"
+			},
+			{
+				"pkgPath": "",
+				"name": "string",
+				"display": "string"
+			}
+		],
 		"format": null,
 		"processors": null,
 		"child": {
 			"kind": "string",
-			"goType": "string",
+			"goTypes": [
+				{
+					"pkgPath": "",
+					"name": "string",
+					"display": "string"
+				}
+			],
 			"format": null,
 			"processors": [
 				{
@@ -292,7 +348,13 @@ func TestToJsonCustomWithGoType(t *testing.T) {
 
 	expected := baseZSSJson(`{
 		"kind": "custom",
-		"goType": "CustomType",
+		"goTypes": [
+			{
+				"pkgPath": "",
+				"name": "CustomType",
+				"display": "CustomType"
+			}
+		],
 		"format": null,
 		"processors": null,
 		"child": null,
