@@ -2,7 +2,7 @@ package zog
 
 import (
 	p "github.com/Oudwins/zog/internals"
-	zsscore "github.com/Oudwins/zog/pkgs/zss/core"
+	zss "github.com/Oudwins/zog/pkgs/zss/core"
 	"github.com/Oudwins/zog/zconst"
 )
 
@@ -13,7 +13,7 @@ type ZogSchema interface {
 	validate(ctx *p.SchemaCtx)
 	getType() zconst.ZogType
 	setCoercer(c CoercerFunc)
-	toZSS() *zsscore.ZSSSchema
+	toZSS() *zss.ZSSSchema
 }
 
 // This is a common interface for all complex schemas (i.e structs, slices, pointers...)
