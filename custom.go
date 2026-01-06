@@ -5,6 +5,7 @@ import (
 
 	"github.com/Oudwins/zog/conf"
 	p "github.com/Oudwins/zog/internals"
+	zss "github.com/Oudwins/zog/pkgs/zss/core"
 	"github.com/Oudwins/zog/zconst"
 )
 
@@ -97,6 +98,7 @@ type EXPERIMENTAL_PUBLIC_ZOG_SCHEMA interface {
 	Validate(ctx *p.SchemaCtx)
 	GetType() zconst.ZogType
 	SetCoercer(c CoercerFunc)
+	ToZSS() *zss.ZSSSchema
 }
 
 // Experimental API
@@ -125,4 +127,8 @@ func (c *CustomSchema) getType() zconst.ZogType {
 
 func (c *CustomSchema) setCoercer(coercer CoercerFunc) {
 	c.schema.SetCoercer(coercer)
+}
+
+func (c *CustomSchema) toZSS() *zss.ZSSSchema {
+	return c.schema.ToZSS()
 }

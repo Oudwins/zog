@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	p "github.com/Oudwins/zog/internals"
+	zss "github.com/Oudwins/zog/pkgs/zss/core"
 	"github.com/Oudwins/zog/tutils"
 	"github.com/Oudwins/zog/zconst"
 	"github.com/stretchr/testify/assert"
@@ -17,6 +18,10 @@ type testExperimentalSchema struct {
 	dtype     zconst.ZogType
 	coercer   CoercerFunc
 	errorMsg  string
+}
+
+func (s *testExperimentalSchema) ToZSS() *zss.ZSSSchema {
+	return nil //noop
 }
 
 func (s *testExperimentalSchema) Process(ctx *p.SchemaCtx) {
