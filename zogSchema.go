@@ -2,8 +2,8 @@ package zog
 
 import (
 	p "github.com/Oudwins/zog/internals"
+	zsscore "github.com/Oudwins/zog/pkgs/zss/core"
 	"github.com/Oudwins/zog/zconst"
-	"github.com/Oudwins/zog/zss/core"
 )
 
 // The ZogSchema is the interface all schemas must implement

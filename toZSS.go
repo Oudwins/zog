@@ -7,8 +7,8 @@ import (
 
 	"github.com/Oudwins/zog/conf"
 	"github.com/Oudwins/zog/internals"
+	zss "github.com/Oudwins/zog/pkgs/zss/core"
 	"github.com/Oudwins/zog/zconst"
-	zss "github.com/Oudwins/zog/zss/core"
 )
 
 // EXPERIMENTAL. PLEASE DO NOT USE UNLESS YOU KNOW WHAT YOU ARE DOING!

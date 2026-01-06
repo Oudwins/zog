@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/Oudwins/zog"
-	zss "github.com/Oudwins/zog/zss/core"
+	zss "github.com/Oudwins/zog/pkgs/zss/core"
 	"github.com/stretchr/testify/assert"
 )
 
