@@ -13,13 +13,13 @@ func TestStringSchema(t *testing.T) {
 	doc := zog.EXPERIMENTAL_TO_ZSS(s)
 
 	assertDocumentBasics(t, doc)
-	assertSchemaKind(t, doc.Schema, "string")
-	assertRequired(t, doc.Schema, true)
-	assertDefaultValue(t, doc.Schema, "default")
-	assertCatchValue(t, doc.Schema, "catch")
-	assertProcessorsCount(t, doc.Schema, 1)
-	assertChildIsNil(t, doc.Schema)
-	assertTestProcessor(t, doc.Schema.Processors, 0, "min", map[string]any{"min": 5})
+	assertSchemaKind(t, doc.Root, "string")
+	assertRequired(t, doc.Root, true)
+	assertDefaultValue(t, doc.Root, "default")
+	assertCatchValue(t, doc.Root, "catch")
+	assertProcessorsCount(t, doc.Root, 1)
+	assertChildIsNil(t, doc.Root)
+	assertTestProcessor(t, doc.Root.Processors, 0, "min", map[string]any{"min": 5})
 }
 
 func TestStringSchemaOptional(t *testing.T) {
@@ -27,10 +27,10 @@ func TestStringSchemaOptional(t *testing.T) {
 	doc := zog.EXPERIMENTAL_TO_ZSS(s)
 
 	assertDocumentBasics(t, doc)
-	assertSchemaKind(t, doc.Schema, "string")
-	assertRequired(t, doc.Schema, false)
-	assertProcessorsCount(t, doc.Schema, 1)
-	assertTestProcessor(t, doc.Schema.Processors, 0, "min", map[string]any{"min": 3})
+	assertSchemaKind(t, doc.Root, "string")
+	assertRequired(t, doc.Root, false)
+	assertProcessorsCount(t, doc.Root, 1)
+	assertTestProcessor(t, doc.Root.Processors, 0, "min", map[string]any{"min": 3})
 }
 
 func TestNumberSchemaInt(t *testing.T) {
@@ -38,14 +38,14 @@ func TestNumberSchemaInt(t *testing.T) {
 	doc := zog.EXPERIMENTAL_TO_ZSS(s)
 
 	assertDocumentBasics(t, doc)
-	assertSchemaKind(t, doc.Schema, "number")
-	assertRequired(t, doc.Schema, true)
-	assertDefaultValue(t, doc.Schema, 42)
-	assertCatchValue(t, doc.Schema, 100)
-	assertProcessorsCount(t, doc.Schema, 2)
-	assertChildIsNil(t, doc.Schema)
-	assertTestProcessor(t, doc.Schema.Processors, 0, "gt", map[string]any{"gt": 10})
-	assertTestProcessor(t, doc.Schema.Processors, 1, "lt", map[string]any{"lt": 100})
+	assertSchemaKind(t, doc.Root, "number")
+	assertRequired(t, doc.Root, true)
+	assertDefaultValue(t, doc.Root, 42)
+	assertCatchValue(t, doc.Root, 100)
+	assertProcessorsCount(t, doc.Root, 2)
+	assertChildIsNil(t, doc.Root)
+	assertTestProcessor(t, doc.Root.Processors, 0, "gt", map[string]any{"gt": 10})
+	assertTestProcessor(t, doc.Root.Processors, 1, "lt", map[string]any{"lt": 100})
 }
 
 func TestNumberSchemaInt64(t *testing.T) {
@@ -53,12 +53,12 @@ func TestNumberSchemaInt64(t *testing.T) {
 	doc := zog.EXPERIMENTAL_TO_ZSS(s)
 
 	assertDocumentBasics(t, doc)
-	assertSchemaKind(t, doc.Schema, "number")
-	assertRequired(t, doc.Schema, false)
-	assertProcessorsCount(t, doc.Schema, 3)
-	assertTestProcessor(t, doc.Schema.Processors, 0, "eq", map[string]any{"eq": int64(100)})
-	assertTestProcessor(t, doc.Schema.Processors, 1, "gte", map[string]any{"gte": int64(50)})
-	assertTestProcessor(t, doc.Schema.Processors, 2, "lte", map[string]any{"lte": int64(200)})
+	assertSchemaKind(t, doc.Root, "number")
+	assertRequired(t, doc.Root, false)
+	assertProcessorsCount(t, doc.Root, 3)
+	assertTestProcessor(t, doc.Root.Processors, 0, "eq", map[string]any{"eq": int64(100)})
+	assertTestProcessor(t, doc.Root.Processors, 1, "gte", map[string]any{"gte": int64(50)})
+	assertTestProcessor(t, doc.Root.Processors, 2, "lte", map[string]any{"lte": int64(200)})
 }
 
 func TestNumberSchemaFloat64(t *testing.T) {
@@ -66,9 +66,9 @@ func TestNumberSchemaFloat64(t *testing.T) {
 	doc := zog.EXPERIMENTAL_TO_ZSS(s)
 
 	assertDocumentBasics(t, doc)
-	assertSchemaKind(t, doc.Schema, "number")
-	assertProcessorsCount(t, doc.Schema, 1)
-	assertTestProcessor(t, doc.Schema.Processors, 0, "one_of_options", map[string]any{"one_of_options": []float64{1.5, 2.5, 3.5}})
+	assertSchemaKind(t, doc.Root, "number")
+	assertProcessorsCount(t, doc.Root, 1)
+	assertTestProcessor(t, doc.Root.Processors, 0, "one_of_options", map[string]any{"one_of_options": []float64{1.5, 2.5, 3.5}})
 }
 
 func TestBoolSchema(t *testing.T) {
@@ -76,10 +76,10 @@ func TestBoolSchema(t *testing.T) {
 	doc := zog.EXPERIMENTAL_TO_ZSS(s)
 
 	assertDocumentBasics(t, doc)
-	assertSchemaKind(t, doc.Schema, "bool")
-	assertRequired(t, doc.Schema, true)
-	assertDefaultValue(t, doc.Schema, true)
-	assertProcessorsCount(t, doc.Schema, 1)
+	assertSchemaKind(t, doc.Root, "bool")
+	assertRequired(t, doc.Root, true)
+	assertDefaultValue(t, doc.Root, true)
+	assertProcessorsCount(t, doc.Root, 1)
 }
 
 func TestBoolSchemaFalse(t *testing.T) {
@@ -87,10 +87,10 @@ func TestBoolSchemaFalse(t *testing.T) {
 	doc := zog.EXPERIMENTAL_TO_ZSS(s)
 
 	assertDocumentBasics(t, doc)
-	assertSchemaKind(t, doc.Schema, "bool")
-	assertProcessorsCount(t, doc.Schema, 1)
+	assertSchemaKind(t, doc.Root, "bool")
+	assertProcessorsCount(t, doc.Root, 1)
 	// False() uses EQ internally, so it's "eq" with false value
-	assertTestProcessor(t, doc.Schema.Processors, 0, "eq", map[string]any{"eq": false})
+	assertTestProcessor(t, doc.Root.Processors, 0, "eq", map[string]any{"eq": false})
 }
 
 func TestBoolSchemaEQ(t *testing.T) {
@@ -98,9 +98,9 @@ func TestBoolSchemaEQ(t *testing.T) {
 	doc := zog.EXPERIMENTAL_TO_ZSS(s)
 
 	assertDocumentBasics(t, doc)
-	assertSchemaKind(t, doc.Schema, "bool")
-	assertProcessorsCount(t, doc.Schema, 1)
-	assertTestProcessor(t, doc.Schema.Processors, 0, "eq", map[string]any{"eq": true})
+	assertSchemaKind(t, doc.Root, "bool")
+	assertProcessorsCount(t, doc.Root, 1)
+	assertTestProcessor(t, doc.Root.Processors, 0, "eq", map[string]any{"eq": true})
 }
 
 func TestTimeSchema(t *testing.T) {
@@ -109,13 +109,13 @@ func TestTimeSchema(t *testing.T) {
 	doc := zog.EXPERIMENTAL_TO_ZSS(s)
 
 	assertDocumentBasics(t, doc)
-	assertSchemaKind(t, doc.Schema, "time")
-	assertRequired(t, doc.Schema, true)
-	assertProcessorsCount(t, doc.Schema, 2)
-	assertChildIsNil(t, doc.Schema)
+	assertSchemaKind(t, doc.Root, "time")
+	assertRequired(t, doc.Root, true)
+	assertProcessorsCount(t, doc.Root, 2)
+	assertChildIsNil(t, doc.Root)
 	// Note: params for time tests may contain time.Time values
-	assertTestProcessor(t, doc.Schema.Processors, 0, "before", nil) // params may vary
-	assertTestProcessor(t, doc.Schema.Processors, 1, "after", nil)  // params may vary
+	assertTestProcessor(t, doc.Root.Processors, 0, "before", nil) // params may vary
+	assertTestProcessor(t, doc.Root.Processors, 1, "after", nil)  // params may vary
 }
 
 func TestPtrSchema(t *testing.T) {
@@ -123,13 +123,13 @@ func TestPtrSchema(t *testing.T) {
 	doc := zog.EXPERIMENTAL_TO_ZSS(s)
 
 	assertDocumentBasics(t, doc)
-	assertSchemaKind(t, doc.Schema, "ptr")
-	assertRequired(t, doc.Schema, false)
-	assertProcessorsCount(t, doc.Schema, 0)
-	assert.Nil(t, doc.Schema.DefaultValue)
-	assert.Nil(t, doc.Schema.CatchValue)
+	assertSchemaKind(t, doc.Root, "ptr")
+	assertRequired(t, doc.Root, false)
+	assertProcessorsCount(t, doc.Root, 0)
+	assert.Nil(t, doc.Root.DefaultValue)
+	assert.Nil(t, doc.Root.CatchValue)
 
-	childSchema, ok := assertChildIsSchema(t, doc.Schema)
+	childSchema, ok := assertChildIsSchema(t, doc.Root)
 	if assert.True(t, ok, "child should be a schema") {
 		assertSchemaKind(t, childSchema, "string")
 		assertRequired(t, childSchema, true)
@@ -143,12 +143,12 @@ func TestPtrSchemaNotNil(t *testing.T) {
 	doc := zog.EXPERIMENTAL_TO_ZSS(s)
 
 	assertDocumentBasics(t, doc)
-	assertSchemaKind(t, doc.Schema, "ptr")
-	assertRequired(t, doc.Schema, true)
+	assertSchemaKind(t, doc.Root, "ptr")
+	assertRequired(t, doc.Root, true)
 	// NotNil() sets required, but the ID is still "required" (not_nil is the issue code in the test itself)
-	if assert.NotNil(t, doc.Schema.Required) {
+	if assert.NotNil(t, doc.Root.Required) {
 		// The toZSSRequired function converts it to "required" ID
-		assert.Equal(t, "required", string(doc.Schema.Required.ID))
+		assert.Equal(t, "required", string(doc.Root.Required.ID))
 	}
 }
 
@@ -157,13 +157,13 @@ func TestSliceSchema(t *testing.T) {
 	doc := zog.EXPERIMENTAL_TO_ZSS(s)
 
 	assertDocumentBasics(t, doc)
-	assertSchemaKind(t, doc.Schema, "slice")
-	assertRequired(t, doc.Schema, true)
-	assertProcessorsCount(t, doc.Schema, 2)
-	assertTestProcessor(t, doc.Schema.Processors, 0, "min", map[string]any{"min": 2})
-	assertTestProcessor(t, doc.Schema.Processors, 1, "max", map[string]any{"max": 10})
+	assertSchemaKind(t, doc.Root, "slice")
+	assertRequired(t, doc.Root, true)
+	assertProcessorsCount(t, doc.Root, 2)
+	assertTestProcessor(t, doc.Root.Processors, 0, "min", map[string]any{"min": 2})
+	assertTestProcessor(t, doc.Root.Processors, 1, "max", map[string]any{"max": 10})
 
-	childSchema, ok := assertChildIsSchema(t, doc.Schema)
+	childSchema, ok := assertChildIsSchema(t, doc.Root)
 	if assert.True(t, ok, "child should be a schema") {
 		assertSchemaKind(t, childSchema, "string")
 		assertProcessorsCount(t, childSchema, 1)
@@ -176,9 +176,9 @@ func TestSliceSchemaContains(t *testing.T) {
 	doc := zog.EXPERIMENTAL_TO_ZSS(s)
 
 	assertDocumentBasics(t, doc)
-	assertSchemaKind(t, doc.Schema, "slice")
-	assertProcessorsCount(t, doc.Schema, 1)
-	assertTestProcessor(t, doc.Schema.Processors, 0, "contained", map[string]any{"contained": 42})
+	assertSchemaKind(t, doc.Root, "slice")
+	assertProcessorsCount(t, doc.Root, 1)
+	assertTestProcessor(t, doc.Root.Processors, 0, "contained", map[string]any{"contained": 42})
 }
 
 func TestSliceSchemaLen(t *testing.T) {
@@ -186,9 +186,9 @@ func TestSliceSchemaLen(t *testing.T) {
 	doc := zog.EXPERIMENTAL_TO_ZSS(s)
 
 	assertDocumentBasics(t, doc)
-	assertSchemaKind(t, doc.Schema, "slice")
-	assertProcessorsCount(t, doc.Schema, 1)
-	assertTestProcessor(t, doc.Schema.Processors, 0, "len", map[string]any{"len": 5})
+	assertSchemaKind(t, doc.Root, "slice")
+	assertProcessorsCount(t, doc.Root, 1)
+	assertTestProcessor(t, doc.Root.Processors, 0, "len", map[string]any{"len": 5})
 }
 
 func TestStructSchema(t *testing.T) {
@@ -199,11 +199,11 @@ func TestStructSchema(t *testing.T) {
 	doc := zog.EXPERIMENTAL_TO_ZSS(s)
 
 	assertDocumentBasics(t, doc)
-	assertSchemaKind(t, doc.Schema, "struct")
-	assertRequired(t, doc.Schema, false)
-	assertProcessorsCount(t, doc.Schema, 0)
+	assertSchemaKind(t, doc.Root, "struct")
+	assertRequired(t, doc.Root, false)
+	assertProcessorsCount(t, doc.Root, 0)
 
-	childShape, ok := assertChildIsShape(t, doc.Schema)
+	childShape, ok := assertChildIsShape(t, doc.Root)
 	if assert.True(t, ok, "child should be a shape map") {
 		assert.Len(t, childShape, 2, "shape should have 2 fields")
 
@@ -234,9 +234,9 @@ func TestStructSchemaNested(t *testing.T) {
 	doc := zog.EXPERIMENTAL_TO_ZSS(s)
 
 	assertDocumentBasics(t, doc)
-	assertSchemaKind(t, doc.Schema, "struct")
+	assertSchemaKind(t, doc.Root, "struct")
 
-	childShape, ok := assertChildIsShape(t, doc.Schema)
+	childShape, ok := assertChildIsShape(t, doc.Root)
 	if assert.True(t, ok) {
 		userSchema, userExists := childShape["user"]
 		if assert.True(t, userExists) {
@@ -270,11 +270,11 @@ func TestPreprocessSchema(t *testing.T) {
 	doc := zog.EXPERIMENTAL_TO_ZSS(s)
 
 	assertDocumentBasics(t, doc)
-	assertSchemaKind(t, doc.Schema, "preprocess")
-	assertRequired(t, doc.Schema, false)
-	assertProcessorsCount(t, doc.Schema, 0)
+	assertSchemaKind(t, doc.Root, "preprocess")
+	assertRequired(t, doc.Root, false)
+	assertProcessorsCount(t, doc.Root, 0)
 
-	childSchema, ok := assertChildIsSchema(t, doc.Schema)
+	childSchema, ok := assertChildIsSchema(t, doc.Root)
 	if assert.True(t, ok) {
 		assertSchemaKind(t, childSchema, "string")
 		assertProcessorsCount(t, childSchema, 1)
@@ -294,11 +294,11 @@ func TestBoxedSchema(t *testing.T) {
 	doc := zog.EXPERIMENTAL_TO_ZSS(s)
 
 	assertDocumentBasics(t, doc)
-	assertSchemaKind(t, doc.Schema, "boxed")
-	assertRequired(t, doc.Schema, false)
-	assertProcessorsCount(t, doc.Schema, 0)
+	assertSchemaKind(t, doc.Root, "boxed")
+	assertRequired(t, doc.Root, false)
+	assertProcessorsCount(t, doc.Root, 0)
 
-	childSchema, ok := assertChildIsSchema(t, doc.Schema)
+	childSchema, ok := assertChildIsSchema(t, doc.Root)
 	if assert.True(t, ok) {
 		assertSchemaKind(t, childSchema, "string")
 		assertProcessorsCount(t, childSchema, 1)
@@ -313,9 +313,9 @@ func TestCustomSchema(t *testing.T) {
 	doc := zog.EXPERIMENTAL_TO_ZSS(s)
 
 	assertDocumentBasics(t, doc)
-	assertSchemaKind(t, doc.Schema, "custom")
-	assertRequired(t, doc.Schema, false) // CustomFunc does not set required
-	assertProcessorsCount(t, doc.Schema, 1)
-	assertTestProcessor(t, doc.Schema.Processors, 0, "", nil) // CustomFunc test has empty issue code by default
-	assertChildIsNil(t, doc.Schema)
+	assertSchemaKind(t, doc.Root, "custom")
+	assertRequired(t, doc.Root, false) // CustomFunc does not set required
+	assertProcessorsCount(t, doc.Root, 1)
+	assertTestProcessor(t, doc.Root.Processors, 0, "", nil) // CustomFunc test has empty issue code by default
+	assertChildIsNil(t, doc.Root)
 }

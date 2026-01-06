@@ -1,3 +1,6 @@
+//go:build !zogmeta
+// +build !zogmeta
+
 package zss_test
 
 import (

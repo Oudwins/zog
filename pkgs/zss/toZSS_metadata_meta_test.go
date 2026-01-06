@@ -17,10 +17,10 @@ func TestStringLikeSchemaMeta_GoTypeIsSet(t *testing.T) {
 	doc := zog.EXPERIMENTAL_TO_ZSS(s)
 
 	assertDocumentBasics(t, doc)
-	assert.NotNil(t, doc.Schema.GoTypes, "GoTypes should be set when zogmeta build tag is set")
-	assert.Len(t, doc.Schema.GoTypes, 1, "GoTypes should have one entry")
-	assert.Equal(t, "CustomString", doc.Schema.GoTypes[0].Name)
-	assert.Equal(t, "CustomString", doc.Schema.GoTypes[0].Display)
+	assert.NotNil(t, doc.Root.GoTypes, "GoTypes should be set when zogmeta build tag is set")
+	assert.Len(t, doc.Root.GoTypes, 1, "GoTypes should have one entry")
+	assert.Equal(t, "CustomString", doc.Root.GoTypes[0].Name)
+	assert.Equal(t, "zss_test.CustomString", doc.Root.GoTypes[0].Display)
 }
 
 func TestIntLikeSchemaMeta_GoTypeIsSet(t *testing.T) {
@@ -29,10 +29,10 @@ func TestIntLikeSchemaMeta_GoTypeIsSet(t *testing.T) {
 	doc := zog.EXPERIMENTAL_TO_ZSS(s)
 
 	assertDocumentBasics(t, doc)
-	assert.NotNil(t, doc.Schema.GoTypes, "GoTypes should be set when zogmeta build tag is set")
-	assert.Len(t, doc.Schema.GoTypes, 1, "GoTypes should have one entry")
-	assert.Equal(t, "CustomInt", doc.Schema.GoTypes[0].Name)
-	assert.Equal(t, "CustomInt", doc.Schema.GoTypes[0].Display)
+	assert.NotNil(t, doc.Root.GoTypes, "GoTypes should be set when zogmeta build tag is set")
+	assert.Len(t, doc.Root.GoTypes, 1, "GoTypes should have one entry")
+	assert.Equal(t, "CustomInt", doc.Root.GoTypes[0].Name)
+	assert.Equal(t, "zss_test.CustomInt", doc.Root.GoTypes[0].Display)
 }
 
 func TestFloatLikeSchemaMeta_GoTypeIsSet(t *testing.T) {
@@ -41,10 +41,10 @@ func TestFloatLikeSchemaMeta_GoTypeIsSet(t *testing.T) {
 	doc := zog.EXPERIMENTAL_TO_ZSS(s)
 
 	assertDocumentBasics(t, doc)
-	assert.NotNil(t, doc.Schema.GoTypes, "GoTypes should be set when zogmeta build tag is set")
-	assert.Len(t, doc.Schema.GoTypes, 1, "GoTypes should have one entry")
-	assert.Equal(t, "CustomFloat", doc.Schema.GoTypes[0].Name)
-	assert.Equal(t, "CustomFloat", doc.Schema.GoTypes[0].Display)
+	assert.NotNil(t, doc.Root.GoTypes, "GoTypes should be set when zogmeta build tag is set")
+	assert.Len(t, doc.Root.GoTypes, 1, "GoTypes should have one entry")
+	assert.Equal(t, "CustomFloat", doc.Root.GoTypes[0].Name)
+	assert.Equal(t, "zss_test.CustomFloat", doc.Root.GoTypes[0].Display)
 }
 
 func TestBoolLikeSchemaMeta_GoTypeIsSet(t *testing.T) {
@@ -53,10 +53,10 @@ func TestBoolLikeSchemaMeta_GoTypeIsSet(t *testing.T) {
 	doc := zog.EXPERIMENTAL_TO_ZSS(s)
 
 	assertDocumentBasics(t, doc)
-	assert.NotNil(t, doc.Schema.GoTypes, "GoTypes should be set when zogmeta build tag is set")
-	assert.Len(t, doc.Schema.GoTypes, 1, "GoTypes should have one entry")
-	assert.Equal(t, "CustomBool", doc.Schema.GoTypes[0].Name)
-	assert.Equal(t, "CustomBool", doc.Schema.GoTypes[0].Display)
+	assert.NotNil(t, doc.Root.GoTypes, "GoTypes should be set when zogmeta build tag is set")
+	assert.Len(t, doc.Root.GoTypes, 1, "GoTypes should have one entry")
+	assert.Equal(t, "CustomBool", doc.Root.GoTypes[0].Name)
+	assert.Equal(t, "zss_test.CustomBool", doc.Root.GoTypes[0].Display)
 }
 
 func TestTimeSchemaMeta_FormatIsSet(t *testing.T) {
@@ -65,9 +65,9 @@ func TestTimeSchemaMeta_FormatIsSet(t *testing.T) {
 	doc := zog.EXPERIMENTAL_TO_ZSS(s)
 
 	assertDocumentBasics(t, doc)
-	assertSchemaKind(t, doc.Schema, "time")
-	assert.NotNil(t, doc.Schema.Format, "Format should be set when Time.Format is used with zogmeta")
-	assert.Equal(t, format, *doc.Schema.Format)
+	assertSchemaKind(t, doc.Root, "time")
+	assert.NotNil(t, doc.Root.Format, "Format should be set when Time.Format is used with zogmeta")
+	assert.Equal(t, format, *doc.Root.Format)
 }
 
 func TestTimeSchemaMeta_FormatNotSetWhenNotConfigured(t *testing.T) {
@@ -75,9 +75,9 @@ func TestTimeSchemaMeta_FormatNotSetWhenNotConfigured(t *testing.T) {
 	doc := zog.EXPERIMENTAL_TO_ZSS(s)
 
 	assertDocumentBasics(t, doc)
-	assertSchemaKind(t, doc.Schema, "time")
+	assertSchemaKind(t, doc.Root, "time")
 	// Format should be nil if not configured
-	assert.Nil(t, doc.Schema.Format, "Format should be nil when not configured")
+	assert.Nil(t, doc.Root.Format, "Format should be nil when not configured")
 }
 
 func TestPreprocessSchemaMeta_GoTypeIsSet(t *testing.T) {
@@ -91,11 +91,12 @@ func TestPreprocessSchemaMeta_GoTypeIsSet(t *testing.T) {
 	doc := zog.EXPERIMENTAL_TO_ZSS(s)
 
 	assertDocumentBasics(t, doc)
-	assertSchemaKind(t, doc.Schema, "preprocess")
-	assert.NotNil(t, doc.Schema.GoTypes, "GoTypes should be set when zogmeta build tag is set")
-	assert.Len(t, doc.Schema.GoTypes, 2, "GoTypes should have two entries for Preprocess[F,T]")
-	assert.Equal(t, "FromType", doc.Schema.GoTypes[0].Name)
-	assert.Equal(t, "string", doc.Schema.GoTypes[1].Display)
+	assertSchemaKind(t, doc.Root, "preprocess")
+	assert.NotNil(t, doc.Root.GoTypes, "GoTypes should be set when zogmeta build tag is set")
+	assert.Len(t, doc.Root.GoTypes, 2, "GoTypes should have two entries for Preprocess[F,T]")
+	assert.Equal(t, "FromType", doc.Root.GoTypes[0].Name)
+	assert.Equal(t, "zss_test.FromType", doc.Root.GoTypes[0].Display)
+	assert.Equal(t, "string", doc.Root.GoTypes[1].Display)
 }
 
 func TestBoxedSchemaMeta_GoTypeIsSet(t *testing.T) {
@@ -110,11 +111,12 @@ func TestBoxedSchemaMeta_GoTypeIsSet(t *testing.T) {
 	doc := zog.EXPERIMENTAL_TO_ZSS(s)
 
 	assertDocumentBasics(t, doc)
-	assertSchemaKind(t, doc.Schema, "boxed")
-	assert.NotNil(t, doc.Schema.GoTypes, "GoTypes should be set when zogmeta build tag is set")
-	assert.Len(t, doc.Schema.GoTypes, 2, "GoTypes should have two entries for Boxed[B,T]")
-	assert.Equal(t, "StringBox", doc.Schema.GoTypes[0].Name)
-	assert.Equal(t, "string", doc.Schema.GoTypes[1].Display)
+	assertSchemaKind(t, doc.Root, "boxed")
+	assert.NotNil(t, doc.Root.GoTypes, "GoTypes should be set when zogmeta build tag is set")
+	assert.Len(t, doc.Root.GoTypes, 2, "GoTypes should have two entries for Boxed[B,T]")
+	assert.Equal(t, "StringBox", doc.Root.GoTypes[0].Name)
+	assert.Equal(t, "zss_test.StringBox", doc.Root.GoTypes[0].Display)
+	assert.Equal(t, "string", doc.Root.GoTypes[1].Display)
 }
 
 func TestCustomSchemaMeta_GoTypeIsSet(t *testing.T) {
@@ -125,21 +127,23 @@ func TestCustomSchemaMeta_GoTypeIsSet(t *testing.T) {
 	doc := zog.EXPERIMENTAL_TO_ZSS(s)
 
 	assertDocumentBasics(t, doc)
-	assertSchemaKind(t, doc.Schema, "custom")
-	assert.NotNil(t, doc.Schema.GoTypes, "GoTypes should be set when zogmeta build tag is set")
-	assert.Len(t, doc.Schema.GoTypes, 1, "GoTypes should have one entry")
-	assert.Equal(t, "CustomType", doc.Schema.GoTypes[0].Name)
-	assert.Equal(t, "CustomType", doc.Schema.GoTypes[0].Display)
+	assertSchemaKind(t, doc.Root, "custom")
+	assert.NotNil(t, doc.Root.GoTypes, "GoTypes should be set when zogmeta build tag is set")
+	assert.Len(t, doc.Root.GoTypes, 1, "GoTypes should have one entry")
+	assert.Equal(t, "CustomType", doc.Root.GoTypes[0].Name)
+	assert.Equal(t, "zss_test.CustomType", doc.Root.GoTypes[0].Display)
 }
 
-func TestPrimitiveSchemasMeta_GoTypeIsNil(t *testing.T) {
-	// Primitive schemas (String, Int, etc.) should not have GoTypes set
-	// Only custom types via StringLike, IntLike, etc. should have GoTypes
+func TestPrimitiveSchemasMeta_GoTypeIsSet(t *testing.T) {
+	// Primitive schemas (String, Int, etc.) have GoTypes set when EXHAUSTIVE_METADATA is enabled
 	s := zog.String()
 	doc := zog.EXPERIMENTAL_TO_ZSS(s)
 
 	assertDocumentBasics(t, doc)
-	assert.Nil(t, doc.Schema.GoTypes, "Primitive schemas should not have GoTypes set")
+	assert.NotNil(t, doc.Root.GoTypes, "Primitive schemas should have GoTypes set when zogmeta is enabled")
+	assert.Len(t, doc.Root.GoTypes, 1, "Primitive schemas should have one GoType entry")
+	assert.Equal(t, "string", doc.Root.GoTypes[0].Name)
+	assert.Equal(t, "string", doc.Root.GoTypes[0].Display)
 }
 
 func TestNestedSchemasMeta_GoTypePropagation(t *testing.T) {
@@ -148,13 +152,14 @@ func TestNestedSchemasMeta_GoTypePropagation(t *testing.T) {
 	doc := zog.EXPERIMENTAL_TO_ZSS(s)
 
 	assertDocumentBasics(t, doc)
-	assertSchemaKind(t, doc.Schema, "ptr")
-	assert.Nil(t, doc.Schema.GoTypes, "Ptr wrapper should not have GoTypes")
+	assertSchemaKind(t, doc.Root, "ptr")
+	assert.Nil(t, doc.Root.GoTypes, "Ptr wrapper should not have GoTypes")
 
-	childSchema, ok := assertChildIsSchema(t, doc.Schema)
+	childSchema, ok := assertChildIsSchema(t, doc.Root)
 	if assert.True(t, ok) {
 		assert.NotNil(t, childSchema.GoTypes, "Child schema should have GoTypes set")
 		assert.Len(t, childSchema.GoTypes, 1, "Child schema should have one GoType entry")
 		assert.Equal(t, "CustomString", childSchema.GoTypes[0].Name)
+		assert.Equal(t, "zss_test.CustomString", childSchema.GoTypes[0].Display)
 	}
 }

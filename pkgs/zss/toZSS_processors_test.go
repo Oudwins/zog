@@ -1,3 +1,6 @@
+//go:build !zogmeta
+// +build !zogmeta
+
 package zss_test
 
 import (
@@ -12,10 +15,10 @@ func TestStringTransformTrim(t *testing.T) {
 	doc := zog.EXPERIMENTAL_TO_ZSS(s)
 
 	assertDocumentBasics(t, doc)
-	assertProcessorsCount(t, doc.Schema, 1)
+	assertProcessorsCount(t, doc.Root, 1)
 	// Trim() ID is only set when zogmeta build tag is enabled
 	// Without zogmeta, it defaults to "custom"
-	assertTransformProcessor(t, doc.Schema.Processors, 0, "custom")
+	assertTransformProcessor(t, doc.Root.Processors, 0, "custom")
 }
 
 func TestStringTransformCustom(t *testing.T) {
@@ -26,8 +29,8 @@ func TestStringTransformCustom(t *testing.T) {
 	doc := zog.EXPERIMENTAL_TO_ZSS(s)
 
 	assertDocumentBasics(t, doc)
-	assertProcessorsCount(t, doc.Schema, 1)
-	assertTransformProcessor(t, doc.Schema.Processors, 0, "custom")
+	assertProcessorsCount(t, doc.Root, 1)
+	assertTransformProcessor(t, doc.Root.Processors, 0, "custom")
 }
 
 func TestStringMultipleTransforms(t *testing.T) {
@@ -37,11 +40,11 @@ func TestStringMultipleTransforms(t *testing.T) {
 	doc := zog.EXPERIMENTAL_TO_ZSS(s)
 
 	assertDocumentBasics(t, doc)
-	assertProcessorsCount(t, doc.Schema, 2)
+	assertProcessorsCount(t, doc.Root, 2)
 	// Trim() ID is only set when zogmeta build tag is enabled
 	// Without zogmeta, it defaults to "custom"
-	assertTransformProcessor(t, doc.Schema.Processors, 0, "custom")
-	assertTransformProcessor(t, doc.Schema.Processors, 1, "custom")
+	assertTransformProcessor(t, doc.Root.Processors, 0, "custom")
+	assertTransformProcessor(t, doc.Root.Processors, 1, "custom")
 }
 
 func TestStringTransformAndTest(t *testing.T) {
@@ -49,11 +52,11 @@ func TestStringTransformAndTest(t *testing.T) {
 	doc := zog.EXPERIMENTAL_TO_ZSS(s)
 
 	assertDocumentBasics(t, doc)
-	assertProcessorsCount(t, doc.Schema, 2)
+	assertProcessorsCount(t, doc.Root, 2)
 	// Trim() ID is only set when zogmeta build tag is enabled
 	// Without zogmeta, it defaults to "custom"
-	assertTransformProcessor(t, doc.Schema.Processors, 0, "custom")
-	assertTestProcessor(t, doc.Schema.Processors, 1, "min", map[string]any{"min": 5})
+	assertTransformProcessor(t, doc.Root.Processors, 0, "custom")
+	assertTestProcessor(t, doc.Root.Processors, 1, "min", map[string]any{"min": 5})
 }
 
 func TestStringTestWithMessageOverride(t *testing.T) {
@@ -62,24 +65,24 @@ func TestStringTestWithMessageOverride(t *testing.T) {
 	doc := zog.EXPERIMENTAL_TO_ZSS(s)
 
 	assertDocumentBasics(t, doc)
-	assertProcessorsCount(t, doc.Schema, 1)
-	if assert.NotNil(t, doc.Schema.Processors[0].Test) {
-		assert.Equal(t, customMsg, doc.Schema.Processors[0].Test.Message, "message should be overridden")
-		assert.Equal(t, "min", string(doc.Schema.Processors[0].Test.ID))
-		assert.Equal(t, map[string]any{"min": 5}, doc.Schema.Processors[0].Test.Params)
+	assertProcessorsCount(t, doc.Root, 1)
+	if assert.NotNil(t, doc.Root.Processors[0].Test) {
+		assert.Equal(t, customMsg, doc.Root.Processors[0].Test.Message, "message should be overridden")
+		assert.Equal(t, "min", string(doc.Root.Processors[0].Test.ID))
+		assert.Equal(t, map[string]any{"min": 5}, doc.Root.Processors[0].Test.Params)
 	}
 }
 
 func TestStringTestWithIssuePath(t *testing.T) {
-	customPath := "fullname"
+	customPath := []string{"fullname"}
 	s := zog.String().Min(1, zog.IssuePath(customPath))
 	doc := zog.EXPERIMENTAL_TO_ZSS(s)
 
 	assertDocumentBasics(t, doc)
-	assertProcessorsCount(t, doc.Schema, 1)
-	if assert.NotNil(t, doc.Schema.Processors[0].Test) {
-		assert.NotNil(t, doc.Schema.Processors[0].Test.IssuePath, "issuePath should be set")
-		assert.Equal(t, customPath, *doc.Schema.Processors[0].Test.IssuePath)
+	assertProcessorsCount(t, doc.Root, 1)
+	if assert.NotNil(t, doc.Root.Processors[0].Test) {
+		assert.NotNil(t, doc.Root.Processors[0].Test.IssuePath, "issuePath should be set")
+		assert.Equal(t, customPath, doc.Root.Processors[0].Test.IssuePath)
 	}
 }
 
@@ -89,11 +92,11 @@ func TestStringTestDefaultMessage(t *testing.T) {
 	doc := zog.EXPERIMENTAL_TO_ZSS(s)
 
 	assertDocumentBasics(t, doc)
-	assertProcessorsCount(t, doc.Schema, 1)
-	if assert.NotNil(t, doc.Schema.Processors[0].Test) {
+	assertProcessorsCount(t, doc.Root, 1)
+	if assert.NotNil(t, doc.Root.Processors[0].Test) {
 		// Message should be populated by default formatter
-		assert.NotEmpty(t, doc.Schema.Processors[0].Test.Message, "message should be populated by default formatter")
-		assert.Contains(t, doc.Schema.Processors[0].Test.Message, "3", "message should contain the min value")
+		assert.NotEmpty(t, doc.Root.Processors[0].Test.Message, "message should be populated by default formatter")
+		assert.Contains(t, doc.Root.Processors[0].Test.Message, "3", "message should contain the min value")
 	}
 }
 
@@ -102,10 +105,10 @@ func TestStringMultipleTests(t *testing.T) {
 	doc := zog.EXPERIMENTAL_TO_ZSS(s)
 
 	assertDocumentBasics(t, doc)
-	assertProcessorsCount(t, doc.Schema, 3)
-	assertTestProcessor(t, doc.Schema.Processors, 0, "min", map[string]any{"min": 1})
-	assertTestProcessor(t, doc.Schema.Processors, 1, "max", map[string]any{"max": 100})
-	assertTestProcessor(t, doc.Schema.Processors, 2, "email", map[string]any{})
+	assertProcessorsCount(t, doc.Root, 3)
+	assertTestProcessor(t, doc.Root.Processors, 0, "min", map[string]any{"min": 1})
+	assertTestProcessor(t, doc.Root.Processors, 1, "max", map[string]any{"max": 100})
+	assertTestProcessor(t, doc.Root.Processors, 2, "email", map[string]any{})
 }
 
 func TestNumberTestParams(t *testing.T) {
@@ -113,10 +116,10 @@ func TestNumberTestParams(t *testing.T) {
 	doc := zog.EXPERIMENTAL_TO_ZSS(s)
 
 	assertDocumentBasics(t, doc)
-	assertProcessorsCount(t, doc.Schema, 3)
-	assertTestProcessor(t, doc.Schema.Processors, 0, "gt", map[string]any{"gt": 10})
-	assertTestProcessor(t, doc.Schema.Processors, 1, "lt", map[string]any{"lt": 100})
-	assertTestProcessor(t, doc.Schema.Processors, 2, "eq", map[string]any{"eq": 50})
+	assertProcessorsCount(t, doc.Root, 3)
+	assertTestProcessor(t, doc.Root.Processors, 0, "gt", map[string]any{"gt": 10})
+	assertTestProcessor(t, doc.Root.Processors, 1, "lt", map[string]any{"lt": 100})
+	assertTestProcessor(t, doc.Root.Processors, 2, "eq", map[string]any{"eq": 50})
 }
 
 func TestNumberOneOfParams(t *testing.T) {
@@ -125,8 +128,8 @@ func TestNumberOneOfParams(t *testing.T) {
 	doc := zog.EXPERIMENTAL_TO_ZSS(s)
 
 	assertDocumentBasics(t, doc)
-	assertProcessorsCount(t, doc.Schema, 1)
-	assertTestProcessor(t, doc.Schema.Processors, 0, "one_of_options", map[string]any{"one_of_options": enum})
+	assertProcessorsCount(t, doc.Root, 1)
+	assertTestProcessor(t, doc.Root.Processors, 0, "one_of_options", map[string]any{"one_of_options": enum})
 }
 
 func TestSliceTestParams(t *testing.T) {
@@ -134,10 +137,10 @@ func TestSliceTestParams(t *testing.T) {
 	doc := zog.EXPERIMENTAL_TO_ZSS(s)
 
 	assertDocumentBasics(t, doc)
-	assertProcessorsCount(t, doc.Schema, 3)
-	assertTestProcessor(t, doc.Schema.Processors, 0, "min", map[string]any{"min": 2})
-	assertTestProcessor(t, doc.Schema.Processors, 1, "max", map[string]any{"max": 10})
-	assertTestProcessor(t, doc.Schema.Processors, 2, "len", map[string]any{"len": 5})
+	assertProcessorsCount(t, doc.Root, 3)
+	assertTestProcessor(t, doc.Root.Processors, 0, "min", map[string]any{"min": 2})
+	assertTestProcessor(t, doc.Root.Processors, 1, "max", map[string]any{"max": 10})
+	assertTestProcessor(t, doc.Root.Processors, 2, "len", map[string]any{"len": 5})
 }
 
 func TestSliceContainsParams(t *testing.T) {
@@ -145,8 +148,8 @@ func TestSliceContainsParams(t *testing.T) {
 	doc := zog.EXPERIMENTAL_TO_ZSS(s)
 
 	assertDocumentBasics(t, doc)
-	assertProcessorsCount(t, doc.Schema, 1)
-	assertTestProcessor(t, doc.Schema.Processors, 0, "contained", map[string]any{"contained": 42})
+	assertProcessorsCount(t, doc.Root, 1)
+	assertTestProcessor(t, doc.Root.Processors, 0, "contained", map[string]any{"contained": 42})
 }
 
 func TestStringTestFunc(t *testing.T) {
@@ -156,12 +159,12 @@ func TestStringTestFunc(t *testing.T) {
 	doc := zog.EXPERIMENTAL_TO_ZSS(s)
 
 	assertDocumentBasics(t, doc)
-	assertProcessorsCount(t, doc.Schema, 1)
-	if assert.NotNil(t, doc.Schema.Processors[0].Test) {
-		assert.Equal(t, "custom_test", string(doc.Schema.Processors[0].Test.ID))
+	assertProcessorsCount(t, doc.Root, 1)
+	if assert.NotNil(t, doc.Root.Processors[0].Test) {
+		assert.Equal(t, "custom_test", string(doc.Root.Processors[0].Test.ID))
 		// Message override should work - but TestFunc may use default formatter if not set properly
 		// Check that message is set (either custom or default)
-		assert.NotEmpty(t, doc.Schema.Processors[0].Test.Message)
+		assert.NotEmpty(t, doc.Root.Processors[0].Test.Message)
 	}
 }
 
@@ -170,10 +173,10 @@ func TestRequiredProcessor(t *testing.T) {
 	doc := zog.EXPERIMENTAL_TO_ZSS(s)
 
 	assertDocumentBasics(t, doc)
-	assertRequired(t, doc.Schema, true)
-	if assert.NotNil(t, doc.Schema.Required) {
-		assert.Equal(t, "required", string(doc.Schema.Required.ID))
-		assert.NotEmpty(t, doc.Schema.Required.Message, "required message should be populated")
+	assertRequired(t, doc.Root, true)
+	if assert.NotNil(t, doc.Root.Required) {
+		assert.Equal(t, "required", string(doc.Root.Required.ID))
+		assert.NotEmpty(t, doc.Root.Required.Message, "required message should be populated")
 	}
 }
 
@@ -183,22 +186,22 @@ func TestRequiredWithMessage(t *testing.T) {
 	doc := zog.EXPERIMENTAL_TO_ZSS(s)
 
 	assertDocumentBasics(t, doc)
-	assertRequired(t, doc.Schema, true)
-	if assert.NotNil(t, doc.Schema.Required) {
-		assert.Equal(t, customMsg, doc.Schema.Required.Message)
+	assertRequired(t, doc.Root, true)
+	if assert.NotNil(t, doc.Root.Required) {
+		assert.Equal(t, customMsg, doc.Root.Required.Message)
 	}
 }
 
 func TestRequiredWithIssuePath(t *testing.T) {
-	customPath := "user.email"
+	customPath := []string{"user", "email"}
 	s := zog.String().Required(zog.IssuePath(customPath))
 	doc := zog.EXPERIMENTAL_TO_ZSS(s)
 
 	assertDocumentBasics(t, doc)
-	assertRequired(t, doc.Schema, true)
-	if assert.NotNil(t, doc.Schema.Required) {
-		assert.NotNil(t, doc.Schema.Required.IssuePath)
-		assert.Equal(t, customPath, *doc.Schema.Required.IssuePath)
+	assertRequired(t, doc.Root, true)
+	if assert.NotNil(t, doc.Root.Required) {
+		assert.NotNil(t, doc.Root.Required.IssuePath)
+		assert.Equal(t, customPath, doc.Root.Required.IssuePath)
 	}
 }
 
@@ -211,12 +214,12 @@ func TestStructTransform(t *testing.T) {
 	doc := zog.EXPERIMENTAL_TO_ZSS(s)
 
 	assertDocumentBasics(t, doc)
-	assertSchemaKind(t, doc.Schema, "struct")
-	assertProcessorsCount(t, doc.Schema, 1)
+	assertSchemaKind(t, doc.Root, "struct")
+	assertProcessorsCount(t, doc.Root, 1)
 	// Struct transforms are not yet serialized with IDs, but should be transform processors
-	if assert.NotNil(t, doc.Schema.Processors) && len(doc.Schema.Processors) > 0 {
-		assert.Equal(t, "transform", string(doc.Schema.Processors[0].Kind))
-		assert.NotNil(t, doc.Schema.Processors[0].Transformer)
+	if assert.NotNil(t, doc.Root.Processors) && len(doc.Root.Processors) > 0 {
+		assert.Equal(t, "transform", string(doc.Root.Processors[0].Kind))
+		assert.NotNil(t, doc.Root.Processors[0].Transformer)
 	}
 }
 
@@ -227,10 +230,10 @@ func TestSliceTransform(t *testing.T) {
 	doc := zog.EXPERIMENTAL_TO_ZSS(s)
 
 	assertDocumentBasics(t, doc)
-	assertSchemaKind(t, doc.Schema, "slice")
-	assertProcessorsCount(t, doc.Schema, 1)
-	if assert.NotNil(t, doc.Schema.Processors) && len(doc.Schema.Processors) > 0 {
-		assert.Equal(t, "transform", string(doc.Schema.Processors[0].Kind))
-		assert.NotNil(t, doc.Schema.Processors[0].Transformer)
+	assertSchemaKind(t, doc.Root, "slice")
+	assertProcessorsCount(t, doc.Root, 1)
+	if assert.NotNil(t, doc.Root.Processors) && len(doc.Root.Processors) > 0 {
+		assert.Equal(t, "transform", string(doc.Root.Processors[0].Kind))
+		assert.NotNil(t, doc.Root.Processors[0].Transformer)
 	}
 }

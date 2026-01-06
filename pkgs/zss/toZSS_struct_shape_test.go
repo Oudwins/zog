@@ -1,3 +1,6 @@
+//go:build !zogmeta
+// +build !zogmeta
+
 package zss_test
 
 import (
@@ -15,9 +18,9 @@ func TestStructShapeBasic(t *testing.T) {
 	doc := zog.EXPERIMENTAL_TO_ZSS(s)
 
 	assertDocumentBasics(t, doc)
-	assertSchemaKind(t, doc.Schema, "struct")
+	assertSchemaKind(t, doc.Root, "struct")
 
-	childShape, ok := assertChildIsShape(t, doc.Schema)
+	childShape, ok := assertChildIsShape(t, doc.Root)
 	if assert.True(t, ok) {
 		assert.Len(t, childShape, 2, "shape should have 2 fields")
 
@@ -45,7 +48,7 @@ func TestStructShapeWithDefaultsAndCatch(t *testing.T) {
 	doc := zog.EXPERIMENTAL_TO_ZSS(s)
 
 	assertDocumentBasics(t, doc)
-	childShape, ok := assertChildIsShape(t, doc.Schema)
+	childShape, ok := assertChildIsShape(t, doc.Root)
 	if assert.True(t, ok) {
 		nameSchema := childShape["name"]
 		assertDefaultValue(t, &nameSchema, "John")
@@ -63,7 +66,7 @@ func TestStructShapeWithProcessors(t *testing.T) {
 	doc := zog.EXPERIMENTAL_TO_ZSS(s)
 
 	assertDocumentBasics(t, doc)
-	childShape, ok := assertChildIsShape(t, doc.Schema)
+	childShape, ok := assertChildIsShape(t, doc.Root)
 	if assert.True(t, ok) {
 		emailSchema := childShape["email"]
 		assertProcessorsCount(t, &emailSchema, 2)
@@ -86,7 +89,7 @@ func TestStructShapeNestedPtr(t *testing.T) {
 	doc := zog.EXPERIMENTAL_TO_ZSS(s)
 
 	assertDocumentBasics(t, doc)
-	childShape, ok := assertChildIsShape(t, doc.Schema)
+	childShape, ok := assertChildIsShape(t, doc.Root)
 	if assert.True(t, ok) {
 		userSchema := childShape["user"]
 		assertSchemaKind(t, &userSchema, "ptr")
@@ -112,7 +115,7 @@ func TestStructShapeNestedSlice(t *testing.T) {
 	doc := zog.EXPERIMENTAL_TO_ZSS(s)
 
 	assertDocumentBasics(t, doc)
-	childShape, ok := assertChildIsShape(t, doc.Schema)
+	childShape, ok := assertChildIsShape(t, doc.Root)
 	if assert.True(t, ok) {
 		tagsSchema := childShape["tags"]
 		assertSchemaKind(t, &tagsSchema, "slice")
@@ -139,7 +142,7 @@ func TestStructShapeDeeplyNested(t *testing.T) {
 	doc := zog.EXPERIMENTAL_TO_ZSS(s)
 
 	assertDocumentBasics(t, doc)
-	childShape, ok := assertChildIsShape(t, doc.Schema)
+	childShape, ok := assertChildIsShape(t, doc.Root)
 	if assert.True(t, ok) {
 		userSchema := childShape["user"]
 		assertSchemaKind(t, &userSchema, "ptr")
@@ -176,7 +179,7 @@ func TestStructShapeWithMultipleComplexTypes(t *testing.T) {
 	doc := zog.EXPERIMENTAL_TO_ZSS(s)
 
 	assertDocumentBasics(t, doc)
-	childShape, ok := assertChildIsShape(t, doc.Schema)
+	childShape, ok := assertChildIsShape(t, doc.Root)
 	if assert.True(t, ok) {
 		assert.Len(t, childShape, 3)
 
@@ -211,8 +214,8 @@ func TestStructShapeEmpty(t *testing.T) {
 	doc := zog.EXPERIMENTAL_TO_ZSS(s)
 
 	assertDocumentBasics(t, doc)
-	assertSchemaKind(t, doc.Schema, "struct")
-	childShape, ok := assertChildIsShape(t, doc.Schema)
+	assertSchemaKind(t, doc.Root, "struct")
+	childShape, ok := assertChildIsShape(t, doc.Root)
 	if assert.True(t, ok) {
 		assert.Len(t, childShape, 0, "empty shape should have no fields")
 	}
@@ -225,7 +228,7 @@ func TestStructShapeWithTransforms(t *testing.T) {
 	doc := zog.EXPERIMENTAL_TO_ZSS(s)
 
 	assertDocumentBasics(t, doc)
-	childShape, ok := assertChildIsShape(t, doc.Schema)
+	childShape, ok := assertChildIsShape(t, doc.Root)
 	if assert.True(t, ok) {
 		nameSchema := childShape["name"]
 		assertProcessorsCount(t, &nameSchema, 2)
@@ -245,7 +248,7 @@ func TestStructShapeWithCustomMessages(t *testing.T) {
 	doc := zog.EXPERIMENTAL_TO_ZSS(s)
 
 	assertDocumentBasics(t, doc)
-	childShape, ok := assertChildIsShape(t, doc.Schema)
+	childShape, ok := assertChildIsShape(t, doc.Root)
 	if assert.True(t, ok) {
 		emailSchema := childShape["email"]
 		if assert.NotNil(t, emailSchema.Processors) && len(emailSchema.Processors) > 0 {

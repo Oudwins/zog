@@ -5,12 +5,25 @@ package zss_test
 
 import (
 	"encoding/json"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/Oudwins/zog"
+	zss "github.com/Oudwins/zog/pkgs/zss/core"
 	"github.com/stretchr/testify/assert"
 )
+
+func normalize(s string) string {
+	return strings.ReplaceAll(strings.ReplaceAll(strings.ReplaceAll(s, " ", ""), "\n", ""), "\t", "")
+}
+
+func baseZSSJson(schema string) string {
+	return `{
+		"$schema": "` + string(zss.ZSS_VERSION_LATEST) + `",
+		"root": ` + schema + `
+	}`
+}
 
 func TestToJsonStringLike(t *testing.T) {
 	type CustomString string
@@ -24,9 +37,9 @@ func TestToJsonStringLike(t *testing.T) {
 		"kind": "string",
 		"goTypes": [
 			{
-				"pkgPath": "",
+				"pkgPath": "github.com/Oudwins/zog/pkgs/zss_test",
 				"name": "CustomString",
-				"display": "CustomString"
+				"display": "zss_test.CustomString"
 			}
 		],
 		"format": null,
@@ -70,9 +83,9 @@ func TestToJsonIntLike(t *testing.T) {
 		"kind": "number",
 		"goTypes": [
 			{
-				"pkgPath": "",
+				"pkgPath": "github.com/Oudwins/zog/pkgs/zss_test",
 				"name": "CustomInt",
-				"display": "CustomInt"
+				"display": "zss_test.CustomInt"
 			}
 		],
 		"format": null,
@@ -116,9 +129,9 @@ func TestToJsonBoolLike(t *testing.T) {
 		"kind": "bool",
 		"goTypes": [
 			{
-				"pkgPath": "",
+				"pkgPath": "github.com/Oudwins/zog/pkgs/zss_test",
 				"name": "CustomBool",
-				"display": "CustomBool"
+				"display": "zss_test.CustomBool"
 			}
 		],
 		"format": null,
@@ -178,9 +191,9 @@ func TestToJsonPtrWithStringLike(t *testing.T) {
 			"kind": "string",
 			"goTypes": [
 				{
-					"pkgPath": "",
+					"pkgPath": "github.com/Oudwins/zog/pkgs/zss_test",
 					"name": "CustomString",
-					"display": "CustomString"
+					"display": "zss_test.CustomString"
 				}
 			],
 			"format": null,
@@ -220,9 +233,9 @@ func TestToJsonPreprocessWithGoType(t *testing.T) {
 		"kind": "preprocess",
 		"goTypes": [
 			{
-				"pkgPath": "",
+				"pkgPath": "github.com/Oudwins/zog/pkgs/zss_test",
 				"name": "FromType",
-				"display": "FromType"
+				"display": "zss_test.FromType"
 			},
 			{
 				"pkgPath": "",
@@ -287,9 +300,9 @@ func TestToJsonBoxedWithGoType(t *testing.T) {
 		"kind": "boxed",
 		"goTypes": [
 			{
-				"pkgPath": "",
+				"pkgPath": "github.com/Oudwins/zog/pkgs/zss_test",
 				"name": "StringBox",
-				"display": "StringBox"
+				"display": "zss_test.StringBox"
 			},
 			{
 				"pkgPath": "",
@@ -350,20 +363,26 @@ func TestToJsonCustomWithGoType(t *testing.T) {
 		"kind": "custom",
 		"goTypes": [
 			{
-				"pkgPath": "",
+				"pkgPath": "github.com/Oudwins/zog/pkgs/zss_test",
 				"name": "CustomType",
-				"display": "CustomType"
+				"display": "zss_test.CustomType"
 			}
 		],
 		"format": null,
-		"processors": null,
+		"processors": [
+			{
+				"kind": "test",
+				"test": {
+					"id": "",
+					"message": "",
+					"issuePath": null,
+					"params": {}
+				},
+				"transformer": null
+			}
+		],
 		"child": null,
-		"required": {
-			"id": "required",
-			"message": "",
-			"issuePath": null,
-			"params": {}
-		},
+		"required": null,
 		"defaultValue": null,
 		"catchValue": null
 	}`)
