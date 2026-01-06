@@ -4,11 +4,9 @@ sidebar_position: 2
 
 # ZSS - Zog Schema Specification
 
-> **⚠️ Experimental API**: ZSS is an experimental intermediate format that is still in flux. The structure and API are subject to breaking changes. Use with caution.
-
-## Overview
-
 **ZSS (Zog Schema Specification)** is an intermediate, structured representation of Zog schemas. It serves as a bridge between Zog's runtime schema definitions and other schema formats.
+
+> **⚠️ Experimental API**: ZSS is an experimental intermediate format that is still in flux. The structure and API are subject to breaking changes. Use with caution.
 
 ## Purpose
 
@@ -20,10 +18,6 @@ ZSS is designed to be an intermediate format that can be used to generate other 
 - Other target formats as needed
 
 By converting Zog schemas to ZSS first, we can generate multiple output formats from a single, well-defined intermediate representation.
-
-## Current Status
-
-**⚠️ Important**: ZSS is still experimental and actively evolving. The structure, field names, and behavior may change in future versions. Breaking changes are expected as the format stabilizes.
 
 ## Structure
 
