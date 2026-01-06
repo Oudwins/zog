@@ -16,8 +16,8 @@ func normalize(s string) string {
 
 func baseZSSJson(schema string) string {
 	return `{
-		"version": "` + string(zss.ZSS_VERSION_LATEST) + `",
-		"schema": ` + schema + `
+		"$schema": "` + string(zss.ZSS_VERSION_LATEST) + `",
+		"root": ` + schema + `
 	}`
 }
 
@@ -121,11 +121,11 @@ func TestToJsonStructShape(t *testing.T) {
 	err = json.Unmarshal(serialized, &doc)
 	assert.Nil(t, err, "JSON should unmarshal successfully")
 	assert.Equal(t, zss.ZSS_VERSION_LATEST, doc.Version)
-	assert.NotNil(t, doc.Schema)
-	assert.Equal(t, "struct", doc.Schema.Kind)
+	assert.NotNil(t, doc.Root)
+	assert.Equal(t, "struct", doc.Root.Kind)
 
 	// Verify child shape exists
-	childShape, ok := doc.Schema.Child.(map[string]interface{})
+	childShape, ok := doc.Root.Child.(map[string]interface{})
 	assert.True(t, ok, "child should be a map")
 	assert.Len(t, childShape, 2, "should have 2 fields")
 

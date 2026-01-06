@@ -54,7 +54,7 @@ func EXPERIMENTAL_TO_ZSS(s ZSSSerializable) zss.ZSSDocument {
 	j := s.toZSS()
 	return zss.ZSSDocument{
 		Version: zss.ZSS_VERSION_LATEST,
-		Schema:  j,
+		Root:    j,
 	}
 }
 
@@ -301,8 +301,8 @@ func toZSSTest(test internals.TestInterface, dtype zconst.ZogType) *zss.ZSSTest 
 	c := test.GetIssueCode()
 	j.ID = c
 	path := test.GetIssuePath()
-	if path != "" {
-		j.IssuePath = &path
+	if len(path) > 0 {
+		j.IssuePath = path
 	}
 	params := test.GetParams()
 	newParams := map[string]any{}
