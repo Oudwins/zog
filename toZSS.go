@@ -117,8 +117,10 @@ func (s *TimeSchema) toZSS() *zss.ZSSSchema {
 		Processors:   processorsToZSS(rvP, zconst.TypeTime),
 	}
 	if exmeta, ok := EX_META_REGISTRY[s]; ok {
-		x := exmeta[EX_META_KEY_FORMAT].(string)
-		j.Format = &x
+		if x, ok := exmeta[EX_META_KEY_FORMAT]; ok {
+			str := x.(string)
+			j.Format = &str
+		}
 	}
 	return &j
 }
@@ -206,9 +208,7 @@ func (s *BoxedSchema[B, T]) toZSS() *zss.ZSSSchema {
 func processRVtoZSS(rv reflect.Value, dtype zconst.ZogType) *zss.ZSSProcessor {
 
 	if !rv.CanInterface() {
-		// TODO add assert here
-		fmt.Println("THIS SHOULD NEVER HAPPEN")
-		return nil
+		panic("[Zog] - This should never happen. processRVtoZSS: rv.CanInterface() is false")
 	}
 
 	rvi := rv.Interface()
