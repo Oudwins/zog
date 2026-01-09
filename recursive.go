@@ -6,15 +6,15 @@ import (
 )
 
 type lazySchema struct {
-	lazySchema ZogSchema
-	fn         func() ZogSchema
+	innerSchema ZogSchema
+	fn          func() ZogSchema
 }
 
 func (l *lazySchema) get() ZogSchema {
-	if l.lazySchema == nil {
-		l.lazySchema = l.fn()
+	if l.innerSchema == nil {
+		l.innerSchema = l.fn()
 	}
-	return l.lazySchema
+	return l.innerSchema
 }
 
 func (l *lazySchema) process(ctx *p.SchemaCtx) {
@@ -31,14 +31,14 @@ func lazy(fn func() ZogSchema) *lazySchema {
 }
 
 type RecursiveSchemaUpdater[T ZogSchema] func(self T) T
-type RecursiveSchema[T ZogSchema] func(optionalFunc ...RecursiveSchemaUpdater[T]) ZogSchema
+type RecursiveSchema[T ZogSchema] func(updaters ...RecursiveSchemaUpdater[T]) ZogSchema
 type RecursiveSchemaBuilder[T ZogSchema] func(self RecursiveSchema[T]) T
 
 // Experimental API.
 // Do not use unless you know what you are doing.
 func EXPERIMENTAL_RECURSIVE[T ZogSchema](build RecursiveSchemaBuilder[T]) T {
 	var self T
-	var lazyBuilder = func(updaters ...RecursiveSchemaUpdater[T]) ZogSchema {
+	var lazyBuilder RecursiveSchema[T] = func(updaters ...RecursiveSchemaUpdater[T]) ZogSchema {
 		return lazy(func() ZogSchema {
 			if len(updaters) > 0 {
 				return updaters[0](self)
