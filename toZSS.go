@@ -142,7 +142,7 @@ func (s *MapSchema[K, V]) toZSS() *zss.ZSSSchema {
 	j := zss.ZSSSchema{
 		Kind:         zconst.TypeMap,
 		Required:     toZSSRequired(s.required, zconst.TypeMap),
-		DefaultValue: deepCopyMap(s.defaultVal),
+		DefaultValue: shallowCopyMap(s.defaultVal),
 		Processors:   processorsToZSS(rvP, zconst.TypeMap),
 		Child:        childMap,
 	}
@@ -150,7 +150,7 @@ func (s *MapSchema[K, V]) toZSS() *zss.ZSSSchema {
 }
 
 // Helper function to deep copy a map for ZSS
-func deepCopyMap[K comparable, V any](m map[K]V) any {
+func shallowCopyMap[K comparable, V any](m map[K]V) any {
 	if m == nil {
 		return nil
 	}

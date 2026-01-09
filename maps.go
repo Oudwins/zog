@@ -80,6 +80,12 @@ func (v *MapSchema[K, V]) validate(ctx *p.SchemaCtx) {
 		}
 	}
 
+	// Create contexts once for reuse
+	keySubCtx := ctx.NewValidateSchemaCtx(ctx.ValPtr, ctx.Path, v.keySchema.getType())
+	defer keySubCtx.Free()
+	subCtx := ctx.NewValidateSchemaCtx(ctx.ValPtr, ctx.Path, v.valueSchema.getType())
+	defer subCtx.Free()
+
 	// Validate map entries
 	for _, key := range refVal.MapKeys() {
 		keyVal := key.Interface().(K)
@@ -87,20 +93,19 @@ func (v *MapSchema[K, V]) validate(ctx *p.SchemaCtx) {
 
 		// Validate key
 		keyPtr := &keyVal
-		keySubCtx := ctx.NewValidateSchemaCtx(keyPtr, ctx.Path, v.keySchema.getType())
+		keySubCtx.ValPtr = keyPtr
+		keySubCtx.Exit = false
 		v.keySchema.validate(keySubCtx)
-		keySubCtx.Free()
 
 		// Validate value
 		valuePtr := reflect.New(reflect.TypeOf(valueVal)).Interface()
 		reflect.ValueOf(valuePtr).Elem().Set(reflect.ValueOf(valueVal))
 		k := fmt.Sprintf(`["%v"]`, keyVal)
-		subCtx := ctx.NewValidateSchemaCtx(valuePtr, ctx.Path, v.valueSchema.getType())
+		subCtx.ValPtr = valuePtr
 		subCtx.Path.Push(&k)
 		subCtx.Exit = false
 		v.valueSchema.validate(subCtx)
 		subCtx.Path.Pop()
-		subCtx.Free()
 	}
 
 	for _, processor := range v.processors {
@@ -162,6 +167,12 @@ func (v *MapSchema[K, V]) process(ctx *p.SchemaCtx) {
 	}
 	destMap := reflect.MakeMap(destType)
 
+	// Create contexts once for reuse
+	keySubCtx := ctx.NewSchemaCtx(ctx.Data, ctx.ValPtr, ctx.Path, v.keySchema.getType())
+	defer keySubCtx.Free()
+	subCtx := ctx.NewSchemaCtx(ctx.Data, ctx.ValPtr, ctx.Path, v.valueSchema.getType())
+	defer subCtx.Free()
+
 	// Process map entries
 	for _, key := range inputMap.MapKeys() {
 		keyData := key.Interface()
@@ -170,21 +181,23 @@ func (v *MapSchema[K, V]) process(ctx *p.SchemaCtx) {
 		// Parse key - create a zero value and get pointer to it
 		var zeroKey K
 		keyPtr := reflect.New(reflect.TypeOf(zeroKey)).Interface()
-		keySubCtx := ctx.NewSchemaCtx(keyData, keyPtr, ctx.Path, v.keySchema.getType())
+		keySubCtx.Data = keyData
+		keySubCtx.ValPtr = keyPtr
+		keySubCtx.Exit = false
 		v.keySchema.process(keySubCtx)
 		if keySubCtx.Exit {
-			keySubCtx.Free()
 			continue
 		}
 		parsedKey := reflect.ValueOf(keyPtr).Elem().Interface().(K)
-		keySubCtx.Free()
 
 		// Parse value - create a zero value and get pointer to it
 		var zeroValue V
 		valuePtr := reflect.New(reflect.TypeOf(zeroValue)).Interface()
 		k := fmt.Sprintf(`["%v"]`, parsedKey)
-		subCtx := ctx.NewSchemaCtx(valueData, valuePtr, ctx.Path, v.valueSchema.getType())
+		subCtx.Data = valueData
+		subCtx.ValPtr = valuePtr
 		subCtx.Path.Push(&k)
+		subCtx.Exit = false
 		v.valueSchema.process(subCtx)
 		subCtx.Path.Pop()
 
@@ -193,7 +206,6 @@ func (v *MapSchema[K, V]) process(ctx *p.SchemaCtx) {
 			parsedValue := reflect.ValueOf(valuePtr).Elem().Interface().(V)
 			destMap.SetMapIndex(reflect.ValueOf(parsedKey), reflect.ValueOf(parsedValue))
 		}
-		subCtx.Free()
 	}
 
 	destVal.Set(destMap)
