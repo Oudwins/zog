@@ -167,11 +167,16 @@ func (v *MapSchema[K, V]) process(ctx *p.SchemaCtx) {
 		keyData := key.Interface()
 		valueData := inputMap.MapIndex(key).Interface()
 
-		// Parse key
-		var parsedKey K
-		keySubCtx := ctx.NewSchemaCtx(valueData, keyData, ctx.Path, v.keySchema.getType())
+		// Parse key - create a zero value and get pointer to it
+		var zeroKey K
+		keyPtr := reflect.New(reflect.TypeOf(zeroKey)).Interface()
+		keySubCtx := ctx.NewSchemaCtx(keyData, keyPtr, ctx.Path, v.keySchema.getType())
 		v.keySchema.process(keySubCtx)
-		parsedKey = keySubCtx.ValPtr.(K)
+		if keySubCtx.Exit {
+			keySubCtx.Free()
+			continue
+		}
+		parsedKey := reflect.ValueOf(keyPtr).Elem().Interface().(K)
 		keySubCtx.Free()
 
 		// Parse value - create a zero value and get pointer to it
