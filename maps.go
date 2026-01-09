@@ -182,8 +182,7 @@ func (v *MapSchema[K, V]) process(ctx *p.SchemaCtx) {
 		k := fmt.Sprintf(`["%v"]`, keyData)
 
 		// Parse key - create a zero value and get pointer to it
-		var zeroKey K
-		keyPtr := reflect.New(reflect.TypeOf(zeroKey)).Interface()
+		keyPtr := reflect.New(destType.Key()).Interface()
 		keySubCtx.Data = keyData
 		keySubCtx.ValPtr = keyPtr
 		keySubCtx.Path.Push(&k)
@@ -196,8 +195,7 @@ func (v *MapSchema[K, V]) process(ctx *p.SchemaCtx) {
 		parsedKey := reflect.ValueOf(keyPtr).Elem().Interface().(K)
 
 		// Parse value - create a zero value and get pointer to it
-		var zeroValue V
-		valuePtr := reflect.New(reflect.TypeOf(zeroValue)).Interface()
+		valuePtr := reflect.New(destType.Elem()).Interface()
 		subCtx.Data = valueData
 		subCtx.ValPtr = valuePtr
 		subCtx.Path.Push(&k)
