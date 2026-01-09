@@ -147,7 +147,7 @@ func (v *StringSchema[T]) Trim() *StringSchema[T] {
 		},
 	})
 	if EXHAUSTIVE_METADATA {
-		registryAdd(EX_META_REGISTRY, v.processors[len(v.processors)-1], EX_META_KEY_ID, zconst.ZogTransformIDTrim)
+		RegistryAdd(exMetaRegistry, v.processors[len(v.processors)-1], EX_META_KEY_ID, zconst.ZogTransformIDTrim)
 	}
 
 	return v
@@ -158,7 +158,7 @@ func (v *StringSchema[T]) Transform(transform p.Transform[*T]) *StringSchema[T] 
 	v.processors = append(v.processors, &p.TransformProcessor[*T]{Transform: transform})
 
 	if EXHAUSTIVE_METADATA {
-		registryAdd(EX_META_REGISTRY, v.processors[len(v.processors)-1], "ID", "custom")
+		RegistryAdd(exMetaRegistry, v.processors[len(v.processors)-1], "ID", "custom")
 	}
 	return v
 }
@@ -206,8 +206,8 @@ func (v *StringSchema[T]) TestFunc(testFunc BoolTFunc[*T], options ...TestOption
 	test := p.NewTestFunc("", p.BoolTFunc[*T](testFunc), options...)
 	v.Test(Test[*T](*test))
 	if EXHAUSTIVE_METADATA {
-		registryAdd(EX_META_REGISTRY, test, "ID", "custom")
-		registryAdd(EX_META_REGISTRY, test, "typeName", "testFunc")
+		RegistryAdd(exMetaRegistry, test, "ID", "custom")
+		RegistryAdd(exMetaRegistry, test, "typeName", "testFunc")
 	}
 	return v
 }

@@ -106,7 +106,7 @@ func (s *TimeSchema) toZSS() *zss.ZSSSchema {
 		CatchValue:   deepCopyPrimitivePtr(s.catch),
 		Processors:   processorsToZSS(rvP, zconst.TypeTime),
 	}
-	if x, ok := registryGet(EX_META_REGISTRY, s, EX_META_KEY_FORMAT); ok {
+	if x, ok := RegistryGet(exMetaRegistry, s, EX_META_KEY_FORMAT); ok {
 		str := x.(string)
 		j.Format = &str
 	}
@@ -298,7 +298,7 @@ func toZSSTest(test internals.TestInterface, dtype zconst.ZogType) *zss.ZSSTest 
 	j.Params = newParams
 
 	// Check for custom message in registry first
-	if message, ok := registryGet(EX_META_REGISTRY, test, EX_META_KEY_MESSAGE); ok {
+	if message, ok := RegistryGet(exMetaRegistry, test, EX_META_KEY_MESSAGE); ok {
 		j.Message = message.(string)
 	}
 
@@ -331,7 +331,7 @@ func toZSSTransformer(transformer internals.TransformerInterface) *zss.ZSSTransf
 	}
 
 	// extra
-	if id, ok := registryGet(EX_META_REGISTRY, transformer, EX_META_KEY_ID); ok {
+	if id, ok := RegistryGet(exMetaRegistry, transformer, EX_META_KEY_ID); ok {
 		j.ID = id.(zconst.ZogTransformID)
 	}
 	return &j

@@ -7,12 +7,12 @@ const (
 	EXHAUSTIVE_METADATA = false
 )
 
-var EX_META_REGISTRY ExMetaRegistry = nil
+var exMetaRegistry ExMetaRegistry = nil
 
-func registryAdd(_ ExMetaRegistry, _ any, _ string, _ any) {
+func RegistryAdd(_ ExMetaRegistry, _ any, _ string, _ any) {
 	// no op
 }
 
-func registryGet(_ ExMetaRegistry, _ any, _ string) (any, bool) {
+func RegistryGet(_ ExMetaRegistry, _ any, _ string) (any, bool) {
 	return nil, false
 }
