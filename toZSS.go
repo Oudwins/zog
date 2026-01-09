@@ -1,7 +1,6 @@
 package zog
 
 import (
-	"fmt"
 	"maps"
 	"reflect"
 
@@ -196,6 +195,7 @@ func (s *BoxedSchema[B, T]) toZSS() *zss.ZSSSchema {
 func processRVtoZSS(rv reflect.Value, dtype zconst.ZogType) *zss.ZSSProcessor {
 
 	if !rv.CanInterface() {
+		// TODO better error messages + maybe not panic
 		panic("[Zog] - This should never happen. processRVtoZSS: rv.CanInterface() is false")
 	}
 
@@ -210,8 +210,8 @@ func processRVtoZSS(rv reflect.Value, dtype zconst.ZogType) *zss.ZSSProcessor {
 		out.Transformer = toZSSTransformer(trans)
 		out.Kind = zconst.ZogProcessorTransform
 	} else {
-		// TODO add assert here
-		fmt.Println("THIS SHOULD NEVER HAPPEN")
+		// TODO better error messages + maybe not panic
+		panic("[Zog] - This should never happen. processRVtoZSS: rvi is not a TestInterface or TransformerInterface")
 	}
 	return &out
 }
