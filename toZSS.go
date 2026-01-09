@@ -116,10 +116,7 @@ func (s *PointerSchema) toZSS() *zss.ZSSSchema {
 	j := zss.ZSSSchema{
 		Kind:     zconst.TypePtr,
 		Required: toZSSRequired(s.required, s.schema.getType()),
-		// DefaultValue: deepCopyPrimitivePtr(s.defaultVal),
-		// CatchValue:   deepCopyPrimitivePtr(s.catch),
-		// Processors:   processorsToZSS(rvP),
-		Child: s.schema.toZSS(),
+		Child:    s.schema.toZSS(),
 	}
 	return &j
 }
