@@ -133,6 +133,34 @@ func (s *SliceSchema) toZSS() *zss.ZSSSchema {
 	return &j
 }
 
+func (s *MapSchema[K, V]) toZSS() *zss.ZSSSchema {
+	rvP := reflect.ValueOf(s.processors)
+	childMap := map[string]zss.ZSSSchema{
+		"key":   *s.keySchema.toZSS(),
+		"value": *s.valueSchema.toZSS(),
+	}
+	j := zss.ZSSSchema{
+		Kind:         zconst.TypeMap,
+		Required:     toZSSRequired(s.required, zconst.TypeMap),
+		DefaultValue: deepCopyMap(s.defaultVal),
+		Processors:   processorsToZSS(rvP, zconst.TypeMap),
+		Child:        childMap,
+	}
+	return &j
+}
+
+// Helper function to deep copy a map for ZSS
+func deepCopyMap[K comparable, V any](m map[K]V) any {
+	if m == nil {
+		return nil
+	}
+	result := make(map[K]V, len(m))
+	for k, v := range m {
+		result[k] = v
+	}
+	return result
+}
+
 func (s *StructSchema) toZSS() *zss.ZSSSchema {
 	rvP := reflect.ValueOf(s.processors)
 	j := zss.ZSSSchema{

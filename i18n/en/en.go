@@ -79,6 +79,14 @@ var Map zconst.LangMap = map[zconst.ZogType]map[zconst.ZogIssueCode]string{
 		zconst.NotIssueCode(zconst.IssueCodeContains): "slice must not contain {{contained}}",
 		zconst.IssueCodeFallback:                      "slice is invalid",
 	},
+	zconst.TypeMap: {
+		zconst.IssueCodeRequired:     "is required",
+		zconst.IssueCodeNotNil:       "must not be empty",
+		zconst.IssueCodeMin:          "map must contain at least {{min}} entries",
+		zconst.IssueCodeMax:          "map must contain at most {{max}} entries",
+		zconst.IssueCodeLen:          "map must contain exactly {{len}} entries",
+		zconst.IssueCodeFallback:     "map is invalid",
+	},
 	zconst.TypeStruct: {
 		zconst.IssueCodeRequired: "is required",
 		zconst.IssueCodeNotNil:   "must not be empty",

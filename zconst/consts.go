@@ -26,6 +26,7 @@ const (
 	TypeBool       ZogType = "bool"
 	TypeTime       ZogType = "time"
 	TypeSlice      ZogType = "slice"
+	TypeMap        ZogType = "map"
 	TypeStruct     ZogType = "struct"
 	TypePtr        ZogType = "ptr"
 	TypeCustom     ZogType = "custom"
