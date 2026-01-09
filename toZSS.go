@@ -149,7 +149,7 @@ func (s *MapSchema[K, V]) toZSS() *zss.ZSSSchema {
 	return &j
 }
 
-// Helper function to deep copy a map for ZSS
+// Helper function to shallow copy a map for ZSS
 func shallowCopyMap[K comparable, V any](m map[K]V) any {
 	if m == nil {
 		return nil
