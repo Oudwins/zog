@@ -2,6 +2,7 @@ package zog
 
 import (
 	p "github.com/Oudwins/zog/internals"
+	zss "github.com/Oudwins/zog/pkgs/zss/core"
 	"github.com/Oudwins/zog/zconst"
 )
 
@@ -9,6 +10,8 @@ type lazySchema struct {
 	innerSchema ZogSchema
 	fn          func() ZogSchema
 }
+
+var _ ZogSchema = &lazySchema{}
 
 func (l *lazySchema) get() ZogSchema {
 	if l.innerSchema == nil {
@@ -25,6 +28,7 @@ func (l *lazySchema) validate(ctx *p.SchemaCtx) {
 }
 func (l *lazySchema) getType() zconst.ZogType  { return l.get().getType() }
 func (l *lazySchema) setCoercer(c CoercerFunc) { l.get().setCoercer(c) }
+func (l *lazySchema) toZSS() *zss.ZSSSchema    { return l.get().toZSS() }
 
 func lazy(fn func() ZogSchema) *lazySchema {
 	return &lazySchema{fn: fn}
