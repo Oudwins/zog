@@ -88,19 +88,19 @@ func (v *MapSchema[K, V]) validate(ctx *p.SchemaCtx) {
 		// Validate key
 		keyPtr := &keyVal
 		keySubCtx := ctx.NewValidateSchemaCtx(keyPtr, ctx.Path, v.keySchema.getType())
-		defer keySubCtx.Free()
 		v.keySchema.validate(keySubCtx)
+		keySubCtx.Free()
 
 		// Validate value
 		valuePtr := reflect.New(reflect.TypeOf(valueVal)).Interface()
 		reflect.ValueOf(valuePtr).Elem().Set(reflect.ValueOf(valueVal))
 		k := fmt.Sprintf(`["%v"]`, keyVal)
 		subCtx := ctx.NewValidateSchemaCtx(valuePtr, ctx.Path, v.valueSchema.getType())
-		defer subCtx.Free()
 		subCtx.Path.Push(&k)
 		subCtx.Exit = false
 		v.valueSchema.validate(subCtx)
 		subCtx.Path.Pop()
+		subCtx.Free()
 	}
 
 	for _, processor := range v.processors {
@@ -169,21 +169,16 @@ func (v *MapSchema[K, V]) process(ctx *p.SchemaCtx) {
 
 		// Parse key
 		var parsedKey K
-		keyErrs := v.keySchema.Parse(keyData, &parsedKey)
-		if len(keyErrs) > 0 {
-			// Add key errors to context
-			for _, err := range keyErrs {
-				ctx.AddIssue(err)
-			}
-			continue
-		}
+		keySubCtx := ctx.NewSchemaCtx(valueData, keyData, ctx.Path, v.keySchema.getType())
+		v.keySchema.process(keySubCtx)
+		parsedKey = keySubCtx.ValPtr.(K)
+		keySubCtx.Free()
 
 		// Parse value - create a zero value and get pointer to it
 		var zeroValue V
 		valuePtr := reflect.New(reflect.TypeOf(zeroValue)).Interface()
 		k := fmt.Sprintf(`["%v"]`, parsedKey)
 		subCtx := ctx.NewSchemaCtx(valueData, valuePtr, ctx.Path, v.valueSchema.getType())
-		defer subCtx.Free()
 		subCtx.Path.Push(&k)
 		v.valueSchema.process(subCtx)
 		subCtx.Path.Pop()
@@ -193,6 +188,7 @@ func (v *MapSchema[K, V]) process(ctx *p.SchemaCtx) {
 			parsedValue := reflect.ValueOf(valuePtr).Elem().Interface().(V)
 			destMap.SetMapIndex(reflect.ValueOf(parsedKey), reflect.ValueOf(parsedValue))
 		}
+		subCtx.Free()
 	}
 
 	destVal.Set(destMap)
