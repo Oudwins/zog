@@ -302,13 +302,18 @@ func toZSSTest(test internals.TestInterface, dtype zconst.ZogType) *zss.ZSSTest 
 		j.Message = message.(string)
 	}
 
-	// If no message is set, extract default message using the default formatter
+	// If no message is set, extract message using the test's formatter or default
 	if j.Message == "" {
 		fakeIssue := internals.NewZogIssue().
 			SetCode(c).
 			SetDType(dtype).
 			SetParams(params)
-		conf.DefaultIssueFormatter(fakeIssue, fakeCtxInstance)
+		// Use the test's custom formatter if available, otherwise use default
+		if customFmter := test.GetIssueFmtFunc(); customFmter != nil {
+			customFmter(fakeIssue, fakeCtxInstance)
+		} else {
+			conf.DefaultIssueFormatter(fakeIssue, fakeCtxInstance)
+		}
 		j.Message = fakeIssue.Message
 		internals.FreeIssue(fakeIssue)
 	}
