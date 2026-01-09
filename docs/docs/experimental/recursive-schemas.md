@@ -2,7 +2,7 @@
 sidebar_position: 3
 ---
 
-# Recursive Schemas (Experimental)
+# Recursive Schemas
 
 > **⚠️ Experimental API**: This feature is experimental and subject to breaking changes. Use with caution.
 

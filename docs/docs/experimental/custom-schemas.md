@@ -2,7 +2,7 @@
 sidebar_position: 1
 ---
 
-# Custom Schemas (Experimental)
+# Custom Schemas
 
 > **⚠️ Experimental API**: This feature is experimental and subject to breaking changes. Use with caution.
 
