@@ -90,17 +90,19 @@ func (v *MapSchema[K, V]) validate(ctx *p.SchemaCtx) {
 	for _, key := range refVal.MapKeys() {
 		keyVal := key.Interface().(K)
 		valueVal := refVal.MapIndex(key).Interface()
+		k := fmt.Sprintf(`["%v"]`, keyVal)
 
 		// Validate key
 		keyPtr := &keyVal
 		keySubCtx.ValPtr = keyPtr
+		keySubCtx.Path.Push(&k)
 		keySubCtx.Exit = false
 		v.keySchema.validate(keySubCtx)
+		keySubCtx.Path.Pop()
 
 		// Validate value
 		valuePtr := reflect.New(reflect.TypeOf(valueVal)).Interface()
 		reflect.ValueOf(valuePtr).Elem().Set(reflect.ValueOf(valueVal))
-		k := fmt.Sprintf(`["%v"]`, keyVal)
 		subCtx.ValPtr = valuePtr
 		subCtx.Path.Push(&k)
 		subCtx.Exit = false
@@ -177,14 +179,17 @@ func (v *MapSchema[K, V]) process(ctx *p.SchemaCtx) {
 	for _, key := range inputMap.MapKeys() {
 		keyData := key.Interface()
 		valueData := inputMap.MapIndex(key).Interface()
+		k := fmt.Sprintf(`["%v"]`, keyData)
 
 		// Parse key - create a zero value and get pointer to it
 		var zeroKey K
 		keyPtr := reflect.New(reflect.TypeOf(zeroKey)).Interface()
 		keySubCtx.Data = keyData
 		keySubCtx.ValPtr = keyPtr
+		keySubCtx.Path.Push(&k)
 		keySubCtx.Exit = false
 		v.keySchema.process(keySubCtx)
+		keySubCtx.Path.Pop()
 		if keySubCtx.Exit {
 			continue
 		}
@@ -193,7 +198,6 @@ func (v *MapSchema[K, V]) process(ctx *p.SchemaCtx) {
 		// Parse value - create a zero value and get pointer to it
 		var zeroValue V
 		valuePtr := reflect.New(reflect.TypeOf(zeroValue)).Interface()
-		k := fmt.Sprintf(`["%v"]`, parsedKey)
 		subCtx.Data = valueData
 		subCtx.ValPtr = valuePtr
 		subCtx.Path.Push(&k)
