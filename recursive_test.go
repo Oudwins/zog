@@ -11,10 +11,10 @@ type Node struct {
 	Self  *Node
 }
 
-var nodeSchema = Recursive(func(self ZogSchema) *PointerSchema {
+var nodeSchema = EXPERIMENTAL_RECURSIVE(func(self RecursiveSchema[*PointerSchema]) *PointerSchema {
 	return Ptr(Struct(Shape{
 		"value": Int().Required(),
-		"self":  self,
+		"self":  self(),
 	}))
 })
 

@@ -6,39 +6,46 @@ import (
 )
 
 type lazySchema struct {
-	fn func() ZogSchema
+	lazySchema ZogSchema
+	fn         func() ZogSchema
+}
+
+func (l *lazySchema) get() ZogSchema {
+	if l.lazySchema == nil {
+		l.lazySchema = l.fn()
+	}
+	return l.lazySchema
 }
 
 func (l *lazySchema) process(ctx *p.SchemaCtx) {
-	x := l.fn()
-	x.process(ctx)
+	l.get().process(ctx)
 }
-func (l *lazySchema) validate(ctx *p.SchemaCtx) {}
-func (l *lazySchema) getType() zconst.ZogType   { return l.fn().getType() }
-func (l *lazySchema) setCoercer(c CoercerFunc)  { l.fn().setCoercer(c) }
+func (l *lazySchema) validate(ctx *p.SchemaCtx) {
+	l.get().validate(ctx)
+}
+func (l *lazySchema) getType() zconst.ZogType  { return l.get().getType() }
+func (l *lazySchema) setCoercer(c CoercerFunc) { l.get().setCoercer(c) }
 
 func lazy(fn func() ZogSchema) *lazySchema {
 	return &lazySchema{fn: fn}
 }
 
-type RecursiveSchemaFunc[T ZogSchema] func(self T) T
-type RecursiveFunc[T ZogSchema] func(optionalFunc ...RecursiveSchemaFunc[T]) T
+type RecursiveSchemaUpdater[T ZogSchema] func(self T) T
+type RecursiveSchema[T ZogSchema] func(optionalFunc ...RecursiveSchemaUpdater[T]) ZogSchema
+type RecursiveSchemaBuilder[T ZogSchema] func(self RecursiveSchema[T]) T
 
-type RecursiveBuildFunc[T ZogSchema] func(self RecursiveFunc[T]) T
-
-func Recursive[T ZogSchema](build RecursiveBuildFunc[T]) T {
-	// var self ZogSchema
-	// self = lazy(func() ZogSchema { return self })
-	// real := build(self)
-	// self = real
-	// return real
+// Experimental API.
+// Do not use unless you know what you are doing.
+func EXPERIMENTAL_RECURSIVE[T ZogSchema](build RecursiveSchemaBuilder[T]) T {
 	var self T
-	// x := build()
+	var lazyBuilder = func(updaters ...RecursiveSchemaUpdater[T]) ZogSchema {
+		return lazy(func() ZogSchema {
+			if len(updaters) > 0 {
+				return updaters[0](self)
+			}
+			return self
+		})
+	}
+	self = build(lazyBuilder)
 	return self
 }
-
-var x = Recursive(func(self RecursiveFunc[*StructSchema]) *StructSchema {
-	return Struct(Shape{
-		"self": self(),
-	})
-})
