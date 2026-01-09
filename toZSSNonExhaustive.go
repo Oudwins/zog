@@ -9,6 +9,10 @@ const (
 
 var EX_META_REGISTRY ExMetaRegistry = nil
 
-func registryAdd(r ExMetaRegistry, key any, path string, value any) {
+func registryAdd(_ ExMetaRegistry, _ any, _ string, _ any) {
 	// no op
+}
+
+func registryGet(_ ExMetaRegistry, _ any, _ string) (any, bool) {
+	return nil, false
 }

@@ -106,11 +106,9 @@ func (s *TimeSchema) toZSS() *zss.ZSSSchema {
 		CatchValue:   deepCopyPrimitivePtr(s.catch),
 		Processors:   processorsToZSS(rvP, zconst.TypeTime),
 	}
-	if exmeta, ok := EX_META_REGISTRY[s]; ok {
-		if x, ok := exmeta[EX_META_KEY_FORMAT]; ok {
-			str := x.(string)
-			j.Format = &str
-		}
+	if x, ok := registryGet(EX_META_REGISTRY, s, EX_META_KEY_FORMAT); ok {
+		str := x.(string)
+		j.Format = &str
 	}
 	return &j
 }
@@ -300,10 +298,8 @@ func toZSSTest(test internals.TestInterface, dtype zconst.ZogType) *zss.ZSSTest 
 	j.Params = newParams
 
 	// Check for custom message in registry first
-	if m, ok := EX_META_REGISTRY[test]; ok {
-		if message, ok := m[EX_META_KEY_MESSAGE]; ok {
-			j.Message = message.(string)
-		}
+	if message, ok := registryGet(EX_META_REGISTRY, test, EX_META_KEY_MESSAGE); ok {
+		j.Message = message.(string)
 	}
 
 	// If no message is set, extract default message using the default formatter
@@ -330,10 +326,8 @@ func toZSSTransformer(transformer internals.TransformerInterface) *zss.ZSSTransf
 	}
 
 	// extra
-	if m, ok := EX_META_REGISTRY[transformer]; ok {
-		if id, ok := m[EX_META_KEY_ID]; ok {
-			j.ID = id.(zconst.ZogTransformID)
-		}
+	if id, ok := registryGet(EX_META_REGISTRY, transformer, EX_META_KEY_ID); ok {
+		j.ID = id.(zconst.ZogTransformID)
 	}
 	return &j
 }
