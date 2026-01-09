@@ -1,6 +1,8 @@
 package zog
 
 import (
+	"sync"
+
 	p "github.com/Oudwins/zog/internals"
 	zss "github.com/Oudwins/zog/pkgs/zss/core"
 	"github.com/Oudwins/zog/zconst"
@@ -9,14 +11,15 @@ import (
 type lazySchema struct {
 	innerSchema ZogSchema
 	fn          func() ZogSchema
+	once        sync.Once
 }
 
 var _ ZogSchema = &lazySchema{}
 
 func (l *lazySchema) get() ZogSchema {
-	if l.innerSchema == nil {
+	l.once.Do(func() {
 		l.innerSchema = l.fn()
-	}
+	})
 	return l.innerSchema
 }
 
