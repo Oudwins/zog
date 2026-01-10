@@ -5,7 +5,7 @@ import (
 	"errors"
 	"io"
 
-	p "github.com/Oudwins/zog/internals"
+	p "github.com/Oudwins/zog/pkgs/internals"
 	"github.com/Oudwins/zog/zconst"
 )
 

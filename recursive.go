@@ -3,7 +3,7 @@ package zog
 import (
 	"sync"
 
-	p "github.com/Oudwins/zog/internals"
+	p "github.com/Oudwins/zog/pkgs/internals"
 	zss "github.com/Oudwins/zog/pkgs/zss/core"
 	"github.com/Oudwins/zog/zconst"
 )

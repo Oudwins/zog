@@ -2,7 +2,7 @@ package i18n
 
 import (
 	"github.com/Oudwins/zog/conf"
-	"github.com/Oudwins/zog/internals"
+	"github.com/Oudwins/zog/pkgs/internals"
 	"github.com/Oudwins/zog/zconst"
 )
 

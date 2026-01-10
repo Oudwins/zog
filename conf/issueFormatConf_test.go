@@ -3,7 +3,7 @@ package conf
 import (
 	"testing"
 
-	p "github.com/Oudwins/zog/internals"
+	p "github.com/Oudwins/zog/pkgs/internals"
 	zconst "github.com/Oudwins/zog/zconst"
 	"github.com/stretchr/testify/assert"
 )

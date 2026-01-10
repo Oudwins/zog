@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/Oudwins/zog/i18n/en"
-	p "github.com/Oudwins/zog/internals"
+	p "github.com/Oudwins/zog/pkgs/internals"
 	"github.com/Oudwins/zog/zconst"
 )
 

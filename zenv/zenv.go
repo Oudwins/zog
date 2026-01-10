@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"strings"
 
-	p "github.com/Oudwins/zog/internals"
+	p "github.com/Oudwins/zog/pkgs/internals"
 )
 
 var _ p.DataProvider = &envDataProvider{}

@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	p "github.com/Oudwins/zog/internals"
+	p "github.com/Oudwins/zog/pkgs/internals"
 	"github.com/Oudwins/zog/pkgs/tutils"
 	zss "github.com/Oudwins/zog/pkgs/zss/core"
 	"github.com/Oudwins/zog/zconst"

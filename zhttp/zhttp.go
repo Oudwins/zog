@@ -7,8 +7,8 @@ import (
 	"reflect"
 	"strings"
 
-	p "github.com/Oudwins/zog/internals"
 	"github.com/Oudwins/zog/parsers/zjson"
+	p "github.com/Oudwins/zog/pkgs/internals"
 	"github.com/Oudwins/zog/zconst"
 )
 
