@@ -48,7 +48,7 @@ func TestToJsonString(t *testing.T) {
 				"transformer": null
 			}
 		],
-		"child": null,
+		"childs": null,
 		"required": {
 			"id": "required",
 			"message": "is required",
@@ -73,33 +73,38 @@ func TestToJsonPtr(t *testing.T) {
 		"kind": "ptr",
 		"format": null,
 		"processors": null,
-		"child": {
-			"kind": "string",
-			"format": null,
-			"processors": [
-				{
-					"kind": "test",
-					"test": {
-						"id": "min",
-						"message": "string must contain at least 1 character(s)",
-						"issuePath": null,
-						"params": {
-							"min": 1
+		"childs": [
+			{
+				"kind": "schema",
+				"schema": {
+					"kind": "string",
+					"format": null,
+					"processors": [
+						{
+							"kind": "test",
+							"test": {
+								"id": "min",
+								"message": "string must contain at least 1 character(s)",
+								"issuePath": null,
+								"params": {
+									"min": 1
+								}
+							},
+							"transformer": null
 						}
+					],
+					"childs": null,
+					"required": {
+						"id": "required",
+						"message": "is required",
+						"issuePath": null,
+						"params": {}
 					},
-					"transformer": null
+					"defaultValue": "Testing!",
+					"catchValue": "Testing2!"
 				}
-			],
-			"child": null,
-			"required": {
-				"id": "required",
-				"message": "is required",
-				"issuePath": null,
-				"params": {}
-			},
-			"defaultValue": "Testing!",
-			"catchValue": "Testing2!"
-		},
+			}
+		],
 		"required": null,
 		"defaultValue": null,
 		"catchValue": null
@@ -128,16 +133,18 @@ func TestToJsonStructShape(t *testing.T) {
 	assert.Equal(t, "struct", doc.Root.Kind)
 
 	// Verify child shape exists
-	childShape, ok := doc.Root.Child.(map[string]interface{})
-	assert.True(t, ok, "child should be a map")
+	assert.NotNil(t, doc.Root.Childs, "Childs should not be nil")
+	assert.Len(t, doc.Root.Childs, 1, "should have 1 child")
+	assert.Equal(t, zss.ZSSSchemaChildKindShape, doc.Root.Childs[0].Kind, "child should be a shape")
+	
+	childShape := doc.Root.Childs[0].Shape
+	assert.NotNil(t, childShape, "child shape should not be nil")
 	assert.Len(t, childShape, 2, "should have 2 fields")
 
 	// Verify name field
-	nameField, nameExists := childShape["name"]
+	nameSchema, nameExists := childShape["name"]
 	assert.True(t, nameExists, "name field should exist")
-	nameMap, ok := nameField.(map[string]interface{})
-	assert.True(t, ok)
-	assert.Equal(t, "string", nameMap["kind"])
+	assert.Equal(t, "string", nameSchema.Kind)
 }
 
 func TestToJsonNumber(t *testing.T) {
@@ -164,7 +171,7 @@ func TestToJsonNumber(t *testing.T) {
 				"transformer": null
 			}
 		],
-		"child": null,
+		"childs": null,
 		"required": {
 			"id": "required",
 			"message": "is required",
@@ -189,7 +196,7 @@ func TestToJsonBool(t *testing.T) {
 		"kind": "bool",
 		"format": null,
 		"processors": null,
-		"child": null,
+		"childs": null,
 		"required": {
 			"id": "required",
 			"message": "is required",
@@ -214,7 +221,7 @@ func TestToJsonTime(t *testing.T) {
 		"kind": "time",
 		"format": null,
 		"processors": null,
-		"child": null,
+		"childs": null,
 		"required": {
 			"id": "required",
 			"message": "is required",
@@ -252,28 +259,33 @@ func TestToJsonSlice(t *testing.T) {
 				"transformer": null
 			}
 		],
-		"child": {
-			"kind": "string",
-			"format": null,
-			"processors": [
-				{
-					"kind": "test",
-					"test": {
-						"id": "min",
-						"message": "string must contain at least 1 character(s)",
-						"issuePath": null,
-						"params": {
-							"min": 1
+		"childs": [
+			{
+				"kind": "schema",
+				"schema": {
+					"kind": "string",
+					"format": null,
+					"processors": [
+						{
+							"kind": "test",
+							"test": {
+								"id": "min",
+								"message": "string must contain at least 1 character(s)",
+								"issuePath": null,
+								"params": {
+									"min": 1
+								}
+							},
+							"transformer": null
 						}
-					},
-					"transformer": null
+					],
+					"childs": null,
+					"required": null,
+					"defaultValue": null,
+					"catchValue": null
 				}
-			],
-			"child": null,
-			"required": null,
-			"defaultValue": null,
-			"catchValue": null
-		},
+			}
+		],
 		"required": {
 			"id": "required",
 			"message": "is required",
@@ -301,31 +313,36 @@ func TestToJsonStruct(t *testing.T) {
 		"kind": "struct",
 		"format": null,
 		"processors": null,
-		"child": {
-			"age": {
-				"kind": "number",
-				"format": null,
-				"processors": null,
-				"child": null,
-				"required": null,
-				"defaultValue": null,
-				"catchValue": null
-			},
-			"name": {
-				"kind": "string",
-				"format": null,
-				"processors": null,
-				"child": null,
-				"required": {
-					"id": "required",
-					"message": "is required",
-					"issuePath": null,
-					"params": {}
-				},
-				"defaultValue": null,
-				"catchValue": null
+		"childs": [
+			{
+				"kind": "shape",
+				"shape": {
+					"age": {
+						"kind": "number",
+						"format": null,
+						"processors": null,
+						"childs": null,
+						"required": null,
+						"defaultValue": null,
+						"catchValue": null
+					},
+					"name": {
+						"kind": "string",
+						"format": null,
+						"processors": null,
+						"childs": null,
+						"required": {
+							"id": "required",
+							"message": "is required",
+							"issuePath": null,
+							"params": {}
+						},
+						"defaultValue": null,
+						"catchValue": null
+					}
+				}
 			}
-		},
+		],
 		"required": null,
 		"defaultValue": null,
 		"catchValue": null
@@ -350,28 +367,33 @@ func TestToJsonPreprocess(t *testing.T) {
 		"kind": "preprocess",
 		"format": null,
 		"processors": null,
-		"child": {
-			"kind": "string",
-			"format": null,
-			"processors": [
-				{
-					"kind": "test",
-					"test": {
-						"id": "min",
-						"message": "string must contain at least 1 character(s)",
-						"issuePath": null,
-						"params": {
-							"min": 1
+		"childs": [
+			{
+				"kind": "schema",
+				"schema": {
+					"kind": "string",
+					"format": null,
+					"processors": [
+						{
+							"kind": "test",
+							"test": {
+								"id": "min",
+								"message": "string must contain at least 1 character(s)",
+								"issuePath": null,
+								"params": {
+									"min": 1
+								}
+							},
+							"transformer": null
 						}
-					},
-					"transformer": null
+					],
+					"childs": null,
+					"required": null,
+					"defaultValue": null,
+					"catchValue": null
 				}
-			],
-			"child": null,
-			"required": null,
-			"defaultValue": null,
-			"catchValue": null
-		},
+			}
+		],
 		"required": null,
 		"defaultValue": null,
 		"catchValue": null
@@ -398,28 +420,33 @@ func TestToJsonBoxed(t *testing.T) {
 		"kind": "boxed",
 		"format": null,
 		"processors": null,
-		"child": {
-			"kind": "string",
-			"format": null,
-			"processors": [
-				{
-					"kind": "test",
-					"test": {
-						"id": "min",
-						"message": "string must contain at least 1 character(s)",
-						"issuePath": null,
-						"params": {
-							"min": 1
+		"childs": [
+			{
+				"kind": "schema",
+				"schema": {
+					"kind": "string",
+					"format": null,
+					"processors": [
+						{
+							"kind": "test",
+							"test": {
+								"id": "min",
+								"message": "string must contain at least 1 character(s)",
+								"issuePath": null,
+								"params": {
+									"min": 1
+								}
+							},
+							"transformer": null
 						}
-					},
-					"transformer": null
+					],
+					"childs": null,
+					"required": null,
+					"defaultValue": null,
+					"catchValue": null
 				}
-			],
-			"child": null,
-			"required": null,
-			"defaultValue": null,
-			"catchValue": null
-		},
+			}
+		],
 		"required": null,
 		"defaultValue": null,
 		"catchValue": null
@@ -452,7 +479,7 @@ func TestToJsonCustom(t *testing.T) {
 				"transformer": null
 			}
 		],
-		"child": null,
+		"childs": null,
 		"required": null,
 		"defaultValue": null,
 		"catchValue": null

@@ -116,7 +116,7 @@ func (s *PointerSchema) toZSS() *zss.ZSSSchema {
 	j := zss.ZSSSchema{
 		Kind:     zconst.TypePtr,
 		Required: toZSSRequired(s.required, s.schema.getType()),
-		Child:    s.schema.toZSS(),
+		Childs:   []zss.ZSSSchemaChild{{Kind: zss.ZSSSchemaChildKindSchema, Schema: s.schema.toZSS()}},
 	}
 	return &j
 }
@@ -128,23 +128,21 @@ func (s *SliceSchema) toZSS() *zss.ZSSSchema {
 		Required:     toZSSRequired(s.required, zconst.TypeSlice),
 		DefaultValue: deepCopyPrimitivePtr(s.defaultVal),
 		Processors:   processorsToZSS(rvP, zconst.TypeSlice),
-		Child:        s.schema.toZSS(),
+		Childs:       []zss.ZSSSchemaChild{{Kind: zss.ZSSSchemaChildKindSchema, Schema: s.schema.toZSS()}},
 	}
 	return &j
 }
 
 func (s *MapSchema[K, V]) toZSS() *zss.ZSSSchema {
 	rvP := reflect.ValueOf(s.processors)
-	childMap := map[string]zss.ZSSSchema{
-		"key":   *s.keySchema.toZSS(),
-		"value": *s.valueSchema.toZSS(),
-	}
+	keySchema := s.keySchema.toZSS()
+	valueSchema := s.valueSchema.toZSS()
 	j := zss.ZSSSchema{
 		Kind:         zconst.TypeMap,
 		Required:     toZSSRequired(s.required, zconst.TypeMap),
 		DefaultValue: shallowCopyMap(s.defaultVal),
 		Processors:   processorsToZSS(rvP, zconst.TypeMap),
-		Child:        childMap,
+		Childs:       []zss.ZSSSchemaChild{{Kind: zss.ZSSSchemaChildKindSchema, Schema: keySchema}, {Kind: zss.ZSSSchemaChildKindSchema, Schema: valueSchema}},
 	}
 	return &j
 }
@@ -167,7 +165,7 @@ func (s *StructSchema) toZSS() *zss.ZSSSchema {
 		Kind:       zconst.TypeStruct,
 		Required:   toZSSRequired(s.required, zconst.TypeStruct),
 		Processors: processorsToZSS(rvP, zconst.TypeStruct),
-		Child:      toZSSShape(s.schema),
+		Childs:     []zss.ZSSSchemaChild{{Kind: zss.ZSSSchemaChildKindShape, Shape: toZSSShape(s.schema)}},
 	}
 	return &j
 }
@@ -195,8 +193,8 @@ func toZSSShape(m Shape) map[string]zss.ZSSSchema {
 
 func (s *PreprocessSchema[F, T]) toZSS() *zss.ZSSSchema {
 	j := zss.ZSSSchema{
-		Kind:  zconst.TypePreprocess,
-		Child: s.schema.toZSS(),
+		Kind:   zconst.TypePreprocess,
+		Childs: []zss.ZSSSchemaChild{{Kind: zss.ZSSSchemaChildKindSchema, Schema: s.schema.toZSS()}},
 	}
 
 	if EXHAUSTIVE_METADATA {
@@ -207,8 +205,8 @@ func (s *PreprocessSchema[F, T]) toZSS() *zss.ZSSSchema {
 
 func (s *BoxedSchema[B, T]) toZSS() *zss.ZSSSchema {
 	j := zss.ZSSSchema{
-		Kind:  zconst.TypeBoxed,
-		Child: s.schema.toZSS(),
+		Kind:   zconst.TypeBoxed,
+		Childs: []zss.ZSSSchemaChild{{Kind: zss.ZSSSchemaChildKindSchema, Schema: s.schema.toZSS()}},
 	}
 
 	if EXHAUSTIVE_METADATA {

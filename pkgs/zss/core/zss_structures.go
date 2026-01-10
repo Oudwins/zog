@@ -37,9 +37,9 @@ const (
 )
 
 type ZSSSchemaChild struct {
-	Kind   string // shape or schema
-	Schema *ZSSSchema
-	Shape  map[string]ZSSSchema
+	Kind   string               `json:"kind"` // shape or schema
+	Schema *ZSSSchema           `json:"schema,omitempty"`
+	Shape  map[string]ZSSSchema `json:"shape,omitempty"`
 }
 
 type ZSSSchema struct {
