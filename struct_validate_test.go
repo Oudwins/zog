@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/Oudwins/zog/i18n/en"
-	"github.com/Oudwins/zog/tutils"
+	"github.com/Oudwins/zog/pkgs/tutils"
 	"github.com/Oudwins/zog/zconst"
 	"github.com/stretchr/testify/assert"
 )
