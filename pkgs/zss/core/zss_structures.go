@@ -29,13 +29,26 @@ type ZSSGoType struct {
 	Display string `json:"display"` // Full type string (e.g., "*mypkg.User", "[]string")
 }
 
+type ZSSSchemaChildKind = string
+
+const (
+	ZSSSchemaChildKindShape  ZSSSchemaChildKind = "shape"
+	ZSSSchemaChildKindSchema ZSSSchemaChildKind = "schema"
+)
+
+type ZSSSchemaChild struct {
+	Kind   string // shape or schema
+	Schema *ZSSSchema
+	Shape  map[string]ZSSSchema
+}
+
 type ZSSSchema struct {
-	Kind         string         `json:"kind"`              // "string", "number", "bool", "time", "slice", "struct", "ptr"
-	GoTypes      []ZSSGoType    `json:"goTypes,omitempty"` // Type metadata (only if ZSS Exhaustive Metadata is enabled)
-	Format       *string        `json:"format"`            // Used for time.Time schemas only right now. (Only if ZSS Exhaustive Metadata is enabled)
-	Processors   []ZSSProcessor `json:"processors"`
-	Child        any            `json:"child"` // *ZSSSchema | map[string]ZSSSchema
-	Required     *ZSSTest       `json:"required"`
-	DefaultValue any            `json:"defaultValue"`
-	CatchValue   any            `json:"catchValue"`
+	Kind         string           `json:"kind"`              // "string", "number", "bool", "time", "slice", "struct", "ptr"
+	GoTypes      []ZSSGoType      `json:"goTypes,omitempty"` // Type metadata (only if ZSS Exhaustive Metadata is enabled)
+	Format       *string          `json:"format"`            // Used for time.Time schemas only right now. (Only if ZSS Exhaustive Metadata is enabled)
+	Processors   []ZSSProcessor   `json:"processors"`
+	Childs       []ZSSSchemaChild `json:"childs"`
+	Required     *ZSSTest         `json:"required"`
+	DefaultValue any              `json:"defaultValue"`
+	CatchValue   any              `json:"catchValue"`
 }
