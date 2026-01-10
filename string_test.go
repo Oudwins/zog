@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/Oudwins/zog/pkgs/internals"
-	"github.com/Oudwins/zog/pkgs/tutils"
+	"github.com/Oudwins/zog/pkgs/internals/tutils"
 	"github.com/Oudwins/zog/zconst"
 	"github.com/stretchr/testify/assert"
 )

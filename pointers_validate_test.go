@@ -3,7 +3,7 @@ package zog
 import (
 	"testing"
 
-	"github.com/Oudwins/zog/pkgs/tutils"
+	"github.com/Oudwins/zog/pkgs/internals/tutils"
 	"github.com/stretchr/testify/assert"
 )
 
