@@ -1,8 +1,6 @@
 package zss_test
 
 import (
-	"fmt"
-
 	zss "github.com/Oudwins/zog/pkgs/zss/core"
 	"github.com/stretchr/testify/assert"
 )
@@ -17,8 +15,8 @@ func assertChildIsNil(t assert.TestingT, schema *zss.ZSSSchema, msgAndArgs ...in
 
 // assertChildIsSchema asserts that schema.Childs contains a schema child and returns it
 func assertChildIsSchema(t assert.TestingT, schema *zss.ZSSSchema, msgAndArgs ...interface{}) (*zss.ZSSSchema, bool) {
-	if schema.Childs == nil || len(schema.Childs) == 0 {
-		return nil, assert.Fail(t, "Childs is nil or empty, expected at least one child", msgAndArgs...)
+	if len(schema.Childs) == 0 {
+		return nil, assert.Fail(t, "Childs is empty, expected at least one child", msgAndArgs...)
 	}
 	// Find the first child with Kind="schema"
 	for _, child := range schema.Childs {
@@ -29,13 +27,13 @@ func assertChildIsSchema(t assert.TestingT, schema *zss.ZSSSchema, msgAndArgs ..
 			return child.Schema, true
 		}
 	}
-	return nil, assert.Fail(t, fmt.Sprintf("No child with Kind='schema' found in Childs"), msgAndArgs...)
+	return nil, assert.Fail(t, "No child with Kind='schema' found in Childs", msgAndArgs...)
 }
 
 // assertChildIsShape asserts that schema.Childs contains a shape child and returns it
 func assertChildIsShape(t assert.TestingT, schema *zss.ZSSSchema, msgAndArgs ...interface{}) (map[string]zss.ZSSSchema, bool) {
-	if schema.Childs == nil || len(schema.Childs) == 0 {
-		return nil, assert.Fail(t, "Childs is nil or empty, expected at least one child", msgAndArgs...)
+	if len(schema.Childs) == 0 {
+		return nil, assert.Fail(t, "Childs is empty, expected at least one child", msgAndArgs...)
 	}
 	// Find the first child with Kind="shape"
 	for _, child := range schema.Childs {
@@ -46,7 +44,7 @@ func assertChildIsShape(t assert.TestingT, schema *zss.ZSSSchema, msgAndArgs ...
 			return child.Shape, true
 		}
 	}
-	return nil, assert.Fail(t, fmt.Sprintf("No child with Kind='shape' found in Childs"), msgAndArgs...)
+	return nil, assert.Fail(t, "No child with Kind='shape' found in Childs", msgAndArgs...)
 }
 
 // assertDocumentBasics asserts basic document invariants
@@ -144,7 +142,7 @@ func assertProcessorsCount(t assert.TestingT, schema *zss.ZSSSchema, expectedCou
 			assert.Len(t, schema.Processors, 0, "processors should be empty when count is 0")
 	}
 	return assert.NotNil(t, schema.Processors, "processors should not be nil") &&
-		assert.Len(t, schema.Processors, expectedCount, fmt.Sprintf("processors count should be %d", expectedCount))
+		assert.Len(t, schema.Processors, expectedCount, "processors count should match expected")
 }
 
 // assertTestProcessor asserts a processor at index is a test processor with expected properties

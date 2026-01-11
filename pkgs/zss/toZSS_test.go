@@ -455,6 +455,94 @@ func TestToJsonBoxed(t *testing.T) {
 	assert.Equal(t, normalize(expected), normalize(string(serialized)))
 }
 
+func TestToJsonMap(t *testing.T) {
+	s := zog.EXPERIMENTAL_MAP[string, int](zog.String().Min(1), zog.Int().GT(0)).Required().Min(2)
+	d := zog.EXPERIMENTAL_TO_ZSS(s)
+	serialized, err := json.Marshal(d)
+	assert.Nil(t, err)
+	assert.NotNil(t, serialized)
+
+	expected := baseZSSJson(`{
+		"kind": "map",
+		"format": null,
+		"processors": [
+			{
+				"kind": "test",
+				"test": {
+					"id": "min",
+					"message": "map must contain at least 2 entries",
+					"issuePath": null,
+					"params": {
+						"min": 2
+					}
+				},
+				"transformer": null
+			}
+		],
+		"childs": [
+			{
+				"kind": "shape",
+				"shape": {
+					"key": {
+						"kind": "string",
+						"format": null,
+						"processors": [
+							{
+								"kind": "test",
+								"test": {
+									"id": "min",
+									"message": "string must contain at least 1 character(s)",
+									"issuePath": null,
+									"params": {
+										"min": 1
+									}
+								},
+								"transformer": null
+							}
+						],
+						"childs": null,
+						"required": null,
+						"defaultValue": null,
+						"catchValue": null
+					},
+					"value": {
+						"kind": "number",
+						"format": null,
+						"processors": [
+							{
+								"kind": "test",
+								"test": {
+									"id": "gt",
+									"message": "number must be greater than 0",
+									"issuePath": null,
+									"params": {
+										"gt": 0
+									}
+								},
+								"transformer": null
+							}
+						],
+						"childs": null,
+						"required": null,
+						"defaultValue": null,
+						"catchValue": null
+					}
+				}
+			}
+		],
+		"required": {
+			"id": "required",
+			"message": "is required",
+			"issuePath": null,
+			"params": {}
+		},
+		"defaultValue": null,
+		"catchValue": null
+	}`)
+
+	assert.Equal(t, normalize(expected), normalize(string(serialized)))
+}
+
 func TestToJsonCustom(t *testing.T) {
 	s := zog.CustomFunc(func(valPtr *string, ctx zog.Ctx) bool {
 		return *valPtr == "valid"
