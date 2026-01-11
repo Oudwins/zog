@@ -27,7 +27,7 @@ A ZSS document consists of:
 - **`ZSSSchema`**: Represents individual schema nodes with:
   - `Kind`: The schema type (string, number, bool, time, slice, struct, ptr, etc.)
   - `Processors`: Validation tests and transformers
-  - `Child`: Nested schemas (for slices, structs, pointers, etc.)
+  - `Childs`: Nested schema children (for slices, structs, pointers, etc.)
   - `GoTypes`: Go type metadata (when exhaustive metadata is enabled)
   - `Required`, `DefaultValue`, `CatchValue`: Schema constraints and defaults
 
