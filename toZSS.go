@@ -135,14 +135,16 @@ func (s *SliceSchema) toZSS() *zss.ZSSSchema {
 
 func (s *MapSchema[K, V]) toZSS() *zss.ZSSSchema {
 	rvP := reflect.ValueOf(s.processors)
-	keySchema := s.keySchema.toZSS()
-	valueSchema := s.valueSchema.toZSS()
+	childMap := map[string]zss.ZSSSchema{
+		"key":   *s.keySchema.toZSS(),
+		"value": *s.valueSchema.toZSS(),
+	}
 	j := zss.ZSSSchema{
 		Kind:         zconst.TypeMap,
 		Required:     toZSSRequired(s.required, zconst.TypeMap),
 		DefaultValue: shallowCopyMap(s.defaultVal),
 		Processors:   processorsToZSS(rvP, zconst.TypeMap),
-		Childs:       []zss.ZSSSchemaChild{{Kind: zss.ZSSSchemaChildKindSchema, Schema: keySchema}, {Kind: zss.ZSSSchemaChildKindSchema, Schema: valueSchema}},
+		Childs:       []zss.ZSSSchemaChild{{Kind: zss.ZSSSchemaChildKindShape, Shape: childMap}},
 	}
 	return &j
 }
