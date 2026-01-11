@@ -32,6 +32,7 @@ const (
 	TypeCustom     ZogType = "custom"
 	TypePreprocess ZogType = "preprocess"
 	TypeBoxed      ZogType = "boxed"
+	TypeAny        ZogType = "any"
 )
 
 // Deprecated: This will be removed in the future. Use z.ZogIssueCode instead

@@ -80,12 +80,12 @@ var Map zconst.LangMap = map[zconst.ZogType]map[zconst.ZogIssueCode]string{
 		zconst.IssueCodeFallback:                      "slice is invalid",
 	},
 	zconst.TypeMap: {
-		zconst.IssueCodeRequired:     "is required",
-		zconst.IssueCodeNotNil:       "must not be empty",
-		zconst.IssueCodeMin:          "map must contain at least {{min}} entries",
-		zconst.IssueCodeMax:          "map must contain at most {{max}} entries",
-		zconst.IssueCodeLen:          "map must contain exactly {{len}} entries",
-		zconst.IssueCodeFallback:     "map is invalid",
+		zconst.IssueCodeRequired: "is required",
+		zconst.IssueCodeNotNil:   "must not be empty",
+		zconst.IssueCodeMin:      "must contain at least {{min}} entries",
+		zconst.IssueCodeMax:      "must contain at most {{max}} entries",
+		zconst.IssueCodeLen:      "must contain exactly {{len}} entries",
+		zconst.IssueCodeFallback: "is invalid",
 	},
 	zconst.TypeStruct: {
 		zconst.IssueCodeRequired: "is required",
@@ -96,5 +96,9 @@ var Map zconst.LangMap = map[zconst.ZogType]map[zconst.ZogIssueCode]string{
 		// ZHTTP ISSUES
 		zconst.IssueCodeZHTTPInvalidForm:  "invalid form data",
 		zconst.IssueCodeZHTTPInvalidQuery: "invalid query params",
+	},
+	zconst.TypeAny: {
+		zconst.IssueCodeRequired: "is required",
+		zconst.IssueCodeFallback: "value is invalid",
 	},
 }
