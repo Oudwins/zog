@@ -9,7 +9,10 @@ import (
 
 // assertChildIsNil asserts that schema.Childs is nil or empty
 func assertChildIsNil(t assert.TestingT, schema *zss.ZSSSchema, msgAndArgs ...interface{}) bool {
-	return assert.Nil(t, schema.Childs, msgAndArgs...) || assert.Len(t, schema.Childs, 0, msgAndArgs...)
+	if schema.Childs == nil {
+		return assert.Nil(t, schema.Childs, msgAndArgs...)
+	}
+	return assert.Len(t, schema.Childs, 0, msgAndArgs...)
 }
 
 // assertChildIsSchema asserts that schema.Childs contains a schema child and returns it
