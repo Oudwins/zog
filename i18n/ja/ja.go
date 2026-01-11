@@ -97,4 +97,8 @@ var Map zconst.LangMap = map[zconst.ZogType]map[zconst.ZogIssueCode]string{
 		zconst.IssueCodeZHTTPInvalidForm:  "無効なフォームデータです",
 		zconst.IssueCodeZHTTPInvalidQuery: "無効なクエリパラメータです",
 	},
+	zconst.TypeAny: {
+		zconst.IssueCodeRequired: "必須です",
+		zconst.IssueCodeFallback: "値が無効です",
+	},
 }

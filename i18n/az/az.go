@@ -97,4 +97,8 @@ var Map zconst.LangMap = map[zconst.ZogType]map[zconst.ZogIssueCode]string{
 		zconst.IssueCodeZHTTPInvalidForm:  "form formatı yanlışdır",
 		zconst.IssueCodeZHTTPInvalidQuery: "sorğu parametrləri yanlışdır",
 	},
+	zconst.TypeAny: {
+		zconst.IssueCodeRequired: "tələb olunur",
+		zconst.IssueCodeFallback: "qiymət yanlışdır",
+	},
 }

@@ -96,4 +96,8 @@ var Map zconst.LangMap = map[zconst.ZogType]map[zconst.ZogIssueCode]string{
 		zconst.IssueCodeZHTTPInvalidForm:  "Formulario no válido",
 		zconst.IssueCodeZHTTPInvalidQuery: "Parámetros de consulta no válidos",
 	},
+	zconst.TypeAny: {
+		zconst.IssueCodeRequired: "Es obligatorio",
+		zconst.IssueCodeFallback: "Valor no es válido",
+	},
 }
