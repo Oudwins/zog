@@ -682,3 +682,70 @@ func TestBoxedMapFromBox(t *testing.T) {
 	assert.Equal(t, 1, box.Value["x"])
 	assert.Equal(t, 2, box.Value["y"])
 }
+
+// Test maps with Any schema as value type
+func TestMapWithAnyValueParse(t *testing.T) {
+	m := map[string]any{}
+	schema := EXPERIMENTAL_MAP[string, any](String(), Any())
+
+	data := map[string]any{
+		"number": 42,
+		"string": "hello",
+		"bool":   true,
+		"nested": map[string]any{"inner": "value"},
+	}
+
+	errs := schema.Parse(data, &m)
+	assert.Nil(t, errs)
+	assert.Len(t, m, 4)
+	assert.Equal(t, 42, m["number"])
+	assert.Equal(t, "hello", m["string"])
+	assert.Equal(t, true, m["bool"])
+	assert.Equal(t, map[string]any{"inner": "value"}, m["nested"])
+}
+
+func TestMapWithAnyValueValidate(t *testing.T) {
+	m := map[string]any{
+		"number": 42,
+		"string": "hello",
+		"bool":   true,
+		"nested": map[string]any{"inner": "value"},
+	}
+	schema := EXPERIMENTAL_MAP[string, any](String(), Any())
+
+	errs := schema.Validate(&m)
+	assert.Nil(t, errs)
+	assert.Len(t, m, 4)
+	assert.Equal(t, 42, m["number"])
+	assert.Equal(t, "hello", m["string"])
+	assert.Equal(t, true, m["bool"])
+	assert.Equal(t, map[string]any{"inner": "value"}, m["nested"])
+}
+
+func TestMapWithAnyValueRequired(t *testing.T) {
+	m := map[string]any{}
+	schema := EXPERIMENTAL_MAP[string, any](String(), Any().Required())
+
+	data := map[string]any{
+		"present": "value",
+		"nil":     nil,
+	}
+
+	errs := schema.Parse(data, &m)
+	assert.NotNil(t, errs)
+	errsM := Issues.Flatten(errs)
+	assert.NotEmpty(t, errsM[`["nil"]`])
+}
+
+func TestMapWithAnyValueValidateRequired(t *testing.T) {
+	m := map[string]any{
+		"present": "value",
+		"nil":     nil,
+	}
+	schema := EXPERIMENTAL_MAP[string, any](String(), Any().Required())
+
+	errs := schema.Validate(&m)
+	assert.NotNil(t, errs)
+	errsM := Issues.Flatten(errs)
+	assert.NotEmpty(t, errsM[`["nil"]`])
+}

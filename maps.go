@@ -89,7 +89,6 @@ func (v *MapSchema[K, V]) validate(ctx *p.SchemaCtx) {
 	// Validate map entries
 	for _, key := range refVal.MapKeys() {
 		keyVal := key.Interface().(K)
-		valueVal := refVal.MapIndex(key).Interface()
 		k := fmt.Sprintf(`["%v"]`, keyVal)
 
 		// Validate key
@@ -100,9 +99,11 @@ func (v *MapSchema[K, V]) validate(ctx *p.SchemaCtx) {
 		v.keySchema.validate(keySubCtx)
 		keySubCtx.Path.Pop()
 
-		// Validate value
-		valuePtr := reflect.New(reflect.TypeOf(valueVal)).Interface()
-		reflect.ValueOf(valuePtr).Elem().Set(reflect.ValueOf(valueVal))
+		// Validate value - use map's value type, not runtime type of the value
+		// This ensures proper handling of interface types like `any`
+		valueType := refVal.Type().Elem()
+		valuePtr := reflect.New(valueType).Interface()
+		reflect.ValueOf(valuePtr).Elem().Set(refVal.MapIndex(key))
 		subCtx.ValPtr = valuePtr
 		subCtx.Path.Push(&k)
 		subCtx.Exit = false
@@ -204,9 +205,10 @@ func (v *MapSchema[K, V]) process(ctx *p.SchemaCtx) {
 		subCtx.Path.Pop()
 
 		// Only add to map if no errors occurred
+		// Use reflect.Value directly to avoid type assertion issues with nil interfaces
 		if !subCtx.Exit {
-			parsedValue := reflect.ValueOf(valuePtr).Elem().Interface().(V)
-			destMap.SetMapIndex(reflect.ValueOf(parsedKey), reflect.ValueOf(parsedValue))
+			parsedValueReflect := reflect.ValueOf(valuePtr).Elem()
+			destMap.SetMapIndex(reflect.ValueOf(parsedKey), parsedValueReflect)
 		}
 	}
 
