@@ -136,7 +136,7 @@ func TestToJsonStructShape(t *testing.T) {
 	assert.NotNil(t, doc.Root.Childs, "Childs should not be nil")
 	assert.Len(t, doc.Root.Childs, 1, "should have 1 child")
 	assert.Equal(t, zss.ZSSSchemaChildKindShape, doc.Root.Childs[0].Kind, "child should be a shape")
-	
+
 	childShape := doc.Root.Childs[0].Shape
 	assert.NotNil(t, childShape, "child shape should not be nil")
 	assert.Len(t, childShape, 2, "should have 2 fields")
@@ -470,7 +470,7 @@ func TestToJsonMap(t *testing.T) {
 				"kind": "test",
 				"test": {
 					"id": "min",
-					"message": "map must contain at least 2 entries",
+					"message": "must contain at least 2 entries",
 					"issuePath": null,
 					"params": {
 						"min": 2
