@@ -28,7 +28,7 @@ func TestAnyValidate(t *testing.T) {
 		},
 	}
 
-	anyProc := Any()
+	anyProc := EXPERIMENTAL_ANY()
 	for i, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			errs := anyProc.Validate(&test.data)
@@ -42,7 +42,7 @@ func TestAnyValidate(t *testing.T) {
 
 func TestAnyValidateExecOption(t *testing.T) {
 	t.Run("Parse context is passed to parsing option", func(t *testing.T) {
-		anyProc := Any()
+		anyProc := EXPERIMENTAL_ANY()
 		var result any = "test"
 		var contextPassed bool
 
@@ -85,7 +85,7 @@ func TestAnyValidateRequired(t *testing.T) {
 		},
 	}
 
-	anyProc := Any().Required()
+	anyProc := EXPERIMENTAL_ANY().Required()
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
@@ -113,19 +113,19 @@ func TestAnyValidateOptional(t *testing.T) {
 			name:     "Optional by default",
 			data:     nil,
 			expected: nil,
-			proc:     Any(),
+			proc:     EXPERIMENTAL_ANY(),
 		},
 		{
 			name:     "Optional Overrides Required",
 			data:     nil,
 			expected: nil,
-			proc:     Any().Required().Optional(),
+			proc:     EXPERIMENTAL_ANY().Required().Optional(),
 		},
 		{
 			name:      "required errors on zero value",
 			data:      nil,
 			expected:  nil,
-			proc:      Any().Required(),
+			proc:      EXPERIMENTAL_ANY().Required(),
 			expectErr: true,
 		},
 	}
@@ -167,7 +167,7 @@ func TestAnyValidateDefault(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			anyProc := Any().Default(test.default_)
+			anyProc := EXPERIMENTAL_ANY().Default(test.default_)
 			errs := anyProc.Validate(&test.data)
 
 			if test.expectErr {
@@ -204,7 +204,7 @@ func TestAnyValidateCatch(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			anyProc := Any().TestFunc(func(val *any, ctx Ctx) bool {
+			anyProc := EXPERIMENTAL_ANY().TestFunc(func(val *any, ctx Ctx) bool {
 				return *val != nil
 			}).Catch(test.catch).Required()
 			errs := anyProc.Validate(&test.data)
@@ -259,7 +259,7 @@ func TestAnyValidateTransform(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			anyProc := Any().Transform(test.transform)
+			anyProc := EXPERIMENTAL_ANY().Transform(test.transform)
 			errs := anyProc.Validate(&test.data)
 
 			if (len(errs) > 0) != test.expectErr {
@@ -277,7 +277,7 @@ func TestAnyValidateTransform(t *testing.T) {
 }
 
 func TestAnyValidateCustomTest(t *testing.T) {
-	validator := Any().TestFunc(func(val *any, ctx Ctx) bool {
+	validator := EXPERIMENTAL_ANY().TestFunc(func(val *any, ctx Ctx) bool {
 		// Custom test logic - check if value is a string
 		_, ok := (*val).(string)
 		return ok

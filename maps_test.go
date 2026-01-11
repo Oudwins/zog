@@ -686,7 +686,7 @@ func TestBoxedMapFromBox(t *testing.T) {
 // Test maps with Any schema as value type
 func TestMapWithAnyValueParse(t *testing.T) {
 	m := map[string]any{}
-	schema := EXPERIMENTAL_MAP[string, any](String(), Any())
+	schema := EXPERIMENTAL_MAP[string, any](String(), EXPERIMENTAL_ANY())
 
 	data := map[string]any{
 		"number": 42,
@@ -711,7 +711,7 @@ func TestMapWithAnyValueValidate(t *testing.T) {
 		"bool":   true,
 		"nested": map[string]any{"inner": "value"},
 	}
-	schema := EXPERIMENTAL_MAP[string, any](String(), Any())
+	schema := EXPERIMENTAL_MAP[string, any](String(), EXPERIMENTAL_ANY())
 
 	errs := schema.Validate(&m)
 	assert.Nil(t, errs)
@@ -724,7 +724,7 @@ func TestMapWithAnyValueValidate(t *testing.T) {
 
 func TestMapWithAnyValueRequired(t *testing.T) {
 	m := map[string]any{}
-	schema := EXPERIMENTAL_MAP[string, any](String(), Any().Required())
+	schema := EXPERIMENTAL_MAP[string, any](String(), EXPERIMENTAL_ANY().Required())
 
 	data := map[string]any{
 		"present": "value",
@@ -742,7 +742,7 @@ func TestMapWithAnyValueValidateRequired(t *testing.T) {
 		"present": "value",
 		"nil":     nil,
 	}
-	schema := EXPERIMENTAL_MAP[string, any](String(), Any().Required())
+	schema := EXPERIMENTAL_MAP[string, any](String(), EXPERIMENTAL_ANY().Required())
 
 	errs := schema.Validate(&m)
 	assert.NotNil(t, errs)

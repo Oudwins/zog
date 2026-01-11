@@ -32,8 +32,9 @@ func (v *AnySchema) setCoercer(c CoercerFunc) {
 
 // ! USER FACING FUNCTIONS
 
-// Returns a new Any Schema
-func Any(opts ...SchemaOption) *AnySchema {
+// Returns a new EXPERIMENTAL_ANY Schema
+// Do not use unless you know what you are doing & are okay with possible breaking changes & bugs.
+func EXPERIMENTAL_ANY(opts ...SchemaOption) *AnySchema {
 	a := &AnySchema{}
 	for _, opt := range opts {
 		opt(a)

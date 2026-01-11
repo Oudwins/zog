@@ -51,7 +51,7 @@ func TestAnyParse(t *testing.T) {
 		},
 	}
 
-	anyProc := Any()
+	anyProc := EXPERIMENTAL_ANY()
 
 	for i, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
@@ -73,7 +73,7 @@ func TestAnyParse(t *testing.T) {
 }
 
 func TestAnySchemaOption(t *testing.T) {
-	s := Any(WithCoercer(func(original any) (value any, err error) {
+	s := EXPERIMENTAL_ANY(WithCoercer(func(original any) (value any, err error) {
 		return "coerced", nil
 	}))
 
@@ -86,7 +86,7 @@ func TestAnySchemaOption(t *testing.T) {
 
 func TestAnyExecOption(t *testing.T) {
 	t.Run("Parse context is passed to parsing option", func(t *testing.T) {
-		anyProc := Any()
+		anyProc := EXPERIMENTAL_ANY()
 		var result any
 		var contextPassed bool
 
@@ -133,7 +133,7 @@ func TestAnyRequired(t *testing.T) {
 		},
 	}
 
-	anyProc := Any().Required(Message("test"))
+	anyProc := EXPERIMENTAL_ANY().Required(Message("test"))
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
@@ -179,7 +179,7 @@ func TestAnyOptional(t *testing.T) {
 		},
 	}
 
-	anyProc := Any().Optional()
+	anyProc := EXPERIMENTAL_ANY().Optional()
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
@@ -231,7 +231,7 @@ func TestAnyDefault(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			anyProc := Any().Default(test.default_)
+			anyProc := EXPERIMENTAL_ANY().Default(test.default_)
 			var result any
 			errs := anyProc.Parse(test.data, &result)
 
@@ -275,7 +275,7 @@ func TestAnyCatch(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			anyProc := Any().Required().Catch(test.catch)
+			anyProc := EXPERIMENTAL_ANY().Required().Catch(test.catch)
 			var result any
 			errs := anyProc.Parse(test.data, &result)
 
@@ -334,7 +334,7 @@ func TestAnyTransform(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			anyProc := Any().Transform(test.transform)
+			anyProc := EXPERIMENTAL_ANY().Transform(test.transform)
 			var result any
 			errs := anyProc.Parse(test.data, &result)
 
@@ -354,7 +354,7 @@ func TestAnyTransform(t *testing.T) {
 }
 
 func TestAnyCustomTest(t *testing.T) {
-	validator := Any().TestFunc(func(val *any, ctx Ctx) bool {
+	validator := EXPERIMENTAL_ANY().TestFunc(func(val *any, ctx Ctx) bool {
 		// Custom test logic - check if value is a string
 		_, ok := (*val).(string)
 		return ok
@@ -392,7 +392,7 @@ func TestAnyCustomTest(t *testing.T) {
 }
 
 func TestAnyGetType(t *testing.T) {
-	s := Any()
+	s := EXPERIMENTAL_ANY()
 	assert.Equal(t, zconst.TypeAny, s.getType())
 }
 
@@ -429,7 +429,7 @@ func TestAnyContainingString(t *testing.T) {
 		},
 	}
 
-	anySchema := Any()
+	anySchema := EXPERIMENTAL_ANY()
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			var result any
@@ -489,7 +489,7 @@ func TestAnyContainingNumbers(t *testing.T) {
 		},
 	}
 
-	anySchema := Any()
+	anySchema := EXPERIMENTAL_ANY()
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			var result any
@@ -524,7 +524,7 @@ func TestAnyContainingBool(t *testing.T) {
 		},
 	}
 
-	anySchema := Any()
+	anySchema := EXPERIMENTAL_ANY()
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			var result any
@@ -560,7 +560,7 @@ func TestAnyContainingTime(t *testing.T) {
 		},
 	}
 
-	anySchema := Any()
+	anySchema := EXPERIMENTAL_ANY()
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			var result any
@@ -623,7 +623,7 @@ func TestAnyContainingStruct(t *testing.T) {
 		},
 	}
 
-	anySchema := Any()
+	anySchema := EXPERIMENTAL_ANY()
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			var result any
@@ -673,7 +673,7 @@ func TestAnyContainingSlice(t *testing.T) {
 		},
 	}
 
-	anySchema := Any()
+	anySchema := EXPERIMENTAL_ANY()
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			var result any
@@ -740,7 +740,7 @@ func TestAnyContainingMap(t *testing.T) {
 		},
 	}
 
-	anySchema := Any()
+	anySchema := EXPERIMENTAL_ANY()
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			var result any
@@ -782,7 +782,7 @@ func TestAnyContainingPointer(t *testing.T) {
 		},
 	}
 
-	anySchema := Any()
+	anySchema := EXPERIMENTAL_ANY()
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			var result any
@@ -846,7 +846,7 @@ func TestAnyContainingNestedCombinations(t *testing.T) {
 		},
 	}
 
-	anySchema := Any()
+	anySchema := EXPERIMENTAL_ANY()
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			var result any
@@ -872,7 +872,7 @@ func TestAnyInStructField(t *testing.T) {
 	}
 
 	schema := Struct(Shape{
-		"anyField": Any(),
+		"anyField": EXPERIMENTAL_ANY(),
 	})
 
 	t.Run("Basic struct field", func(t *testing.T) {
@@ -926,7 +926,7 @@ func TestAnyInStructWithModifiers(t *testing.T) {
 
 	t.Run("Required Any field", func(t *testing.T) {
 		schema := Struct(Shape{
-			"requiredField": Any().Required(),
+			"requiredField": EXPERIMENTAL_ANY().Required(),
 		})
 		var result TestStruct
 		data := map[string]any{
@@ -945,7 +945,7 @@ func TestAnyInStructWithModifiers(t *testing.T) {
 
 	t.Run("Optional Any field", func(t *testing.T) {
 		schema := Struct(Shape{
-			"optionalField": Any().Optional(),
+			"optionalField": EXPERIMENTAL_ANY().Optional(),
 		})
 		var result TestStruct
 		data := map[string]any{}
@@ -956,7 +956,7 @@ func TestAnyInStructWithModifiers(t *testing.T) {
 
 	t.Run("Default Any field", func(t *testing.T) {
 		schema := Struct(Shape{
-			"defaultField": Any().Default("default"),
+			"defaultField": EXPERIMENTAL_ANY().Default("default"),
 		})
 		var result TestStruct
 		data := map[string]any{}
@@ -967,7 +967,7 @@ func TestAnyInStructWithModifiers(t *testing.T) {
 
 	t.Run("Catch Any field", func(t *testing.T) {
 		schema := Struct(Shape{
-			"catchField": Any().Required().Catch("catch"),
+			"catchField": EXPERIMENTAL_ANY().Required().Catch("catch"),
 		})
 		var result TestStruct
 		data := map[string]any{}
@@ -985,9 +985,9 @@ func TestAnyInStructMultipleFields(t *testing.T) {
 	}
 
 	schema := Struct(Shape{
-		"field1": Any(),
-		"field2": Any(),
-		"field3": Any(),
+		"field1": EXPERIMENTAL_ANY(),
+		"field2": EXPERIMENTAL_ANY(),
+		"field3": EXPERIMENTAL_ANY(),
 	})
 
 	t.Run("Multiple Any fields", func(t *testing.T) {
@@ -1015,7 +1015,7 @@ func TestAnyInStructMixedWithTypedSchemas(t *testing.T) {
 	schema := Struct(Shape{
 		"stringField": String().Required(),
 		"intField":    Int().Required(),
-		"anyField":    Any(),
+		"anyField":    EXPERIMENTAL_ANY(),
 	})
 
 	t.Run("Mixed typed and Any fields", func(t *testing.T) {
@@ -1043,7 +1043,7 @@ func TestAnyInNestedStruct(t *testing.T) {
 
 	schema := Struct(Shape{
 		"inner": Struct(Shape{
-			"anyField": Any(),
+			"anyField": EXPERIMENTAL_ANY(),
 		}),
 	})
 
@@ -1066,7 +1066,7 @@ func TestAnyInNestedStruct(t *testing.T) {
 
 func TestAnyInSliceElements(t *testing.T) {
 	t.Run("Basic slice with Any elements", func(t *testing.T) {
-		schema := Slice(Any())
+		schema := Slice(EXPERIMENTAL_ANY())
 		var result []any
 		data := []any{"hello", 42, true}
 		errs := schema.Parse(data, &result)
@@ -1078,7 +1078,7 @@ func TestAnyInSliceElements(t *testing.T) {
 	})
 
 	t.Run("Empty slice with Any elements", func(t *testing.T) {
-		schema := Slice(Any())
+		schema := Slice(EXPERIMENTAL_ANY())
 		var result []any
 		data := []any{}
 		errs := schema.Parse(data, &result)
@@ -1087,7 +1087,7 @@ func TestAnyInSliceElements(t *testing.T) {
 	})
 
 	t.Run("Slice with mixed Any elements", func(t *testing.T) {
-		schema := Slice(Any())
+		schema := Slice(EXPERIMENTAL_ANY())
 		var result []any
 		data := []any{
 			"string",
@@ -1103,7 +1103,7 @@ func TestAnyInSliceElements(t *testing.T) {
 
 func TestAnyInSliceWithValidations(t *testing.T) {
 	t.Run("Slice with Min validation", func(t *testing.T) {
-		schema := Slice(Any()).Min(2)
+		schema := Slice(EXPERIMENTAL_ANY()).Min(2)
 		var result []any
 		data := []any{"a", "b", "c"}
 		errs := schema.Parse(data, &result)
@@ -1118,7 +1118,7 @@ func TestAnyInSliceWithValidations(t *testing.T) {
 	})
 
 	t.Run("Slice with Max validation", func(t *testing.T) {
-		schema := Slice(Any()).Max(2)
+		schema := Slice(EXPERIMENTAL_ANY()).Max(2)
 		var result []any
 		data := []any{"a", "b"}
 		errs := schema.Parse(data, &result)
@@ -1133,7 +1133,7 @@ func TestAnyInSliceWithValidations(t *testing.T) {
 	})
 
 	t.Run("Slice with Len validation", func(t *testing.T) {
-		schema := Slice(Any()).Len(2)
+		schema := Slice(EXPERIMENTAL_ANY()).Len(2)
 		var result []any
 		data := []any{"a", "b"}
 		errs := schema.Parse(data, &result)
@@ -1150,7 +1150,7 @@ func TestAnyInSliceWithValidations(t *testing.T) {
 
 func TestAnyInNestedSlice(t *testing.T) {
 	t.Run("Slice of slices with Any", func(t *testing.T) {
-		schema := Slice(Slice(Any()))
+		schema := Slice(Slice(EXPERIMENTAL_ANY()))
 		var result [][]any
 		data := [][]any{
 			{"a", "b"},
@@ -1170,7 +1170,7 @@ func TestAnyInNestedSlice(t *testing.T) {
 
 func TestAnyInMapValues(t *testing.T) {
 	t.Run("String key map with Any values", func(t *testing.T) {
-		schema := EXPERIMENTAL_MAP[string, any](String(), Any())
+		schema := EXPERIMENTAL_MAP[string, any](String(), EXPERIMENTAL_ANY())
 		var result map[string]any
 		data := map[string]any{
 			"str":  "hello",
@@ -1185,7 +1185,7 @@ func TestAnyInMapValues(t *testing.T) {
 	})
 
 	t.Run("Int key map with Any values", func(t *testing.T) {
-		schema := EXPERIMENTAL_MAP[int, any](Int(), Any())
+		schema := EXPERIMENTAL_MAP[int, any](Int(), EXPERIMENTAL_ANY())
 		var result map[int]any
 		data := map[int]any{
 			1: "hello",
@@ -1200,7 +1200,7 @@ func TestAnyInMapValues(t *testing.T) {
 
 func TestAnyInMapWithValidations(t *testing.T) {
 	t.Run("Map with Required validation", func(t *testing.T) {
-		schema := EXPERIMENTAL_MAP[string, any](String(), Any()).Required()
+		schema := EXPERIMENTAL_MAP[string, any](String(), EXPERIMENTAL_ANY()).Required()
 		var result map[string]any
 		data := map[string]any{
 			"key": "value",
@@ -1217,7 +1217,7 @@ func TestAnyInMapWithValidations(t *testing.T) {
 
 	t.Run("Map with Default", func(t *testing.T) {
 		defaultMap := map[string]any{"default": "value"}
-		schema := EXPERIMENTAL_MAP[string, any](String(), Any()).Default(defaultMap)
+		schema := EXPERIMENTAL_MAP[string, any](String(), EXPERIMENTAL_ANY()).Default(defaultMap)
 		var result map[string]any
 		// Use empty map instead of nil to test default
 		data := map[string]any{}
@@ -1236,7 +1236,7 @@ func TestAnyInMapWithValidations(t *testing.T) {
 
 func TestAnyInNestedMap(t *testing.T) {
 	t.Run("Map containing maps with Any values", func(t *testing.T) {
-		innerSchema := EXPERIMENTAL_MAP[string, any](String(), Any())
+		innerSchema := EXPERIMENTAL_MAP[string, any](String(), EXPERIMENTAL_ANY())
 		schema := EXPERIMENTAL_MAP[string, map[string]any](String(), innerSchema)
 		var result map[string]map[string]any
 		data := map[string]any{
@@ -1256,7 +1256,7 @@ func TestAnyInNestedMap(t *testing.T) {
 
 func TestAnyInPointer(t *testing.T) {
 	t.Run("Basic pointer to Any", func(t *testing.T) {
-		schema := Ptr(Any())
+		schema := Ptr(EXPERIMENTAL_ANY())
 		var result *any
 		data := "hello"
 		errs := schema.Parse(data, &result)
@@ -1266,7 +1266,7 @@ func TestAnyInPointer(t *testing.T) {
 	})
 
 	t.Run("Pointer to Any with nil", func(t *testing.T) {
-		schema := Ptr(Any())
+		schema := Ptr(EXPERIMENTAL_ANY())
 		var result *any
 		var data any = nil
 		errs := schema.Parse(data, &result)
@@ -1277,7 +1277,7 @@ func TestAnyInPointer(t *testing.T) {
 
 func TestAnyInPointerWithNotNil(t *testing.T) {
 	t.Run("Pointer to Any with NotNil", func(t *testing.T) {
-		schema := Ptr(Any()).NotNil()
+		schema := Ptr(EXPERIMENTAL_ANY()).NotNil()
 		var result *any
 		data := "hello"
 		errs := schema.Parse(data, &result)
@@ -1295,7 +1295,7 @@ func TestAnyInPointerWithNotNil(t *testing.T) {
 
 func TestAnyInNestedPointer(t *testing.T) {
 	t.Run("Pointer to pointer to Any", func(t *testing.T) {
-		schema := Ptr(Ptr(Any()))
+		schema := Ptr(Ptr(EXPERIMENTAL_ANY()))
 		var result **any
 		data := "hello"
 		errs := schema.Parse(data, &result)
@@ -1308,7 +1308,7 @@ func TestAnyInNestedPointer(t *testing.T) {
 
 func TestAnyInPointerContainingPointer(t *testing.T) {
 	t.Run("Pointer to Any containing pointer value", func(t *testing.T) {
-		schema := Ptr(Any())
+		schema := Ptr(EXPERIMENTAL_ANY())
 		var result *any
 		str := "hello"
 		data := &str
@@ -1333,7 +1333,7 @@ type AnyBox struct {
 func TestAnyInBoxed(t *testing.T) {
 	t.Run("Boxed with Any schema", func(t *testing.T) {
 		schema := Boxed(
-			Any(),
+			EXPERIMENTAL_ANY(),
 			func(b AnyBox, ctx Ctx) (any, error) {
 				return b.Value, nil
 			},
@@ -1351,7 +1351,7 @@ func TestAnyInBoxed(t *testing.T) {
 
 	t.Run("Boxed Any with int value", func(t *testing.T) {
 		schema := Boxed(
-			Any(),
+			EXPERIMENTAL_ANY(),
 			func(b AnyBox, ctx Ctx) (any, error) {
 				return b.Value, nil
 			},
@@ -1370,7 +1370,7 @@ func TestAnyInBoxed(t *testing.T) {
 
 func TestAnyContainingBoxedValues(t *testing.T) {
 	t.Run("Any schema receiving boxed value", func(t *testing.T) {
-		anySchema := Any()
+		anySchema := EXPERIMENTAL_ANY()
 		var result any
 		box := AnyBox{Value: "boxed"}
 		errs := anySchema.Parse(box, &result)
@@ -1389,7 +1389,7 @@ func TestAnyInPreprocess(t *testing.T) {
 			func(data string, ctx Ctx) (any, error) {
 				return "preprocessed: " + data, nil
 			},
-			Any(),
+			EXPERIMENTAL_ANY(),
 		)
 
 		var result any
@@ -1404,7 +1404,7 @@ func TestAnyInPreprocess(t *testing.T) {
 			func(data int, ctx Ctx) (any, error) {
 				return data * 2, nil
 			},
-			Any(),
+			EXPERIMENTAL_ANY(),
 		)
 
 		var result any
@@ -1417,7 +1417,7 @@ func TestAnyInPreprocess(t *testing.T) {
 
 func TestAnyContainingPreprocessedValues(t *testing.T) {
 	t.Run("Any schema receiving preprocessed data", func(t *testing.T) {
-		anySchema := Any()
+		anySchema := EXPERIMENTAL_ANY()
 		var result any
 		// Preprocessed value would be passed as any
 		data := "preprocessed"
@@ -1440,7 +1440,7 @@ func TestAnyInRecursive(t *testing.T) {
 	t.Run("Recursive schema with Any field", func(t *testing.T) {
 		schema := EXPERIMENTAL_RECURSIVE(func(self RecursiveSchema[*PointerSchema]) *PointerSchema {
 			return Ptr(Struct(Shape{
-				"value": Any(),
+				"value": EXPERIMENTAL_ANY(),
 				"next":  self(),
 			}))
 		})
@@ -1465,7 +1465,7 @@ func TestAnyInRecursive(t *testing.T) {
 
 func TestAnyContainingRecursiveStructures(t *testing.T) {
 	t.Run("Any schema with recursive data", func(t *testing.T) {
-		anySchema := Any()
+		anySchema := EXPERIMENTAL_ANY()
 		var result any
 		data := map[string]any{
 			"value": "root",
@@ -1487,7 +1487,7 @@ func TestAnyContainingRecursiveStructures(t *testing.T) {
 func TestAnyDeepNesting(t *testing.T) {
 	t.Run("Any in Struct in Slice", func(t *testing.T) {
 		schema := Slice(Struct(Shape{
-			"anyField": Any(),
+			"anyField": EXPERIMENTAL_ANY(),
 		}))
 		type Item struct {
 			AnyField any
@@ -1506,7 +1506,7 @@ func TestAnyDeepNesting(t *testing.T) {
 
 	t.Run("Any in Map in Struct", func(t *testing.T) {
 		schema := Struct(Shape{
-			"mapField": EXPERIMENTAL_MAP[string, any](String(), Any()),
+			"mapField": EXPERIMENTAL_MAP[string, any](String(), EXPERIMENTAL_ANY()),
 		})
 		type TestStruct struct {
 			MapField map[string]any
@@ -1523,7 +1523,7 @@ func TestAnyDeepNesting(t *testing.T) {
 	})
 
 	t.Run("Any in Pointer in Slice", func(t *testing.T) {
-		schema := Slice(Ptr(Any()))
+		schema := Slice(Ptr(EXPERIMENTAL_ANY()))
 		var result []*any
 		data := []any{"hello", 42}
 		errs := schema.Parse(data, &result)
@@ -1538,7 +1538,7 @@ func TestAnyDeepNesting(t *testing.T) {
 	t.Run("Multiple levels of nesting", func(t *testing.T) {
 		schema := Slice(Struct(Shape{
 			"nested": Struct(Shape{
-				"anyField": Any(),
+				"anyField": EXPERIMENTAL_ANY(),
 			}),
 		}))
 		type Nested struct {
@@ -1572,7 +1572,7 @@ func TestAnyValidationInStruct(t *testing.T) {
 	}
 
 	schema := Struct(Shape{
-		"anyField": Any().Required().TestFunc(func(val *any, ctx Ctx) bool {
+		"anyField": EXPERIMENTAL_ANY().Required().TestFunc(func(val *any, ctx Ctx) bool {
 			if str, ok := (*val).(string); ok {
 				return len(str) > 0
 			}
@@ -1600,7 +1600,7 @@ func TestAnyValidationInStruct(t *testing.T) {
 }
 
 func TestAnyValidationInSlice(t *testing.T) {
-	schema := Slice(Any().Required().TestFunc(func(val *any, ctx Ctx) bool {
+	schema := Slice(EXPERIMENTAL_ANY().Required().TestFunc(func(val *any, ctx Ctx) bool {
 		return *val != nil
 	}))
 
@@ -1624,7 +1624,7 @@ func TestAnyValidationInMap(t *testing.T) {
 	// Note: Map.Validate has limitations with any type values due to reflection type handling
 	// This test verifies basic functionality, but full validation may have edge cases
 	t.Run("Validate map with Any values via Parse", func(t *testing.T) {
-		schema := EXPERIMENTAL_MAP[string, any](String(), Any())
+		schema := EXPERIMENTAL_MAP[string, any](String(), EXPERIMENTAL_ANY())
 		var result map[string]any
 		data := map[string]any{
 			"key": "value",
@@ -1653,7 +1653,7 @@ func TestAnyValidationErrorPathTracking(t *testing.T) {
 
 	schema := Struct(Shape{
 		"nested": Struct(Shape{
-			"anyField": Any().Required(),
+			"anyField": EXPERIMENTAL_ANY().Required(),
 		}),
 	})
 
@@ -1684,7 +1684,7 @@ func TestAnyEdgeCasesEmptyValues(t *testing.T) {
 			AnyField any
 		}
 		schema := Struct(Shape{
-			"anyField": Any(),
+			"anyField": EXPERIMENTAL_ANY(),
 		})
 		var result TestStruct
 		data := map[string]any{}
@@ -1694,7 +1694,7 @@ func TestAnyEdgeCasesEmptyValues(t *testing.T) {
 	})
 
 	t.Run("Empty slice with Any elements", func(t *testing.T) {
-		schema := Slice(Any())
+		schema := Slice(EXPERIMENTAL_ANY())
 		var result []any
 		data := []any{}
 		errs := schema.Parse(data, &result)
@@ -1703,7 +1703,7 @@ func TestAnyEdgeCasesEmptyValues(t *testing.T) {
 	})
 
 	t.Run("Empty map with Any values", func(t *testing.T) {
-		schema := EXPERIMENTAL_MAP[string, any](String(), Any())
+		schema := EXPERIMENTAL_MAP[string, any](String(), EXPERIMENTAL_ANY())
 		var result map[string]any
 		data := map[string]any{}
 		errs := schema.Parse(data, &result)
@@ -1718,7 +1718,7 @@ func TestAnyEdgeCasesNilHandling(t *testing.T) {
 			AnyField any
 		}
 		schema := Struct(Shape{
-			"anyField": Any(),
+			"anyField": EXPERIMENTAL_ANY(),
 		})
 		var result TestStruct
 		data := map[string]any{
@@ -1730,7 +1730,7 @@ func TestAnyEdgeCasesNilHandling(t *testing.T) {
 	})
 
 	t.Run("Nil pointer in Any", func(t *testing.T) {
-		anySchema := Any()
+		anySchema := EXPERIMENTAL_ANY()
 		var result any
 		data := (*string)(nil)
 		errs := anySchema.Parse(data, &result)
@@ -1739,7 +1739,7 @@ func TestAnyEdgeCasesNilHandling(t *testing.T) {
 	})
 
 	t.Run("Nil in slice of Any", func(t *testing.T) {
-		schema := Slice(Any())
+		schema := Slice(EXPERIMENTAL_ANY())
 		var result []any
 		data := []any{nil, "value", nil}
 		errs := schema.Parse(data, &result)
@@ -1758,7 +1758,7 @@ func TestAnyEdgeCasesTypeMismatches(t *testing.T) {
 			AnyField any
 		}
 		schema := Struct(Shape{
-			"anyField": Any(),
+			"anyField": EXPERIMENTAL_ANY(),
 		})
 		var result TestStruct
 		// Any should accept any type
@@ -1777,7 +1777,7 @@ func TestAnyEdgeCasesTransforms(t *testing.T) {
 			AnyField any
 		}
 		schema := Struct(Shape{
-			"anyField": Any().Transform(func(val *any, ctx Ctx) error {
+			"anyField": EXPERIMENTAL_ANY().Transform(func(val *any, ctx Ctx) error {
 				if str, ok := (*val).(string); ok {
 					*val = "transformed: " + str
 				}
@@ -1794,7 +1794,7 @@ func TestAnyEdgeCasesTransforms(t *testing.T) {
 	})
 
 	t.Run("Any with transform in Slice", func(t *testing.T) {
-		schema := Slice(Any().Transform(func(val *any, ctx Ctx) error {
+		schema := Slice(EXPERIMENTAL_ANY().Transform(func(val *any, ctx Ctx) error {
 			if str, ok := (*val).(string); ok {
 				*val = strings.ToUpper(str)
 			}
@@ -1815,7 +1815,7 @@ func TestAnyEdgeCasesTests(t *testing.T) {
 			AnyField any
 		}
 		schema := Struct(Shape{
-			"anyField": Any().TestFunc(func(val *any, ctx Ctx) bool {
+			"anyField": EXPERIMENTAL_ANY().TestFunc(func(val *any, ctx Ctx) bool {
 				if str, ok := (*val).(string); ok {
 					return len(str) >= 3
 				}
@@ -1839,14 +1839,14 @@ func TestAnyEdgeCasesTests(t *testing.T) {
 	})
 
 	t.Run("Any with test in Slice", func(t *testing.T) {
-		schema := Slice(Any().Required().TestFunc(func(val *any, ctx Ctx) bool {
+		schema := Slice(EXPERIMENTAL_ANY().Required().TestFunc(func(val *any, ctx Ctx) bool {
 			return *val != nil
 		}))
 		var result []any
 		data := []any{"hello", nil}
 		errs := schema.Parse(data, &result)
 		// Note: nil in slice might pass if not required, so let's test with empty string that fails test
-		schema2 := Slice(Any().TestFunc(func(val *any, ctx Ctx) bool {
+		schema2 := Slice(EXPERIMENTAL_ANY().TestFunc(func(val *any, ctx Ctx) bool {
 			if str, ok := (*val).(string); ok {
 				return len(str) > 3
 			}
@@ -1865,7 +1865,7 @@ func TestAnyEdgeCasesDefaultCatchPropagation(t *testing.T) {
 			AnyField any
 		}
 		schema := Struct(Shape{
-			"anyField": Any().Default("default"),
+			"anyField": EXPERIMENTAL_ANY().Default("default"),
 		})
 		var result TestStruct
 		data := map[string]any{}
@@ -1879,7 +1879,7 @@ func TestAnyEdgeCasesDefaultCatchPropagation(t *testing.T) {
 			AnyField any
 		}
 		schema := Struct(Shape{
-			"anyField": Any().Required().Catch("catch"),
+			"anyField": EXPERIMENTAL_ANY().Required().Catch("catch"),
 		})
 		var result TestStruct
 		data := map[string]any{}
@@ -1894,7 +1894,7 @@ func TestAnyEdgeCasesDefaultCatchPropagation(t *testing.T) {
 		}
 		// Default takes precedence over Catch
 		schema := Struct(Shape{
-			"anyField": Any().Default("default").Catch("catch"),
+			"anyField": EXPERIMENTAL_ANY().Default("default").Catch("catch"),
 		})
 		var result TestStruct
 		data := map[string]any{}
