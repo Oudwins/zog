@@ -52,8 +52,8 @@ func (s *StringSchema[T]) toZSS() *zss.ZSSSchema {
 	j := zss.ZSSSchema{
 		Kind:         zconst.TypeString,
 		Required:     toZSSRequired(s.required, zconst.TypeString),
-		DefaultValue: deepCopyPrimitivePtr(s.defaultVal),
-		CatchValue:   deepCopyPrimitivePtr(s.catch),
+		DefaultValue: defaultValueFromFunc(s.defaultFunc),
+		CatchValue:   defaultValueFromFunc(s.catchFunc),
 		Processors:   processorsToZSS(rvP, zconst.TypeString),
 	}
 
@@ -69,8 +69,8 @@ func (s *NumberSchema[T]) toZSS() *zss.ZSSSchema {
 	j := zss.ZSSSchema{
 		Kind:         zconst.TypeNumber,
 		Required:     toZSSRequired(s.required, zconst.TypeNumber),
-		DefaultValue: deepCopyPrimitivePtr(s.defaultVal),
-		CatchValue:   deepCopyPrimitivePtr(s.catch),
+		DefaultValue: defaultValueFromFunc(s.defaultFunc),
+		CatchValue:   defaultValueFromFunc(s.catchFunc),
 		Processors:   processorsToZSS(rvP, zconst.TypeNumber),
 	}
 
@@ -85,8 +85,8 @@ func (s *BoolSchema[T]) toZSS() *zss.ZSSSchema {
 	j := zss.ZSSSchema{
 		Kind:         zconst.TypeBool,
 		Required:     toZSSRequired(s.required, zconst.TypeBool),
-		DefaultValue: deepCopyPrimitivePtr(s.defaultVal),
-		CatchValue:   deepCopyPrimitivePtr(s.catch),
+		DefaultValue: defaultValueFromFunc(s.defaultFunc),
+		CatchValue:   defaultValueFromFunc(s.catchFunc),
 		Processors:   processorsToZSS(rvP, zconst.TypeBool),
 	}
 
@@ -101,8 +101,8 @@ func (s *TimeSchema) toZSS() *zss.ZSSSchema {
 	j := zss.ZSSSchema{
 		Kind:         zconst.TypeTime,
 		Required:     toZSSRequired(s.required, zconst.TypeTime),
-		DefaultValue: deepCopyPrimitivePtr(s.defaultVal),
-		CatchValue:   deepCopyPrimitivePtr(s.catch),
+		DefaultValue: defaultValueFromFunc(s.defaultFunc),
+		CatchValue:   defaultValueFromFunc(s.catchFunc),
 		Processors:   processorsToZSS(rvP, zconst.TypeTime),
 	}
 	if x, ok := RegistryGet(exMetaRegistry, s, EX_META_KEY_FORMAT); ok {
@@ -126,7 +126,7 @@ func (s *SliceSchema) toZSS() *zss.ZSSSchema {
 	j := zss.ZSSSchema{
 		Kind:         zconst.TypeSlice,
 		Required:     toZSSRequired(s.required, zconst.TypeSlice),
-		DefaultValue: deepCopyPrimitivePtr(s.defaultVal),
+		DefaultValue: defaultValueFromAnyFunc(s.defaultFunc),
 		Processors:   processorsToZSS(rvP, zconst.TypeSlice),
 		Childs:       []zss.ZSSSchemaChild{{Kind: zss.ZSSSchemaChildKindSchema, Schema: s.schema.toZSS()}},
 	}
@@ -139,10 +139,11 @@ func (s *MapSchema[K, V]) toZSS() *zss.ZSSSchema {
 		"key":   *s.keySchema.toZSS(),
 		"value": *s.valueSchema.toZSS(),
 	}
+	defaultValue := shallowCopyMapFromFunc(s.defaultFunc)
 	j := zss.ZSSSchema{
 		Kind:         zconst.TypeMap,
 		Required:     toZSSRequired(s.required, zconst.TypeMap),
-		DefaultValue: shallowCopyMap(s.defaultVal),
+		DefaultValue: defaultValue,
 		Processors:   processorsToZSS(rvP, zconst.TypeMap),
 		Childs:       []zss.ZSSSchemaChild{{Kind: zss.ZSSSchemaChildKindShape, Shape: childMap}},
 	}
@@ -159,6 +160,13 @@ func shallowCopyMap[K comparable, V any](m map[K]V) any {
 		result[k] = v
 	}
 	return result
+}
+
+func shallowCopyMapFromFunc[K comparable, V any](defaultFunc func() map[K]V) any {
+	if defaultFunc == nil {
+		return nil
+	}
+	return shallowCopyMap(defaultFunc())
 }
 
 func (s *StructSchema) toZSS() *zss.ZSSSchema {
@@ -376,4 +384,20 @@ func deepCopyPrimitivePtr(v any) any {
 
 	ptr.Elem().Set(e)
 	return ptr.Interface()
+}
+
+func defaultValueFromFunc[T any](defaultFunc func() T) any {
+	if defaultFunc == nil {
+		return nil
+	}
+	val := defaultFunc()
+	return deepCopyPrimitivePtr(&val)
+}
+
+func defaultValueFromAnyFunc(defaultFunc func() any) any {
+	if defaultFunc == nil {
+		return nil
+	}
+	val := defaultFunc()
+	return deepCopyPrimitivePtr(&val)
 }

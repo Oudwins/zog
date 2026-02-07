@@ -219,6 +219,38 @@ func TestAnyValidateCatch(t *testing.T) {
 	}
 }
 
+func TestAnyValidateDefaultFuncAndCatchFunc(t *testing.T) {
+	defaultCalls := 0
+	catchCalls := 0
+	anyProc := EXPERIMENTAL_ANY().Required().
+		DefaultFunc(func() any {
+			defaultCalls++
+			return "ok"
+		}).
+		CatchFunc(func() any {
+			catchCalls++
+			return "caught"
+		}).
+		TestFunc(func(val *any, ctx Ctx) bool {
+			str, ok := (*val).(string)
+			return ok && str == "ok"
+		})
+
+	var data any
+	errs := anyProc.Validate(&data)
+	assert.Empty(t, errs)
+	assert.Equal(t, "ok", data)
+	assert.Equal(t, 1, defaultCalls)
+	assert.Equal(t, 0, catchCalls)
+
+	data = "bad"
+	errs = anyProc.Validate(&data)
+	assert.Empty(t, errs)
+	assert.Equal(t, "caught", data)
+	assert.Equal(t, 1, defaultCalls)
+	assert.Equal(t, 1, catchCalls)
+}
+
 func TestAnyValidateTransform(t *testing.T) {
 	tests := []struct {
 		name      string

@@ -52,8 +52,8 @@ func TestFunc[T any](IssueCode zconst.ZogIssueCode, fn BoolTFunc[T], options ...
 
 // ! PRIMITIVE PROCESSING -> Not userspace code
 
-func primitiveParsing[T p.ZogPrimitive](ctx *p.SchemaCtx, processors []p.ZProcessor[*T], defaultVal *T, required *p.Test[*T], catch *T, coercer CoercerFunc, isZeroFunc p.IsZeroValueFunc) {
-	ctx.CanCatch = catch != nil
+func primitiveParsing[T p.ZogPrimitive](ctx *p.SchemaCtx, processors []p.ZProcessor[*T], defaultFunc func() T, required *p.Test[*T], catchFunc func() T, coercer CoercerFunc, isZeroFunc p.IsZeroValueFunc) {
+	ctx.CanCatch = catchFunc != nil
 
 	destPtr, ok := ctx.ValPtr.(*T)
 	if !ok {
@@ -63,8 +63,8 @@ func primitiveParsing[T p.ZogPrimitive](ctx *p.SchemaCtx, processors []p.ZProces
 	// 2. cast data to string & handle default/required
 	isZeroVal := isZeroFunc(ctx.Data, ctx)
 	if isZeroVal {
-		if defaultVal != nil {
-			*destPtr = *defaultVal
+		if defaultFunc != nil {
+			*destPtr = defaultFunc()
 		} else if required == nil {
 			// This handles optional case
 			return
@@ -72,7 +72,7 @@ func primitiveParsing[T p.ZogPrimitive](ctx *p.SchemaCtx, processors []p.ZProces
 			// is required & zero value
 			// required
 			if ctx.CanCatch {
-				*destPtr = *catch
+				*destPtr = catchFunc()
 				return
 			} else {
 				ctx.AddIssue(ctx.IssueFromTest(required, *destPtr))
@@ -83,7 +83,7 @@ func primitiveParsing[T p.ZogPrimitive](ctx *p.SchemaCtx, processors []p.ZProces
 		v, err := coercer(ctx.Data)
 		if err != nil {
 			if ctx.CanCatch {
-				*destPtr = *catch
+				*destPtr = catchFunc()
 				return
 			}
 			ctx.AddIssue(ctx.IssueFromCoerce(err))
@@ -101,7 +101,7 @@ func primitiveParsing[T p.ZogPrimitive](ctx *p.SchemaCtx, processors []p.ZProces
 		processor.ZProcess(destPtr, ctx)
 		if ctx.Exit {
 			if ctx.CanCatch {
-				*destPtr = *catch
+				*destPtr = catchFunc()
 				return
 			}
 			return
@@ -109,8 +109,8 @@ func primitiveParsing[T p.ZogPrimitive](ctx *p.SchemaCtx, processors []p.ZProces
 	}
 }
 
-func primitiveValidation[T p.ZogPrimitive](ctx *p.SchemaCtx, processors []p.ZProcessor[*T], defaultVal *T, required *p.Test[*T], catch *T) {
-	ctx.CanCatch = catch != nil
+func primitiveValidation[T p.ZogPrimitive](ctx *p.SchemaCtx, processors []p.ZProcessor[*T], defaultFunc func() T, required *p.Test[*T], catchFunc func() T) {
+	ctx.CanCatch = catchFunc != nil
 
 	valPtr, ok := ctx.ValPtr.(*T)
 	if !ok {
@@ -122,8 +122,8 @@ func primitiveValidation[T p.ZogPrimitive](ctx *p.SchemaCtx, processors []p.ZPro
 	isZeroVal := p.IsZeroValue(*valPtr)
 
 	if isZeroVal {
-		if defaultVal != nil {
-			*valPtr = *defaultVal
+		if defaultFunc != nil {
+			*valPtr = defaultFunc()
 		} else if required == nil {
 			// This handles optional case
 			return
@@ -131,7 +131,7 @@ func primitiveValidation[T p.ZogPrimitive](ctx *p.SchemaCtx, processors []p.ZPro
 			// is required & zero value
 			// required
 			if ctx.CanCatch {
-				*valPtr = *catch
+				*valPtr = catchFunc()
 				return
 			} else {
 				ctx.AddIssue(ctx.IssueFromTest(required, *valPtr))
@@ -145,7 +145,7 @@ func primitiveValidation[T p.ZogPrimitive](ctx *p.SchemaCtx, processors []p.ZPro
 		processor.ZProcess(valPtr, ctx)
 		if ctx.Exit {
 			if ctx.CanCatch {
-				*valPtr = *catch
+				*valPtr = catchFunc()
 				return
 			}
 			return

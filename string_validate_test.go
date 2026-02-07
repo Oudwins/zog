@@ -145,6 +145,34 @@ func TestValidateStringCatch(t *testing.T) {
 	assert.Equal(t, "not error", dest)
 }
 
+func TestValidateStringDefaultFuncAndCatchFunc(t *testing.T) {
+	defaultCalls := 0
+	catchCalls := 0
+	field := String().Required().Min(5).
+		DefaultFunc(func() string {
+			defaultCalls++
+			return "default"
+		}).
+		CatchFunc(func() string {
+			catchCalls++
+			return "caught"
+		})
+	var dest string
+
+	errs := field.Validate(&dest)
+	assert.Empty(t, errs)
+	assert.Equal(t, "default", dest)
+	assert.Equal(t, 1, defaultCalls)
+	assert.Equal(t, 0, catchCalls)
+
+	dest = "x"
+	errs = field.Validate(&dest)
+	assert.Empty(t, errs)
+	assert.Equal(t, "caught", dest)
+	assert.Equal(t, 1, defaultCalls)
+	assert.Equal(t, 1, catchCalls)
+}
+
 // VALIDATORS / Tests / Validators
 
 func TestValidateStringLength(t *testing.T) {

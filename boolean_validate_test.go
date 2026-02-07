@@ -215,6 +215,33 @@ func TestBoolValidateCatch(t *testing.T) {
 	}
 }
 
+func TestBoolValidateDefaultFuncAndCatchFunc(t *testing.T) {
+	defaultCalls := 0
+	catchCalls := 0
+	defaultSchema := Bool().
+		DefaultFunc(func() bool {
+			defaultCalls++
+			return true
+		})
+	var defaultVal bool
+
+	errs := defaultSchema.Validate(&defaultVal)
+	assert.Empty(t, errs)
+	assert.True(t, defaultVal)
+	assert.Equal(t, 1, defaultCalls)
+
+	catchSchema := Bool().False().
+		CatchFunc(func() bool {
+			catchCalls++
+			return false
+		})
+	val := true
+	errs = catchSchema.Validate(&val)
+	assert.Empty(t, errs)
+	assert.False(t, val)
+	assert.Equal(t, 1, catchCalls)
+}
+
 func TestBoolValidateTrue(t *testing.T) {
 	tests := []struct {
 		name      string

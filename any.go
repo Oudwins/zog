@@ -12,10 +12,10 @@ import (
 var _ ZogSchema = &AnySchema{}
 
 type AnySchema struct {
-	processors []p.ZProcessor[*any]
-	defaultVal *any
-	required   *p.Test[*any]
-	catch      *any
+	processors  []p.ZProcessor[*any]
+	defaultFunc func() any
+	required    *p.Test[*any]
+	catchFunc   func() any
 }
 
 // ! INTERNALS
@@ -61,7 +61,7 @@ func (v *AnySchema) Parse(data any, dest *any, options ...ExecOption) ZogIssueLi
 
 // Internal function to process the data
 func (v *AnySchema) process(ctx *p.SchemaCtx) {
-	ctx.CanCatch = v.catch != nil
+	ctx.CanCatch = v.catchFunc != nil
 
 	destPtr, ok := ctx.ValPtr.(*any)
 	if !ok {
@@ -71,15 +71,15 @@ func (v *AnySchema) process(ctx *p.SchemaCtx) {
 	// Handle default/required for nil values
 	isZeroVal := p.IsParseZeroValue(ctx.Data, ctx)
 	if isZeroVal {
-		if v.defaultVal != nil {
-			*destPtr = *v.defaultVal
+		if v.defaultFunc != nil {
+			*destPtr = v.defaultFunc()
 		} else if v.required == nil {
 			// This handles optional case
 			return
 		} else {
 			// is required & zero value
 			if ctx.CanCatch {
-				*destPtr = *v.catch
+				*destPtr = v.catchFunc()
 				return
 			} else {
 				ctx.AddIssue(ctx.IssueFromTest(v.required, *destPtr))
@@ -97,7 +97,7 @@ func (v *AnySchema) process(ctx *p.SchemaCtx) {
 		processor.ZProcess(destPtr, ctx)
 		if ctx.Exit {
 			if ctx.CanCatch {
-				*destPtr = *v.catch
+				*destPtr = v.catchFunc()
 				return
 			}
 			return
@@ -125,7 +125,7 @@ func (v *AnySchema) Validate(val *any, options ...ExecOption) ZogIssueList {
 
 // Internal function to validate data
 func (v *AnySchema) validate(ctx *p.SchemaCtx) {
-	ctx.CanCatch = v.catch != nil
+	ctx.CanCatch = v.catchFunc != nil
 
 	valPtr, ok := ctx.ValPtr.(*any)
 	if !ok {
@@ -135,15 +135,15 @@ func (v *AnySchema) validate(ctx *p.SchemaCtx) {
 	// Handle default/required for zero values
 	isZeroVal := p.IsZeroValue(*valPtr)
 	if isZeroVal {
-		if v.defaultVal != nil {
-			*valPtr = *v.defaultVal
+		if v.defaultFunc != nil {
+			*valPtr = v.defaultFunc()
 		} else if v.required == nil {
 			// This handles optional case
 			return
 		} else {
 			// is required & zero value
 			if ctx.CanCatch {
-				*valPtr = *v.catch
+				*valPtr = v.catchFunc()
 				return
 			} else {
 				ctx.AddIssue(ctx.IssueFromTest(v.required, *valPtr))
@@ -158,7 +158,7 @@ func (v *AnySchema) validate(ctx *p.SchemaCtx) {
 		processor.ZProcess(valPtr, ctx)
 		if ctx.Exit {
 			if ctx.CanCatch {
-				*valPtr = *v.catch
+				*valPtr = v.catchFunc()
 				return
 			}
 			return
@@ -206,24 +206,40 @@ func (v *AnySchema) Optional() *AnySchema {
 
 // sets the default value
 func (v *AnySchema) Default(val any) *AnySchema {
-	v.defaultVal = &val
+	return v.DefaultFunc(func() any {
+		return val
+	})
+}
+
+// sets the default value using a function
+func (v *AnySchema) DefaultFunc(defaultFunc func() any) *AnySchema {
+	v.defaultFunc = defaultFunc
 	return v
 }
 
 // sets the catch value (i.e the value to use if the validation fails)
 func (v *AnySchema) Catch(val any) *AnySchema {
-	v.catch = &val
+	return v.CatchFunc(func() any {
+		return val
+	})
+}
+
+// sets the catch value (i.e the value to use if the validation fails) using a function
+func (v *AnySchema) CatchFunc(catchFunc func() any) *AnySchema {
+	v.catchFunc = catchFunc
 	return v
 }
 
 // toZSS converts the schema to ZSS format
 func (v *AnySchema) toZSS() *zss.ZSSSchema {
 	rvP := reflect.ValueOf(v.processors)
+	defaultValue := defaultValueFromAnyFunc(v.defaultFunc)
+	catchValue := defaultValueFromAnyFunc(v.catchFunc)
 	j := zss.ZSSSchema{
 		Kind:         zconst.TypeAny,
 		Required:     toZSSRequired(v.required, zconst.TypeAny),
-		DefaultValue: deepCopyPrimitivePtr(v.defaultVal),
-		CatchValue:   deepCopyPrimitivePtr(v.catch),
+		DefaultValue: defaultValue,
+		CatchValue:   catchValue,
 		Processors:   processorsToZSS(rvP, zconst.TypeAny),
 	}
 	return &j

@@ -296,6 +296,33 @@ func TestBoolCatch(t *testing.T) {
 	}
 }
 
+func TestBoolDefaultFuncAndCatchFuncParse(t *testing.T) {
+	defaultCalls := 0
+	catchCalls := 0
+	boolProc := Bool().Required().True().
+		DefaultFunc(func() bool {
+			defaultCalls++
+			return true
+		}).
+		CatchFunc(func() bool {
+			catchCalls++
+			return false
+		})
+	var result bool
+
+	errs := boolProc.Parse(nil, &result)
+	assert.Empty(t, errs)
+	assert.True(t, result)
+	assert.Equal(t, 1, defaultCalls)
+	assert.Equal(t, 0, catchCalls)
+
+	errs = boolProc.Parse(false, &result)
+	assert.Empty(t, errs)
+	assert.False(t, result)
+	assert.Equal(t, 1, defaultCalls)
+	assert.Equal(t, 1, catchCalls)
+}
+
 func TestBoolTrue(t *testing.T) {
 	tests := []struct {
 		name      string

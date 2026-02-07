@@ -83,6 +83,38 @@ func TestValidateNumberCatch(t *testing.T) {
 	assert.Equal(t, 42, dest)
 }
 
+func TestValidateNumberDefaultFuncAndCatchFunc(t *testing.T) {
+	defaultCalls := 0
+	catchCalls := 0
+	validator := Int().GT(10).
+		DefaultFunc(func() int {
+			defaultCalls++
+			return 42
+		}).
+		CatchFunc(func() int {
+			catchCalls++
+			return 99
+		})
+	dest := 0
+
+	errs := validator.Validate(&dest)
+	if len(errs) > 0 {
+		t.Errorf("Expected no errors, got %v", errs)
+	}
+	assert.Equal(t, 42, dest)
+	assert.Equal(t, 1, defaultCalls)
+	assert.Equal(t, 0, catchCalls)
+
+	dest = 5
+	errs = validator.Validate(&dest)
+	if len(errs) > 0 {
+		t.Errorf("Expected no errors, got %v", errs)
+	}
+	assert.Equal(t, 99, dest)
+	assert.Equal(t, 1, defaultCalls)
+	assert.Equal(t, 1, catchCalls)
+}
+
 func TestValidateNumberPostTransform(t *testing.T) {
 	postTransform := func(val *int, ctx Ctx) error {
 		*val += 1

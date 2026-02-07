@@ -51,6 +51,21 @@ func TestValidateMapDefault(t *testing.T) {
 	assert.Equal(t, map[string]int{"default": 42}, dest)
 }
 
+func TestValidateMapDefaultFunc(t *testing.T) {
+	defaultCalls := 0
+	validator := EXPERIMENTAL_MAP[string, int](String(), Int()).DefaultFunc(func() map[string]int {
+		defaultCalls++
+		return map[string]int{"default": 42}
+	})
+	dest := map[string]int{}
+	errs := validator.Validate(&dest)
+	if len(errs) > 0 {
+		t.Errorf("Expected no errors, got %v", errs)
+	}
+	assert.Equal(t, map[string]int{"default": 42}, dest)
+	assert.Equal(t, 1, defaultCalls)
+}
+
 func TestValidateMapTransform(t *testing.T) {
 	transform := func(val any, ctx Ctx) error {
 		if v, ok := val.(*map[string]int); ok {

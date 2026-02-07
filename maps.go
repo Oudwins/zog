@@ -17,7 +17,7 @@ type MapSchema[K p.ZogPrimitive, V any] struct {
 	keySchema   PrimitiveZogSchema[K]
 	valueSchema ZogSchema
 	required    *p.Test[any]
-	defaultVal  map[K]V
+	defaultFunc func() map[K]V
 }
 
 // Returns the type of the schema
@@ -69,8 +69,8 @@ func (v *MapSchema[K, V]) validate(ctx *p.SchemaCtx) {
 	isZeroVal := p.IsZeroValue(ctx.ValPtr)
 
 	if isZeroVal || refVal.Len() == 0 {
-		if v.defaultVal != nil {
-			refVal.Set(reflect.ValueOf(v.defaultVal))
+		if v.defaultFunc != nil {
+			refVal.Set(reflect.ValueOf(v.defaultFunc()))
 		} else if v.required == nil {
 			return
 		} else {
@@ -144,8 +144,8 @@ func (v *MapSchema[K, V]) process(ctx *p.SchemaCtx) {
 	var inputMap reflect.Value
 
 	if isZeroVal {
-		if v.defaultVal != nil {
-			inputMap = reflect.ValueOf(v.defaultVal)
+		if v.defaultFunc != nil {
+			inputMap = reflect.ValueOf(v.defaultFunc())
 		} else if v.required == nil {
 			return
 		} else {
@@ -251,7 +251,14 @@ func (v *MapSchema[K, V]) Optional() *MapSchema[K, V] {
 
 // sets the default value
 func (v *MapSchema[K, V]) Default(val map[K]V) *MapSchema[K, V] {
-	v.defaultVal = val
+	return v.DefaultFunc(func() map[K]V {
+		return val
+	})
+}
+
+// sets the default value using a function
+func (v *MapSchema[K, V]) DefaultFunc(defaultFunc func() map[K]V) *MapSchema[K, V] {
+	v.defaultFunc = defaultFunc
 	return v
 }
 

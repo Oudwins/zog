@@ -13,10 +13,10 @@ import (
 var _ ComplexZogSchema = &SliceSchema{}
 
 type SliceSchema struct {
-	processors []p.ZProcessor[any]
-	schema     ZogSchema
-	required   *p.Test[any]
-	defaultVal any
+	processors  []p.ZProcessor[any]
+	schema      ZogSchema
+	required    *p.Test[any]
+	defaultFunc func() any
 	// catch          any
 	coercer conf.CoercerFunc
 	isNot   bool
@@ -78,8 +78,8 @@ func (v *SliceSchema) validate(ctx *p.SchemaCtx) {
 	isZeroVal := p.IsZeroValue(ctx.ValPtr)
 
 	if isZeroVal || refVal.Len() == 0 {
-		if v.defaultVal != nil {
-			refVal.Set(reflect.ValueOf(v.defaultVal))
+		if v.defaultFunc != nil {
+			refVal.Set(reflect.ValueOf(v.defaultFunc()))
 		} else if v.required == nil {
 			return
 		} else {
@@ -138,8 +138,8 @@ func (v *SliceSchema) process(ctx *p.SchemaCtx) {
 	var refVal reflect.Value
 
 	if isZeroVal {
-		if v.defaultVal != nil {
-			refVal = reflect.ValueOf(v.defaultVal)
+		if v.defaultFunc != nil {
+			refVal = reflect.ValueOf(v.defaultFunc())
 		} else if v.required == nil {
 			return
 		} else {
@@ -212,7 +212,14 @@ func (v *SliceSchema) Optional() *SliceSchema {
 
 // sets the default value
 func (v *SliceSchema) Default(val any) *SliceSchema {
-	v.defaultVal = val
+	return v.DefaultFunc(func() any {
+		return val
+	})
+}
+
+// sets the default value using a function
+func (v *SliceSchema) DefaultFunc(defaultFunc func() any) *SliceSchema {
+	v.defaultFunc = defaultFunc
 	return v
 }
 

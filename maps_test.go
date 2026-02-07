@@ -109,6 +109,19 @@ func TestMapDefault(t *testing.T) {
 	assert.Equal(t, 2, m["b"])
 }
 
+func TestMapDefaultFuncParse(t *testing.T) {
+	defaultCalls := 0
+	schema := EXPERIMENTAL_MAP[string, int](String(), Int()).DefaultFunc(func() map[string]int {
+		defaultCalls++
+		return map[string]int{"a": 1, "b": 2}
+	})
+	m := map[string]int{}
+	err := schema.Parse(nil, &m)
+	assert.Nil(t, err)
+	assert.Equal(t, map[string]int{"a": 1, "b": 2}, m)
+	assert.Equal(t, 1, defaultCalls)
+}
+
 func TestMapErrors(t *testing.T) {
 	m := map[string]int{}
 	schema := EXPERIMENTAL_MAP[string, int](String(), Int().GTE(5))

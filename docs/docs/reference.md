@@ -14,7 +14,9 @@ schema.TestFunc(fn)      // create a custom test from a function
 schema.Required()        // marks field as required
 schema.Optional()        // marks field as optional
 schema.Default(value)    // sets default value for field
+schema.DefaultFunc(fn)   // sets default value for field using a function
 schema.Catch(value)      // sets catch value for field
+schema.CatchFunc(fn)     // sets catch value for field using a function
 schema.Transform(func(valPtr *T or any, ctx z.Ctx) (any, error)) // adds a transformation function to the schema. This is useful for things like trimming strings, etc.
 
 // VALIDATION METHODS

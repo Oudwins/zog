@@ -112,6 +112,19 @@ func TestSliceDefault(t *testing.T) {
 	assert.Equal(t, s[2], "c")
 }
 
+func TestSliceDefaultFuncParse(t *testing.T) {
+	defaultCalls := 0
+	schema := Slice(String()).DefaultFunc(func() any {
+		defaultCalls++
+		return []string{"x", "y"}
+	})
+	s := []string{}
+	err := schema.Parse(nil, &s)
+	assert.Nil(t, err)
+	assert.Equal(t, []string{"x", "y"}, s)
+	assert.Equal(t, 1, defaultCalls)
+}
+
 func TestSlicePassSchema(t *testing.T) {
 
 	s := []string{}

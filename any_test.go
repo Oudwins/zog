@@ -294,6 +294,37 @@ func TestAnyCatch(t *testing.T) {
 	}
 }
 
+func TestAnyDefaultFuncAndCatchFuncParse(t *testing.T) {
+	defaultCalls := 0
+	catchCalls := 0
+	anyProc := EXPERIMENTAL_ANY().Required().
+		DefaultFunc(func() any {
+			defaultCalls++
+			return "ok"
+		}).
+		CatchFunc(func() any {
+			catchCalls++
+			return "caught"
+		}).
+		TestFunc(func(val *any, ctx Ctx) bool {
+			str, ok := (*val).(string)
+			return ok && str == "ok"
+		})
+	var result any
+
+	errs := anyProc.Parse(nil, &result)
+	assert.Empty(t, errs)
+	assert.Equal(t, "ok", result)
+	assert.Equal(t, 1, defaultCalls)
+	assert.Equal(t, 0, catchCalls)
+
+	errs = anyProc.Parse("bad", &result)
+	assert.Empty(t, errs)
+	assert.Equal(t, "caught", result)
+	assert.Equal(t, 1, defaultCalls)
+	assert.Equal(t, 1, catchCalls)
+}
+
 func TestAnyTransform(t *testing.T) {
 	tests := []struct {
 		name      string

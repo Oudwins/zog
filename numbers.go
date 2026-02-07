@@ -11,12 +11,12 @@ type Numeric = p.Numeric
 var _ PrimitiveZogSchema[int] = &NumberSchema[int]{}
 
 type NumberSchema[T Numeric] struct {
-	processors []p.ZProcessor[*T]
-	defaultVal *T
-	required   *p.Test[*T]
-	catch      *T
-	coercer    CoercerFunc
-	isNot      bool
+	processors  []p.ZProcessor[*T]
+	defaultFunc func() T
+	required    *p.Test[*T]
+	catchFunc   func() T
+	coercer     CoercerFunc
+	isNot       bool
 }
 
 type NotNumberSchema[T Numeric] interface {
@@ -203,7 +203,7 @@ func (v *NumberSchema[T]) Parse(data any, dest *T, options ...ExecOption) ZogIss
 
 // Internal function to process the data
 func (v *NumberSchema[T]) process(ctx *p.SchemaCtx) {
-	primitiveParsing(ctx, v.processors, v.defaultVal, v.required, v.catch, v.coercer, p.IsParseZeroValue)
+	primitiveParsing(ctx, v.processors, v.defaultFunc, v.required, v.catchFunc, v.coercer, p.IsParseZeroValue)
 }
 
 // Validates a number pointer
@@ -225,7 +225,7 @@ func (v *NumberSchema[T]) Validate(data *T, options ...ExecOption) ZogIssueList 
 }
 
 func (v *NumberSchema[T]) validate(ctx *p.SchemaCtx) {
-	primitiveValidation(ctx, v.processors, v.defaultVal, v.required, v.catch)
+	primitiveValidation(ctx, v.processors, v.defaultFunc, v.required, v.catchFunc)
 }
 
 // GLOBAL METHODS
@@ -256,13 +256,27 @@ func (v *NumberSchema[T]) Optional() *NumberSchema[T] {
 
 // sets the default value
 func (v *NumberSchema[T]) Default(val T) *NumberSchema[T] {
-	v.defaultVal = &val
+	return v.DefaultFunc(func() T {
+		return val
+	})
+}
+
+// sets the default value using a function
+func (v *NumberSchema[T]) DefaultFunc(defaultFunc func() T) *NumberSchema[T] {
+	v.defaultFunc = defaultFunc
 	return v
 }
 
 // sets the catch value (i.e the value to use if the validation fails)
 func (v *NumberSchema[T]) Catch(val T) *NumberSchema[T] {
-	v.catch = &val
+	return v.CatchFunc(func() T {
+		return val
+	})
+}
+
+// sets the catch value (i.e the value to use if the validation fails) using a function
+func (v *NumberSchema[T]) CatchFunc(catchFunc func() T) *NumberSchema[T] {
+	v.catchFunc = catchFunc
 	return v
 }
 

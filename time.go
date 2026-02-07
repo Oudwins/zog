@@ -12,11 +12,11 @@ import (
 var _ PrimitiveZogSchema[time.Time] = &TimeSchema{}
 
 type TimeSchema struct {
-	processors []p.ZProcessor[*time.Time]
-	defaultVal *time.Time
-	required   *p.Test[*time.Time]
-	catch      *time.Time
-	coercer    conf.CoercerFunc
+	processors  []p.ZProcessor[*time.Time]
+	defaultFunc func() time.Time
+	required    *p.Test[*time.Time]
+	catchFunc   func() time.Time
+	coercer     conf.CoercerFunc
 }
 
 // Returns the type of the schema
@@ -92,7 +92,7 @@ func (v *TimeSchema) Parse(data any, dest *time.Time, options ...ExecOption) Zog
 
 // internal processes the data
 func (v *TimeSchema) process(ctx *p.SchemaCtx) {
-	primitiveParsing(ctx, v.processors, v.defaultVal, v.required, v.catch, v.coercer, p.IsParseZeroValue)
+	primitiveParsing(ctx, v.processors, v.defaultFunc, v.required, v.catchFunc, v.coercer, p.IsParseZeroValue)
 }
 
 // Validates an existing time.Time
@@ -114,7 +114,7 @@ func (v *TimeSchema) Validate(data *time.Time, options ...ExecOption) ZogIssueLi
 
 // Internal function to validate the data
 func (v *TimeSchema) validate(ctx *p.SchemaCtx) {
-	primitiveValidation(ctx, v.processors, v.defaultVal, v.required, v.catch)
+	primitiveValidation(ctx, v.processors, v.defaultFunc, v.required, v.catchFunc)
 }
 
 // Adds posttransform function to schema
@@ -143,13 +143,27 @@ func (v *TimeSchema) Optional() *TimeSchema {
 
 // sets the default value
 func (v *TimeSchema) Default(val time.Time) *TimeSchema {
-	v.defaultVal = &val
+	return v.DefaultFunc(func() time.Time {
+		return val
+	})
+}
+
+// sets the default value using a function
+func (v *TimeSchema) DefaultFunc(defaultFunc func() time.Time) *TimeSchema {
+	v.defaultFunc = defaultFunc
 	return v
 }
 
 // sets the catch value (i.e the value to use if the validation fails)
 func (v *TimeSchema) Catch(val time.Time) *TimeSchema {
-	v.catch = &val
+	return v.CatchFunc(func() time.Time {
+		return val
+	})
+}
+
+// sets the catch value (i.e the value to use if the validation fails) using a function
+func (v *TimeSchema) CatchFunc(catchFunc func() time.Time) *TimeSchema {
+	v.catchFunc = catchFunc
 	return v
 }
 

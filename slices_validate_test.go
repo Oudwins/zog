@@ -51,6 +51,21 @@ func TestValidateSliceDefault(t *testing.T) {
 	assert.Equal(t, []string{"default"}, dest)
 }
 
+func TestValidateSliceDefaultFunc(t *testing.T) {
+	defaultCalls := 0
+	validator := Slice(String()).DefaultFunc(func() any {
+		defaultCalls++
+		return []string{"default"}
+	})
+	dest := []string{}
+	errs := validator.Validate(&dest)
+	if len(errs) > 0 {
+		t.Errorf("Expected no errors, got %v", errs)
+	}
+	assert.Equal(t, []string{"default"}, dest)
+	assert.Equal(t, 1, defaultCalls)
+}
+
 func TestValidateSliceTransform(t *testing.T) {
 	transform := func(val any, ctx Ctx) error {
 		if v, ok := val.(*[]string); ok {

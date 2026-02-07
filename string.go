@@ -41,12 +41,12 @@ type NotStringSchema[T likeString] interface {
 }
 
 type StringSchema[T likeString] struct {
-	processors []p.ZProcessor[*T]
-	defaultVal *T
-	required   *p.Test[*T]
-	catch      *T
-	coercer    CoercerFunc
-	isNot      bool
+	processors  []p.ZProcessor[*T]
+	defaultFunc func() T
+	required    *p.Test[*T]
+	catchFunc   func() T
+	coercer     CoercerFunc
+	isNot       bool
 }
 
 // ! INTERNALS
@@ -112,7 +112,7 @@ func (v *StringSchema[T]) Parse(data any, dest *T, options ...ExecOption) ZogIss
 
 // Internal function to process the data
 func (v *StringSchema[T]) process(ctx *p.SchemaCtx) {
-	primitiveParsing(ctx, v.processors, v.defaultVal, v.required, v.catch, v.coercer, p.IsParseZeroValue)
+	primitiveParsing(ctx, v.processors, v.defaultFunc, v.required, v.catchFunc, v.coercer, p.IsParseZeroValue)
 }
 
 // Validate Given string
@@ -135,7 +135,7 @@ func (v *StringSchema[T]) Validate(data *T, options ...ExecOption) ZogIssueList 
 
 // Internal function to validate the data
 func (v *StringSchema[T]) validate(ctx *p.SchemaCtx) {
-	primitiveValidation(ctx, v.processors, v.defaultVal, v.required, v.catch)
+	primitiveValidation(ctx, v.processors, v.defaultFunc, v.required, v.catchFunc)
 }
 
 // Transform: trims the input data of whitespace if it is a string
@@ -183,13 +183,27 @@ func (v *StringSchema[T]) Optional() *StringSchema[T] {
 
 // sets the default value
 func (v *StringSchema[T]) Default(val T) *StringSchema[T] {
-	v.defaultVal = &val
+	return v.DefaultFunc(func() T {
+		return val
+	})
+}
+
+// sets the default value using a function
+func (v *StringSchema[T]) DefaultFunc(defaultFunc func() T) *StringSchema[T] {
+	v.defaultFunc = defaultFunc
 	return v
 }
 
 // sets the catch value (i.e the value to use if the validation fails)
 func (v *StringSchema[T]) Catch(val T) *StringSchema[T] {
-	v.catch = &val
+	return v.CatchFunc(func() T {
+		return val
+	})
+}
+
+// sets the catch value (i.e the value to use if the validation fails) using a function
+func (v *StringSchema[T]) CatchFunc(catchFunc func() T) *StringSchema[T] {
+	v.catchFunc = catchFunc
 	return v
 }
 

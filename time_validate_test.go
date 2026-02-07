@@ -49,6 +49,34 @@ func TestTimeValidateCatch(t *testing.T) {
 	assert.Equal(t, catchVal, now)
 }
 
+func TestTimeValidateDefaultFuncAndCatchFunc(t *testing.T) {
+	defaultCalls := 0
+	catchCalls := 0
+	defaultVal := time.Date(2022, 1, 1, 0, 0, 0, 0, time.UTC)
+	defaultSchema := Time().DefaultFunc(func() time.Time {
+		defaultCalls++
+		return defaultVal
+	})
+	var now time.Time
+
+	errs := defaultSchema.Validate(&now)
+	assert.Nil(t, errs)
+	assert.Equal(t, defaultVal, now)
+	assert.Equal(t, 1, defaultCalls)
+
+	catchVal := time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC)
+	catchSchema := Time().After(time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)).
+		CatchFunc(func() time.Time {
+			catchCalls++
+			return catchVal
+		})
+	failing := time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)
+	errs = catchSchema.Validate(&failing)
+	assert.Nil(t, errs)
+	assert.Equal(t, catchVal, failing)
+	assert.Equal(t, 1, catchCalls)
+}
+
 func TestTimeValidatePostTransform(t *testing.T) {
 	validator := Time().Transform(func(dataPtr *time.Time, ctx Ctx) error {
 		// Set the time to noon
