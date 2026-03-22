@@ -23,7 +23,7 @@ func TestWithCtxValueNotPersistedAcrossExecCtxReuse(t *testing.T) {
 	assert.Equal(t, "should_not_leak", ctx1.Get("secret"))
 	ctx1.Free()
 
-	// Proove that there is no longer a leak when pulling execution context out of
+	// Prove that there is no longer a leak when pulling execution context out of
 	// the pool. Previously this would not erase the map of data stored on the
 	// context. It was possible to store a value on a context, free that context,
 	// then see that value appear on subsequent context usages elsewhere. This
