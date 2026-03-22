@@ -17,6 +17,22 @@ func TestWithCtxValue(t *testing.T) {
 	assert.Equal(t, "bar", ctx.Get("foo"))
 }
 
+func TestWithCtxValueNotPersistedAcrossExecCtxReuse(t *testing.T) {
+	ctx1 := p.NewExecCtx(nil, nil)
+	ctx1.Set("secret", "should_not_leak")
+	assert.Equal(t, "should_not_leak", ctx1.Get("secret"))
+	ctx1.Free()
+
+	// Proove that there is no longer a leak when pulling execution context out of
+	// the pool. Previously this would not erase the map of data stored on the
+	// context. It was possible to store a value on a context, free that context,
+	// then see that value appear on subsequent context usages elsewhere. This
+	// test should prove that that won't happen.
+	ctx2 := p.NewExecCtx(nil, nil)
+	assert.Nil(t, ctx2.Get("secret"))
+	ctx2.Free()
+}
+
 func TestWithIssueFormatter(t *testing.T) {
 	var ctx = p.NewExecCtx(p.NewErrsList(), nil)
 	WithIssueFormatter(func(e *p.ZogIssue, p Ctx) {
