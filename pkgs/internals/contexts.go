@@ -47,9 +47,7 @@ func NewExecCtx(errs ZogIssues, fmter IssueFmtFunc) *ExecCtx {
 	c := ExecCtxPool.Get().(*ExecCtx)
 	c.Fmter = fmter
 	c.Errors = errs
-	if c.m == nil {
-		c.m = map[string]any{}
-	} else {
+	if c.m != nil {
 		clear(c.m)
 	}
 	return c
@@ -70,6 +68,9 @@ func (c *ExecCtx) SetIssueFormatter(fmter IssueFmtFunc) {
 }
 
 func (c *ExecCtx) Set(key string, val any) {
+	if c.m == nil {
+		c.m = make(map[string]any)
+	}
 	c.m[key] = val
 }
 
