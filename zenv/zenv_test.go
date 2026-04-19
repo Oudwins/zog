@@ -65,6 +65,25 @@ func TestEnvParsingWithConflictingTags(t *testing.T) {
 	os.Setenv("TEST_STR", "")
 }
 
+func TestEnvTagWithOptions(t *testing.T) {
+	type TestStruct struct {
+		Str  string `env:"TEST_STR,required"`
+		PORT int
+	}
+	env := TestStruct{}
+	schema := z.Struct(z.Shape{
+		"str":  z.String().Required(),
+		"PORT": z.Int().Default(8080),
+	})
+
+	os.Setenv("TEST_STR", "hello")
+	err := schema.Parse(NewDataProvider(), &env)
+	assert.Nil(t, err)
+	assert.Equal(t, "hello", env.Str)
+	assert.Equal(t, 8080, env.PORT)
+	os.Setenv("TEST_STR", "")
+}
+
 // Unit tests for envDataProvider
 func TestNewDataProvider(t *testing.T) {
 	provider := NewDataProvider()

@@ -3,6 +3,7 @@ package internals
 import (
 	"fmt"
 	"reflect"
+	"strings"
 
 	zconst "github.com/Oudwins/zog/zconst"
 )
@@ -11,7 +12,10 @@ func GetKeyFromField(field reflect.StructField, fallback string, tag *string) st
 	if tag != nil {
 		fieldTag, ok := field.Tag.Lookup(*tag)
 		if ok {
-			return fieldTag
+			name, _, _ := strings.Cut(fieldTag, ",")
+			if name != "" {
+				return name
+			}
 		}
 	}
 	fieldTag, ok := field.Tag.Lookup(zconst.ZogTag)
