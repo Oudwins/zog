@@ -244,3 +244,35 @@ func TestPtrNullable_TypedNilInInterfaceStructField_EmitsSentinel(t *testing.T) 
 	assert.NoError(t, err)
 	assert.True(t, p.IsExplicitNull(dp.Get("Thing")))
 }
+
+func TestPtrNullable_SliceOfNullablePtr_TypedNilInInterfaceElementClears(t *testing.T) {
+	// []any element containing a typed-nil pointer: the Interface case of
+	// IsExplicitNullSource unwraps and emits the sentinel, Nullable clears.
+	schema := Slice(Ptr(String()).Nullable())
+	var out []*string
+	var typedNil *string
+	input := []any{"a", typedNil, "c"}
+	errs := schema.Parse(input, &out)
+	assert.Empty(t, errs)
+	assert.Len(t, out, 3)
+	assert.NotNil(t, out[0])
+	assert.Equal(t, "a", *out[0])
+	assert.Nil(t, out[1])
+	assert.NotNil(t, out[2])
+	assert.Equal(t, "c", *out[2])
+}
+
+func TestPtrNullable_SliceOfNullablePtr_DirectTypedNilElementEmitsSentinel(t *testing.T) {
+	// Direct typed slice []*string{nil}: the Pointer case of IsExplicitNullSource
+	// detects the nil pointer element and emits the sentinel. Non-nil elements in
+	// a typed pointer slice still do not parse cleanly into their inner schema
+	// value because zog's coercion pipeline doesn't dereference typed pointers,
+	// so we scope this test to the nil element behavior only.
+	schema := Slice(Ptr(String()).Nullable())
+	var out []*string
+	input := []*string{nil}
+	errs := schema.Parse(input, &out)
+	assert.Empty(t, errs)
+	assert.Len(t, out, 1)
+	assert.Nil(t, out[0])
+}

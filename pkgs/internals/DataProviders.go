@@ -48,19 +48,22 @@ func (s *StructDataProvider) Get(key string) any {
 	// A nil pointer or interface field is the struct-input equivalent of an
 	// explicit null key. Emit the sentinel so Nullable() can act on it.
 	// Non-Nullable schemas still short-circuit via IsParseZeroValue.
-	if isExplicitNullValue(field) {
+	if IsExplicitNullSource(field) {
 		return ExplicitNullMarker
 	}
 	return field.Interface()
 }
 
-// Reports whether a reflect.Value should be treated as an explicit null.
-// Covers nil pointer values and interface values holding a typed-nil pointer.
-// Non-pointer nillable kinds (slice/map/chan/func) are intentionally excluded:
-// a nil slice is not semantically an explicit null, and emitting the sentinel
-// for them would change behavior for non-Nullable schemas that currently
-// accept nil slices as empty input.
-func isExplicitNullValue(v reflect.Value) bool {
+// IsExplicitNullSource reports whether a reflect.Value should be treated as an
+// explicit null source (a nil pointer, or an interface wrapping a typed-nil
+// pointer). Non-pointer nillable kinds (slice/map/chan/func) are intentionally
+// excluded: a nil slice is not semantically an explicit null, and emitting the
+// sentinel for them would change behavior for non-Nullable schemas that
+// currently accept nil slices and maps as empty input.
+func IsExplicitNullSource(v reflect.Value) bool {
+	if !v.IsValid() {
+		return false
+	}
 	switch v.Kind() {
 	case reflect.Pointer:
 		return v.IsNil()
