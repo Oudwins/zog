@@ -49,7 +49,7 @@ func (s *StructDataProvider) Get(key string) any {
 	// explicit null key. Emit the sentinel so Nullable() can act on it.
 	// Non-Nullable schemas still short-circuit via IsParseZeroValue.
 	if IsExplicitNullSource(field) {
-		return ExplicitNullMarker
+		return ExplicitNullMarker()
 	}
 	return field.Interface()
 }
@@ -109,7 +109,7 @@ func (m *MapDataProvider[T]) Get(key string) any {
 	// distinguish it from an absent key. Typed maps never reach this branch
 	// because any(v) == nil is false for non-interface T.
 	if any(v) == nil {
-		return ExplicitNullMarker
+		return ExplicitNullMarker()
 	}
 	// MapDataProvider[any] may hold a typed-nil pointer (e.g. (*string)(nil))
 	// inside an otherwise non-nil interface. reflect sees through the interface
@@ -118,7 +118,7 @@ func (m *MapDataProvider[T]) Get(key string) any {
 	// emitting the sentinel for a nil slice value would change behavior for
 	// existing non-Nullable schemas that accept nil slices as empty input.
 	if rv := reflect.ValueOf(v); rv.Kind() == reflect.Pointer && rv.IsNil() {
-		return ExplicitNullMarker
+		return ExplicitNullMarker()
 	}
 	return v
 }

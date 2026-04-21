@@ -175,7 +175,7 @@ func (v *SliceSchema) process(ctx *p.SchemaCtx) {
 		// currently accept nil slices and maps as empty input.
 		var item any
 		if p.IsExplicitNullSource(elem) {
-			item = p.ExplicitNullMarker
+			item = p.ExplicitNullMarker()
 		} else {
 			item = elem.Interface()
 		}
