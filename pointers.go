@@ -13,6 +13,7 @@ var _ ComplexZogSchema = &PointerSchema{}
 type PointerSchema struct {
 	schema   ZogSchema
 	required *p.Test[any]
+	nullable bool
 	// postTransforms []PostTransform
 	// defaultVal     *any
 	// catch          *any
@@ -66,6 +67,16 @@ func (v *PointerSchema) process(ctx *p.SchemaCtx) {
 		}
 		ctx.Data = val
 	}
+
+	// Nullable clears the destination on explicit null. NotNil cannot be set here
+	// because Nullable and NotNil clear each other.
+	if v.nullable && p.IsExplicitNull(ctx.Data) {
+		rv := reflect.ValueOf(ctx.ValPtr)
+		destPtr := rv.Elem()
+		destPtr.Set(reflect.Zero(destPtr.Type()))
+		return
+	}
+
 	_, isEmptyStruct := ctx.Data.(*p.EmptyDataProvider)
 	// End of messy code
 
@@ -73,7 +84,13 @@ func (v *PointerSchema) process(ctx *p.SchemaCtx) {
 	if isZero {
 		if v.required != nil {
 			// We set the destination type to the schema type because pointer doesn't have any issue messages. They pass through to the schema type
-			ctx.AddIssue(ctx.IssueFromTest(v.required, ctx.Data).SetDType(v.schema.getType()))
+			issueVal := ctx.Data
+			if p.IsExplicitNull(issueVal) {
+				// Observable user intent is nil; keep the internal sentinel out of
+				// issues.
+				issueVal = nil
+			}
+			ctx.AddIssue(ctx.IssueFromTest(v.required, issueVal).SetDType(v.schema.getType()))
 		}
 		return
 	}
@@ -131,5 +148,17 @@ func (v *PointerSchema) NotNil(options ...TestOption) *PointerSchema {
 		opt(&r)
 	}
 	v.required = &r
+	v.nullable = false
+	return v
+}
+
+// Nullable makes the pointer schema treat explicit null input (e.g. JSON
+// null) as a request to clear the destination pointer. An absent key still
+// preserves the destination; only an explicit null clears it. Last-writer
+// wins against NotNil: calling Nullable clears a prior NotNil requirement,
+// and calling NotNil afterwards clears Nullable.
+func (v *PointerSchema) Nullable() *PointerSchema {
+	v.nullable = true
+	v.required = nil
 	return v
 }

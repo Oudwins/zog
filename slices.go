@@ -165,6 +165,12 @@ func (v *SliceSchema) process(ctx *p.SchemaCtx) {
 	defer subCtx.Free()
 	for idx := 0; idx < refVal.Len(); idx++ {
 		item := refVal.Index(idx).Interface()
+		// Untyped-nil slice elements map to the sentinel so Nullable() pointer
+		// schemas can clear the slot. Non-Nullable schemas treat the sentinel as
+		// zero via IsParseZeroValue.
+		if item == nil {
+			item = p.ExplicitNullMarker
+		}
 		ptr := destVal.Index(idx).Addr().Interface()
 		k := fmt.Sprintf("[%d]", idx)
 		subCtx.Data = item

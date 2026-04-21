@@ -45,6 +45,15 @@ func (s *StructDataProvider) Get(key string) any {
 	if !field.IsValid() {
 		return nil
 	}
+	// A nil pointer or interface field is the struct-input equivalent of an
+	// explicit null key. Emit the sentinel so Nullable() can act on it.
+	// Non-Nullable schemas still short-circuit via IsParseZeroValue.
+	switch field.Kind() {
+	case reflect.Pointer, reflect.Interface:
+		if field.IsNil() {
+			return ExplicitNullMarker
+		}
+	}
 	return field.Interface()
 }
 
@@ -75,6 +84,12 @@ func (m *MapDataProvider[T]) Get(key string) any {
 	v, ok := m.M[key]
 	if !ok {
 		return nil
+	}
+	// Present-with-nil emits the sentinel so Nullable() pointer schemas can
+	// distinguish it from an absent key. Typed maps never reach this branch
+	// because any(v) == nil is false for non-interface T.
+	if any(v) == nil {
+		return ExplicitNullMarker
 	}
 	return v
 }
@@ -135,6 +150,12 @@ func TryNewAnyDataProvider(val any) (DataProvider, error) {
 	dp, ok := val.(DataProvider)
 	if ok {
 		return dp, nil
+	}
+	// Sentinel must be handled before the reflect path. It is a non-nil pointer
+	// to a struct, so the Pointer/Struct cases below would wrap it as a
+	// StructDataProvider over ExplicitNull{}.
+	if IsExplicitNull(val) {
+		return &EmptyDataProvider{Underlying: val}, nil
 	}
 	if val == nil {
 		return &EmptyDataProvider{Underlying: val}, nil
