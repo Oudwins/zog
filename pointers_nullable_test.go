@@ -213,3 +213,34 @@ func TestPtrNullable_MapDataProvider_TypedMap_NoSentinel(t *testing.T) {
 	assert.False(t, p.IsExplicitNull(dp.Get("empty")))
 	assert.False(t, p.IsExplicitNull(dp.Get("missing")))
 }
+
+func TestPtrNullable_TypedNilInMapAnyValue_EmitsSentinel(t *testing.T) {
+	var typedNil *string
+	dp := p.NewSafeMapDataProvider(map[string]any{"tag": typedNil})
+	assert.True(t, p.IsExplicitNull(dp.Get("tag")))
+}
+
+func TestPtrNullable_TypedNilInMapAnyValue_ClearsPointer(t *testing.T) {
+	type Req struct {
+		Tag *string
+	}
+	schema := Struct(Shape{
+		"tag": Ptr(String()).Nullable(),
+	})
+	var typedNil *string
+	input := map[string]any{"tag": typedNil}
+	out := Req{Tag: nullableStrPtr("preexisting")}
+	errs := schema.Parse(input, &out)
+	assert.Empty(t, errs)
+	assert.Nil(t, out.Tag)
+}
+
+func TestPtrNullable_TypedNilInInterfaceStructField_EmitsSentinel(t *testing.T) {
+	type Req struct {
+		Thing any
+	}
+	src := Req{Thing: (*string)(nil)}
+	dp, err := p.TryNewAnyDataProvider(src)
+	assert.NoError(t, err)
+	assert.True(t, p.IsExplicitNull(dp.Get("Thing")))
+}

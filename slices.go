@@ -167,7 +167,10 @@ func (v *SliceSchema) process(ctx *p.SchemaCtx) {
 		item := refVal.Index(idx).Interface()
 		// Untyped-nil slice elements map to the sentinel so Nullable() pointer
 		// schemas can clear the slot. Non-Nullable schemas treat the sentinel as
-		// zero via IsParseZeroValue.
+		// zero via IsParseZeroValue. Typed-nil elements in typed slices (e.g.
+		// []*string{nil}) are intentionally not caught here: detecting them
+		// requires a reflect-based IsNil check per element, and the primary
+		// JSON decode path produces []any, not typed slices.
 		if item == nil {
 			item = p.ExplicitNullMarker
 		}

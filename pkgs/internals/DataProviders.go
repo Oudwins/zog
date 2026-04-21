@@ -48,13 +48,30 @@ func (s *StructDataProvider) Get(key string) any {
 	// A nil pointer or interface field is the struct-input equivalent of an
 	// explicit null key. Emit the sentinel so Nullable() can act on it.
 	// Non-Nullable schemas still short-circuit via IsParseZeroValue.
-	switch field.Kind() {
-	case reflect.Pointer, reflect.Interface:
-		if field.IsNil() {
-			return ExplicitNullMarker
-		}
+	if isExplicitNullValue(field) {
+		return ExplicitNullMarker
 	}
 	return field.Interface()
+}
+
+// Reports whether a reflect.Value should be treated as an explicit null.
+// Covers nil pointer values and interface values holding a typed-nil pointer.
+// Non-pointer nillable kinds (slice/map/chan/func) are intentionally excluded:
+// a nil slice is not semantically an explicit null, and emitting the sentinel
+// for them would change behavior for non-Nullable schemas that currently
+// accept nil slices as empty input.
+func isExplicitNullValue(v reflect.Value) bool {
+	switch v.Kind() {
+	case reflect.Pointer:
+		return v.IsNil()
+	case reflect.Interface:
+		if v.IsNil() {
+			return true
+		}
+		inner := v.Elem()
+		return inner.Kind() == reflect.Pointer && inner.IsNil()
+	}
+	return false
 }
 
 func (s *StructDataProvider) GetByField(field reflect.StructField, fallback string) (any, string) {
@@ -89,6 +106,15 @@ func (m *MapDataProvider[T]) Get(key string) any {
 	// distinguish it from an absent key. Typed maps never reach this branch
 	// because any(v) == nil is false for non-interface T.
 	if any(v) == nil {
+		return ExplicitNullMarker
+	}
+	// MapDataProvider[any] may hold a typed-nil pointer (e.g. (*string)(nil))
+	// inside an otherwise non-nil interface. reflect sees through the interface
+	// to the concrete nil pointer; treat that as an explicit null too. Other
+	// nillable kinds (slice/map/chan/func) are intentionally not handled here:
+	// emitting the sentinel for a nil slice value would change behavior for
+	// existing non-Nullable schemas that accept nil slices as empty input.
+	if rv := reflect.ValueOf(v); rv.Kind() == reflect.Pointer && rv.IsNil() {
 		return ExplicitNullMarker
 	}
 	return v
