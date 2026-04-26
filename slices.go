@@ -164,21 +164,7 @@ func (v *SliceSchema) process(ctx *p.SchemaCtx) {
 	subCtx := ctx.NewSchemaCtx(ctx.Data, ctx.ValPtr, ctx.Path, v.schema.getType())
 	defer subCtx.Free()
 	for idx := 0; idx < refVal.Len(); idx++ {
-		elem := refVal.Index(idx)
-		// Nil pointer elements (both untyped []any{..., nil} and typed
-		// []*T{..., nil}) and interface elements wrapping a typed-nil pointer map
-		// to the sentinel so Nullable() pointer schemas can clear the slot.
-		// Non-Nullable schemas treat the sentinel as zero via IsParseZeroValue.
-		// Non-pointer nillable kinds (slice/map/chan/func) are not caught here on
-		// purpose: a nil sub-slice is not semantically explicit null and emitting
-		// the sentinel would change behavior for non-Nullable schemas that
-		// currently accept nil slices and maps as empty input.
-		var item any
-		if p.IsExplicitNullSource(elem) {
-			item = p.ExplicitNullMarker()
-		} else {
-			item = elem.Interface()
-		}
+		item := refVal.Index(idx).Interface()
 		ptr := destVal.Index(idx).Addr().Interface()
 		k := fmt.Sprintf("[%d]", idx)
 		subCtx.Data = item

@@ -46,8 +46,8 @@ func (s *StructDataProvider) Get(key string) any {
 		return nil
 	}
 	// A nil pointer or interface field is the struct-input equivalent of an
-	// explicit null key. Emit the sentinel so Nullable() can act on it.
-	// Non-Nullable schemas still short-circuit via IsParseZeroValue.
+	// explicit null key. Emit the sentinel so pointer schemas can clear the
+	// destination. Non-pointer schemas still short-circuit via IsParseZeroValue.
 	if IsExplicitNullSource(field) {
 		return ExplicitNullMarker()
 	}
@@ -58,7 +58,7 @@ func (s *StructDataProvider) Get(key string) any {
 // explicit null source (a nil pointer, or an interface wrapping a typed-nil
 // pointer). Non-pointer nillable kinds (slice/map/chan/func) are intentionally
 // excluded: a nil slice is not semantically an explicit null, and emitting the
-// sentinel for them would change behavior for non-Nullable schemas that
+// sentinel for them would change behavior for non-pointer schemas that
 // currently accept nil slices and maps as empty input.
 func IsExplicitNullSource(v reflect.Value) bool {
 	if !v.IsValid() {
@@ -105,9 +105,9 @@ func (m *MapDataProvider[T]) Get(key string) any {
 	if !ok {
 		return nil
 	}
-	// Present-with-nil emits the sentinel so Nullable() pointer schemas can
-	// distinguish it from an absent key. Typed maps never reach this branch
-	// because any(v) == nil is false for non-interface T.
+	// Present-with-nil emits the sentinel so pointer schemas can distinguish it
+	// from an absent key. Typed maps never reach this branch because
+	// any(v) == nil is false for non-interface T.
 	if any(v) == nil {
 		return ExplicitNullMarker()
 	}
@@ -116,7 +116,7 @@ func (m *MapDataProvider[T]) Get(key string) any {
 	// to the concrete nil pointer; treat that as an explicit null too. Other
 	// nillable kinds (slice/map/chan/func) are intentionally not handled here:
 	// emitting the sentinel for a nil slice value would change behavior for
-	// existing non-Nullable schemas that accept nil slices as empty input.
+	// existing non-pointer schemas that accept nil slices as empty input.
 	if rv := reflect.ValueOf(v); rv.Kind() == reflect.Pointer && rv.IsNil() {
 		return ExplicitNullMarker()
 	}

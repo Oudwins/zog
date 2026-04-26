@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	p "github.com/Oudwins/zog/pkgs/internals"
-	"github.com/Oudwins/zog/zconst"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -15,7 +14,7 @@ func TestPtrNullable_AbsentKeyPreservesExistingValue(t *testing.T) {
 		Tag *string
 	}
 	schema := Struct(Shape{
-		"tag": Ptr(String()).Nullable(),
+		"tag": Ptr(String()),
 	})
 	out := Req{Tag: nullableStrPtr("keep-me")}
 	errs := schema.Parse(map[string]any{}, &out)
@@ -29,7 +28,7 @@ func TestPtrNullable_ExplicitNullClearsPointer(t *testing.T) {
 		Tag *string
 	}
 	schema := Struct(Shape{
-		"tag": Ptr(String()).Nullable(),
+		"tag": Ptr(String()),
 	})
 	out := Req{Tag: nullableStrPtr("clear-me")}
 	errs := schema.Parse(map[string]any{"tag": nil}, &out)
@@ -42,55 +41,13 @@ func TestPtrNullable_ConcreteValueOverwrites(t *testing.T) {
 		Tag *string
 	}
 	schema := Struct(Shape{
-		"tag": Ptr(String()).Nullable(),
+		"tag": Ptr(String()),
 	})
 	var out Req
 	errs := schema.Parse(map[string]any{"tag": "v"}, &out)
 	assert.Empty(t, errs)
 	assert.NotNil(t, out.Tag)
 	assert.Equal(t, "v", *out.Tag)
-}
-
-func TestPtrNullable_WithoutOptIn_ExplicitNullPreserves(t *testing.T) {
-	type Req struct {
-		Tag *string
-	}
-	schema := Struct(Shape{
-		"tag": Ptr(String()),
-	})
-	out := Req{Tag: nullableStrPtr("keep-me")}
-	errs := schema.Parse(map[string]any{"tag": nil}, &out)
-	assert.Empty(t, errs)
-	assert.NotNil(t, out.Tag)
-	assert.Equal(t, "keep-me", *out.Tag)
-}
-
-func TestPtrNullable_NotNilAfterNullable_NotNilWins(t *testing.T) {
-	type Req struct {
-		Tag *string
-	}
-	schema := Struct(Shape{
-		"tag": Ptr(String()).Nullable().NotNil(),
-	})
-	out := Req{Tag: nullableStrPtr("keep-me")}
-	errs := schema.Parse(map[string]any{"tag": nil}, &out)
-	assert.NotEmpty(t, errs)
-	assert.Equal(t, zconst.IssueCodeNotNil, errs[0].Code)
-	assert.NotNil(t, out.Tag)
-	assert.Equal(t, "keep-me", *out.Tag)
-}
-
-func TestPtrNullable_NullableAfterNotNil_NullableWins(t *testing.T) {
-	type Req struct {
-		Tag *string
-	}
-	schema := Struct(Shape{
-		"tag": Ptr(String()).NotNil().Nullable(),
-	})
-	out := Req{Tag: nullableStrPtr("clear-me")}
-	errs := schema.Parse(map[string]any{"tag": nil}, &out)
-	assert.Empty(t, errs)
-	assert.Nil(t, out.Tag)
 }
 
 func TestPtrNullable_NestedStructPointer_NullClearsOuter(t *testing.T) {
@@ -103,7 +60,7 @@ func TestPtrNullable_NestedStructPointer_NullClearsOuter(t *testing.T) {
 	schema := Struct(Shape{
 		"inner": Ptr(Struct(Shape{
 			"v": Int(),
-		})).Nullable(),
+		})),
 	})
 	out := Outer{Inner: &Inner{V: 42}}
 	errs := schema.Parse(map[string]any{"inner": nil}, &out)
@@ -136,7 +93,7 @@ func TestPtrNullable_DoublePointer_OuterNullable(t *testing.T) {
 		V **string
 	}
 	schema := Struct(Shape{
-		"v": Ptr(Ptr(String())).Nullable(),
+		"v": Ptr(Ptr(String())),
 	})
 	inner := "keep"
 	outer := &inner
@@ -147,7 +104,7 @@ func TestPtrNullable_DoublePointer_OuterNullable(t *testing.T) {
 }
 
 func TestPtrNullable_SliceOfNullablePtr(t *testing.T) {
-	schema := Slice(Ptr(String()).Nullable())
+	schema := Slice(Ptr(String()))
 	var out []*string
 	errs := schema.Parse([]any{"a", nil, "c"}, &out)
 	assert.Empty(t, errs)
@@ -166,7 +123,7 @@ func TestPtrNullable_StructInput_NilFieldClears(t *testing.T) {
 		Tag *string
 	}
 	schema := Struct(Shape{
-		"Tag": Ptr(String()).Nullable(),
+		"Tag": Ptr(String()),
 	})
 	src := Req{Tag: nil}
 	dst := Req{Tag: nullableStrPtr("clear-me")}
@@ -176,7 +133,7 @@ func TestPtrNullable_StructInput_NilFieldClears(t *testing.T) {
 }
 
 func TestPtrNullable_TopLevelBareNilDoesNotClear(t *testing.T) {
-	schema := Ptr(String()).Nullable()
+	schema := Ptr(String())
 	dest := nullableStrPtr("keep")
 	errs := schema.Parse(nil, &dest)
 	assert.Empty(t, errs)
@@ -225,7 +182,7 @@ func TestPtrNullable_TypedNilInMapAnyValue_ClearsPointer(t *testing.T) {
 		Tag *string
 	}
 	schema := Struct(Shape{
-		"tag": Ptr(String()).Nullable(),
+		"tag": Ptr(String()),
 	})
 	var typedNil *string
 	input := map[string]any{"tag": typedNil}
@@ -245,34 +202,3 @@ func TestPtrNullable_TypedNilInInterfaceStructField_EmitsSentinel(t *testing.T) 
 	assert.True(t, p.IsExplicitNull(dp.Get("Thing")))
 }
 
-func TestPtrNullable_SliceOfNullablePtr_TypedNilInInterfaceElementClears(t *testing.T) {
-	// []any element containing a typed-nil pointer: the Interface case of
-	// IsExplicitNullSource unwraps and emits the sentinel, Nullable clears.
-	schema := Slice(Ptr(String()).Nullable())
-	var out []*string
-	var typedNil *string
-	input := []any{"a", typedNil, "c"}
-	errs := schema.Parse(input, &out)
-	assert.Empty(t, errs)
-	assert.Len(t, out, 3)
-	assert.NotNil(t, out[0])
-	assert.Equal(t, "a", *out[0])
-	assert.Nil(t, out[1])
-	assert.NotNil(t, out[2])
-	assert.Equal(t, "c", *out[2])
-}
-
-func TestPtrNullable_SliceOfNullablePtr_DirectTypedNilElementEmitsSentinel(t *testing.T) {
-	// Direct typed slice []*string{nil}: the Pointer case of IsExplicitNullSource
-	// detects the nil pointer element and emits the sentinel. Non-nil elements in
-	// a typed pointer slice still do not parse cleanly into their inner schema
-	// value because zog's coercion pipeline doesn't dereference typed pointers,
-	// so we scope this test to the nil element behavior only.
-	schema := Slice(Ptr(String()).Nullable())
-	var out []*string
-	input := []*string{nil}
-	errs := schema.Parse(input, &out)
-	assert.Empty(t, errs)
-	assert.Len(t, out, 1)
-	assert.Nil(t, out[0])
-}

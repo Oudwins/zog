@@ -22,7 +22,7 @@ func IsParseZeroValue(val any, ctx Ctx) bool {
 
 // ExplicitNull is a sentinel for "key present with nil value" (e.g. JSON null)
 // as opposed to "key absent". MapDataProvider.Get collapses both to bare nil
-// without it, so PointerSchema.Nullable() has nothing to act on.
+// without it, so pointer schemas cannot distinguish the two cases.
 type ExplicitNull struct{}
 
 // Unexported so external code cannot reassign or nil it out. Detection is
