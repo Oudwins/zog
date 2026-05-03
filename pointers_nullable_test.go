@@ -116,22 +116,6 @@ func TestPtrNullable_SliceOfNullablePtr(t *testing.T) {
 	assert.Equal(t, "c", *out[2])
 }
 
-func TestPtrNullable_StructInput_NilFieldClears(t *testing.T) {
-	// Shape key must match the Go field name for struct-to-struct parsing
-	// because StructDataProvider.Get uses FieldByName on the resolved key.
-	type Req struct {
-		Tag *string
-	}
-	schema := Struct(Shape{
-		"Tag": Ptr(String()),
-	})
-	src := Req{Tag: nil}
-	dst := Req{Tag: nullableStrPtr("clear-me")}
-	errs := schema.Parse(src, &dst)
-	assert.Empty(t, errs)
-	assert.Nil(t, dst.Tag)
-}
-
 func TestPtrNullable_TopLevelBareNilDoesNotClear(t *testing.T) {
 	schema := Ptr(String())
 	dest := nullableStrPtr("keep")
@@ -191,14 +175,3 @@ func TestPtrNullable_TypedNilInMapAnyValue_ClearsPointer(t *testing.T) {
 	assert.Empty(t, errs)
 	assert.Nil(t, out.Tag)
 }
-
-func TestPtrNullable_TypedNilInInterfaceStructField_EmitsSentinel(t *testing.T) {
-	type Req struct {
-		Thing any
-	}
-	src := Req{Thing: (*string)(nil)}
-	dp, err := p.TryNewAnyDataProvider(src)
-	assert.NoError(t, err)
-	assert.True(t, p.IsExplicitNull(dp.Get("Thing")))
-}
-

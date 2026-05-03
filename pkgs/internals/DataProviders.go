@@ -45,36 +45,7 @@ func (s *StructDataProvider) Get(key string) any {
 	if !field.IsValid() {
 		return nil
 	}
-	// A nil pointer or interface field is the struct-input equivalent of an
-	// explicit null key. Emit the sentinel so pointer schemas can clear the
-	// destination. Non-pointer schemas still short-circuit via IsParseZeroValue.
-	if IsExplicitNullSource(field) {
-		return ExplicitNullMarker()
-	}
 	return field.Interface()
-}
-
-// IsExplicitNullSource reports whether a reflect.Value should be treated as an
-// explicit null source (a nil pointer, or an interface wrapping a typed-nil
-// pointer). Non-pointer nillable kinds (slice/map/chan/func) are intentionally
-// excluded: a nil slice is not semantically an explicit null, and emitting the
-// sentinel for them would change behavior for non-pointer schemas that
-// currently accept nil slices and maps as empty input.
-func IsExplicitNullSource(v reflect.Value) bool {
-	if !v.IsValid() {
-		return false
-	}
-	switch v.Kind() {
-	case reflect.Pointer:
-		return v.IsNil()
-	case reflect.Interface:
-		if v.IsNil() {
-			return true
-		}
-		inner := v.Elem()
-		return inner.Kind() == reflect.Pointer && inner.IsNil()
-	}
-	return false
 }
 
 func (s *StructDataProvider) GetByField(field reflect.StructField, fallback string) (any, string) {
@@ -105,18 +76,14 @@ func (m *MapDataProvider[T]) Get(key string) any {
 	if !ok {
 		return nil
 	}
-	// Present-with-nil emits the sentinel so pointer schemas can distinguish it
-	// from an absent key. Typed maps never reach this branch because
-	// any(v) == nil is false for non-interface T.
+	// Present with nil emits the sentinel so pointer schemas can distinguish it
+	// from an absent key.
 	if any(v) == nil {
 		return ExplicitNullMarker()
 	}
-	// MapDataProvider[any] may hold a typed-nil pointer (e.g. (*string)(nil))
-	// inside an otherwise non-nil interface. reflect sees through the interface
-	// to the concrete nil pointer; treat that as an explicit null too. Other
-	// nillable kinds (slice/map/chan/func) are intentionally not handled here:
-	// emitting the sentinel for a nil slice value would change behavior for
-	// existing non-pointer schemas that accept nil slices as empty input.
+	// A typed nil pointer inside an interface like (*string) is not == nil but is
+	// still semantically an explicit null. Other nillable kinds are excluded, a
+	// nil slice is accepted as empty input by non-pointer schemas today.
 	if rv := reflect.ValueOf(v); rv.Kind() == reflect.Pointer && rv.IsNil() {
 		return ExplicitNullMarker()
 	}
@@ -180,13 +147,9 @@ func TryNewAnyDataProvider(val any) (DataProvider, error) {
 	if ok {
 		return dp, nil
 	}
-	// Sentinel must be handled before the reflect path. It is a non-nil pointer
-	// to a struct, so the Pointer/Struct cases below would wrap it as a
-	// StructDataProvider over ExplicitNull{}.
-	if IsExplicitNull(val) {
-		return &EmptyDataProvider{Underlying: val}, nil
-	}
-	if val == nil {
+	// Here we treat the sentinel and a nil (absence) as the same because we are
+	// at the top level, for individual fields we do a different behavior.
+	if IsExplicitNull(val) || val == nil {
 		return &EmptyDataProvider{Underlying: val}, nil
 	}
 	x := reflect.ValueOf(val)

@@ -25,13 +25,9 @@ func IsParseZeroValue(val any, ctx Ctx) bool {
 // without it, so pointer schemas cannot distinguish the two cases.
 type ExplicitNull struct{}
 
-// Unexported so external code cannot reassign or nil it out. Detection is
-// type-based via IsExplicitNull, so any *ExplicitNull instance would still
-// match, but emission paths need a stable singleton to return.
+// Unexported so external packages cannot reassign the singleton.
 var explicitNullMarker = &ExplicitNull{}
 
-// ExplicitNullMarker returns the canonical sentinel instance for emission sites
-// that need to signal "present with nil value" to downstream schemas.
 func ExplicitNullMarker() *ExplicitNull {
 	return explicitNullMarker
 }
