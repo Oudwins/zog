@@ -19,7 +19,7 @@ Before you start working on a contribution, create an issue describing what you 
 
 ## Prerequisites
 
-I encourage you to at least read through the zog.dev docs, focusing on the [Core Concepts](https:/zog.dev/core-concepts) and the [Core Design Decisions](https:/zog.dev/philosophy/core-design-decisions) sections.
+I encourage you to at least read through the zog.dev docs, focusing on the [Core Concepts](https://zog.dev/core-concepts) and the [Core Design Decisions](https://zog.dev/philosophy/core-design-decisions) sections.
 
 ### Setting up the development environment
 

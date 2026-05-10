@@ -15,7 +15,7 @@ Most of the time, you will be interacting with Zog issues through:
 
 [Zod](https://github.com/colinhacks/zod) has both _Errors_ and _Issues_. An _Issue_ is the structured validation result produced by Zod, while an _Error_ is the underlying exception that may have caused the issue.
 
-In Zog, errors are never thrown directly; validation tests returns issues instead. Each issue may optionally contain an underlying error that provides additional internal context.
+In Zog, errors are never thrown directly; validation tests return issues instead. Each issue may optionally contain an underlying error that provides additional internal context.
 
 For example, a JSON unmarshalling failure may produce a low-level error. Rather than exposing that raw error to the user, Zog wraps it in a `z.Issue`, preserving the internal cause while presenting a consistent validation interface.
 
