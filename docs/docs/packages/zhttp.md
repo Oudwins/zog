@@ -49,7 +49,7 @@ func handlePostRequest(w http.ResponseWriter, r *http.Request) {
 
 ## Behaviour on unmarshal errors
 
-If the json, form or query params are not valid, a top level `ZogIssue` will be generated with the `IssueCode` `IssueCodeInvalidJSON` or `IssueCodeZHTTPInvalidForm` or `IssueCodeZHTTPInvalidQuery` and the schema will not be run.
+If the json, form or query params are not valid, a top level `ZogIssue` will be generated with one of the following issue codes: `IssueCodeInvalidJSON`, `IssueCodeZHTTPInvalidForm` or `IssueCodeZHTTPInvalidQuery`, and the schema will not be run.
 
 ## Complex Forms
 

@@ -65,7 +65,7 @@ sessionSchema := z.String().Test(z.Test{
 
 ## Making Reusable Tests
 
-In general I recommend you wrap you reusable tests in a function. Here are examples for both simple and complex tests:
+In general, I recommend you wrap your reusable tests in a function. Here are examples for both simple and complex tests:
 
 ```go
 
