@@ -491,7 +491,7 @@ const schemaData = [
 
 export default function MyTable() {
   return (
-    <div className="">
+    <div className="sticky-table">
       <table>
         <thead>
           <tr>

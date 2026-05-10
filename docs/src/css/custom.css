@@ -44,3 +44,26 @@
 .sidebar-item--hidden {
   display: none !important;
 }
+
+.sticky-table {
+	max-height: 600px;
+	overflow-y: auto;
+}
+
+.sticky-table table {
+	display: table;
+	width: 100%;
+}
+
+.sticky-table thead {
+	position: sticky;
+	top: 0;
+	z-index: 1;
+	border-collapse: separate;
+}
+
+.sticky-table thead th {
+	z-index: 0;
+	background-color: var(--ifm-color-emphasis-100);
+	background-clip: padding-box;
+}
