@@ -13,7 +13,7 @@ Most of the time, you will be interacting with Zog issues through:
 - [Creating custom issue messages](/errors/custom-messages)
 - [Formatting issue responses](/errors/formatting)
 
-[Zod](https://github.com/colinhacks/zod) has both _Errors_ and _Issues_. An _Issue_ is the structured validation result produced by Zod, while an _Error_ is the underlying exception that may have caused the issue.
+[Zod](https://github.com/colinhacks/zod) has both *Errors* and *Issues*. An *Issue* is the structured validation result produced by Zod, while an *Error* is the underlying exception that may have caused the issue.
 
 In Zog, errors are never thrown directly; validation tests return issues instead. Each issue may optionally contain an underlying error that provides additional internal context.
 
