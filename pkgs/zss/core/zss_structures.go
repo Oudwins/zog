@@ -42,9 +42,15 @@ type ZSSGoType struct {
 	Display string `json:"display"` // Full type string (e.g., "*mypkg.User", "[]string")
 }
 
+type ZSSExtension struct {
+	URI     string `json:"uri"`
+	Content any    `json:"content,omitempty"`
+}
+
 type ZSSSchema struct {
 	Ref          *string               `json:"$ref,omitempty"`
 	Kind         zconst.ZogType        `json:"kind,omitempty"`    // "string", "number", "bool", "time", "slice", "struct", "ptr"
+	Extension    *ZSSExtension         `json:"extension,omitempty"`
 	GoTypes      []ZSSGoType           `json:"goTypes,omitempty"` // Type metadata (only if ZSS Exhaustive Metadata is enabled)
 	Format       *string               `json:"format,omitempty"`  // Used for time.Time schemas only right now. (Only if ZSS Exhaustive Metadata is enabled)
 	Processors   []ZSSProcessor        `json:"processors,omitempty"`

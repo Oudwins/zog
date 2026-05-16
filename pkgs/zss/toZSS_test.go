@@ -720,3 +720,97 @@ func TestToJsonRecursiveMultipleCallsUseIndependentContext(t *testing.T) {
 	assert.Len(t, first.Defs, 1)
 	assert.Len(t, second.Defs, 1)
 }
+
+func TestZSSExtensionMarshalsURIAndContent(t *testing.T) {
+	schema := zss.ZSSSchema{
+		Kind: "custom",
+		Extension: &zss.ZSSExtension{
+			URI: "https://example.com/zss/extensions/money/1.0.0/schema.json",
+			Content: map[string]any{
+				"currency":  "USD",
+				"precision": 2,
+			},
+		},
+	}
+
+	serialized, err := json.Marshal(schema)
+	assert.Nil(t, err)
+	assert.Equal(t, normalize(`{
+		"kind":"custom",
+		"extension":{
+			"uri":"https://example.com/zss/extensions/money/1.0.0/schema.json",
+			"content":{
+				"currency":"USD",
+				"precision":2
+			}
+		}
+	}`), normalize(string(serialized)))
+}
+
+func TestZSSDocumentSchemaValidatesExtensionURI(t *testing.T) {
+	doc := zss.ZSSDocument{
+		URI: zss.ZSS_VERSION_LATEST,
+		Root: &zss.ZSSSchema{
+			Kind: "custom",
+			Extension: &zss.ZSSExtension{
+				URI:     "https://example.com/money/1.0.0/schema.json",
+				Content: []any{"currency", "precision"},
+			},
+		},
+	}
+
+	errList := zssschema.ZSSDocumentSchema.Validate(&doc)
+	assert.Empty(t, errList)
+}
+
+func TestZSSURIRegexAcceptsValidExtensionURIs(t *testing.T) {
+	validURIs := []string{
+		"https://example.com/money/1.0.0/schema.json",
+		"https://example.com/money/0.1.0/schema.json",
+		"https://example.com/zss/extensions/money/2.3.4-beta/schema.json",
+		"https://example.com/zss/extensions/money/2.3.4-beta.1/schema.json",
+	}
+
+	for _, uri := range validURIs {
+		t.Run(uri, func(t *testing.T) {
+			assert.True(t, zss.ZSS_URI_REGEX.MatchString(uri))
+		})
+	}
+}
+
+func TestZSSURIRegexRejectsInvalidExtensionURIs(t *testing.T) {
+	invalidURIs := []string{
+		"example.com/money/1.0.0/schema.json",
+		"https://example.com/money/1/schema.json",
+		"https://example.com/money/1.0/schema.json",
+		"https://example.com/money/v1.0.0/schema.json",
+		"https://example.com/money/1.0.0-alpha/schema.json",
+		"https://example.com/money/1.0.0-rc.1/schema.json",
+		"https://example.com/money/1.0.0+build/schema.json",
+		"https://example.com/money/01.0.0/schema.json",
+		"https://example.com/money/1.02.0/schema.json",
+		"https://example.com/money/1.0.0-beta.01/schema.json",
+	}
+
+	for _, uri := range invalidURIs {
+		t.Run(uri, func(t *testing.T) {
+			assert.False(t, zss.ZSS_URI_REGEX.MatchString(uri))
+		})
+	}
+}
+
+func TestZSSURIRegexExtractsIDAndVersion(t *testing.T) {
+	uri := "https://example.com/zss/extensions/money/1.2.3-beta.1/schema.json"
+	matches := zss.ZSS_URI_REGEX.FindStringSubmatch(uri)
+	assert.NotNil(t, matches)
+
+	values := map[string]string{}
+	for i, name := range zss.ZSS_URI_REGEX.SubexpNames() {
+		if i != 0 && name != "" {
+			values[name] = matches[i]
+		}
+	}
+
+	assert.Equal(t, "https://example.com/zss/extensions/money", values["id"])
+	assert.Equal(t, "1.2.3-beta.1", values["version"])
+}

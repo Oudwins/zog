@@ -32,12 +32,19 @@ var ZSSProcessorSchema = z.Struct(z.Shape{
 	"transformer": z.Ptr(ZSSTransformerSchema),
 })
 
+// ZSSExtensionSchema defines the schema for ZSSExtension.
+var ZSSExtensionSchema = z.Struct(z.Shape{
+	"URI":     URISchema,
+	"content": z.EXPERIMENTAL_ANY(),
+})
+
 // ZSSSchemaSchema defines the schema for ZSSSchema.
 // Note: defaultValue and catchValue are intentionally loose because ZSS allows arbitrary values.
 var ZSSSchemaSchema = z.EXPERIMENTAL_RECURSIVE(func(self z.RecursiveSchema[*z.StructSchema]) *z.StructSchema {
 	return z.Struct(z.Shape{
 		"Ref":          z.Ptr(z.String()),
 		"kind":         z.String(),
+		"extension":    z.Ptr(ZSSExtensionSchema),
 		"goTypes":      z.Slice(ZSSGoTypeSchema),
 		"format":       z.Ptr(z.String()),
 		"processors":   z.Slice(ZSSProcessorSchema),
