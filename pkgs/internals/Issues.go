@@ -22,7 +22,7 @@ type ZogIssue struct {
 	Value any
 	// Dtype is the destination type. i.e The zconst.ZogType of the value that was validated.
 	// If using Schema.Parse(data, dest) then this will be the type of dest.
-	Dtype string
+	Dtype zconst.ZogType
 	// Params is the params map for the issue. Taken from the Test that caused the issue.
 	// This may be nil if Test has no params.
 	Params map[string]any
@@ -64,7 +64,7 @@ func (i *ZogIssue) SetValue(v any) *ZogIssue {
 }
 
 // SetDType sets the destination type for the issue and returns the issue for chaining
-func (i *ZogIssue) SetDType(t string) *ZogIssue {
+func (i *ZogIssue) SetDType(t zconst.ZogType) *ZogIssue {
 	i.Dtype = t
 	return i
 }

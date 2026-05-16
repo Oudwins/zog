@@ -3,6 +3,7 @@ package zssschema
 import (
 	z "github.com/Oudwins/zog"
 	zsscore "github.com/Oudwins/zog/pkgs/zss/core"
+	"github.com/Oudwins/zog/zconst"
 )
 
 // ZSSGoTypeSchema defines the schema for ZSSGoType
@@ -35,7 +36,7 @@ var ZSSProcessorSchema = z.Struct(z.Shape{
 // ZSSExtensionSchema defines the schema for ZSSExtension.
 var ZSSExtensionSchema = z.Struct(z.Shape{
 	"URI":     URISchema,
-	"content": z.EXPERIMENTAL_ANY(),
+	"Content": z.EXPERIMENTAL_ANY(),
 })
 
 // ZSSSchemaSchema defines the schema for ZSSSchema.
@@ -43,8 +44,8 @@ var ZSSExtensionSchema = z.Struct(z.Shape{
 var ZSSSchemaSchema = z.EXPERIMENTAL_RECURSIVE(func(self z.RecursiveSchema[*z.StructSchema]) *z.StructSchema {
 	return z.Struct(z.Shape{
 		"Ref":          z.Ptr(z.String()),
-		"kind":         z.String(),
-		"extension":    z.Ptr(ZSSExtensionSchema),
+		"kind":         z.StringLike[zconst.ZogType]().OneOf(zconst.ZogTypeValues),
+		"Extension":    z.Ptr(ZSSExtensionSchema),
 		"goTypes":      z.Slice(ZSSGoTypeSchema),
 		"format":       z.Ptr(z.String()),
 		"processors":   z.Slice(ZSSProcessorSchema),

@@ -35,6 +35,21 @@ const (
 	TypeAny        ZogType = "any"
 )
 
+var ZogTypeValues = []ZogType{
+	TypeString,
+	TypeNumber,
+	TypeBool,
+	TypeTime,
+	TypeSlice,
+	TypeMap,
+	TypeStruct,
+	TypePtr,
+	TypeCustom,
+	TypePreprocess,
+	TypeBoxed,
+	TypeAny,
+}
+
 // Deprecated: This will be removed in the future. Use z.ZogIssueCode instead
 type ZogErrCode = string
 

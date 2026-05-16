@@ -696,6 +696,12 @@ func TestZSSSchemaAllowsPureRef(t *testing.T) {
 	assert.Empty(t, errList)
 }
 
+func TestZSSSchemaRejectsUnknownKind(t *testing.T) {
+	schema := zss.ZSSSchema{Kind: "money"}
+	errList := zssschema.ZSSSchemaSchema.Validate(&schema)
+	assert.NotEmpty(t, errList)
+}
+
 func TestZSSRefSchemaMarshalsWithoutKind(t *testing.T) {
 	ref := zss.ZSSRefFromKey(1)
 	serialized, err := json.Marshal(zss.ZSSSchema{Ref: &ref})
