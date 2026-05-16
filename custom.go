@@ -98,7 +98,7 @@ type EXPERIMENTAL_PUBLIC_ZOG_SCHEMA interface {
 	Validate(ctx *p.SchemaCtx)
 	GetType() zconst.ZogType
 	SetCoercer(c CoercerFunc)
-	ToZSS() *zss.ZSSSchema
+	ToZSS(ctx *ZSSSerializeCtx) *zss.ZSSSchema
 }
 
 // Experimental API
@@ -129,6 +129,6 @@ func (c *CustomSchema) setCoercer(coercer CoercerFunc) {
 	c.schema.SetCoercer(coercer)
 }
 
-func (c *CustomSchema) toZSS(ctx *zssSerializeCtx) *zss.ZSSSchema {
-	return c.schema.ToZSS()
+func (c *CustomSchema) toZSS(ctx *ZSSSerializeCtx) *zss.ZSSSchema {
+	return c.schema.ToZSS(ctx)
 }
