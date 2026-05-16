@@ -51,9 +51,11 @@ var ZSSSchemaSchema = z.EXPERIMENTAL_RECURSIVE(func(self z.RecursiveSchema[*z.St
 	})
 })
 
+var URISchema = z.String().Match(zsscore.ZSS_URI_REGEX).Required()
+
 // ZSSDocumentSchema defines the schema for ZSSDocument
 var ZSSDocumentSchema = z.Struct(z.Shape{
-	"Version": z.String().Required(), // $Schema
-	"Root":    z.Ptr(ZSSSchemaSchema).NotNil(),
-	"Defs":    z.EXPERIMENTAL_MAP[string, *zsscore.ZSSSchema](z.String(), z.Ptr(ZSSSchemaSchema)),
+	"URI":  URISchema, // $Schema
+	"Root": z.Ptr(ZSSSchemaSchema).NotNil(),
+	"Defs": z.EXPERIMENTAL_MAP[string, *zsscore.ZSSSchema](z.String(), z.Ptr(ZSSSchemaSchema)),
 })

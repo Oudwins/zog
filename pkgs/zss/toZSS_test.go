@@ -115,7 +115,7 @@ func TestToJsonStructShape(t *testing.T) {
 	var doc zss.ZSSDocument
 	err = json.Unmarshal(serialized, &doc)
 	assert.Nil(t, err, "JSON should unmarshal successfully")
-	assert.Equal(t, zss.ZSS_VERSION_LATEST, doc.Version)
+	assert.Equal(t, zss.ZSS_VERSION_LATEST, doc.URI)
 	assert.NotNil(t, doc.Root)
 	assert.Equal(t, "struct", doc.Root.Kind)
 

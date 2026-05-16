@@ -31,7 +31,7 @@ func assertChildIsShape(t assert.TestingT, schema *zss.ZSSSchema, msgAndArgs ...
 
 // assertDocumentBasics asserts basic document invariants
 func assertDocumentBasics(t assert.TestingT, doc zss.ZSSDocument) bool {
-	if !assert.Equal(t, zss.ZSS_VERSION_LATEST, doc.Version, "document $schema should be latest") {
+	if !assert.Equal(t, zss.ZSS_VERSION_LATEST, doc.URI, "document $schema should be latest") {
 		return false
 	}
 	if !assert.NotNil(t, doc.Root, "document root should not be nil") {

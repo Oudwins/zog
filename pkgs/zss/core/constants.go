@@ -29,4 +29,4 @@ const (
 // - Version = 1.0.0
 const ZSS_URI_REGEX_PATTERN = `^(?P<id>https?://[A-Za-z0-9.-]+(?::[0-9]+)?(?:/[A-Za-z0-9._~!$&'()*+,;=:@%-]+)+)/(?P<version>(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)(?:-beta(?:\.(?:0|[1-9][0-9]*))?)?)/schema\.json$`
 
-var ZSS_VERSION_REGEX = regexp.MustCompile(ZSS_URI_REGEX_PATTERN)
+var ZSS_URI_REGEX = regexp.MustCompile(ZSS_URI_REGEX_PATTERN)

@@ -70,9 +70,9 @@ func EXPERIMENTAL_TO_ZSS(s ZSSSerializable) zss.ZSSDocument {
 	ctx := newZSSSerializeCtx()
 	j := s.toZSS(ctx)
 	return zss.ZSSDocument{
-		Version: zss.ZSS_VERSION_LATEST,
-		Root:    j,
-		Defs:    ctx.defs,
+		URI:  zss.ZSS_VERSION_LATEST,
+		Root: j,
+		Defs: ctx.defs,
 	}
 }
 
