@@ -53,7 +53,7 @@ var ZSSSchemaSchema = z.EXPERIMENTAL_RECURSIVE(func(self z.RecursiveSchema[*z.St
 
 // ZSSDocumentSchema defines the schema for ZSSDocument
 var ZSSDocumentSchema = z.Struct(z.Shape{
-	"Version": z.String().Required(),
+	"Version": z.String().Required(), // $Schema
 	"Root":    z.Ptr(ZSSSchemaSchema).NotNil(),
 	"Defs":    z.EXPERIMENTAL_MAP[string, *zsscore.ZSSSchema](z.String(), z.Ptr(ZSSSchemaSchema)),
 })

@@ -15,7 +15,7 @@ func ZSSDefKeyFromKey(key int) string {
 }
 
 type ZSSDocument struct {
-	Version ZSSVersion            `json:"$schema"` // URL to ZSS Json Schema file(e.g., "https://zog.dev/zss/0.0.1/schema.json")
+	Version ZSSSchemaVersion      `json:"$schema"` // URL to ZSS Json Schema file(e.g., "https://zog.dev/zss/0.0.1/schema.json")
 	Root    *ZSSSchema            `json:"root"`
 	Defs    map[string]*ZSSSchema `json:"$defs,omitempty"`
 }
