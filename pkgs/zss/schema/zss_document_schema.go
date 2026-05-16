@@ -2,6 +2,7 @@ package zssschema
 
 import (
 	z "github.com/Oudwins/zog"
+	zsscore "github.com/Oudwins/zog/pkgs/zss/core"
 )
 
 // ZSSGoTypeSchema defines the schema for ZSSGoType
@@ -17,12 +18,11 @@ var ZSSTransformerSchema = z.Struct(z.Shape{
 })
 
 // ZSSTestSchema defines the schema for ZSSTest
-// Note: params field (map[string]any) cannot be strictly validated, so it's omitted from the schema
 var ZSSTestSchema = z.Struct(z.Shape{
 	"id":        z.String().Required(),
 	"message":   z.String().Required(),
 	"issuePath": z.Slice(z.String()).Required(),
-	// params is map[string]any - cannot be strictly validated with zog schemas
+	"params":    z.EXPERIMENTAL_MAP[string, any](z.String(), z.EXPERIMENTAL_ANY()),
 })
 
 // ZSSProcessorSchema defines the schema for ZSSProcessor
@@ -32,20 +32,22 @@ var ZSSProcessorSchema = z.Struct(z.Shape{
 	"transformer": z.Ptr(ZSSTransformerSchema),
 })
 
-// ZSSSchemaSchema defines the schema for ZSSSchema
-// Note: recursive child slots, DefaultValue, and CatchValue cannot be strictly validated.
-var ZSSSchemaSchema = z.Struct(z.Shape{
-	"kind":       z.String().Required(),
-	"goTypes":    z.Slice(ZSSGoTypeSchema),
-	"format":     z.Ptr(z.String()),
-	"processors": z.Slice(ZSSProcessorSchema),
-	// fields is map[string]*ZSSSchema - cannot be strictly validated due to recursive nature
-	// element is *ZSSSchema - cannot be strictly validated due to recursive nature
-	// key is *ZSSSchema - cannot be strictly validated due to recursive nature
-	// value is *ZSSSchema - cannot be strictly validated due to recursive nature
-	"required": z.Ptr(ZSSTestSchema),
-	// defaultValue is any - cannot be strictly validated
-	// catchValue is any - cannot be strictly validated
+// ZSSSchemaSchema defines the schema for ZSSSchema.
+// Note: defaultValue and catchValue are intentionally loose because ZSS allows arbitrary values.
+var ZSSSchemaSchema = z.EXPERIMENTAL_RECURSIVE(func(self z.RecursiveSchema[*z.StructSchema]) *z.StructSchema {
+	return z.Struct(z.Shape{
+		"kind":         z.String().Required(),
+		"goTypes":      z.Slice(ZSSGoTypeSchema),
+		"format":       z.Ptr(z.String()),
+		"processors":   z.Slice(ZSSProcessorSchema),
+		"fields":       z.EXPERIMENTAL_MAP[string, *zsscore.ZSSSchema](z.String(), z.Ptr(self())),
+		"element":      z.Ptr(self()),
+		"key":          z.Ptr(self()),
+		"value":        z.Ptr(self()),
+		"required":     z.Ptr(ZSSTestSchema),
+		"defaultValue": z.EXPERIMENTAL_ANY(),
+		"catchValue":   z.EXPERIMENTAL_ANY(),
+	})
 })
 
 // ZSSDocumentSchema defines the schema for ZSSDocument
