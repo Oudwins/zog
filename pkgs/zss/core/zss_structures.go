@@ -4,7 +4,7 @@ import (
 	"strconv"
 
 	"github.com/Oudwins/zog/zconst"
-) // TODO make zog schemas for all of these to validate them!
+)
 
 func ZSSRefFromKey(key int) string {
 	return "#/$defs/" + ZSSDefKeyFromKey(key)
@@ -20,7 +20,7 @@ type ZSSDocument struct {
 	Defs map[string]*ZSSSchema `json:"$defs,omitempty"`
 }
 type ZSSProcessor struct {
-	Kind        zconst.ZogProcessor `json:"kind"` // "transform", "validator"
+	Kind        zconst.ZogProcessor `json:"kind"` // "test", "transform"
 	Test        *ZSSTest            `json:"test"`
 	Transformer *ZSSTransformer     `json:"transformer"`
 }
@@ -49,7 +49,7 @@ type ZSSExtension struct {
 
 type ZSSSchema struct {
 	Ref          *string               `json:"$ref,omitempty"`
-	Kind         zconst.ZogType        `json:"kind,omitempty"`    // "string", "number", "bool", "time", "slice", "struct", "ptr"
+	Kind         zconst.ZogType        `json:"kind,omitempty"` // "string", "number", "bool", "time", "slice", "map", "struct", "ptr", "custom", "preprocess", "boxed", "any"
 	Extension    *ZSSExtension         `json:"extension,omitempty"`
 	GoTypes      []ZSSGoType           `json:"goTypes,omitempty"` // Type metadata (only if ZSS Exhaustive Metadata is enabled)
 	Format       *string               `json:"format,omitempty"`  // Used for time.Time schemas only right now. (Only if ZSS Exhaustive Metadata is enabled)
