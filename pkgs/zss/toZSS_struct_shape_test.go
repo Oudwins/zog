@@ -11,11 +11,15 @@ import (
 )
 
 func TestStructShapeBasic(t *testing.T) {
+	type User struct {
+		Name string
+		Age  int
+	}
 	s := zog.Struct(zog.Shape{
 		"name": zog.String().Required(),
 		"age":  zog.Int().Optional(),
 	})
-	doc := zog.EXPERIMENTAL_TO_ZSS(s)
+	doc := zog.EXPERIMENTAL_TO_ZSS[User](s)
 
 	assertDocumentBasics(t, doc)
 	assertSchemaKind(t, doc.Root, "struct")
@@ -41,11 +45,15 @@ func TestStructShapeBasic(t *testing.T) {
 }
 
 func TestStructShapeWithDefaultsAndCatch(t *testing.T) {
+	type User struct {
+		Name string
+		Age  int
+	}
 	s := zog.Struct(zog.Shape{
 		"name": zog.String().Default("John"),
 		"age":  zog.Int().Catch(0),
 	})
-	doc := zog.EXPERIMENTAL_TO_ZSS(s)
+	doc := zog.EXPERIMENTAL_TO_ZSS[User](s)
 
 	assertDocumentBasics(t, doc)
 	childShape, ok := assertChildIsShape(t, doc.Root)
@@ -59,11 +67,15 @@ func TestStructShapeWithDefaultsAndCatch(t *testing.T) {
 }
 
 func TestStructShapeWithProcessors(t *testing.T) {
+	type User struct {
+		Email string
+		Count int
+	}
 	s := zog.Struct(zog.Shape{
 		"email": zog.String().Email().Min(5),
 		"count": zog.Int().GT(0).LT(100),
 	})
-	doc := zog.EXPERIMENTAL_TO_ZSS(s)
+	doc := zog.EXPERIMENTAL_TO_ZSS[User](s)
 
 	assertDocumentBasics(t, doc)
 	childShape, ok := assertChildIsShape(t, doc.Root)
@@ -81,12 +93,18 @@ func TestStructShapeWithProcessors(t *testing.T) {
 }
 
 func TestStructShapeNestedPtr(t *testing.T) {
+	type NestedUser struct {
+		Name string
+	}
+	type Root struct {
+		User *NestedUser
+	}
 	s := zog.Struct(zog.Shape{
 		"user": zog.Ptr(zog.Struct(zog.Shape{
 			"name": zog.String().Required(),
 		})),
 	})
-	doc := zog.EXPERIMENTAL_TO_ZSS(s)
+	doc := zog.EXPERIMENTAL_TO_ZSS[Root](s)
 
 	assertDocumentBasics(t, doc)
 	childShape, ok := assertChildIsShape(t, doc.Root)
@@ -109,10 +127,13 @@ func TestStructShapeNestedPtr(t *testing.T) {
 }
 
 func TestStructShapeNestedSlice(t *testing.T) {
+	type Root struct {
+		Tags []string
+	}
 	s := zog.Struct(zog.Shape{
 		"tags": zog.Slice(zog.String().Min(1)).Min(1),
 	})
-	doc := zog.EXPERIMENTAL_TO_ZSS(s)
+	doc := zog.EXPERIMENTAL_TO_ZSS[Root](s)
 
 	assertDocumentBasics(t, doc)
 	childShape, ok := assertChildIsShape(t, doc.Root)
@@ -132,6 +153,15 @@ func TestStructShapeNestedSlice(t *testing.T) {
 }
 
 func TestStructShapeDeeplyNested(t *testing.T) {
+	type Profile struct {
+		Bio string
+	}
+	type NestedUser struct {
+		Profile Profile
+	}
+	type Root struct {
+		User *NestedUser
+	}
 	s := zog.Struct(zog.Shape{
 		"user": zog.Ptr(zog.Struct(zog.Shape{
 			"profile": zog.Struct(zog.Shape{
@@ -139,7 +169,7 @@ func TestStructShapeDeeplyNested(t *testing.T) {
 			}),
 		})),
 	})
-	doc := zog.EXPERIMENTAL_TO_ZSS(s)
+	doc := zog.EXPERIMENTAL_TO_ZSS[Root](s)
 
 	assertDocumentBasics(t, doc)
 	childShape, ok := assertChildIsShape(t, doc.Root)
@@ -169,6 +199,14 @@ func TestStructShapeDeeplyNested(t *testing.T) {
 }
 
 func TestStructShapeWithMultipleComplexTypes(t *testing.T) {
+	type Meta struct {
+		Key string
+	}
+	type User struct {
+		Name   string
+		Emails []string
+		Meta   *Meta
+	}
 	s := zog.Struct(zog.Shape{
 		"name":   zog.String().Required(),
 		"emails": zog.Slice(zog.String().Email()).Min(1),
@@ -176,7 +214,7 @@ func TestStructShapeWithMultipleComplexTypes(t *testing.T) {
 			"key": zog.String(),
 		})),
 	})
-	doc := zog.EXPERIMENTAL_TO_ZSS(s)
+	doc := zog.EXPERIMENTAL_TO_ZSS[User](s)
 
 	assertDocumentBasics(t, doc)
 	childShape, ok := assertChildIsShape(t, doc.Root)
@@ -211,7 +249,7 @@ func TestStructShapeWithMultipleComplexTypes(t *testing.T) {
 
 func TestStructShapeEmpty(t *testing.T) {
 	s := zog.Struct(zog.Shape{})
-	doc := zog.EXPERIMENTAL_TO_ZSS(s)
+	doc := zog.EXPERIMENTAL_TO_ZSS[struct{}](s)
 
 	assertDocumentBasics(t, doc)
 	assertSchemaKind(t, doc.Root, "struct")
@@ -222,10 +260,13 @@ func TestStructShapeEmpty(t *testing.T) {
 }
 
 func TestStructShapeWithTransforms(t *testing.T) {
+	type User struct {
+		Name string
+	}
 	s := zog.Struct(zog.Shape{
 		"name": zog.String().Trim().Min(1),
 	})
-	doc := zog.EXPERIMENTAL_TO_ZSS(s)
+	doc := zog.EXPERIMENTAL_TO_ZSS[User](s)
 
 	assertDocumentBasics(t, doc)
 	childShape, ok := assertChildIsShape(t, doc.Root)
@@ -241,11 +282,15 @@ func TestStructShapeWithTransforms(t *testing.T) {
 }
 
 func TestStructShapeWithCustomMessages(t *testing.T) {
+	type User struct {
+		Email string
+		Age   int
+	}
 	s := zog.Struct(zog.Shape{
 		"email": zog.String().Email(zog.Message("Invalid email address")),
 		"age":   zog.Int().GT(0, zog.Message("Age must be positive")),
 	})
-	doc := zog.EXPERIMENTAL_TO_ZSS(s)
+	doc := zog.EXPERIMENTAL_TO_ZSS[User](s)
 
 	assertDocumentBasics(t, doc)
 	childShape, ok := assertChildIsShape(t, doc.Root)

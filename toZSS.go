@@ -20,13 +20,7 @@ const (
 )
 
 func getZSSGoType[T any]() zss.ZSSGoType {
-	var zero T
-	t := reflect.TypeOf(zero)
-
-	// If T is a pointer or interface, handle nil case
-	if t == nil {
-		t = reflect.TypeOf((*T)(nil)).Elem()
-	}
+	t := typeOf[T]()
 
 	return zss.ZSSGoType{
 		PkgPath: t.PkgPath(),
@@ -35,45 +29,137 @@ func getZSSGoType[T any]() zss.ZSSGoType {
 	}
 }
 
+func typeOf[T any]() reflect.Type {
+	return reflect.TypeOf((*T)(nil)).Elem()
+}
+
 type ZSSSerializable interface {
 	toZSS(*ZSSSerializeCtx) *zss.ZSSSchema
 }
 
 type ZSSSerializeCtx struct {
-	defs     map[string]*zss.ZSSSchema
-	defNames map[ZSSSerializable]int
-	nextDef  int
+	defs        map[string]*zss.ZSSSchema
+	defNames    map[ZSSSerializable]int
+	nextDef     *int
+	currentType reflect.Type
 }
 
 func newZSSSerializeCtx() *ZSSSerializeCtx {
 	return &ZSSSerializeCtx{
 		defs:     map[string]*zss.ZSSSchema{},
 		defNames: map[ZSSSerializable]int{},
+		nextDef:  new(int),
 	}
 }
 
-func (ctx *ZSSSerializeCtx) refFor(schema ZSSSerializable) *zss.ZSSSchema {
+func (ctx *ZSSSerializeCtx) withType(t reflect.Type) *ZSSSerializeCtx {
+	copy := *ctx
+	copy.currentType = t
+	return &copy
+}
+
+func (ctx *ZSSSerializeCtx) refFor(schema ZSSSerializable, typ reflect.Type) *zss.ZSSSchema {
 	if name, ok := ctx.defNames[schema]; ok {
 		ref := zss.ZSSRefFromKey(name)
 		return &zss.ZSSSchema{Ref: &ref}
 	}
 
-	ctx.nextDef++
-	name := ctx.nextDef
+	(*ctx.nextDef)++
+	name := *ctx.nextDef
 	ctx.defNames[schema] = name
-	ctx.defs[zss.ZSSDefKeyFromKey(name)] = schema.toZSS(ctx)
+	ctx.defs[zss.ZSSDefKeyFromKey(name)] = schema.toZSS(ctx.withType(typ))
 	ref := zss.ZSSRefFromKey(name)
 	return &zss.ZSSSchema{Ref: &ref}
 }
 
-func EXPERIMENTAL_TO_ZSS(s ZSSSerializable) zss.ZSSDocument {
+func EXPERIMENTAL_TO_ZSS[T any](s ZSSSerializable) zss.ZSSDocument {
 	ctx := newZSSSerializeCtx()
+	ctx.currentType = reflect.TypeOf((*T)(nil)).Elem()
 	j := s.toZSS(ctx)
 	return zss.ZSSDocument{
 		URI:  zss.ZSS_VERSION_LATEST,
 		Root: j,
 		Defs: ctx.defs,
 	}
+}
+
+func addCurrentGoType(schema *zss.ZSSSchema, ctx *ZSSSerializeCtx) {
+	if ctx.currentType == nil {
+		return
+	}
+	if isEmptyInterface(ctx.currentType) {
+		return
+	}
+	schema.GoTypes = []zss.ZSSGoType{goTypeFromReflect(ctx.currentType)}
+}
+
+func goTypeFromReflect(t reflect.Type) zss.ZSSGoType {
+	return zss.ZSSGoType{PkgPath: t.PkgPath(), Name: t.Name(), Display: t.String()}
+}
+
+func indirectType(t reflect.Type) reflect.Type {
+	for t != nil && t.Kind() == reflect.Ptr {
+		t = t.Elem()
+	}
+	return t
+}
+
+func fieldTypeForShapeKey(t reflect.Type, key string) (reflect.StructField, bool) {
+	t = indirectType(t)
+	if t == nil || t.Kind() != reflect.Struct {
+		return reflect.StructField{}, false
+	}
+	fieldName := key
+	if key[0] >= 'a' && key[0] <= 'z' {
+		var b [32]byte
+		copy(b[:], key)
+		b[0] -= 32
+		fieldName = string(b[:len(key)])
+	}
+	return t.FieldByName(fieldName)
+}
+
+func elementType(t reflect.Type) reflect.Type {
+	if t == nil {
+		return nil
+	}
+	switch t.Kind() {
+	case reflect.Ptr, reflect.Slice, reflect.Array:
+		return t.Elem()
+	default:
+		t = indirectType(t)
+		if t != nil && (t.Kind() == reflect.Slice || t.Kind() == reflect.Array) {
+			return t.Elem()
+		}
+		return nil
+	}
+}
+
+func mapKeyType(t reflect.Type) reflect.Type {
+	t = indirectType(t)
+	if t == nil || t.Kind() != reflect.Map {
+		return nil
+	}
+	return t.Key()
+}
+
+func mapValueType(t reflect.Type) reflect.Type {
+	t = indirectType(t)
+	if t == nil || t.Kind() != reflect.Map {
+		return nil
+	}
+	return t.Elem()
+}
+
+func isEmptyInterface(t reflect.Type) bool {
+	return t != nil && t.Kind() == reflect.Interface && t.NumMethod() == 0
+}
+
+func derivedType[T any](ctx *ZSSSerializeCtx) reflect.Type {
+	if isEmptyInterface(ctx.currentType) {
+		return nil
+	}
+	return typeOf[T]()
 }
 
 func (s *StringSchema[T]) toZSS(ctx *ZSSSerializeCtx) *zss.ZSSSchema {
@@ -86,9 +172,7 @@ func (s *StringSchema[T]) toZSS(ctx *ZSSSerializeCtx) *zss.ZSSSchema {
 		Processors:   processorsToZSS(rvP, zconst.TypeString),
 	}
 
-	if EXHAUSTIVE_METADATA {
-		j.GoTypes = []zss.ZSSGoType{getZSSGoType[T]()}
-	}
+	addCurrentGoType(&j, ctx)
 
 	return &j
 }
@@ -103,9 +187,7 @@ func (s *NumberSchema[T]) toZSS(ctx *ZSSSerializeCtx) *zss.ZSSSchema {
 		Processors:   processorsToZSS(rvP, zconst.TypeNumber),
 	}
 
-	if EXHAUSTIVE_METADATA {
-		j.GoTypes = []zss.ZSSGoType{getZSSGoType[T]()}
-	}
+	addCurrentGoType(&j, ctx)
 	return &j
 }
 
@@ -119,9 +201,7 @@ func (s *BoolSchema[T]) toZSS(ctx *ZSSSerializeCtx) *zss.ZSSSchema {
 		Processors:   processorsToZSS(rvP, zconst.TypeBool),
 	}
 
-	if EXHAUSTIVE_METADATA {
-		j.GoTypes = []zss.ZSSGoType{getZSSGoType[T]()}
-	}
+	addCurrentGoType(&j, ctx)
 	return &j
 }
 
@@ -138,6 +218,7 @@ func (s *TimeSchema) toZSS(ctx *ZSSSerializeCtx) *zss.ZSSSchema {
 		str := x.(string)
 		j.Format = &str
 	}
+	addCurrentGoType(&j, ctx)
 	return &j
 }
 
@@ -145,8 +226,9 @@ func (s *PointerSchema) toZSS(ctx *ZSSSerializeCtx) *zss.ZSSSchema {
 	j := zss.ZSSSchema{
 		Kind:     zconst.TypePtr,
 		Required: toZSSRequired(s.required, s.schema.getType()),
-		Element:  s.schema.toZSS(ctx),
+		Element:  s.schema.toZSS(ctx.withType(elementType(ctx.currentType))),
 	}
+	addCurrentGoType(&j, ctx)
 	return &j
 }
 
@@ -157,8 +239,9 @@ func (s *SliceSchema) toZSS(ctx *ZSSSerializeCtx) *zss.ZSSSchema {
 		Required:     toZSSRequired(s.required, zconst.TypeSlice),
 		DefaultValue: defaultValueFromAnyFunc(s.defaultFunc),
 		Processors:   processorsToZSS(rvP, zconst.TypeSlice),
-		Element:      s.schema.toZSS(ctx),
+		Element:      s.schema.toZSS(ctx.withType(elementType(ctx.currentType))),
 	}
+	addCurrentGoType(&j, ctx)
 	return &j
 }
 
@@ -170,9 +253,10 @@ func (s *MapSchema[K, V]) toZSS(ctx *ZSSSerializeCtx) *zss.ZSSSchema {
 		Required:     toZSSRequired(s.required, zconst.TypeMap),
 		DefaultValue: defaultValue,
 		Processors:   processorsToZSS(rvP, zconst.TypeMap),
-		Key:          s.keySchema.toZSS(ctx),
-		Value:        s.valueSchema.toZSS(ctx),
+		Key:          s.keySchema.toZSS(ctx.withType(mapKeyType(ctx.currentType))),
+		Value:        s.valueSchema.toZSS(ctx.withType(mapValueType(ctx.currentType))),
 	}
+	addCurrentGoType(&j, ctx)
 	return &j
 }
 
@@ -202,7 +286,9 @@ func (s *StructSchema) toZSS(ctx *ZSSSerializeCtx) *zss.ZSSSchema {
 		Required:   toZSSRequired(s.required, zconst.TypeStruct),
 		Processors: processorsToZSS(rvP, zconst.TypeStruct),
 		Fields:     toZSSFields(s.schema, ctx),
+		FieldMeta:  toZSSFieldMeta(s.schema, ctx.currentType),
 	}
+	addCurrentGoType(&j, ctx)
 	return &j
 }
 
@@ -213,16 +299,33 @@ func (s *Custom[T]) toZSS(ctx *ZSSSerializeCtx) *zss.ZSSSchema {
 		// TODO THIS create this
 		Processors: toZSSProcessorList(&s.test, zconst.TypeCustom),
 	}
-	if EXHAUSTIVE_METADATA {
-		j.GoTypes = []zss.ZSSGoType{getZSSGoType[T]()}
-	}
+	addCurrentGoType(&j, ctx)
 	return &j
 }
 
 func toZSSFields(m Shape, ctx *ZSSSerializeCtx) map[string]*zss.ZSSSchema {
 	out := map[string]*zss.ZSSSchema{}
 	for k, v := range m {
-		out[k] = v.toZSS(ctx)
+		field, _ := fieldTypeForShapeKey(ctx.currentType, k)
+		out[k] = v.toZSS(ctx.withType(field.Type))
+	}
+	return out
+}
+
+func toZSSFieldMeta(m Shape, typ reflect.Type) map[string]zss.ZSSFieldMeta {
+	out := map[string]zss.ZSSFieldMeta{}
+	for k := range m {
+		field, ok := fieldTypeForShapeKey(typ, k)
+		if !ok {
+			continue
+		}
+		if field.Tag == "" {
+			continue
+		}
+		out[k] = zss.ZSSFieldMeta{Tags: string(field.Tag)}
+	}
+	if len(out) == 0 {
+		return nil
 	}
 	return out
 }
@@ -230,24 +333,18 @@ func toZSSFields(m Shape, ctx *ZSSSerializeCtx) map[string]*zss.ZSSSchema {
 func (s *PreprocessSchema[F, T]) toZSS(ctx *ZSSSerializeCtx) *zss.ZSSSchema {
 	j := zss.ZSSSchema{
 		Kind:    zconst.TypePreprocess,
-		Element: s.schema.toZSS(ctx),
+		Element: s.schema.toZSS(ctx.withType(derivedType[T](ctx))),
 	}
-
-	if EXHAUSTIVE_METADATA {
-		j.GoTypes = []zss.ZSSGoType{getZSSGoType[F](), getZSSGoType[T]()}
-	}
+	addCurrentGoType(&j, ctx)
 	return &j
 }
 
 func (s *BoxedSchema[B, T]) toZSS(ctx *ZSSSerializeCtx) *zss.ZSSSchema {
 	j := zss.ZSSSchema{
 		Kind:    zconst.TypeBoxed,
-		Element: s.schema.toZSS(ctx),
+		Element: s.schema.toZSS(ctx.withType(derivedType[T](ctx))),
 	}
-
-	if EXHAUSTIVE_METADATA {
-		j.GoTypes = []zss.ZSSGoType{getZSSGoType[B](), getZSSGoType[T]()}
-	}
+	addCurrentGoType(&j, ctx)
 	return &j
 }
 

@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/Oudwins/zog"
 	zss "github.com/Oudwins/zog/pkgs/zss/core"
@@ -25,10 +26,31 @@ func baseZSSJson(schema string) string {
 	}`
 }
 
+func withoutGoTypes(doc zss.ZSSDocument) zss.ZSSDocument {
+	stripGoTypes(doc.Root)
+	for _, def := range doc.Defs {
+		stripGoTypes(def)
+	}
+	return doc
+}
+
+func stripGoTypes(schema *zss.ZSSSchema) {
+	if schema == nil {
+		return
+	}
+	schema.GoTypes = nil
+	for _, field := range schema.Fields {
+		stripGoTypes(field)
+	}
+	stripGoTypes(schema.Element)
+	stripGoTypes(schema.Key)
+	stripGoTypes(schema.Value)
+}
+
 func TestToJsonString(t *testing.T) {
 	s := zog.String().Required().Default("Testing!").Catch("Testing2!").Min(1)
-	d := zog.EXPERIMENTAL_TO_ZSS(s)
-	serialized, err := json.Marshal(d)
+	d := zog.EXPERIMENTAL_TO_ZSS[string](s)
+	serialized, err := json.Marshal(withoutGoTypes(d))
 	assert.Nil(t, err)
 	assert.NotNil(t, serialized)
 
@@ -63,8 +85,8 @@ func TestToJsonString(t *testing.T) {
 
 func TestToJsonPtr(t *testing.T) {
 	s := zog.Ptr(zog.String().Required().Default("Testing!").Catch("Testing2!").Min(1))
-	d := zog.EXPERIMENTAL_TO_ZSS(s)
-	serialized, err := json.Marshal(d)
+	d := zog.EXPERIMENTAL_TO_ZSS[*string](s)
+	serialized, err := json.Marshal(withoutGoTypes(d))
 	assert.Nil(t, err)
 	assert.NotNil(t, serialized)
 
@@ -102,11 +124,15 @@ func TestToJsonPtr(t *testing.T) {
 
 // TestToJsonStructShape tests JSON stability for struct shapes
 func TestToJsonStructShape(t *testing.T) {
+	type User struct {
+		Name string
+		Age  int
+	}
 	s := zog.Struct(zog.Shape{
 		"name": zog.String().Required().Min(1),
 		"age":  zog.Int().Optional(),
 	})
-	d := zog.EXPERIMENTAL_TO_ZSS(s)
+	d := zog.EXPERIMENTAL_TO_ZSS[User](s)
 	serialized, err := json.Marshal(d)
 	assert.Nil(t, err)
 	assert.NotNil(t, serialized)
@@ -132,8 +158,8 @@ func TestToJsonStructShape(t *testing.T) {
 
 func TestToJsonNumber(t *testing.T) {
 	s := zog.Int().Required().Default(42).GT(0)
-	d := zog.EXPERIMENTAL_TO_ZSS(s)
-	serialized, err := json.Marshal(d)
+	d := zog.EXPERIMENTAL_TO_ZSS[int](s)
+	serialized, err := json.Marshal(withoutGoTypes(d))
 	assert.Nil(t, err)
 	assert.NotNil(t, serialized)
 
@@ -167,8 +193,8 @@ func TestToJsonNumber(t *testing.T) {
 
 func TestToJsonBool(t *testing.T) {
 	s := zog.Bool().Required().Default(true)
-	d := zog.EXPERIMENTAL_TO_ZSS(s)
-	serialized, err := json.Marshal(d)
+	d := zog.EXPERIMENTAL_TO_ZSS[bool](s)
+	serialized, err := json.Marshal(withoutGoTypes(d))
 	assert.Nil(t, err)
 	assert.NotNil(t, serialized)
 
@@ -188,8 +214,8 @@ func TestToJsonBool(t *testing.T) {
 
 func TestToJsonTime(t *testing.T) {
 	s := zog.Time().Required()
-	d := zog.EXPERIMENTAL_TO_ZSS(s)
-	serialized, err := json.Marshal(d)
+	d := zog.EXPERIMENTAL_TO_ZSS[time.Time](s)
+	serialized, err := json.Marshal(withoutGoTypes(d))
 	assert.Nil(t, err)
 	assert.NotNil(t, serialized)
 
@@ -208,8 +234,8 @@ func TestToJsonTime(t *testing.T) {
 
 func TestToJsonSlice(t *testing.T) {
 	s := zog.Slice(zog.String().Min(1)).Required().Min(1)
-	d := zog.EXPERIMENTAL_TO_ZSS(s)
-	serialized, err := json.Marshal(d)
+	d := zog.EXPERIMENTAL_TO_ZSS[[]string](s)
+	serialized, err := json.Marshal(withoutGoTypes(d))
 	assert.Nil(t, err)
 	assert.NotNil(t, serialized)
 
@@ -258,12 +284,16 @@ func TestToJsonSlice(t *testing.T) {
 }
 
 func TestToJsonStruct(t *testing.T) {
+	type User struct {
+		Name string
+		Age  int
+	}
 	s := zog.Struct(zog.Shape{
 		"name": zog.String().Required(),
 		"age":  zog.Int().Optional(),
 	})
-	d := zog.EXPERIMENTAL_TO_ZSS(s)
-	serialized, err := json.Marshal(d)
+	d := zog.EXPERIMENTAL_TO_ZSS[User](s)
+	serialized, err := json.Marshal(withoutGoTypes(d))
 	assert.Nil(t, err)
 	assert.NotNil(t, serialized)
 
@@ -295,8 +325,8 @@ func TestToJsonPreprocess(t *testing.T) {
 		},
 		zog.String().Min(1),
 	)
-	d := zog.EXPERIMENTAL_TO_ZSS(s)
-	serialized, err := json.Marshal(d)
+	d := zog.EXPERIMENTAL_TO_ZSS[string](s)
+	serialized, err := json.Marshal(withoutGoTypes(d))
 	assert.Nil(t, err)
 	assert.NotNil(t, serialized)
 
@@ -333,8 +363,8 @@ func TestToJsonBoxed(t *testing.T) {
 		func(b StringBox, ctx zog.Ctx) (string, error) { return b.V, nil },
 		func(s string, ctx zog.Ctx) (StringBox, error) { return StringBox{V: s}, nil },
 	)
-	d := zog.EXPERIMENTAL_TO_ZSS(s)
-	serialized, err := json.Marshal(d)
+	d := zog.EXPERIMENTAL_TO_ZSS[StringBox](s)
+	serialized, err := json.Marshal(withoutGoTypes(d))
 	assert.Nil(t, err)
 	assert.NotNil(t, serialized)
 
@@ -364,8 +394,8 @@ func TestToJsonBoxed(t *testing.T) {
 
 func TestToJsonMap(t *testing.T) {
 	s := zog.EXPERIMENTAL_MAP[string, int](zog.String().Min(1), zog.Int().GT(0)).Required().Min(2)
-	d := zog.EXPERIMENTAL_TO_ZSS(s)
-	serialized, err := json.Marshal(d)
+	d := zog.EXPERIMENTAL_TO_ZSS[map[string]int](s)
+	serialized, err := json.Marshal(withoutGoTypes(d))
 	assert.Nil(t, err)
 	assert.NotNil(t, serialized)
 
@@ -434,8 +464,8 @@ func TestToJsonCustom(t *testing.T) {
 	s := zog.CustomFunc(func(valPtr *string, ctx zog.Ctx) bool {
 		return *valPtr == "valid"
 	})
-	d := zog.EXPERIMENTAL_TO_ZSS(s)
-	serialized, err := json.Marshal(d)
+	d := zog.EXPERIMENTAL_TO_ZSS[string](s)
+	serialized, err := json.Marshal(withoutGoTypes(d))
 	assert.Nil(t, err)
 	assert.NotNil(t, serialized)
 
@@ -459,6 +489,10 @@ func TestToJsonCustom(t *testing.T) {
 }
 
 func TestToJsonRecursiveUsesRefs(t *testing.T) {
+	type Node struct {
+		Value int
+		Self  *Node
+	}
 	s := zog.EXPERIMENTAL_RECURSIVE(func(self zog.RecursiveSchema[*zog.PointerSchema]) *zog.PointerSchema {
 		return zog.Ptr(zog.Struct(zog.Shape{
 			"value": zog.Int().Required(),
@@ -466,8 +500,8 @@ func TestToJsonRecursiveUsesRefs(t *testing.T) {
 		}))
 	})
 
-	d := zog.EXPERIMENTAL_TO_ZSS(s)
-	serialized, err := json.Marshal(d)
+	d := zog.EXPERIMENTAL_TO_ZSS[*Node](s)
+	serialized, err := json.Marshal(withoutGoTypes(d))
 	assert.Nil(t, err)
 	assert.NotNil(t, serialized)
 	assert.NotEmpty(t, d.Defs)
@@ -536,13 +570,16 @@ func assertSingleRecursiveDef(t *testing.T, doc zss.ZSSDocument) *zss.ZSSSchema 
 }
 
 func TestToJsonRecursiveSliceTreeUsesRefs(t *testing.T) {
+	type Node struct {
+		Children []*Node
+	}
 	s := zog.EXPERIMENTAL_RECURSIVE(func(self zog.RecursiveSchema[*zog.PointerSchema]) *zog.PointerSchema {
 		return zog.Ptr(zog.Struct(zog.Shape{
 			"children": zog.Slice(self()),
 		}))
 	})
 
-	d := zog.EXPERIMENTAL_TO_ZSS(s)
+	d := zog.EXPERIMENTAL_TO_ZSS[*Node](s)
 	def := assertSingleRecursiveDef(t, d)
 	children := def.Element.Fields["children"]
 	assert.Equal(t, "slice", string(children.Kind))
@@ -550,13 +587,16 @@ func TestToJsonRecursiveSliceTreeUsesRefs(t *testing.T) {
 }
 
 func TestToJsonRecursiveMapTreeUsesRefs(t *testing.T) {
+	type Node struct {
+		Children map[string]*Node
+	}
 	s := zog.EXPERIMENTAL_RECURSIVE(func(self zog.RecursiveSchema[*zog.PointerSchema]) *zog.PointerSchema {
 		return zog.Ptr(zog.Struct(zog.Shape{
 			"children": zog.EXPERIMENTAL_MAP[string, any](zog.String(), self()),
 		}))
 	})
 
-	d := zog.EXPERIMENTAL_TO_ZSS(s)
+	d := zog.EXPERIMENTAL_TO_ZSS[*Node](s)
 	def := assertSingleRecursiveDef(t, d)
 	children := def.Element.Fields["children"]
 	assert.Equal(t, "map", string(children.Kind))
@@ -565,6 +605,10 @@ func TestToJsonRecursiveMapTreeUsesRefs(t *testing.T) {
 }
 
 func TestToJsonRecursiveMultipleSelfFieldsUseSameRef(t *testing.T) {
+	type Node struct {
+		Left  *Node
+		Right *Node
+	}
 	s := zog.EXPERIMENTAL_RECURSIVE(func(self zog.RecursiveSchema[*zog.PointerSchema]) *zog.PointerSchema {
 		return zog.Ptr(zog.Struct(zog.Shape{
 			"left":  self(),
@@ -572,50 +616,71 @@ func TestToJsonRecursiveMultipleSelfFieldsUseSameRef(t *testing.T) {
 		}))
 	})
 
-	d := zog.EXPERIMENTAL_TO_ZSS(s)
+	d := zog.EXPERIMENTAL_TO_ZSS[*Node](s)
 	def := assertSingleRecursiveDef(t, d)
 	assertZSSRef(t, def.Element.Fields["left"], 1)
 	assertZSSRef(t, def.Element.Fields["right"], 1)
 }
 
 func TestToJsonRecursiveDeepNestedEdgeUsesRef(t *testing.T) {
+	type Node struct {
+		Wrapper struct {
+			Next *Node
+		}
+	}
 	s := zog.EXPERIMENTAL_RECURSIVE(func(self zog.RecursiveSchema[*zog.PointerSchema]) *zog.PointerSchema {
 		return zog.Ptr(zog.Struct(zog.Shape{
 			"wrapper": zog.Struct(zog.Shape{"next": self()}),
 		}))
 	})
 
-	d := zog.EXPERIMENTAL_TO_ZSS(s)
+	d := zog.EXPERIMENTAL_TO_ZSS[*Node](s)
 	def := assertSingleRecursiveDef(t, d)
 	assertZSSRef(t, def.Element.Fields["wrapper"].Fields["next"], 1)
 }
 
 func TestToJsonRecursiveUpdaterOriginalUsesSameRef(t *testing.T) {
+	type Node struct {
+		Self *Node
+	}
 	s := zog.EXPERIMENTAL_RECURSIVE(func(self zog.RecursiveSchema[*zog.PointerSchema]) *zog.PointerSchema {
 		return zog.Ptr(zog.Struct(zog.Shape{
 			"self": self(func(original *zog.PointerSchema) *zog.PointerSchema { return original }),
 		}))
 	})
 
-	d := zog.EXPERIMENTAL_TO_ZSS(s)
+	d := zog.EXPERIMENTAL_TO_ZSS[*Node](s)
 	def := assertSingleRecursiveDef(t, d)
 	assertZSSRef(t, def.Element.Fields["self"], 1)
 }
 
 func TestToJsonRecursiveUpdaterModifiedTerminates(t *testing.T) {
+	type Node struct {
+		Children []*Node
+	}
 	s := zog.EXPERIMENTAL_RECURSIVE(func(self zog.RecursiveSchema[*zog.PointerSchema]) *zog.PointerSchema {
 		return zog.Ptr(zog.Struct(zog.Shape{
 			"children": zog.Slice(self(func(original *zog.PointerSchema) *zog.PointerSchema { return original })),
 		}))
 	})
 
-	d := zog.EXPERIMENTAL_TO_ZSS(s)
+	d := zog.EXPERIMENTAL_TO_ZSS[*Node](s)
 	def := assertSingleRecursiveDef(t, d)
 	assertZSSRef(t, def.Element.Fields["children"].Element, 1)
 }
 
 // Temporarily removed due to 1.23.12 failing
 // func TestToJsonMultipleRecursiveSchemasCreateSeparateDefs(t *testing.T) {
+// 	type A struct {
+// 		NextA *A
+// 	}
+// 	type B struct {
+// 		NextB *B
+// 	}
+// 	type Root struct {
+// 		A *A
+// 		B *B
+// 	}
 // 	a := zog.EXPERIMENTAL_RECURSIVE(func(self zog.RecursiveSchema[*zog.PointerSchema]) *zog.PointerSchema {
 // 		return zog.Ptr(zog.Struct(zog.Shape{"nextA": self()}))
 // 	})
@@ -623,25 +688,31 @@ func TestToJsonRecursiveUpdaterModifiedTerminates(t *testing.T) {
 // 		return zog.Ptr(zog.Struct(zog.Shape{"nextB": self()}))
 // 	})
 //
-// 	d := zog.EXPERIMENTAL_TO_ZSS(zog.Struct(zog.Shape{"a": a, "b": b}))
+// 	d := zog.EXPERIMENTAL_TO_ZSS[Root](zog.Struct(zog.Shape{"a": a, "b": b}))
 // 	assert.Len(t, d.Defs, 2)
 // 	assertZSSRef(t, d.Defs[zss.ZSSDefKeyFromKey(1)].Element.Fields["nextA"], 1)
 // 	assertZSSRef(t, d.Defs[zss.ZSSDefKeyFromKey(2)].Element.Fields["nextB"], 2)
 // }
 
 func TestToJsonRecursiveRootIsExpandedInline(t *testing.T) {
+	type Node struct {
+		Self *Node
+	}
 	s := zog.EXPERIMENTAL_RECURSIVE(func(self zog.RecursiveSchema[*zog.PointerSchema]) *zog.PointerSchema {
 		return zog.Ptr(zog.Struct(zog.Shape{"self": self()}))
 	})
 
-	d := zog.EXPERIMENTAL_TO_ZSS(s)
+	d := zog.EXPERIMENTAL_TO_ZSS[*Node](s)
 	assert.Nil(t, d.Root.Ref)
 	assert.Equal(t, "ptr", string(d.Root.Kind))
 	assert.NotEmpty(t, d.Defs)
 }
 
 func TestToJsonNonRecursiveSchemaOmitsDefs(t *testing.T) {
-	d := zog.EXPERIMENTAL_TO_ZSS(zog.Struct(zog.Shape{"name": zog.String()}))
+	type User struct {
+		Name string
+	}
+	d := zog.EXPERIMENTAL_TO_ZSS[User](zog.Struct(zog.Shape{"name": zog.String()}))
 	serialized, err := json.Marshal(d)
 	assert.Nil(t, err)
 	assert.Empty(t, d.Defs)
@@ -649,8 +720,12 @@ func TestToJsonNonRecursiveSchemaOmitsDefs(t *testing.T) {
 }
 
 func TestToJsonSharedNonRecursiveSchemaStaysInline(t *testing.T) {
+	type User struct {
+		First  string
+		Second string
+	}
 	name := zog.String().Min(1)
-	d := zog.EXPERIMENTAL_TO_ZSS(zog.Struct(zog.Shape{"first": name, "second": name}))
+	d := zog.EXPERIMENTAL_TO_ZSS[User](zog.Struct(zog.Shape{"first": name, "second": name}))
 	assert.Empty(t, d.Defs)
 	assert.Nil(t, d.Root.Fields["first"].Ref)
 	assert.Nil(t, d.Root.Fields["second"].Ref)
@@ -659,32 +734,41 @@ func TestToJsonSharedNonRecursiveSchemaStaysInline(t *testing.T) {
 }
 
 func TestToJsonRecursivePreprocessUsesRefs(t *testing.T) {
+	type Node struct {
+		Next *Node
+	}
 	s := zog.EXPERIMENTAL_RECURSIVE(func(self zog.RecursiveSchema[*zog.PreprocessSchema[any, any]]) *zog.PreprocessSchema[any, any] {
 		return zog.Preprocess(func(data any, ctx zog.Ctx) (any, error) { return data, nil }, zog.Struct(zog.Shape{"next": self()}))
 	})
 
-	d := zog.EXPERIMENTAL_TO_ZSS(s)
+	d := zog.EXPERIMENTAL_TO_ZSS[*Node](s)
 	def := assertSingleRecursiveDef(t, d)
 	assert.Equal(t, "preprocess", string(def.Kind))
 	assertZSSRef(t, def.Element.Fields["next"], 1)
 }
 
 func TestToJsonRecursiveBoxedUsesRefs(t *testing.T) {
+	type Node struct {
+		Next *Node
+	}
 	s := zog.EXPERIMENTAL_RECURSIVE(func(self zog.RecursiveSchema[*zog.BoxedSchema[any, any]]) *zog.BoxedSchema[any, any] {
 		return zog.Boxed(zog.Struct(zog.Shape{"next": self()}), func(data any, ctx zog.Ctx) (any, error) { return data, nil }, func(data any, ctx zog.Ctx) (any, error) { return data, nil })
 	})
 
-	d := zog.EXPERIMENTAL_TO_ZSS(s)
+	d := zog.EXPERIMENTAL_TO_ZSS[*Node](s)
 	def := assertSingleRecursiveDef(t, d)
 	assert.Equal(t, "boxed", string(def.Kind))
 	assertZSSRef(t, def.Element.Fields["next"], 1)
 }
 
 func TestZSSDocumentSchemaValidatesRecursiveOutput(t *testing.T) {
+	type Node struct {
+		Self *Node
+	}
 	s := zog.EXPERIMENTAL_RECURSIVE(func(self zog.RecursiveSchema[*zog.PointerSchema]) *zog.PointerSchema {
 		return zog.Ptr(zog.Struct(zog.Shape{"self": self()}))
 	})
-	d := zog.EXPERIMENTAL_TO_ZSS(s)
+	d := zog.EXPERIMENTAL_TO_ZSS[*Node](s)
 
 	errList := zssschema.ZSSDocumentSchema.Validate(&d)
 	assert.Empty(t, errList)
@@ -716,12 +800,15 @@ func TestZSSRefFromKeyPathStability(t *testing.T) {
 }
 
 func TestToJsonRecursiveMultipleCallsUseIndependentContext(t *testing.T) {
+	type Node struct {
+		Self *Node
+	}
 	s := zog.EXPERIMENTAL_RECURSIVE(func(self zog.RecursiveSchema[*zog.PointerSchema]) *zog.PointerSchema {
 		return zog.Ptr(zog.Struct(zog.Shape{"self": self()}))
 	})
 
-	first := zog.EXPERIMENTAL_TO_ZSS(s)
-	second := zog.EXPERIMENTAL_TO_ZSS(s)
+	first := zog.EXPERIMENTAL_TO_ZSS[*Node](s)
+	second := zog.EXPERIMENTAL_TO_ZSS[*Node](s)
 	assert.Contains(t, first.Defs, zss.ZSSDefKeyFromKey(1))
 	assert.Contains(t, second.Defs, zss.ZSSDefKeyFromKey(1))
 	assert.Len(t, first.Defs, 1)

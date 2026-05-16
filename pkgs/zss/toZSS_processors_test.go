@@ -12,7 +12,7 @@ import (
 
 func TestStringTransformTrim(t *testing.T) {
 	s := zog.String().Trim()
-	doc := zog.EXPERIMENTAL_TO_ZSS(s)
+	doc := zog.EXPERIMENTAL_TO_ZSS[string](s)
 
 	assertDocumentBasics(t, doc)
 	assertProcessorsCount(t, doc.Root, 1)
@@ -26,7 +26,7 @@ func TestStringTransformCustom(t *testing.T) {
 		*valPtr = "transformed"
 		return nil
 	})
-	doc := zog.EXPERIMENTAL_TO_ZSS(s)
+	doc := zog.EXPERIMENTAL_TO_ZSS[string](s)
 
 	assertDocumentBasics(t, doc)
 	assertProcessorsCount(t, doc.Root, 1)
@@ -37,7 +37,7 @@ func TestStringMultipleTransforms(t *testing.T) {
 	s := zog.String().Trim().Transform(func(valPtr *string, ctx zog.Ctx) error {
 		return nil
 	})
-	doc := zog.EXPERIMENTAL_TO_ZSS(s)
+	doc := zog.EXPERIMENTAL_TO_ZSS[string](s)
 
 	assertDocumentBasics(t, doc)
 	assertProcessorsCount(t, doc.Root, 2)
@@ -49,7 +49,7 @@ func TestStringMultipleTransforms(t *testing.T) {
 
 func TestStringTransformAndTest(t *testing.T) {
 	s := zog.String().Trim().Min(5)
-	doc := zog.EXPERIMENTAL_TO_ZSS(s)
+	doc := zog.EXPERIMENTAL_TO_ZSS[string](s)
 
 	assertDocumentBasics(t, doc)
 	assertProcessorsCount(t, doc.Root, 2)
@@ -62,7 +62,7 @@ func TestStringTransformAndTest(t *testing.T) {
 func TestStringTestWithMessageOverride(t *testing.T) {
 	customMsg := "Custom message for min validation"
 	s := zog.String().Min(5, zog.Message(customMsg))
-	doc := zog.EXPERIMENTAL_TO_ZSS(s)
+	doc := zog.EXPERIMENTAL_TO_ZSS[int](s)
 
 	assertDocumentBasics(t, doc)
 	assertProcessorsCount(t, doc.Root, 1)
@@ -76,7 +76,7 @@ func TestStringTestWithMessageOverride(t *testing.T) {
 func TestStringTestWithIssuePath(t *testing.T) {
 	customPath := []string{"fullname"}
 	s := zog.String().Min(1, zog.IssuePath(customPath))
-	doc := zog.EXPERIMENTAL_TO_ZSS(s)
+	doc := zog.EXPERIMENTAL_TO_ZSS[int](s)
 
 	assertDocumentBasics(t, doc)
 	assertProcessorsCount(t, doc.Root, 1)
@@ -89,7 +89,7 @@ func TestStringTestWithIssuePath(t *testing.T) {
 func TestStringTestDefaultMessage(t *testing.T) {
 	// Test without custom message - should use default formatter
 	s := zog.String().Min(3)
-	doc := zog.EXPERIMENTAL_TO_ZSS(s)
+	doc := zog.EXPERIMENTAL_TO_ZSS[[]string](s)
 
 	assertDocumentBasics(t, doc)
 	assertProcessorsCount(t, doc.Root, 1)
@@ -102,7 +102,7 @@ func TestStringTestDefaultMessage(t *testing.T) {
 
 func TestStringMultipleTests(t *testing.T) {
 	s := zog.String().Min(1).Max(100).Email()
-	doc := zog.EXPERIMENTAL_TO_ZSS(s)
+	doc := zog.EXPERIMENTAL_TO_ZSS[[]int](s)
 
 	assertDocumentBasics(t, doc)
 	assertProcessorsCount(t, doc.Root, 3)
@@ -113,7 +113,7 @@ func TestStringMultipleTests(t *testing.T) {
 
 func TestNumberTestParams(t *testing.T) {
 	s := zog.Int().GT(10).LT(100).EQ(50)
-	doc := zog.EXPERIMENTAL_TO_ZSS(s)
+	doc := zog.EXPERIMENTAL_TO_ZSS[string](s)
 
 	assertDocumentBasics(t, doc)
 	assertProcessorsCount(t, doc.Root, 3)
@@ -125,7 +125,7 @@ func TestNumberTestParams(t *testing.T) {
 func TestNumberOneOfParams(t *testing.T) {
 	enum := []int{1, 2, 3, 5, 8}
 	s := zog.Int().OneOf(enum)
-	doc := zog.EXPERIMENTAL_TO_ZSS(s)
+	doc := zog.EXPERIMENTAL_TO_ZSS[string](s)
 
 	assertDocumentBasics(t, doc)
 	assertProcessorsCount(t, doc.Root, 1)
@@ -134,7 +134,7 @@ func TestNumberOneOfParams(t *testing.T) {
 
 func TestSliceTestParams(t *testing.T) {
 	s := zog.Slice(zog.String()).Min(2).Max(10).Len(5)
-	doc := zog.EXPERIMENTAL_TO_ZSS(s)
+	doc := zog.EXPERIMENTAL_TO_ZSS[string](s)
 
 	assertDocumentBasics(t, doc)
 	assertProcessorsCount(t, doc.Root, 3)
@@ -145,7 +145,7 @@ func TestSliceTestParams(t *testing.T) {
 
 func TestSliceContainsParams(t *testing.T) {
 	s := zog.Slice(zog.Int()).Contains(42)
-	doc := zog.EXPERIMENTAL_TO_ZSS(s)
+	doc := zog.EXPERIMENTAL_TO_ZSS[string](s)
 
 	assertDocumentBasics(t, doc)
 	assertProcessorsCount(t, doc.Root, 1)
@@ -156,7 +156,7 @@ func TestStringTestFunc(t *testing.T) {
 	s := zog.String().TestFunc(func(valPtr *string, ctx zog.Ctx) bool {
 		return len(*valPtr) > 0
 	}, zog.Message("Custom test message"), zog.IssueCode("custom_test"))
-	doc := zog.EXPERIMENTAL_TO_ZSS(s)
+	doc := zog.EXPERIMENTAL_TO_ZSS[string](s)
 
 	assertDocumentBasics(t, doc)
 	assertProcessorsCount(t, doc.Root, 1)
@@ -170,7 +170,7 @@ func TestStringTestFunc(t *testing.T) {
 
 func TestRequiredProcessor(t *testing.T) {
 	s := zog.String().Required()
-	doc := zog.EXPERIMENTAL_TO_ZSS(s)
+	doc := zog.EXPERIMENTAL_TO_ZSS[string](s)
 
 	assertDocumentBasics(t, doc)
 	assertRequired(t, doc.Root, true)
@@ -183,7 +183,7 @@ func TestRequiredProcessor(t *testing.T) {
 func TestRequiredWithMessage(t *testing.T) {
 	customMsg := "This field is mandatory"
 	s := zog.String().Required(zog.Message(customMsg))
-	doc := zog.EXPERIMENTAL_TO_ZSS(s)
+	doc := zog.EXPERIMENTAL_TO_ZSS[string](s)
 
 	assertDocumentBasics(t, doc)
 	assertRequired(t, doc.Root, true)
@@ -195,7 +195,7 @@ func TestRequiredWithMessage(t *testing.T) {
 func TestRequiredWithIssuePath(t *testing.T) {
 	customPath := []string{"user", "email"}
 	s := zog.String().Required(zog.IssuePath(customPath))
-	doc := zog.EXPERIMENTAL_TO_ZSS(s)
+	doc := zog.EXPERIMENTAL_TO_ZSS[string](s)
 
 	assertDocumentBasics(t, doc)
 	assertRequired(t, doc.Root, true)
@@ -206,12 +206,15 @@ func TestRequiredWithIssuePath(t *testing.T) {
 }
 
 func TestStructTransform(t *testing.T) {
+	type User struct {
+		Name string
+	}
 	s := zog.Struct(zog.Shape{
 		"name": zog.String(),
 	}).Transform(func(dataPtr any, ctx zog.Ctx) error {
 		return nil
 	})
-	doc := zog.EXPERIMENTAL_TO_ZSS(s)
+	doc := zog.EXPERIMENTAL_TO_ZSS[User](s)
 
 	assertDocumentBasics(t, doc)
 	assertSchemaKind(t, doc.Root, "struct")
@@ -227,7 +230,7 @@ func TestSliceTransform(t *testing.T) {
 	s := zog.Slice(zog.String()).Transform(func(dataPtr any, ctx zog.Ctx) error {
 		return nil
 	})
-	doc := zog.EXPERIMENTAL_TO_ZSS(s)
+	doc := zog.EXPERIMENTAL_TO_ZSS[[]string](s)
 
 	assertDocumentBasics(t, doc)
 	assertSchemaKind(t, doc.Root, "slice")

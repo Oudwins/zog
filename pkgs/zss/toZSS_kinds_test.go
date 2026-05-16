@@ -10,7 +10,7 @@ import (
 
 func TestStringSchema(t *testing.T) {
 	s := zog.String().Required().Default("default").Catch("catch").Min(5)
-	doc := zog.EXPERIMENTAL_TO_ZSS(s)
+	doc := zog.EXPERIMENTAL_TO_ZSS[string](s)
 
 	assertDocumentBasics(t, doc)
 	assertSchemaKind(t, doc.Root, "string")
@@ -24,7 +24,7 @@ func TestStringSchema(t *testing.T) {
 
 func TestStringSchemaOptional(t *testing.T) {
 	s := zog.String().Optional().Min(3)
-	doc := zog.EXPERIMENTAL_TO_ZSS(s)
+	doc := zog.EXPERIMENTAL_TO_ZSS[string](s)
 
 	assertDocumentBasics(t, doc)
 	assertSchemaKind(t, doc.Root, "string")
@@ -35,7 +35,7 @@ func TestStringSchemaOptional(t *testing.T) {
 
 func TestNumberSchemaInt(t *testing.T) {
 	s := zog.Int().Required().Default(42).Catch(100).GT(10).LT(100)
-	doc := zog.EXPERIMENTAL_TO_ZSS(s)
+	doc := zog.EXPERIMENTAL_TO_ZSS[int](s)
 
 	assertDocumentBasics(t, doc)
 	assertSchemaKind(t, doc.Root, "number")
@@ -50,7 +50,7 @@ func TestNumberSchemaInt(t *testing.T) {
 
 func TestNumberSchemaInt64(t *testing.T) {
 	s := zog.Int64().EQ(100).GTE(50).LTE(200)
-	doc := zog.EXPERIMENTAL_TO_ZSS(s)
+	doc := zog.EXPERIMENTAL_TO_ZSS[int64](s)
 
 	assertDocumentBasics(t, doc)
 	assertSchemaKind(t, doc.Root, "number")
@@ -63,7 +63,7 @@ func TestNumberSchemaInt64(t *testing.T) {
 
 func TestNumberSchemaFloat64(t *testing.T) {
 	s := zog.Float64().OneOf([]float64{1.5, 2.5, 3.5})
-	doc := zog.EXPERIMENTAL_TO_ZSS(s)
+	doc := zog.EXPERIMENTAL_TO_ZSS[float64](s)
 
 	assertDocumentBasics(t, doc)
 	assertSchemaKind(t, doc.Root, "number")
@@ -73,7 +73,7 @@ func TestNumberSchemaFloat64(t *testing.T) {
 
 func TestBoolSchema(t *testing.T) {
 	s := zog.Bool().Required().Default(true).True()
-	doc := zog.EXPERIMENTAL_TO_ZSS(s)
+	doc := zog.EXPERIMENTAL_TO_ZSS[bool](s)
 
 	assertDocumentBasics(t, doc)
 	assertSchemaKind(t, doc.Root, "bool")
@@ -84,7 +84,7 @@ func TestBoolSchema(t *testing.T) {
 
 func TestBoolSchemaFalse(t *testing.T) {
 	s := zog.Bool().False()
-	doc := zog.EXPERIMENTAL_TO_ZSS(s)
+	doc := zog.EXPERIMENTAL_TO_ZSS[bool](s)
 
 	assertDocumentBasics(t, doc)
 	assertSchemaKind(t, doc.Root, "bool")
@@ -95,7 +95,7 @@ func TestBoolSchemaFalse(t *testing.T) {
 
 func TestBoolSchemaEQ(t *testing.T) {
 	s := zog.Bool().EQ(true)
-	doc := zog.EXPERIMENTAL_TO_ZSS(s)
+	doc := zog.EXPERIMENTAL_TO_ZSS[bool](s)
 
 	assertDocumentBasics(t, doc)
 	assertSchemaKind(t, doc.Root, "bool")
@@ -106,7 +106,7 @@ func TestBoolSchemaEQ(t *testing.T) {
 func TestTimeSchema(t *testing.T) {
 	now := time.Now()
 	s := zog.Time().Required().Before(now).After(now.Add(-24 * time.Hour))
-	doc := zog.EXPERIMENTAL_TO_ZSS(s)
+	doc := zog.EXPERIMENTAL_TO_ZSS[time.Time](s)
 
 	assertDocumentBasics(t, doc)
 	assertSchemaKind(t, doc.Root, "time")
@@ -120,7 +120,7 @@ func TestTimeSchema(t *testing.T) {
 
 func TestPtrSchema(t *testing.T) {
 	s := zog.Ptr(zog.String().Required().Min(1))
-	doc := zog.EXPERIMENTAL_TO_ZSS(s)
+	doc := zog.EXPERIMENTAL_TO_ZSS[*string](s)
 
 	assertDocumentBasics(t, doc)
 	assertSchemaKind(t, doc.Root, "ptr")
@@ -140,7 +140,7 @@ func TestPtrSchema(t *testing.T) {
 
 func TestPtrSchemaNotNil(t *testing.T) {
 	s := zog.Ptr(zog.String()).NotNil()
-	doc := zog.EXPERIMENTAL_TO_ZSS(s)
+	doc := zog.EXPERIMENTAL_TO_ZSS[*string](s)
 
 	assertDocumentBasics(t, doc)
 	assertSchemaKind(t, doc.Root, "ptr")
@@ -154,7 +154,7 @@ func TestPtrSchemaNotNil(t *testing.T) {
 
 func TestSliceSchema(t *testing.T) {
 	s := zog.Slice(zog.String().Min(1)).Required().Default([]any{"a", "b"}).Min(2).Max(10)
-	doc := zog.EXPERIMENTAL_TO_ZSS(s)
+	doc := zog.EXPERIMENTAL_TO_ZSS[[]string](s)
 
 	assertDocumentBasics(t, doc)
 	assertSchemaKind(t, doc.Root, "slice")
@@ -173,7 +173,7 @@ func TestSliceSchema(t *testing.T) {
 
 func TestSliceSchemaContains(t *testing.T) {
 	s := zog.Slice(zog.Int()).Contains(42)
-	doc := zog.EXPERIMENTAL_TO_ZSS(s)
+	doc := zog.EXPERIMENTAL_TO_ZSS[[]int](s)
 
 	assertDocumentBasics(t, doc)
 	assertSchemaKind(t, doc.Root, "slice")
@@ -183,7 +183,7 @@ func TestSliceSchemaContains(t *testing.T) {
 
 func TestSliceSchemaLen(t *testing.T) {
 	s := zog.Slice(zog.String()).Len(5)
-	doc := zog.EXPERIMENTAL_TO_ZSS(s)
+	doc := zog.EXPERIMENTAL_TO_ZSS[[]string](s)
 
 	assertDocumentBasics(t, doc)
 	assertSchemaKind(t, doc.Root, "slice")
@@ -192,11 +192,15 @@ func TestSliceSchemaLen(t *testing.T) {
 }
 
 func TestStructSchema(t *testing.T) {
+	type User struct {
+		Name string
+		Age  int
+	}
 	s := zog.Struct(zog.Shape{
 		"name": zog.String().Required().Min(1),
 		"age":  zog.Int().Required().GT(0),
 	})
-	doc := zog.EXPERIMENTAL_TO_ZSS(s)
+	doc := zog.EXPERIMENTAL_TO_ZSS[User](s)
 
 	assertDocumentBasics(t, doc)
 	assertSchemaKind(t, doc.Root, "struct")
@@ -226,12 +230,18 @@ func TestStructSchema(t *testing.T) {
 }
 
 func TestStructSchemaNested(t *testing.T) {
+	type Profile struct {
+		Email string
+	}
+	type Root struct {
+		User *Profile
+	}
 	s := zog.Struct(zog.Shape{
 		"user": zog.Ptr(zog.Struct(zog.Shape{
 			"email": zog.String().Email(),
 		})),
 	})
-	doc := zog.EXPERIMENTAL_TO_ZSS(s)
+	doc := zog.EXPERIMENTAL_TO_ZSS[Root](s)
 
 	assertDocumentBasics(t, doc)
 	assertSchemaKind(t, doc.Root, "struct")
@@ -267,7 +277,7 @@ func TestPreprocessSchema(t *testing.T) {
 		},
 		zog.String().Min(1),
 	)
-	doc := zog.EXPERIMENTAL_TO_ZSS(s)
+	doc := zog.EXPERIMENTAL_TO_ZSS[string](s)
 
 	assertDocumentBasics(t, doc)
 	assertSchemaKind(t, doc.Root, "preprocess")
@@ -291,7 +301,7 @@ func TestBoxedSchema(t *testing.T) {
 		func(b StringBox, ctx zog.Ctx) (string, error) { return b.V, nil },
 		func(s string, ctx zog.Ctx) (StringBox, error) { return StringBox{V: s}, nil },
 	)
-	doc := zog.EXPERIMENTAL_TO_ZSS(s)
+	doc := zog.EXPERIMENTAL_TO_ZSS[StringBox](s)
 
 	assertDocumentBasics(t, doc)
 	assertSchemaKind(t, doc.Root, "boxed")
@@ -310,7 +320,7 @@ func TestCustomSchema(t *testing.T) {
 	s := zog.CustomFunc(func(valPtr *string, ctx zog.Ctx) bool {
 		return *valPtr == "valid"
 	})
-	doc := zog.EXPERIMENTAL_TO_ZSS(s)
+	doc := zog.EXPERIMENTAL_TO_ZSS[string](s)
 
 	assertDocumentBasics(t, doc)
 	assertSchemaKind(t, doc.Root, "custom")

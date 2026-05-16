@@ -28,7 +28,7 @@ func baseZSSJson(schema string) string {
 func TestToJsonStringLike(t *testing.T) {
 	type CustomString string
 	s := zog.StringLike[CustomString]().Required().Min(1)
-	d := zog.EXPERIMENTAL_TO_ZSS(s)
+	d := zog.EXPERIMENTAL_TO_ZSS[CustomString](s)
 	serialized, err := json.Marshal(d)
 	assert.Nil(t, err)
 	assert.NotNil(t, serialized)
@@ -70,7 +70,7 @@ func TestToJsonStringLike(t *testing.T) {
 func TestToJsonIntLike(t *testing.T) {
 	type CustomInt int
 	s := zog.IntLike[CustomInt]().Required().GT(0)
-	d := zog.EXPERIMENTAL_TO_ZSS(s)
+	d := zog.EXPERIMENTAL_TO_ZSS[CustomInt](s)
 	serialized, err := json.Marshal(d)
 	assert.Nil(t, err)
 	assert.NotNil(t, serialized)
@@ -112,7 +112,7 @@ func TestToJsonIntLike(t *testing.T) {
 func TestToJsonBoolLike(t *testing.T) {
 	type CustomBool bool
 	s := zog.BoolLike[CustomBool]().Required()
-	d := zog.EXPERIMENTAL_TO_ZSS(s)
+	d := zog.EXPERIMENTAL_TO_ZSS[CustomBool](s)
 	serialized, err := json.Marshal(d)
 	assert.Nil(t, err)
 	assert.NotNil(t, serialized)
@@ -139,13 +139,20 @@ func TestToJsonBoolLike(t *testing.T) {
 
 func TestToJsonTimeWithFormat(t *testing.T) {
 	s := zog.Time(zog.Time.Format(time.RFC3339)).Required()
-	d := zog.EXPERIMENTAL_TO_ZSS(s)
+	d := zog.EXPERIMENTAL_TO_ZSS[time.Time](s)
 	serialized, err := json.Marshal(d)
 	assert.Nil(t, err)
 	assert.NotNil(t, serialized)
 
 	expected := baseZSSJson(`{
 		"kind": "time",
+		"goTypes": [
+			{
+				"pkgPath": "time",
+				"name": "Time",
+				"display": "time.Time"
+			}
+		],
 		"format": "2006-01-02T15:04:05Z07:00",
 		"required": {
 			"id": "required",
@@ -161,13 +168,20 @@ func TestToJsonTimeWithFormat(t *testing.T) {
 func TestToJsonPtrWithStringLike(t *testing.T) {
 	type CustomString string
 	s := zog.Ptr(zog.StringLike[CustomString]().Required())
-	d := zog.EXPERIMENTAL_TO_ZSS(s)
+	d := zog.EXPERIMENTAL_TO_ZSS[*CustomString](s)
 	serialized, err := json.Marshal(d)
 	assert.Nil(t, err)
 	assert.NotNil(t, serialized)
 
 	expected := baseZSSJson(`{
 		"kind": "ptr",
+		"goTypes": [
+			{
+				"pkgPath": "",
+				"name": "",
+				"display": "*zss_test.CustomString"
+			}
+		],
 		"element": {
 			"kind": "string",
 			"goTypes": [
@@ -197,7 +211,7 @@ func TestToJsonPreprocessWithGoType(t *testing.T) {
 		},
 		zog.String().Min(1),
 	)
-	d := zog.EXPERIMENTAL_TO_ZSS(s)
+	d := zog.EXPERIMENTAL_TO_ZSS[FromType](s)
 	serialized, err := json.Marshal(d)
 	assert.Nil(t, err)
 	assert.NotNil(t, serialized)
@@ -209,11 +223,6 @@ func TestToJsonPreprocessWithGoType(t *testing.T) {
 				"pkgPath": "github.com/Oudwins/zog/pkgs/zss_test",
 				"name": "FromType",
 				"display": "zss_test.FromType"
-			},
-			{
-				"pkgPath": "",
-				"name": "string",
-				"display": "string"
 			}
 		],
 		"element": {
@@ -254,7 +263,7 @@ func TestToJsonBoxedWithGoType(t *testing.T) {
 		func(b StringBox, ctx zog.Ctx) (string, error) { return b.V, nil },
 		func(s string, ctx zog.Ctx) (StringBox, error) { return StringBox{V: s}, nil },
 	)
-	d := zog.EXPERIMENTAL_TO_ZSS(s)
+	d := zog.EXPERIMENTAL_TO_ZSS[StringBox](s)
 	serialized, err := json.Marshal(d)
 	assert.Nil(t, err)
 	assert.NotNil(t, serialized)
@@ -266,11 +275,6 @@ func TestToJsonBoxedWithGoType(t *testing.T) {
 				"pkgPath": "github.com/Oudwins/zog/pkgs/zss_test",
 				"name": "StringBox",
 				"display": "zss_test.StringBox"
-			},
-			{
-				"pkgPath": "",
-				"name": "string",
-				"display": "string"
 			}
 		],
 		"element": {
@@ -307,7 +311,7 @@ func TestToJsonCustomWithGoType(t *testing.T) {
 	s := zog.CustomFunc[CustomType](func(valPtr *CustomType, ctx zog.Ctx) bool {
 		return true
 	})
-	d := zog.EXPERIMENTAL_TO_ZSS(s)
+	d := zog.EXPERIMENTAL_TO_ZSS[CustomType](s)
 	serialized, err := json.Marshal(d)
 	assert.Nil(t, err)
 	assert.NotNil(t, serialized)

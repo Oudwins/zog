@@ -8,9 +8,13 @@ import (
 
 // ZSSGoTypeSchema defines the schema for ZSSGoType
 var ZSSGoTypeSchema = z.Struct(z.Shape{
-	"pkgPath": z.String().Required(),
-	"name":    z.String().Required(),
+	"pkgPath": z.String(),
+	"name":    z.String(),
 	"display": z.String().Required(),
+})
+
+var ZSSFieldMetaSchema = z.Struct(z.Shape{
+	"tags": z.String(),
 })
 
 // ZSSTransformerSchema defines the schema for ZSSTransformer
@@ -50,6 +54,7 @@ var ZSSSchemaSchema = z.EXPERIMENTAL_RECURSIVE(func(self z.RecursiveSchema[*z.St
 		"format":       z.Ptr(z.String()),
 		"processors":   z.Slice(ZSSProcessorSchema),
 		"fields":       z.EXPERIMENTAL_MAP[string, *zsscore.ZSSSchema](z.String(), z.Ptr(self())),
+		"fieldMeta":    z.EXPERIMENTAL_MAP[string, zsscore.ZSSFieldMeta](z.String(), ZSSFieldMetaSchema),
 		"element":      z.Ptr(self()),
 		"key":          z.Ptr(self()),
 		"value":        z.Ptr(self()),
