@@ -1,6 +1,18 @@
 package zsscore // Zog Schema Specification
 
-import "github.com/Oudwins/zog/zconst" // TODO make zog schemas for all of these to validate them!
+import (
+	"strconv"
+
+	"github.com/Oudwins/zog/zconst"
+) // TODO make zog schemas for all of these to validate them!
+
+func ZSSRefFromKey(key int) string {
+	return "#/$defs/" + ZSSDefKeyFromKey(key)
+}
+
+func ZSSDefKeyFromKey(key int) string {
+	return "schema" + strconv.Itoa(key)
+}
 
 type ZSSDocument struct {
 	Version ZSSVersion            `json:"$schema"` // URL to ZSS Json Schema file(e.g., "https://zog.dev/zss/0.0.1/schema.json")

@@ -36,7 +36,7 @@ var ZSSProcessorSchema = z.Struct(z.Shape{
 // Note: defaultValue and catchValue are intentionally loose because ZSS allows arbitrary values.
 var ZSSSchemaSchema = z.EXPERIMENTAL_RECURSIVE(func(self z.RecursiveSchema[*z.StructSchema]) *z.StructSchema {
 	return z.Struct(z.Shape{
-		"Ref":          z.String(),
+		"Ref":          z.Ptr(z.String()),
 		"kind":         z.String(),
 		"goTypes":      z.Slice(ZSSGoTypeSchema),
 		"format":       z.Ptr(z.String()),

@@ -3,7 +3,6 @@ package zog
 import (
 	"maps"
 	"reflect"
-	"strconv"
 
 	"github.com/Oudwins/zog/conf"
 	"github.com/Oudwins/zog/pkgs/internals"
@@ -42,28 +41,28 @@ type ZSSSerializable interface {
 
 type zssSerializeCtx struct {
 	defs     map[string]*zss.ZSSSchema
-	defNames map[ZSSSerializable]string
+	defNames map[ZSSSerializable]int
 	nextDef  int
 }
 
 func newZSSSerializeCtx() *zssSerializeCtx {
 	return &zssSerializeCtx{
 		defs:     map[string]*zss.ZSSSchema{},
-		defNames: map[ZSSSerializable]string{},
+		defNames: map[ZSSSerializable]int{},
 	}
 }
 
 func (ctx *zssSerializeCtx) refFor(schema ZSSSerializable) *zss.ZSSSchema {
 	if name, ok := ctx.defNames[schema]; ok {
-		ref := "#/defs/" + name
+		ref := zss.ZSSRefFromKey(name)
 		return &zss.ZSSSchema{Ref: &ref}
 	}
 
 	ctx.nextDef++
-	name := "schema" + strconv.Itoa(ctx.nextDef)
+	name := ctx.nextDef
 	ctx.defNames[schema] = name
-	ctx.defs[name] = schema.toZSS(ctx)
-	ref := "#/defs/" + name
+	ctx.defs[zss.ZSSDefKeyFromKey(name)] = schema.toZSS(ctx)
+	ref := zss.ZSSRefFromKey(name)
 	return &zss.ZSSSchema{Ref: &ref}
 }
 
