@@ -32,22 +32,17 @@ var ZSSProcessorSchema = z.Struct(z.Shape{
 	"transformer": z.Ptr(ZSSTransformerSchema),
 })
 
-// ZSSSchemaChildSchema defines the schema for ZSSSchemaChild
-var ZSSSchemaChildSchema = z.Struct(z.Shape{
-	"kind": z.String().Required(),
-	// schema and shape are mutually exclusive - cannot be strictly validated
-	// schema is *ZSSSchema - cannot be strictly validated
-	// shape is map[string]ZSSSchema - cannot be strictly validated
-})
-
 // ZSSSchemaSchema defines the schema for ZSSSchema
-// Note: Childs, DefaultValue, and CatchValue fields are typed as any and cannot be strictly validated
+// Note: recursive child slots, DefaultValue, and CatchValue cannot be strictly validated.
 var ZSSSchemaSchema = z.Struct(z.Shape{
 	"kind":       z.String().Required(),
 	"goTypes":    z.Slice(ZSSGoTypeSchema),
 	"format":     z.Ptr(z.String()),
-	"processors": z.Slice(ZSSProcessorSchema).Required(),
-	// childs is []ZSSSchemaChild - cannot be strictly validated due to recursive nature
+	"processors": z.Slice(ZSSProcessorSchema),
+	// fields is map[string]*ZSSSchema - cannot be strictly validated due to recursive nature
+	// element is *ZSSSchema - cannot be strictly validated due to recursive nature
+	// key is *ZSSSchema - cannot be strictly validated due to recursive nature
+	// value is *ZSSSchema - cannot be strictly validated due to recursive nature
 	"required": z.Ptr(ZSSTestSchema),
 	// defaultValue is any - cannot be strictly validated
 	// catchValue is any - cannot be strictly validated

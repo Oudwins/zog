@@ -209,17 +209,17 @@ func TestStructSchema(t *testing.T) {
 
 		nameSchema, nameExists := childShape["name"]
 		if assert.True(t, nameExists, "name field should exist") {
-			assertSchemaKind(t, &nameSchema, "string")
-			assertRequired(t, &nameSchema, true)
-			assertProcessorsCount(t, &nameSchema, 1)
+			assertSchemaKind(t, nameSchema, "string")
+			assertRequired(t, nameSchema, true)
+			assertProcessorsCount(t, nameSchema, 1)
 			assertTestProcessor(t, nameSchema.Processors, 0, "min", map[string]any{"min": 1})
 		}
 
 		ageSchema, ageExists := childShape["age"]
 		if assert.True(t, ageExists, "age field should exist") {
-			assertSchemaKind(t, &ageSchema, "number")
-			assertRequired(t, &ageSchema, true)
-			assertProcessorsCount(t, &ageSchema, 1)
+			assertSchemaKind(t, ageSchema, "number")
+			assertRequired(t, ageSchema, true)
+			assertProcessorsCount(t, ageSchema, 1)
 			assertTestProcessor(t, ageSchema.Processors, 0, "gt", map[string]any{"gt": 0})
 		}
 	}
@@ -240,9 +240,9 @@ func TestStructSchemaNested(t *testing.T) {
 	if assert.True(t, ok) {
 		userSchema, userExists := childShape["user"]
 		if assert.True(t, userExists) {
-			assertSchemaKind(t, &userSchema, "ptr")
+			assertSchemaKind(t, userSchema, "ptr")
 
-			ptrChild, ok := assertChildIsSchema(t, &userSchema)
+			ptrChild, ok := assertChildIsSchema(t, userSchema)
 			if assert.True(t, ok) {
 				assertSchemaKind(t, ptrChild, "struct")
 
@@ -250,8 +250,8 @@ func TestStructSchemaNested(t *testing.T) {
 				if assert.True(t, ok) {
 					emailSchema, emailExists := userShape["email"]
 					if assert.True(t, emailExists) {
-						assertSchemaKind(t, &emailSchema, "string")
-						assertProcessorsCount(t, &emailSchema, 1)
+						assertSchemaKind(t, emailSchema, "string")
+						assertProcessorsCount(t, emailSchema, 1)
 						assertTestProcessor(t, emailSchema.Processors, 0, "email", map[string]any{})
 					}
 				}

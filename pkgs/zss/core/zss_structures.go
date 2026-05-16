@@ -29,26 +29,16 @@ type ZSSGoType struct {
 	Display string `json:"display"` // Full type string (e.g., "*mypkg.User", "[]string")
 }
 
-type ZSSSchemaChildKind = string
-
-const (
-	ZSSSchemaChildKindShape  ZSSSchemaChildKind = "shape"
-	ZSSSchemaChildKindSchema ZSSSchemaChildKind = "schema"
-)
-
-type ZSSSchemaChild struct {
-	Kind   ZSSSchemaChildKind   `json:"kind"` // shape or schema
-	Schema *ZSSSchema           `json:"schema,omitempty"`
-	Shape  map[string]ZSSSchema `json:"shape,omitempty"`
-}
-
 type ZSSSchema struct {
-	Kind         string           `json:"kind"`              // "string", "number", "bool", "time", "slice", "struct", "ptr"
-	GoTypes      []ZSSGoType      `json:"goTypes,omitempty"` // Type metadata (only if ZSS Exhaustive Metadata is enabled)
-	Format       *string          `json:"format"`            // Used for time.Time schemas only right now. (Only if ZSS Exhaustive Metadata is enabled)
-	Processors   []ZSSProcessor   `json:"processors"`
-	Childs       []ZSSSchemaChild `json:"childs"`
-	Required     *ZSSTest         `json:"required"`
-	DefaultValue any              `json:"defaultValue"`
-	CatchValue   any              `json:"catchValue"`
+	Kind         zconst.ZogType        `json:"kind"`              // "string", "number", "bool", "time", "slice", "struct", "ptr"
+	GoTypes      []ZSSGoType           `json:"goTypes,omitempty"` // Type metadata (only if ZSS Exhaustive Metadata is enabled)
+	Format       *string               `json:"format,omitempty"`  // Used for time.Time schemas only right now. (Only if ZSS Exhaustive Metadata is enabled)
+	Processors   []ZSSProcessor        `json:"processors,omitempty"`
+	Fields       map[string]*ZSSSchema `json:"fields,omitempty"`  // struct only
+	Element      *ZSSSchema            `json:"element,omitempty"` // ptr, slice, preprocess, boxed
+	Key          *ZSSSchema            `json:"key,omitempty"`     // map only
+	Value        *ZSSSchema            `json:"value,omitempty"`   // map only
+	Required     *ZSSTest              `json:"required,omitempty"`
+	DefaultValue any                   `json:"defaultValue,omitempty"`
+	CatchValue   any                   `json:"catchValue,omitempty"`
 }

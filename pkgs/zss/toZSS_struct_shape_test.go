@@ -27,15 +27,15 @@ func TestStructShapeBasic(t *testing.T) {
 		// Check name field
 		nameSchema, nameExists := childShape["name"]
 		if assert.True(t, nameExists) {
-			assertSchemaKind(t, &nameSchema, "string")
-			assertRequired(t, &nameSchema, true)
+			assertSchemaKind(t, nameSchema, "string")
+			assertRequired(t, nameSchema, true)
 		}
 
 		// Check age field
 		ageSchema, ageExists := childShape["age"]
 		if assert.True(t, ageExists) {
-			assertSchemaKind(t, &ageSchema, "number")
-			assertRequired(t, &ageSchema, false)
+			assertSchemaKind(t, ageSchema, "number")
+			assertRequired(t, ageSchema, false)
 		}
 	}
 }
@@ -51,10 +51,10 @@ func TestStructShapeWithDefaultsAndCatch(t *testing.T) {
 	childShape, ok := assertChildIsShape(t, doc.Root)
 	if assert.True(t, ok) {
 		nameSchema := childShape["name"]
-		assertDefaultValue(t, &nameSchema, "John")
+		assertDefaultValue(t, nameSchema, "John")
 
 		ageSchema := childShape["age"]
-		assertCatchValue(t, &ageSchema, 0)
+		assertCatchValue(t, ageSchema, 0)
 	}
 }
 
@@ -69,12 +69,12 @@ func TestStructShapeWithProcessors(t *testing.T) {
 	childShape, ok := assertChildIsShape(t, doc.Root)
 	if assert.True(t, ok) {
 		emailSchema := childShape["email"]
-		assertProcessorsCount(t, &emailSchema, 2)
+		assertProcessorsCount(t, emailSchema, 2)
 		assertTestProcessor(t, emailSchema.Processors, 0, "email", map[string]any{})
 		assertTestProcessor(t, emailSchema.Processors, 1, "min", map[string]any{"min": 5})
 
 		countSchema := childShape["count"]
-		assertProcessorsCount(t, &countSchema, 2)
+		assertProcessorsCount(t, countSchema, 2)
 		assertTestProcessor(t, countSchema.Processors, 0, "gt", map[string]any{"gt": 0})
 		assertTestProcessor(t, countSchema.Processors, 1, "lt", map[string]any{"lt": 100})
 	}
@@ -92,17 +92,17 @@ func TestStructShapeNestedPtr(t *testing.T) {
 	childShape, ok := assertChildIsShape(t, doc.Root)
 	if assert.True(t, ok) {
 		userSchema := childShape["user"]
-		assertSchemaKind(t, &userSchema, "ptr")
+		assertSchemaKind(t, userSchema, "ptr")
 
-		ptrChild, ok := assertChildIsSchema(t, &userSchema)
+		ptrChild, ok := assertChildIsSchema(t, userSchema)
 		if assert.True(t, ok) {
 			assertSchemaKind(t, ptrChild, "struct")
 
 			userShape, ok := assertChildIsShape(t, ptrChild)
 			if assert.True(t, ok) {
 				nameSchema := userShape["name"]
-				assertSchemaKind(t, &nameSchema, "string")
-				assertRequired(t, &nameSchema, true)
+				assertSchemaKind(t, nameSchema, "string")
+				assertRequired(t, nameSchema, true)
 			}
 		}
 	}
@@ -118,11 +118,11 @@ func TestStructShapeNestedSlice(t *testing.T) {
 	childShape, ok := assertChildIsShape(t, doc.Root)
 	if assert.True(t, ok) {
 		tagsSchema := childShape["tags"]
-		assertSchemaKind(t, &tagsSchema, "slice")
-		assertProcessorsCount(t, &tagsSchema, 1)
+		assertSchemaKind(t, tagsSchema, "slice")
+		assertProcessorsCount(t, tagsSchema, 1)
 		assertTestProcessor(t, tagsSchema.Processors, 0, "min", map[string]any{"min": 1})
 
-		sliceChild, ok := assertChildIsSchema(t, &tagsSchema)
+		sliceChild, ok := assertChildIsSchema(t, tagsSchema)
 		if assert.True(t, ok) {
 			assertSchemaKind(t, sliceChild, "string")
 			assertProcessorsCount(t, sliceChild, 1)
@@ -145,22 +145,22 @@ func TestStructShapeDeeplyNested(t *testing.T) {
 	childShape, ok := assertChildIsShape(t, doc.Root)
 	if assert.True(t, ok) {
 		userSchema := childShape["user"]
-		assertSchemaKind(t, &userSchema, "ptr")
+		assertSchemaKind(t, userSchema, "ptr")
 
-		ptrChild, ok := assertChildIsSchema(t, &userSchema)
+		ptrChild, ok := assertChildIsSchema(t, userSchema)
 		if assert.True(t, ok) {
 			assertSchemaKind(t, ptrChild, "struct")
 
 			userShape, ok := assertChildIsShape(t, ptrChild)
 			if assert.True(t, ok) {
 				profileSchema := userShape["profile"]
-				assertSchemaKind(t, &profileSchema, "struct")
+				assertSchemaKind(t, profileSchema, "struct")
 
-				profileShape, ok := assertChildIsShape(t, &profileSchema)
+				profileShape, ok := assertChildIsShape(t, profileSchema)
 				if assert.True(t, ok) {
 					bioSchema := profileShape["bio"]
-					assertSchemaKind(t, &bioSchema, "string")
-					assertProcessorsCount(t, &bioSchema, 1)
+					assertSchemaKind(t, bioSchema, "string")
+					assertProcessorsCount(t, bioSchema, 1)
 					assertTestProcessor(t, bioSchema.Processors, 0, "max", map[string]any{"max": 500})
 				}
 			}
@@ -185,25 +185,25 @@ func TestStructShapeWithMultipleComplexTypes(t *testing.T) {
 
 		// Check name (primitive)
 		nameSchema := childShape["name"]
-		assertSchemaKind(t, &nameSchema, "string")
-		assertRequired(t, &nameSchema, true)
+		assertSchemaKind(t, nameSchema, "string")
+		assertRequired(t, nameSchema, true)
 
 		// Check emails (slice)
 		emailsSchema := childShape["emails"]
-		assertSchemaKind(t, &emailsSchema, "slice")
-		assertProcessorsCount(t, &emailsSchema, 1)
+		assertSchemaKind(t, emailsSchema, "slice")
+		assertProcessorsCount(t, emailsSchema, 1)
 		assertTestProcessor(t, emailsSchema.Processors, 0, "min", map[string]any{"min": 1})
 
 		// Check meta (ptr to struct)
 		metaSchema := childShape["meta"]
-		assertSchemaKind(t, &metaSchema, "ptr")
-		metaPtrChild, ok := assertChildIsSchema(t, &metaSchema)
+		assertSchemaKind(t, metaSchema, "ptr")
+		metaPtrChild, ok := assertChildIsSchema(t, metaSchema)
 		if assert.True(t, ok) {
 			assertSchemaKind(t, metaPtrChild, "struct")
 			metaShape, ok := assertChildIsShape(t, metaPtrChild)
 			if assert.True(t, ok) {
 				keySchema := metaShape["key"]
-				assertSchemaKind(t, &keySchema, "string")
+				assertSchemaKind(t, keySchema, "string")
 			}
 		}
 	}
@@ -231,7 +231,7 @@ func TestStructShapeWithTransforms(t *testing.T) {
 	childShape, ok := assertChildIsShape(t, doc.Root)
 	if assert.True(t, ok) {
 		nameSchema := childShape["name"]
-		assertProcessorsCount(t, &nameSchema, 2)
+		assertProcessorsCount(t, nameSchema, 2)
 		// Trim() ID is only set when zogmeta build tag is enabled
 		// Without zogmeta, it defaults to "custom"
 		// This test runs without zogmeta, so expect "custom"

@@ -5,46 +5,28 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// assertChildIsNil asserts that schema.Childs is nil or empty
+// assertChildIsNil asserts that schema has no nested child slots set.
 func assertChildIsNil(t assert.TestingT, schema *zss.ZSSSchema, msgAndArgs ...interface{}) bool {
-	if schema.Childs == nil {
-		return assert.Nil(t, schema.Childs, msgAndArgs...)
-	}
-	return assert.Len(t, schema.Childs, 0, msgAndArgs...)
+	return assert.Nil(t, schema.Element, msgAndArgs...) &&
+		assert.Nil(t, schema.Fields, msgAndArgs...) &&
+		assert.Nil(t, schema.Key, msgAndArgs...) &&
+		assert.Nil(t, schema.Value, msgAndArgs...)
 }
 
-// assertChildIsSchema asserts that schema.Childs contains a schema child and returns it
+// assertChildIsSchema asserts that schema.Element contains a schema child and returns it.
 func assertChildIsSchema(t assert.TestingT, schema *zss.ZSSSchema, msgAndArgs ...interface{}) (*zss.ZSSSchema, bool) {
-	if len(schema.Childs) == 0 {
-		return nil, assert.Fail(t, "Childs is empty, expected at least one child", msgAndArgs...)
+	if schema.Element == nil {
+		return nil, assert.Fail(t, "Element is nil, expected schema child", msgAndArgs...)
 	}
-	// Find the first child with Kind="schema"
-	for _, child := range schema.Childs {
-		if child.Kind == zss.ZSSSchemaChildKindSchema {
-			if child.Schema == nil {
-				return nil, assert.Fail(t, "Child Schema is nil", msgAndArgs...)
-			}
-			return child.Schema, true
-		}
-	}
-	return nil, assert.Fail(t, "No child with Kind='schema' found in Childs", msgAndArgs...)
+	return schema.Element, true
 }
 
-// assertChildIsShape asserts that schema.Childs contains a shape child and returns it
-func assertChildIsShape(t assert.TestingT, schema *zss.ZSSSchema, msgAndArgs ...interface{}) (map[string]zss.ZSSSchema, bool) {
-	if len(schema.Childs) == 0 {
-		return nil, assert.Fail(t, "Childs is empty, expected at least one child", msgAndArgs...)
+// assertChildIsShape asserts that schema.Fields contains struct fields and returns it.
+func assertChildIsShape(t assert.TestingT, schema *zss.ZSSSchema, msgAndArgs ...interface{}) (map[string]*zss.ZSSSchema, bool) {
+	if schema.Fields == nil {
+		return nil, assert.Fail(t, "Fields is nil, expected struct fields", msgAndArgs...)
 	}
-	// Find the first child with Kind="shape"
-	for _, child := range schema.Childs {
-		if child.Kind == zss.ZSSSchemaChildKindShape {
-			if child.Shape == nil {
-				return nil, assert.Fail(t, "Child Shape is nil", msgAndArgs...)
-			}
-			return child.Shape, true
-		}
-	}
-	return nil, assert.Fail(t, "No child with Kind='shape' found in Childs", msgAndArgs...)
+	return schema.Fields, true
 }
 
 // assertDocumentBasics asserts basic document invariants
@@ -60,7 +42,7 @@ func assertDocumentBasics(t assert.TestingT, doc zss.ZSSDocument) bool {
 
 // assertSchemaKind asserts the schema kind matches expected
 func assertSchemaKind(t assert.TestingT, schema *zss.ZSSSchema, expectedKind string) bool {
-	return assert.Equal(t, expectedKind, schema.Kind, "schema kind should match")
+	return assert.Equal(t, expectedKind, string(schema.Kind), "schema kind should match")
 }
 
 // assertRequired asserts required field is nil or not nil as expected

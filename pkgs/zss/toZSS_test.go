@@ -33,7 +33,6 @@ func TestToJsonString(t *testing.T) {
 
 	expected := baseZSSJson(`{
 		"kind": "string",
-		"format": null,
 		"processors": [
 			{
 				"kind": "test",
@@ -48,7 +47,6 @@ func TestToJsonString(t *testing.T) {
 				"transformer": null
 			}
 		],
-		"childs": null,
 		"required": {
 			"id": "required",
 			"message": "is required",
@@ -71,14 +69,8 @@ func TestToJsonPtr(t *testing.T) {
 
 	expected := baseZSSJson(`{
 		"kind": "ptr",
-		"format": null,
-		"processors": null,
-		"childs": [
-			{
-				"kind": "schema",
-				"schema": {
+		"element": {
 					"kind": "string",
-					"format": null,
 					"processors": [
 						{
 							"kind": "test",
@@ -93,7 +85,6 @@ func TestToJsonPtr(t *testing.T) {
 							"transformer": null
 						}
 					],
-					"childs": null,
 					"required": {
 						"id": "required",
 						"message": "is required",
@@ -102,12 +93,7 @@ func TestToJsonPtr(t *testing.T) {
 					},
 					"defaultValue": "Testing!",
 					"catchValue": "Testing2!"
-				}
-			}
-		],
-		"required": null,
-		"defaultValue": null,
-		"catchValue": null
+		}
 	}`)
 
 	assert.Equal(t, normalize(expected), normalize(string(serialized)))
@@ -132,19 +118,15 @@ func TestToJsonStructShape(t *testing.T) {
 	assert.NotNil(t, doc.Root)
 	assert.Equal(t, "struct", doc.Root.Kind)
 
-	// Verify child shape exists
-	assert.NotNil(t, doc.Root.Childs, "Childs should not be nil")
-	assert.Len(t, doc.Root.Childs, 1, "should have 1 child")
-	assert.Equal(t, zss.ZSSSchemaChildKindShape, doc.Root.Childs[0].Kind, "child should be a shape")
-
-	childShape := doc.Root.Childs[0].Shape
+	// Verify fields shape exists
+	childShape := doc.Root.Fields
 	assert.NotNil(t, childShape, "child shape should not be nil")
 	assert.Len(t, childShape, 2, "should have 2 fields")
 
 	// Verify name field
 	nameSchema, nameExists := childShape["name"]
 	assert.True(t, nameExists, "name field should exist")
-	assert.Equal(t, "string", nameSchema.Kind)
+	assert.Equal(t, "string", string(nameSchema.Kind))
 }
 
 func TestToJsonNumber(t *testing.T) {
@@ -156,7 +138,6 @@ func TestToJsonNumber(t *testing.T) {
 
 	expected := baseZSSJson(`{
 		"kind": "number",
-		"format": null,
 		"processors": [
 			{
 				"kind": "test",
@@ -171,15 +152,13 @@ func TestToJsonNumber(t *testing.T) {
 				"transformer": null
 			}
 		],
-		"childs": null,
 		"required": {
 			"id": "required",
 			"message": "is required",
 			"issuePath": null,
 			"params": {}
 		},
-		"defaultValue": 42,
-		"catchValue": null
+		"defaultValue": 42
 	}`)
 
 	assert.Equal(t, normalize(expected), normalize(string(serialized)))
@@ -194,17 +173,13 @@ func TestToJsonBool(t *testing.T) {
 
 	expected := baseZSSJson(`{
 		"kind": "bool",
-		"format": null,
-		"processors": null,
-		"childs": null,
 		"required": {
 			"id": "required",
 			"message": "is required",
 			"issuePath": null,
 			"params": {}
 		},
-		"defaultValue": true,
-		"catchValue": null
+		"defaultValue": true
 	}`)
 
 	assert.Equal(t, normalize(expected), normalize(string(serialized)))
@@ -219,17 +194,12 @@ func TestToJsonTime(t *testing.T) {
 
 	expected := baseZSSJson(`{
 		"kind": "time",
-		"format": null,
-		"processors": null,
-		"childs": null,
 		"required": {
 			"id": "required",
 			"message": "is required",
 			"issuePath": null,
 			"params": {}
-		},
-		"defaultValue": null,
-		"catchValue": null
+		}
 	}`)
 
 	assert.Equal(t, normalize(expected), normalize(string(serialized)))
@@ -244,7 +214,6 @@ func TestToJsonSlice(t *testing.T) {
 
 	expected := baseZSSJson(`{
 		"kind": "slice",
-		"format": null,
 		"processors": [
 			{
 				"kind": "test",
@@ -259,12 +228,8 @@ func TestToJsonSlice(t *testing.T) {
 				"transformer": null
 			}
 		],
-		"childs": [
-			{
-				"kind": "schema",
-				"schema": {
+		"element": {
 					"kind": "string",
-					"format": null,
 					"processors": [
 						{
 							"kind": "test",
@@ -278,22 +243,14 @@ func TestToJsonSlice(t *testing.T) {
 							},
 							"transformer": null
 						}
-					],
-					"childs": null,
-					"required": null,
-					"defaultValue": null,
-					"catchValue": null
-				}
-			}
-		],
+					]
+		},
 		"required": {
 			"id": "required",
 			"message": "is required",
 			"issuePath": null,
 			"params": {}
-		},
-		"defaultValue": null,
-		"catchValue": null
+		}
 	}`)
 
 	assert.Equal(t, normalize(expected), normalize(string(serialized)))
@@ -311,41 +268,20 @@ func TestToJsonStruct(t *testing.T) {
 
 	expected := baseZSSJson(`{
 		"kind": "struct",
-		"format": null,
-		"processors": null,
-		"childs": [
-			{
-				"kind": "shape",
-				"shape": {
+		"fields": {
 					"age": {
-						"kind": "number",
-						"format": null,
-						"processors": null,
-						"childs": null,
-						"required": null,
-						"defaultValue": null,
-						"catchValue": null
+						"kind": "number"
 					},
 					"name": {
 						"kind": "string",
-						"format": null,
-						"processors": null,
-						"childs": null,
 						"required": {
 							"id": "required",
 							"message": "is required",
 							"issuePath": null,
 							"params": {}
-						},
-						"defaultValue": null,
-						"catchValue": null
+						}
 					}
-				}
-			}
-		],
-		"required": null,
-		"defaultValue": null,
-		"catchValue": null
+		}
 	}`)
 
 	assert.Equal(t, normalize(expected), normalize(string(serialized)))
@@ -365,14 +301,8 @@ func TestToJsonPreprocess(t *testing.T) {
 
 	expected := baseZSSJson(`{
 		"kind": "preprocess",
-		"format": null,
-		"processors": null,
-		"childs": [
-			{
-				"kind": "schema",
-				"schema": {
+		"element": {
 					"kind": "string",
-					"format": null,
 					"processors": [
 						{
 							"kind": "test",
@@ -386,17 +316,8 @@ func TestToJsonPreprocess(t *testing.T) {
 							},
 							"transformer": null
 						}
-					],
-					"childs": null,
-					"required": null,
-					"defaultValue": null,
-					"catchValue": null
-				}
-			}
-		],
-		"required": null,
-		"defaultValue": null,
-		"catchValue": null
+					]
+		}
 	}`)
 
 	assert.Equal(t, normalize(expected), normalize(string(serialized)))
@@ -418,14 +339,8 @@ func TestToJsonBoxed(t *testing.T) {
 
 	expected := baseZSSJson(`{
 		"kind": "boxed",
-		"format": null,
-		"processors": null,
-		"childs": [
-			{
-				"kind": "schema",
-				"schema": {
+		"element": {
 					"kind": "string",
-					"format": null,
 					"processors": [
 						{
 							"kind": "test",
@@ -439,17 +354,8 @@ func TestToJsonBoxed(t *testing.T) {
 							},
 							"transformer": null
 						}
-					],
-					"childs": null,
-					"required": null,
-					"defaultValue": null,
-					"catchValue": null
-				}
-			}
-		],
-		"required": null,
-		"defaultValue": null,
-		"catchValue": null
+					]
+		}
 	}`)
 
 	assert.Equal(t, normalize(expected), normalize(string(serialized)))
@@ -464,7 +370,6 @@ func TestToJsonMap(t *testing.T) {
 
 	expected := baseZSSJson(`{
 		"kind": "map",
-		"format": null,
 		"processors": [
 			{
 				"kind": "test",
@@ -479,14 +384,9 @@ func TestToJsonMap(t *testing.T) {
 				"transformer": null
 			}
 		],
-		"childs": [
-			{
-				"kind": "shape",
-				"shape": {
-					"key": {
-						"kind": "string",
-						"format": null,
-						"processors": [
+		"key": {
+			"kind": "string",
+			"processors": [
 							{
 								"kind": "test",
 								"test": {
@@ -499,16 +399,11 @@ func TestToJsonMap(t *testing.T) {
 								},
 								"transformer": null
 							}
-						],
-						"childs": null,
-						"required": null,
-						"defaultValue": null,
-						"catchValue": null
-					},
-					"value": {
-						"kind": "number",
-						"format": null,
-						"processors": [
+			]
+		},
+		"value": {
+			"kind": "number",
+			"processors": [
 							{
 								"kind": "test",
 								"test": {
@@ -521,23 +416,14 @@ func TestToJsonMap(t *testing.T) {
 								},
 								"transformer": null
 							}
-						],
-						"childs": null,
-						"required": null,
-						"defaultValue": null,
-						"catchValue": null
-					}
-				}
-			}
-		],
+			]
+		},
 		"required": {
 			"id": "required",
 			"message": "is required",
 			"issuePath": null,
 			"params": {}
-		},
-		"defaultValue": null,
-		"catchValue": null
+		}
 	}`)
 
 	assert.Equal(t, normalize(expected), normalize(string(serialized)))
@@ -554,7 +440,6 @@ func TestToJsonCustom(t *testing.T) {
 
 	expected := baseZSSJson(`{
 		"kind": "custom",
-		"format": null,
 		"processors": [
 			{
 				"kind": "test",
@@ -566,11 +451,7 @@ func TestToJsonCustom(t *testing.T) {
 				},
 				"transformer": null
 			}
-		],
-		"childs": null,
-		"required": null,
-		"defaultValue": null,
-		"catchValue": null
+		]
 	}`)
 
 	assert.Equal(t, normalize(expected), normalize(string(serialized)))

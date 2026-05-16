@@ -42,7 +42,6 @@ func TestToJsonStringLike(t *testing.T) {
 				"display": "zss_test.CustomString"
 			}
 		],
-		"format": null,
 		"processors": [
 			{
 				"kind": "test",
@@ -57,15 +56,12 @@ func TestToJsonStringLike(t *testing.T) {
 				"transformer": null
 			}
 		],
-		"child": null,
 		"required": {
 			"id": "required",
 			"message": "is required",
 			"issuePath": null,
 			"params": {}
-		},
-		"defaultValue": null,
-		"catchValue": null
+		}
 	}`)
 
 	assert.Equal(t, normalize(expected), normalize(string(serialized)))
@@ -88,7 +84,6 @@ func TestToJsonIntLike(t *testing.T) {
 				"display": "zss_test.CustomInt"
 			}
 		],
-		"format": null,
 		"processors": [
 			{
 				"kind": "test",
@@ -103,15 +98,12 @@ func TestToJsonIntLike(t *testing.T) {
 				"transformer": null
 			}
 		],
-		"child": null,
 		"required": {
 			"id": "required",
 			"message": "is required",
 			"issuePath": null,
 			"params": {}
-		},
-		"defaultValue": null,
-		"catchValue": null
+		}
 	}`)
 
 	assert.Equal(t, normalize(expected), normalize(string(serialized)))
@@ -134,17 +126,12 @@ func TestToJsonBoolLike(t *testing.T) {
 				"display": "zss_test.CustomBool"
 			}
 		],
-		"format": null,
-		"processors": null,
-		"child": null,
 		"required": {
 			"id": "required",
 			"message": "is required",
 			"issuePath": null,
 			"params": {}
-		},
-		"defaultValue": null,
-		"catchValue": null
+		}
 	}`)
 
 	assert.Equal(t, normalize(expected), normalize(string(serialized)))
@@ -160,16 +147,12 @@ func TestToJsonTimeWithFormat(t *testing.T) {
 	expected := baseZSSJson(`{
 		"kind": "time",
 		"format": "2006-01-02T15:04:05Z07:00",
-		"processors": null,
-		"child": null,
 		"required": {
 			"id": "required",
 			"message": "is required",
 			"issuePath": null,
 			"params": {}
-		},
-		"defaultValue": null,
-		"catchValue": null
+		}
 	}`)
 
 	assert.Equal(t, normalize(expected), normalize(string(serialized)))
@@ -185,9 +168,7 @@ func TestToJsonPtrWithStringLike(t *testing.T) {
 
 	expected := baseZSSJson(`{
 		"kind": "ptr",
-		"format": null,
-		"processors": null,
-		"child": {
+		"element": {
 			"kind": "string",
 			"goTypes": [
 				{
@@ -196,21 +177,13 @@ func TestToJsonPtrWithStringLike(t *testing.T) {
 					"display": "zss_test.CustomString"
 				}
 			],
-			"format": null,
-			"processors": null,
-			"child": null,
 			"required": {
 				"id": "required",
 				"message": "is required",
 				"issuePath": null,
 				"params": {}
-			},
-			"defaultValue": null,
-			"catchValue": null
-		},
-		"required": null,
-		"defaultValue": null,
-		"catchValue": null
+			}
+		}
 	}`)
 
 	assert.Equal(t, normalize(expected), normalize(string(serialized)))
@@ -243,9 +216,7 @@ func TestToJsonPreprocessWithGoType(t *testing.T) {
 				"display": "string"
 			}
 		],
-		"format": null,
-		"processors": null,
-		"child": {
+		"element": {
 			"kind": "string",
 			"goTypes": [
 				{
@@ -254,7 +225,6 @@ func TestToJsonPreprocessWithGoType(t *testing.T) {
 					"display": "string"
 				}
 			],
-			"format": null,
 			"processors": [
 				{
 					"kind": "test",
@@ -268,15 +238,8 @@ func TestToJsonPreprocessWithGoType(t *testing.T) {
 					},
 					"transformer": null
 				}
-			],
-			"child": null,
-			"required": null,
-			"defaultValue": null,
-			"catchValue": null
-		},
-		"required": null,
-		"defaultValue": null,
-		"catchValue": null
+			]
+		}
 	}`)
 
 	assert.Equal(t, normalize(expected), normalize(string(serialized)))
@@ -310,9 +273,7 @@ func TestToJsonBoxedWithGoType(t *testing.T) {
 				"display": "string"
 			}
 		],
-		"format": null,
-		"processors": null,
-		"child": {
+		"element": {
 			"kind": "string",
 			"goTypes": [
 				{
@@ -321,7 +282,6 @@ func TestToJsonBoxedWithGoType(t *testing.T) {
 					"display": "string"
 				}
 			],
-			"format": null,
 			"processors": [
 				{
 					"kind": "test",
@@ -335,15 +295,8 @@ func TestToJsonBoxedWithGoType(t *testing.T) {
 					},
 					"transformer": null
 				}
-			],
-			"child": null,
-			"required": null,
-			"defaultValue": null,
-			"catchValue": null
-		},
-		"required": null,
-		"defaultValue": null,
-		"catchValue": null
+			]
+		}
 	}`)
 
 	assert.Equal(t, normalize(expected), normalize(string(serialized)))
@@ -368,7 +321,6 @@ func TestToJsonCustomWithGoType(t *testing.T) {
 				"display": "zss_test.CustomType"
 			}
 		],
-		"format": null,
 		"processors": [
 			{
 				"kind": "test",
@@ -380,11 +332,7 @@ func TestToJsonCustomWithGoType(t *testing.T) {
 				},
 				"transformer": null
 			}
-		],
-		"child": null,
-		"required": null,
-		"defaultValue": null,
-		"catchValue": null
+		]
 	}`)
 
 	assert.Equal(t, normalize(expected), normalize(string(serialized)))
