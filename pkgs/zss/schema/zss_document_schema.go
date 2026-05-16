@@ -36,7 +36,8 @@ var ZSSProcessorSchema = z.Struct(z.Shape{
 // Note: defaultValue and catchValue are intentionally loose because ZSS allows arbitrary values.
 var ZSSSchemaSchema = z.EXPERIMENTAL_RECURSIVE(func(self z.RecursiveSchema[*z.StructSchema]) *z.StructSchema {
 	return z.Struct(z.Shape{
-		"kind":         z.String().Required(),
+		"Ref":          z.String(),
+		"kind":         z.String(),
 		"goTypes":      z.Slice(ZSSGoTypeSchema),
 		"format":       z.Ptr(z.String()),
 		"processors":   z.Slice(ZSSProcessorSchema),
@@ -52,6 +53,7 @@ var ZSSSchemaSchema = z.EXPERIMENTAL_RECURSIVE(func(self z.RecursiveSchema[*z.St
 
 // ZSSDocumentSchema defines the schema for ZSSDocument
 var ZSSDocumentSchema = z.Struct(z.Shape{
-	"$schema": z.String().Required(),
-	"root":    z.Ptr(ZSSSchemaSchema).NotNil(),
+	"Version": z.String().Required(),
+	"Root":    z.Ptr(ZSSSchemaSchema).NotNil(),
+	"Defs":    z.EXPERIMENTAL_MAP[string, *zsscore.ZSSSchema](z.String(), z.Ptr(ZSSSchemaSchema)),
 })

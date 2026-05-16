@@ -3,8 +3,9 @@ package zsscore // Zog Schema Specification
 import "github.com/Oudwins/zog/zconst" // TODO make zog schemas for all of these to validate them!
 
 type ZSSDocument struct {
-	Version ZSSVersion `json:"$schema"` // URL to ZSS Json Schema file(e.g., "https://zog.dev/zss/0.0.1/schema.json")
-	Root    *ZSSSchema `json:"root"`
+	Version ZSSVersion            `json:"$schema"` // URL to ZSS Json Schema file(e.g., "https://zog.dev/zss/0.0.1/schema.json")
+	Root    *ZSSSchema            `json:"root"`
+	Defs    map[string]*ZSSSchema `json:"$defs,omitempty"`
 }
 type ZSSProcessor struct {
 	Kind        zconst.ZogProcessor `json:"kind"` // "transform", "validator"
@@ -30,7 +31,8 @@ type ZSSGoType struct {
 }
 
 type ZSSSchema struct {
-	Kind         zconst.ZogType        `json:"kind"`              // "string", "number", "bool", "time", "slice", "struct", "ptr"
+	Ref          *string               `json:"$ref,omitempty"`
+	Kind         zconst.ZogType        `json:"kind,omitempty"`    // "string", "number", "bool", "time", "slice", "struct", "ptr"
 	GoTypes      []ZSSGoType           `json:"goTypes,omitempty"` // Type metadata (only if ZSS Exhaustive Metadata is enabled)
 	Format       *string               `json:"format,omitempty"`  // Used for time.Time schemas only right now. (Only if ZSS Exhaustive Metadata is enabled)
 	Processors   []ZSSProcessor        `json:"processors,omitempty"`

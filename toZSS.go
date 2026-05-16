@@ -3,6 +3,7 @@ package zog
 import (
 	"maps"
 	"reflect"
+	"strconv"
 
 	"github.com/Oudwins/zog/conf"
 	"github.com/Oudwins/zog/pkgs/internals"
@@ -36,18 +37,47 @@ func getZSSGoType[T any]() zss.ZSSGoType {
 }
 
 type ZSSSerializable interface {
-	toZSS() *zss.ZSSSchema
+	toZSS(*zssSerializeCtx) *zss.ZSSSchema
 }
 
-func EXPERIMENTAL_TO_ZSS(s ZSSSerializable) zss.ZSSDocument {
-	j := s.toZSS()
-	return zss.ZSSDocument{
-		Version: zss.ZSS_VERSION_LATEST,
-		Root:    j,
+type zssSerializeCtx struct {
+	defs     map[string]*zss.ZSSSchema
+	defNames map[ZSSSerializable]string
+	nextDef  int
+}
+
+func newZSSSerializeCtx() *zssSerializeCtx {
+	return &zssSerializeCtx{
+		defs:     map[string]*zss.ZSSSchema{},
+		defNames: map[ZSSSerializable]string{},
 	}
 }
 
-func (s *StringSchema[T]) toZSS() *zss.ZSSSchema {
+func (ctx *zssSerializeCtx) refFor(schema ZSSSerializable) *zss.ZSSSchema {
+	if name, ok := ctx.defNames[schema]; ok {
+		ref := "#/defs/" + name
+		return &zss.ZSSSchema{Ref: &ref}
+	}
+
+	ctx.nextDef++
+	name := "schema" + strconv.Itoa(ctx.nextDef)
+	ctx.defNames[schema] = name
+	ctx.defs[name] = schema.toZSS(ctx)
+	ref := "#/defs/" + name
+	return &zss.ZSSSchema{Ref: &ref}
+}
+
+func EXPERIMENTAL_TO_ZSS(s ZSSSerializable) zss.ZSSDocument {
+	ctx := newZSSSerializeCtx()
+	j := s.toZSS(ctx)
+	return zss.ZSSDocument{
+		Version: zss.ZSS_VERSION_LATEST,
+		Root:    j,
+		Defs:    ctx.defs,
+	}
+}
+
+func (s *StringSchema[T]) toZSS(ctx *zssSerializeCtx) *zss.ZSSSchema {
 	rvP := reflect.ValueOf(s.processors)
 	j := zss.ZSSSchema{
 		Kind:         zconst.TypeString,
@@ -64,7 +94,7 @@ func (s *StringSchema[T]) toZSS() *zss.ZSSSchema {
 	return &j
 }
 
-func (s *NumberSchema[T]) toZSS() *zss.ZSSSchema {
+func (s *NumberSchema[T]) toZSS(ctx *zssSerializeCtx) *zss.ZSSSchema {
 	rvP := reflect.ValueOf(s.processors)
 	j := zss.ZSSSchema{
 		Kind:         zconst.TypeNumber,
@@ -80,7 +110,7 @@ func (s *NumberSchema[T]) toZSS() *zss.ZSSSchema {
 	return &j
 }
 
-func (s *BoolSchema[T]) toZSS() *zss.ZSSSchema {
+func (s *BoolSchema[T]) toZSS(ctx *zssSerializeCtx) *zss.ZSSSchema {
 	rvP := reflect.ValueOf(s.processors)
 	j := zss.ZSSSchema{
 		Kind:         zconst.TypeBool,
@@ -96,7 +126,7 @@ func (s *BoolSchema[T]) toZSS() *zss.ZSSSchema {
 	return &j
 }
 
-func (s *TimeSchema) toZSS() *zss.ZSSSchema {
+func (s *TimeSchema) toZSS(ctx *zssSerializeCtx) *zss.ZSSSchema {
 	rvP := reflect.ValueOf(s.processors)
 	j := zss.ZSSSchema{
 		Kind:         zconst.TypeTime,
@@ -112,28 +142,28 @@ func (s *TimeSchema) toZSS() *zss.ZSSSchema {
 	return &j
 }
 
-func (s *PointerSchema) toZSS() *zss.ZSSSchema {
+func (s *PointerSchema) toZSS(ctx *zssSerializeCtx) *zss.ZSSSchema {
 	j := zss.ZSSSchema{
 		Kind:     zconst.TypePtr,
 		Required: toZSSRequired(s.required, s.schema.getType()),
-		Element:  s.schema.toZSS(),
+		Element:  s.schema.toZSS(ctx),
 	}
 	return &j
 }
 
-func (s *SliceSchema) toZSS() *zss.ZSSSchema {
+func (s *SliceSchema) toZSS(ctx *zssSerializeCtx) *zss.ZSSSchema {
 	rvP := reflect.ValueOf(s.processors)
 	j := zss.ZSSSchema{
 		Kind:         zconst.TypeSlice,
 		Required:     toZSSRequired(s.required, zconst.TypeSlice),
 		DefaultValue: defaultValueFromAnyFunc(s.defaultFunc),
 		Processors:   processorsToZSS(rvP, zconst.TypeSlice),
-		Element:      s.schema.toZSS(),
+		Element:      s.schema.toZSS(ctx),
 	}
 	return &j
 }
 
-func (s *MapSchema[K, V]) toZSS() *zss.ZSSSchema {
+func (s *MapSchema[K, V]) toZSS(ctx *zssSerializeCtx) *zss.ZSSSchema {
 	rvP := reflect.ValueOf(s.processors)
 	defaultValue := shallowCopyMapFromFunc(s.defaultFunc)
 	j := zss.ZSSSchema{
@@ -141,8 +171,8 @@ func (s *MapSchema[K, V]) toZSS() *zss.ZSSSchema {
 		Required:     toZSSRequired(s.required, zconst.TypeMap),
 		DefaultValue: defaultValue,
 		Processors:   processorsToZSS(rvP, zconst.TypeMap),
-		Key:          s.keySchema.toZSS(),
-		Value:        s.valueSchema.toZSS(),
+		Key:          s.keySchema.toZSS(ctx),
+		Value:        s.valueSchema.toZSS(ctx),
 	}
 	return &j
 }
@@ -166,18 +196,18 @@ func shallowCopyMapFromFunc[K comparable, V any](defaultFunc func() map[K]V) any
 	return shallowCopyMap(defaultFunc())
 }
 
-func (s *StructSchema) toZSS() *zss.ZSSSchema {
+func (s *StructSchema) toZSS(ctx *zssSerializeCtx) *zss.ZSSSchema {
 	rvP := reflect.ValueOf(s.processors)
 	j := zss.ZSSSchema{
 		Kind:       zconst.TypeStruct,
 		Required:   toZSSRequired(s.required, zconst.TypeStruct),
 		Processors: processorsToZSS(rvP, zconst.TypeStruct),
-		Fields:     toZSSFields(s.schema),
+		Fields:     toZSSFields(s.schema, ctx),
 	}
 	return &j
 }
 
-func (s *Custom[T]) toZSS() *zss.ZSSSchema {
+func (s *Custom[T]) toZSS(ctx *zssSerializeCtx) *zss.ZSSSchema {
 	j := zss.ZSSSchema{
 		Kind: zconst.TypeCustom,
 		// TODO not sure this is the right place for this info
@@ -190,18 +220,18 @@ func (s *Custom[T]) toZSS() *zss.ZSSSchema {
 	return &j
 }
 
-func toZSSFields(m Shape) map[string]*zss.ZSSSchema {
+func toZSSFields(m Shape, ctx *zssSerializeCtx) map[string]*zss.ZSSSchema {
 	out := map[string]*zss.ZSSSchema{}
 	for k, v := range m {
-		out[k] = v.toZSS()
+		out[k] = v.toZSS(ctx)
 	}
 	return out
 }
 
-func (s *PreprocessSchema[F, T]) toZSS() *zss.ZSSSchema {
+func (s *PreprocessSchema[F, T]) toZSS(ctx *zssSerializeCtx) *zss.ZSSSchema {
 	j := zss.ZSSSchema{
 		Kind:    zconst.TypePreprocess,
-		Element: s.schema.toZSS(),
+		Element: s.schema.toZSS(ctx),
 	}
 
 	if EXHAUSTIVE_METADATA {
@@ -210,10 +240,10 @@ func (s *PreprocessSchema[F, T]) toZSS() *zss.ZSSSchema {
 	return &j
 }
 
-func (s *BoxedSchema[B, T]) toZSS() *zss.ZSSSchema {
+func (s *BoxedSchema[B, T]) toZSS(ctx *zssSerializeCtx) *zss.ZSSSchema {
 	j := zss.ZSSSchema{
 		Kind:    zconst.TypeBoxed,
-		Element: s.schema.toZSS(),
+		Element: s.schema.toZSS(ctx),
 	}
 
 	if EXHAUSTIVE_METADATA {

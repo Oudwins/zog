@@ -129,6 +129,6 @@ func (c *CustomSchema) setCoercer(coercer CoercerFunc) {
 	c.schema.SetCoercer(coercer)
 }
 
-func (c *CustomSchema) toZSS() *zss.ZSSSchema {
+func (c *CustomSchema) toZSS(ctx *zssSerializeCtx) *zss.ZSSSchema {
 	return c.schema.ToZSS()
 }

@@ -456,3 +456,62 @@ func TestToJsonCustom(t *testing.T) {
 
 	assert.Equal(t, normalize(expected), normalize(string(serialized)))
 }
+
+func TestToJsonRecursiveUsesRefs(t *testing.T) {
+	s := zog.EXPERIMENTAL_RECURSIVE(func(self zog.RecursiveSchema[*zog.PointerSchema]) *zog.PointerSchema {
+		return zog.Ptr(zog.Struct(zog.Shape{
+			"value": zog.Int().Required(),
+			"self":  self(),
+		}))
+	})
+
+	d := zog.EXPERIMENTAL_TO_ZSS(s)
+	serialized, err := json.Marshal(d)
+	assert.Nil(t, err)
+	assert.NotNil(t, serialized)
+	assert.NotEmpty(t, d.Defs)
+
+	expected := `{
+		"$schema": "` + string(zss.ZSS_VERSION_LATEST) + `",
+		"root": {
+			"kind": "ptr",
+			"element": {
+				"kind": "struct",
+				"fields": {
+					"self": {"$ref": "#/defs/schema1"},
+					"value": {
+						"kind": "number",
+						"required": {
+							"id": "required",
+							"message": "is required",
+							"issuePath": null,
+							"params": {}
+						}
+					}
+				}
+			}
+		},
+		"defs": {
+			"schema1": {
+				"kind": "ptr",
+				"element": {
+					"kind": "struct",
+					"fields": {
+						"self": {"$ref": "#/defs/schema1"},
+						"value": {
+							"kind": "number",
+							"required": {
+								"id": "required",
+								"message": "is required",
+								"issuePath": null,
+								"params": {}
+							}
+						}
+					}
+				}
+			}
+		}
+	}`
+
+	assert.Equal(t, normalize(expected), normalize(string(serialized)))
+}

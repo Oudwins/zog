@@ -231,7 +231,7 @@ func (v *AnySchema) CatchFunc(catchFunc func() any) *AnySchema {
 }
 
 // toZSS converts the schema to ZSS format
-func (v *AnySchema) toZSS() *zss.ZSSSchema {
+func (v *AnySchema) toZSS(ctx *zssSerializeCtx) *zss.ZSSSchema {
 	rvP := reflect.ValueOf(v.processors)
 	defaultValue := defaultValueFromAnyFunc(v.defaultFunc)
 	catchValue := defaultValueFromAnyFunc(v.catchFunc)
