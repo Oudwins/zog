@@ -20,7 +20,7 @@ type testExperimentalSchema struct {
 	errorMsg  string
 }
 
-func (s *testExperimentalSchema) ToZSS() *zss.ZSSSchema {
+func (s *testExperimentalSchema) ToZSS(ctx *ZSSSerializeCtx) *zss.ZSSSchema {
 	return nil //noop
 }
 
