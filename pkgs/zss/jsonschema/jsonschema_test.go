@@ -94,8 +94,8 @@ func TestFromZSSConvertsPointerNullability(t *testing.T) {
 
 func TestFromZSSConvertsValidationProcessors(t *testing.T) {
 	doc := zsscore.ZSSDocument{Root: &zsscore.ZSSSchema{Kind: zconst.TypeString, Processors: []zsscore.ZSSProcessor{
-		testProcessor(zconst.IssueCodeMin, map[string]any{"min": 2}),
-		testProcessor(zconst.IssueCodeMax, map[string]any{"max": 5}),
+		testProcessor(zconst.IssueCodeMin, map[string]any{zconst.IssueCodeMin: 2}),
+		testProcessor(zconst.IssueCodeMax, map[string]any{zconst.IssueCodeMax: 5}),
 		testProcessor(zconst.IssueCodeEmail, map[string]any{}),
 	}}}
 

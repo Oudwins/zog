@@ -149,7 +149,7 @@ func propertyName(meta zsscore.ZSSFieldMeta, fallback string) (string, bool) {
 			return name, true
 		}
 	}
-	if zogTag, ok := tags.Lookup("zog"); ok && zogTag != "" {
+	if zogTag, ok := tags.Lookup(zconst.ZogTag); ok && zogTag != "" {
 		return zogTag, true
 	}
 	return fallback, true
@@ -205,23 +205,23 @@ func applyProcessors(out Schema, schema *zsscore.ZSSSchema) {
 func applyTest(out Schema, kind zconst.ZogType, test *zsscore.ZSSTest) {
 	switch test.ID {
 	case zconst.IssueCodeMin:
-		applyMin(out, kind, test.Params["min"])
+		applyMin(out, kind, test.Params[zconst.IssueCodeMin])
 	case zconst.IssueCodeMax:
-		applyMax(out, kind, test.Params["max"])
+		applyMax(out, kind, test.Params[zconst.IssueCodeMax])
 	case zconst.IssueCodeLen:
-		applyLen(out, kind, test.Params["len"])
+		applyLen(out, kind, test.Params[zconst.IssueCodeLen])
 	case zconst.IssueCodeEQ:
-		out["const"] = test.Params["eq"]
+		out["const"] = test.Params[zconst.IssueCodeEQ]
 	case zconst.IssueCodeOneOf:
-		out["enum"] = test.Params["one_of_options"]
+		out["enum"] = test.Params[zconst.IssueCodeOneOf]
 	case zconst.IssueCodeGT:
-		out["exclusiveMinimum"] = test.Params["gt"]
+		out["exclusiveMinimum"] = test.Params[zconst.IssueCodeGT]
 	case zconst.IssueCodeGTE:
-		out["minimum"] = test.Params["gte"]
+		out["minimum"] = test.Params[zconst.IssueCodeGTE]
 	case zconst.IssueCodeLT:
-		out["exclusiveMaximum"] = test.Params["lt"]
+		out["exclusiveMaximum"] = test.Params[zconst.IssueCodeLT]
 	case zconst.IssueCodeLTE:
-		out["maximum"] = test.Params["lte"]
+		out["maximum"] = test.Params[zconst.IssueCodeLTE]
 	case zconst.IssueCodeEmail:
 		out["format"] = "email"
 	case zconst.IssueCodeUUID:
@@ -231,7 +231,7 @@ func applyTest(out Schema, kind zconst.ZogType, test *zsscore.ZSSTest) {
 	case zconst.IssueCodeIP:
 		out["format"] = "ip"
 	case zconst.IssueCodeMatch:
-		out["pattern"] = test.Params["match"]
+		out["pattern"] = test.Params[zconst.IssueCodeMatch]
 	case zconst.IssueCodeTrue:
 		out["const"] = true
 	case zconst.IssueCodeFalse:
