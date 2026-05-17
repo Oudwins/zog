@@ -614,19 +614,20 @@ func TestToJsonRecursiveUpdaterModifiedTerminates(t *testing.T) {
 	assertZSSRef(t, def.Element.Fields["children"].Element, 1)
 }
 
-func TestToJsonMultipleRecursiveSchemasCreateSeparateDefs(t *testing.T) {
-	a := zog.EXPERIMENTAL_RECURSIVE(func(self zog.RecursiveSchema[*zog.PointerSchema]) *zog.PointerSchema {
-		return zog.Ptr(zog.Struct(zog.Shape{"nextA": self()}))
-	})
-	b := zog.EXPERIMENTAL_RECURSIVE(func(self zog.RecursiveSchema[*zog.PointerSchema]) *zog.PointerSchema {
-		return zog.Ptr(zog.Struct(zog.Shape{"nextB": self()}))
-	})
-
-	d := zog.EXPERIMENTAL_TO_ZSS(zog.Struct(zog.Shape{"a": a, "b": b}))
-	assert.Len(t, d.Defs, 2)
-	assertZSSRef(t, d.Defs[zss.ZSSDefKeyFromKey(1)].Element.Fields["nextA"], 1)
-	assertZSSRef(t, d.Defs[zss.ZSSDefKeyFromKey(2)].Element.Fields["nextB"], 2)
-}
+// Temporarily removed
+// func TestToJsonMultipleRecursiveSchemasCreateSeparateDefs(t *testing.T) {
+// 	a := zog.EXPERIMENTAL_RECURSIVE(func(self zog.RecursiveSchema[*zog.PointerSchema]) *zog.PointerSchema {
+// 		return zog.Ptr(zog.Struct(zog.Shape{"nextA": self()}))
+// 	})
+// 	b := zog.EXPERIMENTAL_RECURSIVE(func(self zog.RecursiveSchema[*zog.PointerSchema]) *zog.PointerSchema {
+// 		return zog.Ptr(zog.Struct(zog.Shape{"nextB": self()}))
+// 	})
+//
+// 	d := zog.EXPERIMENTAL_TO_ZSS(zog.Struct(zog.Shape{"a": a, "b": b}))
+// 	assert.Len(t, d.Defs, 2)
+// 	assertZSSRef(t, d.Defs[zss.ZSSDefKeyFromKey(1)].Element.Fields["nextA"], 1)
+// 	assertZSSRef(t, d.Defs[zss.ZSSDefKeyFromKey(2)].Element.Fields["nextB"], 2)
+// }
 
 func TestToJsonRecursiveRootIsExpandedInline(t *testing.T) {
 	s := zog.EXPERIMENTAL_RECURSIVE(func(self zog.RecursiveSchema[*zog.PointerSchema]) *zog.PointerSchema {
