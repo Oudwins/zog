@@ -1,11 +1,13 @@
 package zjsonschema_test
 
 import (
+	"encoding/json"
 	"testing"
 
 	zsscore "github.com/Oudwins/zog/pkgs/zss/core"
 	zjsonschema "github.com/Oudwins/zog/pkgs/zss/jsonschema"
 	"github.com/Oudwins/zog/zconst"
+	googlejsonschema "github.com/google/jsonschema-go/jsonschema"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -24,6 +26,7 @@ func TestFromZSSConvertsRootAndDefs(t *testing.T) {
 
 	schema, err := zjsonschema.FromZSS(doc, zjsonschema.Options{})
 	require.NoError(t, err)
+	requireValidJSONSchema(t, schema)
 
 	assert.Equal(t, string(zjsonschema.Draft2020_12), schema["$schema"])
 	assert.Equal(t, "object", schema["type"])
@@ -53,6 +56,7 @@ func TestFromZSSConvertsKinds(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := zjsonschema.FromZSS(zsscore.ZSSDocument{Root: tt.in}, zjsonschema.Options{})
 			require.NoError(t, err)
+			requireValidJSONSchema(t, got)
 			assert.Equal(t, tt.want, got)
 		})
 	}
@@ -66,6 +70,7 @@ func TestFromZSSConvertsContainers(t *testing.T) {
 
 	schema, err := zjsonschema.FromZSS(doc, zjsonschema.Options{})
 	require.NoError(t, err)
+	requireValidJSONSchema(t, schema)
 
 	assert.Equal(t, zjsonschema.Schema{
 		"$schema": string(zjsonschema.Draft2020_12),
@@ -80,15 +85,23 @@ func TestFromZSSConvertsContainers(t *testing.T) {
 func TestFromZSSConvertsPointerNullability(t *testing.T) {
 	optional, err := zjsonschema.FromZSS(zsscore.ZSSDocument{Root: &zsscore.ZSSSchema{Kind: zconst.TypePtr, Element: &zsscore.ZSSSchema{Kind: zconst.TypeString}}}, zjsonschema.Options{})
 	require.NoError(t, err)
+	requireValidJSONSchema(t, optional)
 	assert.Equal(t, []string{"string", "null"}, optional["type"])
 
 	required, err := zjsonschema.FromZSS(zsscore.ZSSDocument{Root: &zsscore.ZSSSchema{Kind: zconst.TypePtr, Required: requiredTest(), Element: &zsscore.ZSSSchema{Kind: zconst.TypeString}}}, zjsonschema.Options{})
 	require.NoError(t, err)
+	requireValidJSONSchema(t, required)
 	assert.Equal(t, "string", required["type"])
 
 	ref := zsscore.ZSSRefFromKey(1)
-	refPtr, err := zjsonschema.FromZSS(zsscore.ZSSDocument{Root: &zsscore.ZSSSchema{Kind: zconst.TypePtr, Element: &zsscore.ZSSSchema{Ref: &ref}}}, zjsonschema.Options{})
+	refPtr, err := zjsonschema.FromZSS(zsscore.ZSSDocument{
+		Root: &zsscore.ZSSSchema{Kind: zconst.TypePtr, Element: &zsscore.ZSSSchema{Ref: &ref}},
+		Defs: map[string]*zsscore.ZSSSchema{
+			zsscore.ZSSDefKeyFromKey(1): {Kind: zconst.TypeString},
+		},
+	}, zjsonschema.Options{})
 	require.NoError(t, err)
+	requireValidJSONSchema(t, refPtr)
 	assert.Equal(t, []any{zjsonschema.Schema{"$ref": ref}, zjsonschema.Schema{"type": "null"}}, refPtr["anyOf"])
 }
 
@@ -101,6 +114,7 @@ func TestFromZSSConvertsValidationProcessors(t *testing.T) {
 
 	schema, err := zjsonschema.FromZSS(doc, zjsonschema.Options{})
 	require.NoError(t, err)
+	requireValidJSONSchema(t, schema)
 
 	assert.Equal(t, 2, schema["minLength"])
 	assert.Equal(t, 5, schema["maxLength"])
@@ -120,6 +134,7 @@ func TestFromZSSUsesFieldMetaPropertyNames(t *testing.T) {
 
 	schema, err := zjsonschema.FromZSS(doc, zjsonschema.Options{})
 	require.NoError(t, err)
+	requireValidJSONSchema(t, schema)
 
 	properties := schema["properties"].(zjsonschema.Schema)
 	assert.Contains(t, properties, "full_name")
@@ -145,4 +160,17 @@ func requiredTest() *zsscore.ZSSTest {
 
 func testProcessor(id zconst.ZogIssueCode, params map[string]any) zsscore.ZSSProcessor {
 	return zsscore.ZSSProcessor{Kind: zconst.ZogProcessorTest, Test: &zsscore.ZSSTest{ID: id, Params: params}}
+}
+
+func requireValidJSONSchema(t *testing.T, schema zjsonschema.Schema) {
+	t.Helper()
+
+	data, err := json.Marshal(schema)
+	require.NoError(t, err)
+
+	var parsed googlejsonschema.Schema
+	require.NoError(t, json.Unmarshal(data, &parsed))
+
+	_, err = parsed.Resolve(nil)
+	require.NoError(t, err)
 }
