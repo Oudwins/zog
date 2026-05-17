@@ -614,7 +614,7 @@ func TestToJsonRecursiveUpdaterModifiedTerminates(t *testing.T) {
 	assertZSSRef(t, def.Element.Fields["children"].Element, 1)
 }
 
-// Temporarily removed
+// Temporarily removed due to 1.23.12 failing
 // func TestToJsonMultipleRecursiveSchemasCreateSeparateDefs(t *testing.T) {
 // 	a := zog.EXPERIMENTAL_RECURSIVE(func(self zog.RecursiveSchema[*zog.PointerSchema]) *zog.PointerSchema {
 // 		return zog.Ptr(zog.Struct(zog.Shape{"nextA": self()}))
