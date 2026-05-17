@@ -6,16 +6,30 @@ import (
 	"strings"
 
 	zsscore "github.com/Oudwins/zog/pkgs/zss/core"
-	"github.com/Oudwins/zog/pkgs/zss/jsonschema/internal"
+	"github.com/Oudwins/zog/pkgs/zss/jsonschema/shared"
 	"github.com/Oudwins/zog/zconst"
 )
 
 const draft = "https://json-schema.org/draft/2020-12/schema"
 
-type Schema = internal.Schema
+type Schema = shared.Schema
 
-func FromZSS(doc zsscore.ZSSDocument) (Schema, error) {
-	root, err := convertSchema(doc.Root)
+type UnknownKindConverter = shared.UnknownKindConverter
+
+type TestConverter = shared.TestConverter
+
+type Options struct {
+	UnknownKindConverter UnknownKindConverter
+	TestConverter        TestConverter
+}
+
+type converter struct {
+	opts Options
+}
+
+func FromZSS(doc zsscore.ZSSDocument, opts ...Options) (Schema, error) {
+	c := converter{opts: options(opts)}
+	root, err := c.convertSchema(doc.Root)
 	if err != nil {
 		return nil, err
 	}
@@ -24,7 +38,7 @@ func FromZSS(doc zsscore.ZSSDocument) (Schema, error) {
 	if len(doc.Defs) > 0 {
 		defs := Schema{}
 		for key, def := range doc.Defs {
-			converted, err := convertSchema(def)
+			converted, err := c.convertSchema(def)
 			if err != nil {
 				return nil, fmt.Errorf("convert $defs.%s: %w", key, err)
 			}
@@ -36,7 +50,18 @@ func FromZSS(doc zsscore.ZSSDocument) (Schema, error) {
 	return root, nil
 }
 
-func convertSchema(schema *zsscore.ZSSSchema) (Schema, error) {
+func options(opts []Options) Options {
+	if len(opts) == 0 {
+		return Options{TestConverter: ConvertTest}
+	}
+	opt := opts[0]
+	if opt.TestConverter == nil {
+		opt.TestConverter = ConvertTest
+	}
+	return opt
+}
+
+func (c converter) convertSchema(schema *zsscore.ZSSSchema) (Schema, error) {
 	if schema == nil {
 		return Schema{}, nil
 	}
@@ -57,47 +82,53 @@ func convertSchema(schema *zsscore.ZSSSchema) (Schema, error) {
 		// TODO: map ZSS Format/Go time layouts more precisely than date-time.
 		out = Schema{"type": "string", "format": "date-time"}
 	case zconst.TypeSlice:
-		out, err = convertSlice(schema)
+		out, err = c.convertSlice(schema)
 	case zconst.TypeMap:
-		out, err = convertMap(schema)
+		out, err = c.convertMap(schema)
 	case zconst.TypeStruct:
-		out, err = convertStruct(schema)
+		out, err = c.convertStruct(schema)
 	case zconst.TypePtr:
-		out, err = convertPtr(schema)
+		out, err = c.convertPtr(schema)
 	case zconst.TypePreprocess, zconst.TypeBoxed:
-		out, err = convertSchema(schema.Element)
+		out, err = c.convertSchema(schema.Element)
 	case zconst.TypeAny, zconst.TypeCustom:
 		out = Schema{}
 	case "":
 		out = Schema{}
 	default:
+		if c.opts.UnknownKindConverter != nil {
+			out, err = c.opts.UnknownKindConverter(schema)
+			break
+		}
 		return nil, fmt.Errorf("unsupported zss kind %q", schema.Kind)
 	}
 	if err != nil {
 		return nil, err
 	}
 
-	applyProcessors(out, schema)
+	if err := c.applyProcessors(out, schema); err != nil {
+		return nil, err
+	}
 	return out, nil
 }
 
-func convertSlice(schema *zsscore.ZSSSchema) (Schema, error) {
-	items, err := convertSchema(schema.Element)
+func (c converter) convertSlice(schema *zsscore.ZSSSchema) (Schema, error) {
+	items, err := c.convertSchema(schema.Element)
 	if err != nil {
 		return nil, err
 	}
 	return Schema{"type": "array", "items": items}, nil
 }
 
-func convertMap(schema *zsscore.ZSSSchema) (Schema, error) {
-	value, err := convertSchema(schema.Value)
+func (c converter) convertMap(schema *zsscore.ZSSSchema) (Schema, error) {
+	value, err := c.convertSchema(schema.Value)
 	if err != nil {
 		return nil, err
 	}
 	return Schema{"type": "object", "additionalProperties": value}, nil
 }
 
-func convertStruct(schema *zsscore.ZSSSchema) (Schema, error) {
+func (c converter) convertStruct(schema *zsscore.ZSSSchema) (Schema, error) {
 	properties := Schema{}
 	required := []string{}
 	for name, field := range schema.Fields {
@@ -105,7 +136,7 @@ func convertStruct(schema *zsscore.ZSSSchema) (Schema, error) {
 		if !ok {
 			continue
 		}
-		converted, err := convertSchema(field)
+		converted, err := c.convertSchema(field)
 		if err != nil {
 			return nil, fmt.Errorf("convert field %s: %w", name, err)
 		}
@@ -139,8 +170,8 @@ func propertyName(meta zsscore.ZSSFieldMeta, fallback string) (string, bool) {
 	return fallback, true
 }
 
-func convertPtr(schema *zsscore.ZSSSchema) (Schema, error) {
-	inner, err := convertSchema(schema.Element)
+func (c converter) convertPtr(schema *zsscore.ZSSSchema) (Schema, error) {
+	inner, err := c.convertSchema(schema.Element)
 	if err != nil {
 		return nil, err
 	}
@@ -177,16 +208,19 @@ func clone(schema Schema) Schema {
 	return copy
 }
 
-func applyProcessors(out Schema, schema *zsscore.ZSSSchema) {
+func (c converter) applyProcessors(out Schema, schema *zsscore.ZSSSchema) error {
 	for _, processor := range schema.Processors {
 		if processor.Test == nil {
 			continue
 		}
-		applyTest(out, schema.Kind, processor.Test)
+		if err := c.opts.TestConverter(out, schema.Kind, processor.Test); err != nil {
+			return fmt.Errorf("convert test %q: %w", processor.Test.ID, err)
+		}
 	}
+	return nil
 }
 
-func applyTest(out Schema, kind zconst.ZogType, test *zsscore.ZSSTest) {
+func ConvertTest(out Schema, kind zconst.ZogType, test *zsscore.ZSSTest) error {
 	switch test.ID {
 	case zconst.IssueCodeMin:
 		applyMin(out, kind, test.Params[zconst.IssueCodeMin])
@@ -221,6 +255,7 @@ func applyTest(out Schema, kind zconst.ZogType, test *zsscore.ZSSTest) {
 	case zconst.IssueCodeFalse:
 		out["const"] = false
 	}
+	return nil
 }
 
 func applyMin(out Schema, kind zconst.ZogType, value any) {

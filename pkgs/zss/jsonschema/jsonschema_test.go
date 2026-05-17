@@ -2,6 +2,7 @@ package zjsonschema_test
 
 import (
 	"encoding/json"
+	"errors"
 	"testing"
 
 	zsscore "github.com/Oudwins/zog/pkgs/zss/core"
@@ -119,6 +120,97 @@ func TestFromZSSConvertsValidationProcessors(t *testing.T) {
 	assert.Equal(t, 2, schema["minLength"])
 	assert.Equal(t, 5, schema["maxLength"])
 	assert.Equal(t, "email", schema["format"])
+}
+
+func TestFromZSSConvertsUnknownKindWithOption(t *testing.T) {
+	doc := zsscore.ZSSDocument{Root: &zsscore.ZSSSchema{Kind: "uuid"}}
+
+	schema, err := zjsonschema.FromZSS(doc, zjsonschema.Options{
+		UnknownKindConverter: func(schema *zsscore.ZSSSchema) (zjsonschema.Schema, error) {
+			if schema.Kind == "uuid" {
+				return zjsonschema.Schema{"type": "string", "format": "uuid"}, nil
+			}
+			return nil, errors.New("unexpected kind")
+		},
+	})
+	require.NoError(t, err)
+	requireValidJSONSchema(t, schema)
+
+	assert.Equal(t, zjsonschema.Schema{
+		"$schema": string(zjsonschema.Draft2020_12),
+		"type":    "string",
+		"format":  "uuid",
+	}, schema)
+}
+
+func TestFromZSSConvertsNestedUnknownKindWithOption(t *testing.T) {
+	doc := zsscore.ZSSDocument{Root: &zsscore.ZSSSchema{Kind: zconst.TypeSlice, Element: &zsscore.ZSSSchema{Kind: "uuid"}}}
+
+	schema, err := zjsonschema.FromZSS(doc, zjsonschema.Options{
+		UnknownKindConverter: func(schema *zsscore.ZSSSchema) (zjsonschema.Schema, error) {
+			return zjsonschema.Schema{"type": "string", "format": schema.Kind}, nil
+		},
+	})
+	require.NoError(t, err)
+	requireValidJSONSchema(t, schema)
+
+	assert.Equal(t, zjsonschema.Schema{
+		"$schema": string(zjsonschema.Draft2020_12),
+		"type":    "array",
+		"items":   zjsonschema.Schema{"type": "string", "format": "uuid"},
+	}, schema)
+}
+
+func TestFromZSSReturnsUnknownKindConverterErrors(t *testing.T) {
+	wantErr := errors.New("custom kind failed")
+
+	_, err := zjsonschema.FromZSS(zsscore.ZSSDocument{Root: &zsscore.ZSSSchema{Kind: "custom_kind"}}, zjsonschema.Options{
+		UnknownKindConverter: func(schema *zsscore.ZSSSchema) (zjsonschema.Schema, error) {
+			return nil, wantErr
+		},
+	})
+
+	require.ErrorIs(t, err, wantErr)
+}
+
+func TestFromZSSConvertsCustomTestsWithOption(t *testing.T) {
+	doc := zsscore.ZSSDocument{Root: &zsscore.ZSSSchema{Kind: zconst.TypeString, Processors: []zsscore.ZSSProcessor{
+		testProcessor(zconst.IssueCodeMin, map[string]any{zconst.IssueCodeMin: 2}),
+		testProcessor("starts_with", map[string]any{"starts_with": "z"}),
+	}}}
+
+	schema, err := zjsonschema.FromZSS(doc, zjsonschema.Options{
+		TestConverter: func(out zjsonschema.Schema, kind zconst.ZogType, test *zsscore.ZSSTest) error {
+			if err := zjsonschema.ConvertTest(out, kind, test); err != nil {
+				return err
+			}
+			if test.ID == "starts_with" {
+				out["pattern"] = "^" + test.Params["starts_with"].(string)
+			}
+			return nil
+		},
+	})
+	require.NoError(t, err)
+	requireValidJSONSchema(t, schema)
+
+	assert.Equal(t, 2, schema["minLength"])
+	assert.Equal(t, "^z", schema["pattern"])
+}
+
+func TestFromZSSReturnsTestConverterErrors(t *testing.T) {
+	wantErr := errors.New("custom test failed")
+	doc := zsscore.ZSSDocument{Root: &zsscore.ZSSSchema{Kind: zconst.TypeString, Processors: []zsscore.ZSSProcessor{
+		testProcessor("custom_test", map[string]any{}),
+	}}}
+
+	_, err := zjsonschema.FromZSS(doc, zjsonschema.Options{
+		TestConverter: func(out zjsonschema.Schema, kind zconst.ZogType, test *zsscore.ZSSTest) error {
+			return wantErr
+		},
+	})
+
+	require.ErrorIs(t, err, wantErr)
+	assert.ErrorContains(t, err, `convert test "custom_test"`)
 }
 
 func TestFromZSSUsesFieldMetaPropertyNames(t *testing.T) {
