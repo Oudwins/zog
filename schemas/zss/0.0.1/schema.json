@@ -1,0 +1,662 @@
+{
+  "$defs": {
+    "schema1": {
+      "properties": {
+        "$ref": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "catchValue": {},
+        "defaultValue": {},
+        "element": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/schema1"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "extension": {
+          "properties": {
+            "content": {},
+            "uri": {
+              "pattern": "^(?P\u003cid\u003ehttps?://[A-Za-z0-9.-]+(?::[0-9]+)?(?:/[A-Za-z0-9._~!$\u0026'()*+,;=:@%-]+)+)/(?P\u003cversion\u003e(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)(?:-beta(?:\\.(?:0|[1-9][0-9]*))?)?)/schema\\.json$",
+              "type": "string"
+            }
+          },
+          "required": [
+            "uri"
+          ],
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "fieldMeta": {
+          "additionalProperties": {
+            "properties": {
+              "tags": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "type": "object"
+        },
+        "fields": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/schema1"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "type": "object"
+        },
+        "format": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "goTypes": {
+          "items": {
+            "properties": {
+              "display": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "pkgPath": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "display"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "key": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/schema1"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "kind": {
+          "enum": [
+            "string",
+            "number",
+            "bool",
+            "time",
+            "slice",
+            "map",
+            "struct",
+            "ptr",
+            "custom",
+            "preprocess",
+            "boxed",
+            "any"
+          ],
+          "type": "string"
+        },
+        "processors": {
+          "items": {
+            "properties": {
+              "kind": {
+                "type": "string"
+              },
+              "test": {
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "issuePath": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "message": {
+                    "type": "string"
+                  },
+                  "params": {
+                    "additionalProperties": {},
+                    "type": "object"
+                  }
+                },
+                "required": [
+                  "id",
+                  "message",
+                  "issuePath"
+                ],
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "transformer": {
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id"
+                ],
+                "type": [
+                  "object",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "kind"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "required": {
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "issuePath": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "message": {
+              "type": "string"
+            },
+            "params": {
+              "additionalProperties": {},
+              "type": "object"
+            }
+          },
+          "required": [
+            "issuePath",
+            "id",
+            "message"
+          ],
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "value": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/schema1"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "type": "object"
+    }
+  },
+  "$id": "https://zog.dev/zss/0.0.1/schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "JSON Schema for ZSS documents.",
+  "properties": {
+    "$defs": {
+      "additionalProperties": {
+        "properties": {
+          "$ref": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "catchValue": {},
+          "defaultValue": {},
+          "element": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/schema1"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "extension": {
+            "properties": {
+              "content": {},
+              "uri": {
+                "pattern": "^(?P\u003cid\u003ehttps?://[A-Za-z0-9.-]+(?::[0-9]+)?(?:/[A-Za-z0-9._~!$\u0026'()*+,;=:@%-]+)+)/(?P\u003cversion\u003e(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)(?:-beta(?:\\.(?:0|[1-9][0-9]*))?)?)/schema\\.json$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "uri"
+            ],
+            "type": [
+              "object",
+              "null"
+            ]
+          },
+          "fieldMeta": {
+            "additionalProperties": {
+              "properties": {
+                "tags": {
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "type": "object"
+          },
+          "fields": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/schema1"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "type": "object"
+          },
+          "format": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "goTypes": {
+            "items": {
+              "properties": {
+                "display": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "pkgPath": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "display"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "key": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/schema1"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "kind": {
+            "enum": [
+              "string",
+              "number",
+              "bool",
+              "time",
+              "slice",
+              "map",
+              "struct",
+              "ptr",
+              "custom",
+              "preprocess",
+              "boxed",
+              "any"
+            ],
+            "type": "string"
+          },
+          "processors": {
+            "items": {
+              "properties": {
+                "kind": {
+                  "type": "string"
+                },
+                "test": {
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "issuePath": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "params": {
+                      "additionalProperties": {},
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "message",
+                    "issuePath"
+                  ],
+                  "type": [
+                    "object",
+                    "null"
+                  ]
+                },
+                "transformer": {
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id"
+                  ],
+                  "type": [
+                    "object",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "kind"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "required": {
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "issuePath": {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "message": {
+                "type": "string"
+              },
+              "params": {
+                "additionalProperties": {},
+                "type": "object"
+              }
+            },
+            "required": [
+              "id",
+              "message",
+              "issuePath"
+            ],
+            "type": [
+              "object",
+              "null"
+            ]
+          },
+          "value": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/schema1"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": [
+          "object",
+          "null"
+        ]
+      },
+      "type": "object"
+    },
+    "$schema": {
+      "pattern": "^(?P\u003cid\u003ehttps?://[A-Za-z0-9.-]+(?::[0-9]+)?(?:/[A-Za-z0-9._~!$\u0026'()*+,;=:@%-]+)+)/(?P\u003cversion\u003e(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)(?:-beta(?:\\.(?:0|[1-9][0-9]*))?)?)/schema\\.json$",
+      "type": "string"
+    },
+    "root": {
+      "properties": {
+        "$ref": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "catchValue": {},
+        "defaultValue": {},
+        "element": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/schema1"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "extension": {
+          "properties": {
+            "content": {},
+            "uri": {
+              "pattern": "^(?P\u003cid\u003ehttps?://[A-Za-z0-9.-]+(?::[0-9]+)?(?:/[A-Za-z0-9._~!$\u0026'()*+,;=:@%-]+)+)/(?P\u003cversion\u003e(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)(?:-beta(?:\\.(?:0|[1-9][0-9]*))?)?)/schema\\.json$",
+              "type": "string"
+            }
+          },
+          "required": [
+            "uri"
+          ],
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "fieldMeta": {
+          "additionalProperties": {
+            "properties": {
+              "tags": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "type": "object"
+        },
+        "fields": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/schema1"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "type": "object"
+        },
+        "format": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "goTypes": {
+          "items": {
+            "properties": {
+              "display": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "pkgPath": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "display"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "key": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/schema1"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "kind": {
+          "enum": [
+            "string",
+            "number",
+            "bool",
+            "time",
+            "slice",
+            "map",
+            "struct",
+            "ptr",
+            "custom",
+            "preprocess",
+            "boxed",
+            "any"
+          ],
+          "type": "string"
+        },
+        "processors": {
+          "items": {
+            "properties": {
+              "kind": {
+                "type": "string"
+              },
+              "test": {
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "issuePath": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "message": {
+                    "type": "string"
+                  },
+                  "params": {
+                    "additionalProperties": {},
+                    "type": "object"
+                  }
+                },
+                "required": [
+                  "id",
+                  "message",
+                  "issuePath"
+                ],
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "transformer": {
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id"
+                ],
+                "type": [
+                  "object",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "kind"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "required": {
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "issuePath": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "message": {
+              "type": "string"
+            },
+            "params": {
+              "additionalProperties": {},
+              "type": "object"
+            }
+          },
+          "required": [
+            "message",
+            "issuePath",
+            "id"
+          ],
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "value": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/schema1"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "type": "object"
+    }
+  },
+  "required": [
+    "$schema",
+    "root"
+  ],
+  "title": "Zog Schema Specification",
+  "type": "object",
+  "version": "0.0.1"
+}
