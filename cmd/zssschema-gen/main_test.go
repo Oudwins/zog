@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -52,6 +53,7 @@ func TestRunWritesSchemaToStdoutWithInline(t *testing.T) {
 	assert.Equal(t, "0.1.0-beta.1", schema["version"])
 	assert.Equal(t, "Zog Schema Specification", schema["title"])
 	assert.Contains(t, schema, "properties")
+	assert.True(t, strings.HasPrefix(stdout.String(), "{\n  \"$id\":"))
 }
 
 func TestRunWritesSchemaToFile(t *testing.T) {

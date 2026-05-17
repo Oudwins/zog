@@ -7,6 +7,7 @@ package main
 //	go run ./cmd/zssschema-gen -version 0.0.1 -out /tmp/schema.json
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"flag"
@@ -14,6 +15,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/Oudwins/zog"
@@ -58,7 +60,7 @@ func run(args []string, stdout, stderr io.Writer) error {
 		return err
 	}
 
-	encoded, err := json.MarshalIndent(schema, "", "  ")
+	encoded, err := marshalSchema(schema)
 	if err != nil {
 		return fmt.Errorf("marshal schema: %w", err)
 	}
@@ -100,4 +102,64 @@ func generate(id, version string) (zjsonschema.Schema, error) {
 	schema["description"] = "JSON Schema for ZSS documents."
 	schema["version"] = version
 	return schema, nil
+}
+
+func marshalSchema(schema zjsonschema.Schema) ([]byte, error) {
+	var out bytes.Buffer
+	out.WriteString("{")
+
+	orderedKeys := []string{"$id", "$schema", "title", "description", "version", "type", "properties", "required", "$defs"}
+	written := map[string]bool{}
+	first := true
+
+	writeKey := func(key string) error {
+		value, ok := schema[key]
+		if !ok {
+			return nil
+		}
+		encoded, err := json.MarshalIndent(value, "  ", "  ")
+		if err != nil {
+			return err
+		}
+		if !first {
+			out.WriteString(",")
+		}
+		first = false
+		out.WriteString("\n  ")
+		out.WriteString(strconvQuote(key))
+		out.WriteString(": ")
+		out.Write(encoded)
+		written[key] = true
+		return nil
+	}
+
+	for _, key := range orderedKeys {
+		if err := writeKey(key); err != nil {
+			return nil, err
+		}
+	}
+
+	remainingKeys := make([]string, 0, len(schema)-len(written))
+	for key := range schema {
+		if !written[key] {
+			remainingKeys = append(remainingKeys, key)
+		}
+	}
+	sort.Strings(remainingKeys)
+	for _, key := range remainingKeys {
+		if err := writeKey(key); err != nil {
+			return nil, err
+		}
+	}
+
+	if !first {
+		out.WriteString("\n")
+	}
+	out.WriteString("}")
+	return out.Bytes(), nil
+}
+
+func strconvQuote(s string) string {
+	encoded, _ := json.Marshal(s)
+	return string(encoded)
 }
