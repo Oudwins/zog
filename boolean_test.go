@@ -3,6 +3,7 @@ package zog
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	p "github.com/Oudwins/zog/pkgs/internals"
 	"github.com/Oudwins/zog/pkgs/internals/tutils"
@@ -504,4 +505,30 @@ func TestBoolCustomTest(t *testing.T) {
 func TestBoolGetType(t *testing.T) {
 	s := Bool()
 	assert.Equal(t, zconst.TypeBool, s.getType())
+}
+
+func TestBoolInvalidType(t *testing.T) {
+	var nilString *string
+	cases := []struct {
+		Value any
+	}{
+		{Value: "string"},
+		{Value: 12},
+		{Value: time.Now()},
+		{Value: 12.5},
+		{Value: true},
+		{Value: []string{"hello"}},
+		{Value: nil},
+		{Value: nilString},
+	}
+
+	schema := Bool().Required()
+
+	for _, c := range cases {
+		ctx, errs := tutils.FakeContextFromValue(c.Value, "boolean")
+		schema.process(ctx)
+		assert.NotNil(t, errs.List)
+		assert.Equal(t, errs.List[0].Code, zconst.IssueCodeInvalidType)
+
+	}
 }

@@ -289,9 +289,10 @@ func TestStructPanicsOnSchemaMismatch(t *testing.T) {
 		"bol": true,
 		"tim": "2024-08-06T00:00:00Z",
 	}
-	assert.Panics(t, func() {
-		objSchema.Parse(data, &o)
-	})
+
+	errs := objSchema.Parse(data, &o)
+	assert.NotNil(t, errs)
+	assert.Equal(t, zconst.IssueCodeMissingField, errs[0].Code)
 }
 
 func TestStructPostTransforms(t *testing.T) {

@@ -118,13 +118,6 @@ type ZogIssueList = []*ZogIssue
 // Users should migrate to using ZogIssueList and access paths via issue.Path
 type ZogIssueMap = map[string]ZogIssueList
 
-// INTERNAL ONLY: Interface used to add errors during parsing & validation. It represents a group of errors
-type ZogIssues interface {
-	Add(err *ZogIssue)
-	IsEmpty() bool
-	Free()
-}
-
 // ErrsList - internal structure for collecting issues during schema execution
 type ErrsList struct {
 	List ZogIssueList

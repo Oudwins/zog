@@ -1,6 +1,8 @@
 package zog
 
 import (
+	"errors"
+
 	p "github.com/Oudwins/zog/pkgs/internals"
 	zss "github.com/Oudwins/zog/pkgs/zss/core"
 	"github.com/Oudwins/zog/zconst"
@@ -57,7 +59,9 @@ func primitiveParsing[T p.ZogPrimitive](ctx *p.SchemaCtx, processors []p.ZProces
 
 	destPtr, ok := ctx.ValPtr.(*T)
 	if !ok {
-		p.Panicf(p.PanicTypeCast, ctx.String(), ctx.DType, ctx.ValPtr)
+		// p.Panicf(p.PanicTypeCast, ctx.String(), ctx.DType, ctx.ValPtr)
+		ctx.Errors.Add(ctx.Issue().SetCode(zconst.IssueCodeInvalidType).SetError(errors.New(zconst.ErrorInvalidTypeMessage("TODO", "TODO"))))
+		return
 	}
 
 	// 2. cast data to string & handle default/required
@@ -114,7 +118,9 @@ func primitiveValidation[T p.ZogPrimitive](ctx *p.SchemaCtx, processors []p.ZPro
 
 	valPtr, ok := ctx.ValPtr.(*T)
 	if !ok {
-		p.Panicf(p.PanicTypeCast, ctx.String(), ctx.DType, ctx.ValPtr)
+		ctx.Errors.Add(ctx.Issue().SetCode(zconst.IssueCodeInvalidType).SetError(errors.New(zconst.ErrorInvalidTypeMessage("TODO", "TODO"))))
+		return
+		// p.Panicf(p.PanicTypeCast, ctx.String(), ctx.DType, ctx.ValPtr)
 	}
 
 	// 2. cast data to string & handle default/required

@@ -73,6 +73,12 @@ const (
 	ErrCodeCoerce   ZogErrCode   = "coerce" // all
 	IssueCodeCoerce ZogIssueCode = "coerce" // all
 
+	// Invalid type happens when you provide a boolean to a schema that expects something else.
+	IssueCodeInvalidType ZogIssueCode = "invalid_type"
+
+	// Missing field happens when you provide a schema shape with a field that is not present in the underlying data structure (generally a struct)
+	IssueCodeMissingField ZogIssueCode = "missing_field"
+
 	// Deprecated: Use IssueCodeFallback instead
 	// all. Applied when other errror code is not implemented. Required to be implemented for every zog type!
 	ErrCodeFallback ZogErrCode = "fallback"
@@ -219,3 +225,19 @@ const (
 	ZogProcessorTransform ZogProcessor = "transform"
 	ZogProcessorRequired  ZogProcessor = "required"
 )
+
+// Error Message Strings
+// Replaces typecast panic:
+// PanicTypeCast                        = "Zog Panic: Type Cast Error\n Current context: %s\n Expected valPtr type to correspond with type defined in schema. But it does not. Expected type: *%T, got: %T\nFor more information see: https://zog.dev/panics#type-cast-errors"
+func ErrorInvalidTypeMessage(expected string, received string) string {
+	return "[Invalid type] zog expected a different type from what was provided. This is an invariant. Unless you are using union schema it means you have made a mistake in your code.\n Expected: " + expected + ". Received: " + received
+}
+
+//
+// replaces
+//
+// PanicMissingStructField              = "Zog Panic: Struct Schema Definition Error\n Current context: %s\n Provided struct is missing expected schema key: %s.\n This means you have made a mistake in your schema definition.\nFor more information see: https://zog.dev/panics#schema-definition-errors"
+
+func ErrorMissingStructField(fieldName string) string {
+	return "[missing structure field] zog expected struct to match schema but it did not. Provided struct is missing expected schema key. If you are not using union shcema it means you have made a mistake in your schema definition.\nFor more information see: https://zog.dev/panics#schema-definition-errors"
+}

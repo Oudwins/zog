@@ -43,7 +43,7 @@ type Ctx interface {
 	HasErrored() bool
 }
 
-func NewExecCtx(errs ZogIssues, fmter IssueFmtFunc) *ExecCtx {
+func NewExecCtx(errs *ErrsList, fmter IssueFmtFunc) *ExecCtx {
 	c := ExecCtxPool.Get().(*ExecCtx)
 	c.Fmter = fmter
 	c.Errors = errs
@@ -55,7 +55,7 @@ func NewExecCtx(errs ZogIssues, fmter IssueFmtFunc) *ExecCtx {
 
 type ExecCtx struct {
 	Fmter  IssueFmtFunc
-	Errors ZogIssues
+	Errors *ErrsList
 	m      map[string]any
 }
 

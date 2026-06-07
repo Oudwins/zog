@@ -1,6 +1,7 @@
 package zog
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
 
@@ -105,7 +106,9 @@ func (v *StructSchema) process(ctx *p.SchemaCtx) {
 
 		fieldMeta, ok := structVal.Type().FieldByName(key)
 		if !ok {
-			p.Panicf(p.PanicMissingStructField, ctx.String(), key)
+			ctx.AddIssue(ctx.Issue().SetCode(zconst.IssueCodeMissingField).SetError(errors.New(zconst.ErrorMissingStructField(key))))
+			continue
+			// p.Panicf(p.PanicMissingStructField, ctx.String(), key)
 		}
 		destPtr := structVal.FieldByName(key).Addr().Interface()
 

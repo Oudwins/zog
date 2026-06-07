@@ -3,9 +3,11 @@ package zog
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	p "github.com/Oudwins/zog/pkgs/internals"
 	"github.com/Oudwins/zog/pkgs/internals/tutils"
+	"github.com/Oudwins/zog/zconst"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -374,4 +376,30 @@ func TestBoolValidateCustomTest(t *testing.T) {
 		t.Errorf("Expected no errors, got %v", errs)
 	}
 	assert.Equal(t, true, dest)
+}
+
+func TestBoolValidateInvalidType(t *testing.T) {
+	var nilString *string
+	cases := []struct {
+		Value any
+	}{
+		{Value: "string"},
+		{Value: 12},
+		{Value: time.Now()},
+		{Value: 12.5},
+		{Value: true},
+		{Value: []string{"hello"}},
+		{Value: nil},
+		{Value: nilString},
+	}
+
+	schema := Bool().Required()
+
+	for _, c := range cases {
+		ctx, errs := tutils.FakeContextFromValue(c.Value, "boolean")
+		schema.validate(ctx)
+		assert.NotNil(t, errs.List)
+		assert.Equal(t, errs.List[0].Code, zconst.IssueCodeInvalidType)
+
+	}
 }
