@@ -15,3 +15,6 @@ docs-install:
 docs-dev:
 	cd ./docs && npm start
 
+schema-gen:
+	go run ./cmd/zssschema-gen/main.go
+

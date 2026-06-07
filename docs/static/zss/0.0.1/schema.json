@@ -146,9 +146,9 @@
                     }
                   },
                   "required": [
-                    "id",
                     "message",
-                    "issuePath"
+                    "issuePath",
+                    "id"
                   ],
                   "type": [
                     "object",
@@ -197,9 +197,9 @@
               }
             },
             "required": [
-              "issuePath",
               "id",
-              "message"
+              "message",
+              "issuePath"
             ],
             "type": [
               "object",
@@ -418,9 +418,9 @@
             }
           },
           "required": [
+            "id",
             "message",
-            "issuePath",
-            "id"
+            "issuePath"
           ],
           "type": [
             "object",
@@ -585,9 +585,9 @@
                   }
                 },
                 "required": [
-                  "issuePath",
                   "id",
-                  "message"
+                  "message",
+                  "issuePath"
                 ],
                 "type": [
                   "object",

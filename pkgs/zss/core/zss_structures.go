@@ -53,7 +53,7 @@ type ZSSExtension struct {
 
 type ZSSSchema struct {
 	Ref          *string                 `json:"$ref,omitempty"`
-	Kind         zconst.ZogType          `json:"kind,omitempty"` // "string", "number", "bool", "time", "slice", "map", "struct", "ptr", "custom", "preprocess", "boxed", "any"
+	Kind         zconst.ZogType          `json:"kind,omitempty"` // one of the first party ZogTypes or a custom one with an extension
 	Extension    *ZSSExtension           `json:"extension,omitempty"`
 	GoTypes      []ZSSGoType             `json:"goTypes,omitempty"` // Type metadata
 	Format       *string                 `json:"format,omitempty"`  // Used for time.Time schemas only right now. (Only if ZSS Exhaustive Metadata is enabled)
