@@ -25,7 +25,7 @@ import (
 )
 
 const defaultBaseURL = "https://zog.dev/zss"
-const defaultOutputRoot = "schemas/zss"
+const defaultOutputRoot = "docs/static/zss"
 
 func main() {
 	if err := run(os.Args[1:], os.Stdout, os.Stderr); err != nil {
@@ -39,7 +39,7 @@ func run(args []string, stdout, stderr io.Writer) error {
 	fs.SetOutput(stderr)
 
 	version := fs.String("version", "", "ZSS schema version to generate, e.g. 0.0.1 or 0.1.0-beta.1")
-	out := fs.String("out", "", "output file path; defaults to schemas/zss/{version}/schema.json")
+	out := fs.String("out", "", "output file path; defaults to "+defaultOutputRoot)
 	inline := fs.Bool("inline", false, "write schema to stdout instead of a file")
 	baseURL := fs.String("base-url", defaultBaseURL, "base URL used to build the schema $id")
 
