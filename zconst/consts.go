@@ -35,6 +35,7 @@ const (
 	TypePreprocess ZogType = "preprocess"
 	TypeBoxed      ZogType = "boxed"
 	TypeAny        ZogType = "any"
+	TypeUnion      ZogType = "union"
 )
 
 var ZogTypeValues = []ZogType{
