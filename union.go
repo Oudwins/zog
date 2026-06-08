@@ -57,11 +57,12 @@ func (u *UnionSchema) Validate(dest any, options ...ExecOption) p.ZogIssueList {
 
 func (u *UnionSchema) process(ctx *p.SchemaCtx) {
 	// Wrap the context and only go to the next one on fail. Keeping all the errors and appending at the end
-	numIssues := len(ctx.Errors.List)
+	issuesAtStart = len(ctx.Errors.List)
 	for _, s := range u.schemas {
+		numIssues = len(ctx.Errors.List)
 		s.process(ctx)
 		if len(ctx.Errors.List) == numIssues {
-			// Need to clear the issues?
+			i := ctx.Errors.List[0]
 			return // success
 		}
 		numIssues = len(ctx.Errors.List)
