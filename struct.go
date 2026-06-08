@@ -1,7 +1,6 @@
 package zog
 
 import (
-	"errors"
 	"fmt"
 	"reflect"
 
@@ -90,7 +89,8 @@ func (v *StructSchema) process(ctx *p.SchemaCtx) {
 	structRefVal := reflect.ValueOf(ctx.ValPtr)
 	kind := structRefVal.Kind()
 	if kind != reflect.Pointer && kind != reflect.Interface {
-		p.Panicf(p.PanicInvalidArgumentsExpectedPointer)
+		ctx.AddIssue(ctx.IssueFromInvalidType("pointer to struct", ctx.ValPtr, "processing a struct schema"))
+		return
 	}
 	structVal := structRefVal.Elem()
 	subCtx := ctx.NewSchemaCtx(ctx.Data, ctx.ValPtr, ctx.Path, v.getType())
@@ -106,9 +106,8 @@ func (v *StructSchema) process(ctx *p.SchemaCtx) {
 
 		fieldMeta, ok := structVal.Type().FieldByName(key)
 		if !ok {
-			ctx.AddIssue(ctx.Issue().SetCode(zconst.IssueCodeMissingField).SetError(errors.New(zconst.ErrorMissingStructField(key))))
+			ctx.AddIssue(ctx.IssueFromMissingStructField(key))
 			continue
-			// p.Panicf(p.PanicMissingStructField, ctx.String(), key)
 		}
 		destPtr := structVal.FieldByName(key).Addr().Interface()
 

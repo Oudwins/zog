@@ -1,5 +1,7 @@
 package zconst
 
+import "fmt"
+
 const (
 	// ISSUE_KEY_ROOT is the key for root-level issues on complex schemas on flattened maps
 	ISSUE_KEY_ROOT = "$root"
@@ -226,18 +228,10 @@ const (
 	ZogProcessorRequired  ZogProcessor = "required"
 )
 
-// Error Message Strings
-// Replaces typecast panic:
-// PanicTypeCast                        = "Zog Panic: Type Cast Error\n Current context: %s\n Expected valPtr type to correspond with type defined in schema. But it does not. Expected type: *%T, got: %T\nFor more information see: https://zog.dev/panics#type-cast-errors"
-func ErrorInvalidTypeMessage(expected string, received string) string {
-	return "[Invalid type] zog expected a different type from what was provided. This is an invariant. Unless you are using union schema it means you have made a mistake in your code.\n Expected: " + expected + ". Received: " + received
+func ErrorInvalidTypeMessage(expected string, received any, path string, dtype ZogType, value any, operation string) error {
+	return fmt.Errorf("[invalid type] zog expected a different type from what was provided while %s. This is an invariant. Unless you are using union schema it means you have made a mistake in your code.\nPath: %q\nSchema type: %s\nExpected: %s\nReceived: %T\nValue: %v", operation, path, dtype, expected, received, value)
 }
 
-//
-// replaces
-//
-// PanicMissingStructField              = "Zog Panic: Struct Schema Definition Error\n Current context: %s\n Provided struct is missing expected schema key: %s.\n This means you have made a mistake in your schema definition.\nFor more information see: https://zog.dev/panics#schema-definition-errors"
-
-func ErrorMissingStructField(fieldName string) string {
-	return "[missing structure field] zog expected struct to match schema but it did not. Provided struct is missing expected schema key. If you are not using union shcema it means you have made a mistake in your schema definition.\nFor more information see: https://zog.dev/panics#schema-definition-errors"
+func ErrorMissingStructField(fieldName string, path string, dtype ZogType, value any) error {
+	return fmt.Errorf("[missing structure field] zog expected struct to match schema but it did not. Provided struct is missing expected schema key. If you are not using union schema it means you have made a mistake in your schema definition.\nPath: %q\nSchema type: %s\nMissing field: %s\nValue: %v\nFor more information see: https://zog.dev/panics#schema-definition-errors", path, dtype, fieldName, value)
 }

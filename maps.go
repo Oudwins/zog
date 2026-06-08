@@ -163,10 +163,16 @@ func (v *MapSchema[K, V]) process(ctx *p.SchemaCtx) {
 	}
 
 	// Create destination map
-	destVal := reflect.ValueOf(ctx.ValPtr).Elem()
+	destPtrVal := reflect.ValueOf(ctx.ValPtr)
+	if destPtrVal.Kind() != reflect.Pointer {
+		ctx.AddIssue(ctx.IssueFromInvalidType("pointer to map", ctx.ValPtr, "processing a map schema"))
+		return
+	}
+	destVal := destPtrVal.Elem()
 	destType := destVal.Type()
 	if destType.Kind() != reflect.Map {
-		p.Panicf(p.PanicTypeCast, ctx.String(), ctx.DType, ctx.ValPtr)
+		ctx.AddIssue(ctx.IssueFromInvalidType("map", ctx.ValPtr, "processing a map schema"))
+		return
 	}
 	destMap := reflect.MakeMap(destType)
 

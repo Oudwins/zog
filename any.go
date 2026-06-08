@@ -65,7 +65,8 @@ func (v *AnySchema) process(ctx *p.SchemaCtx) {
 
 	destPtr, ok := ctx.ValPtr.(*any)
 	if !ok {
-		p.Panicf(p.PanicTypeCast, ctx.String(), ctx.DType, ctx.ValPtr)
+		ctx.AddIssue(ctx.IssueFromInvalidType("*any", ctx.ValPtr, "parsing an any schema"))
+		return
 	}
 
 	// Handle default/required for nil values
@@ -129,7 +130,8 @@ func (v *AnySchema) validate(ctx *p.SchemaCtx) {
 
 	valPtr, ok := ctx.ValPtr.(*any)
 	if !ok {
-		p.Panicf(p.PanicTypeCast, ctx.String(), ctx.DType, ctx.ValPtr)
+		ctx.AddIssue(ctx.IssueFromInvalidType("*any", ctx.ValPtr, "validating an any schema"))
+		return
 	}
 
 	// Handle default/required for zero values

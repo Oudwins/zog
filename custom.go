@@ -51,7 +51,8 @@ func (c *Custom[T]) process(ctx *p.SchemaCtx) {
 	}
 	ptr, ok := ctx.ValPtr.(*T)
 	if !ok {
-		p.Panicf(p.PanicTypeCast, ctx.String(), ctx.DType, ctx.ValPtr)
+		ctx.AddIssue(ctx.IssueFromInvalidType("pointer matching custom schema type", ctx.ValPtr, "parsing a custom schema"))
+		return
 	}
 	*ptr = d
 
@@ -79,7 +80,8 @@ func (c *Custom[T]) validate(ctx *p.SchemaCtx) {
 	ctx.Processor = &c.test
 	ptr, ok := ctx.ValPtr.(*T)
 	if !ok {
-		p.Panicf(p.PanicTypeCast, ctx.String(), ctx.DType, ctx.ValPtr)
+		ctx.AddIssue(ctx.IssueFromInvalidType("pointer matching custom schema type", ctx.ValPtr, "validating a custom schema"))
+		return
 	}
 	c.test.Func(ptr, ctx)
 }
