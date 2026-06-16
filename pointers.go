@@ -78,7 +78,19 @@ func (v *PointerSchema) process(ctx *p.SchemaCtx) {
 		return
 	}
 	rv := reflect.ValueOf(ctx.ValPtr)
+	if !rv.IsValid() || rv.Kind() != reflect.Pointer {
+		// We have to go directly to the exec context as that is what formats. We cannot use ctx because it will try to catch the issue and this is an uncatchable issue
+		// since we cannot set the value as its not a pointer
+		ctx.ExecCtx.AddIssue(ctx.IssueFromInvalidType("pointer", ctx.ValPtr, "processing a pointer schema"))
+		return
+	}
 	destPtr := rv.Elem()
+	if !destPtr.IsValid() || destPtr.Kind() != reflect.Pointer {
+		// We have to go directly to the exec context as that is what formats. We cannot use ctx because it will try to catch the issue and this is an uncatchable issue
+		// since we cannot set the value as its not a pointer
+		ctx.ExecCtx.AddIssue(ctx.IssueFromInvalidType("pointer", ctx.ValPtr, "processing a pointer schema"))
+		return
+	}
 	if destPtr.IsNil() {
 		// this sets the primitive also
 		newVal := reflect.New(destPtr.Type().Elem())
@@ -108,6 +120,12 @@ func (v *PointerSchema) Validate(data any, options ...ExecOption) ZogIssueList {
 
 func (v *PointerSchema) validate(ctx *p.SchemaCtx) {
 	rv := reflect.ValueOf(ctx.ValPtr)
+	if !rv.IsValid() || rv.Kind() != reflect.Pointer {
+		// We have to go directly to the exec context as that is what formats. We cannot use ctx because it will try to catch the issue and this is an uncatchable issue
+		// since we cannot set the value as its not a pointer
+		ctx.ExecCtx.AddIssue(ctx.IssueFromInvalidType("pointer", ctx.ValPtr, "validating a pointer schema"))
+		return
+	}
 	destPtr := rv.Elem()
 	if !destPtr.IsValid() || destPtr.IsNil() {
 		if v.required != nil {

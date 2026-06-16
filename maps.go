@@ -65,7 +65,20 @@ func (v *MapSchema[K, V]) Validate(data *map[K]V, options ...ExecOption) ZogIssu
 
 // Internal function to validate the data
 func (v *MapSchema[K, V]) validate(ctx *p.SchemaCtx) {
-	refVal := reflect.ValueOf(ctx.ValPtr).Elem()
+	mapRefVal := reflect.ValueOf(ctx.ValPtr)
+	if !mapRefVal.IsValid() || mapRefVal.Kind() != reflect.Pointer {
+		// We have to go directly to the exec context as that is what formats. We cannot use ctx because it will try to catch the issue and this is an uncatchable issue
+		// since we cannot set the value as its not a pointer to map
+		ctx.ExecCtx.AddIssue(ctx.IssueFromInvalidType("pointer to map", ctx.ValPtr, "validating a map schema"))
+		return
+	}
+	refVal := mapRefVal.Elem()
+	if !refVal.IsValid() || refVal.Kind() != reflect.Map {
+		// We have to go directly to the exec context as that is what formats. We cannot use ctx because it will try to catch the issue and this is an uncatchable issue
+		// since we cannot set the value as its not a map
+		ctx.ExecCtx.AddIssue(ctx.IssueFromInvalidType("map", ctx.ValPtr, "validating a map schema"))
+		return
+	}
 	isZeroVal := p.IsZeroValue(ctx.ValPtr)
 
 	if isZeroVal || refVal.Len() == 0 {
@@ -164,14 +177,24 @@ func (v *MapSchema[K, V]) process(ctx *p.SchemaCtx) {
 
 	// Create destination map
 	destPtrVal := reflect.ValueOf(ctx.ValPtr)
-	if destPtrVal.Kind() != reflect.Pointer {
-		ctx.AddIssue(ctx.IssueFromInvalidType("pointer to map", ctx.ValPtr, "processing a map schema"))
+	if !destPtrVal.IsValid() || destPtrVal.Kind() != reflect.Pointer {
+		// We have to go directly to the exec context as that is what formats. We cannot use ctx because it will try to catch the issue and this is an uncatchable issue
+		// since we cannot set the value as its not a pointer to map
+		ctx.ExecCtx.AddIssue(ctx.IssueFromInvalidType("pointer to map", ctx.ValPtr, "processing a map schema"))
 		return
 	}
 	destVal := destPtrVal.Elem()
+	if !destVal.IsValid() {
+		// We have to go directly to the exec context as that is what formats. We cannot use ctx because it will try to catch the issue and this is an uncatchable issue
+		// since we cannot set the value as its not a map
+		ctx.ExecCtx.AddIssue(ctx.IssueFromInvalidType("map", ctx.ValPtr, "processing a map schema"))
+		return
+	}
 	destType := destVal.Type()
 	if destType.Kind() != reflect.Map {
-		ctx.AddIssue(ctx.IssueFromInvalidType("map", ctx.ValPtr, "processing a map schema"))
+		// We have to go directly to the exec context as that is what formats. We cannot use ctx because it will try to catch the issue and this is an uncatchable issue
+		// since we cannot set the value as its not a map
+		ctx.ExecCtx.AddIssue(ctx.IssueFromInvalidType("map", ctx.ValPtr, "processing a map schema"))
 		return
 	}
 	destMap := reflect.MakeMap(destType)

@@ -73,7 +73,20 @@ func (v *SliceSchema) Validate(data any, options ...ExecOption) ZogIssueList {
 // Internal function to validate the data
 func (v *SliceSchema) validate(ctx *p.SchemaCtx) {
 
-	refVal := reflect.ValueOf(ctx.ValPtr).Elem() // we use this to set the value to the ptr. But we still reference the ptr everywhere. This is correct even if it seems confusing.
+	sliceRefVal := reflect.ValueOf(ctx.ValPtr)
+	if !sliceRefVal.IsValid() || sliceRefVal.Kind() != reflect.Pointer {
+		// We have to go directly to the exec context as that is what formats. We cannot use ctx because it will try to catch the issue and this is an uncatchable issue
+		// since we cannot set the value as its not a pointer to slice
+		ctx.ExecCtx.AddIssue(ctx.IssueFromInvalidType("pointer to slice", ctx.ValPtr, "validating a slice schema"))
+		return
+	}
+	refVal := sliceRefVal.Elem() // we use this to set the value to the ptr. But we still reference the ptr everywhere. This is correct even if it seems confusing.
+	if !refVal.IsValid() || refVal.Kind() != reflect.Slice {
+		// We have to go directly to the exec context as that is what formats. We cannot use ctx because it will try to catch the issue and this is an uncatchable issue
+		// since we cannot set the value as its not a slice
+		ctx.ExecCtx.AddIssue(ctx.IssueFromInvalidType("slice", ctx.ValPtr, "validating a slice schema"))
+		return
+	}
 	// 2. cast data to string & handle default/required
 	isZeroVal := p.IsZeroValue(ctx.ValPtr)
 
@@ -157,7 +170,20 @@ func (v *SliceSchema) process(ctx *p.SchemaCtx) {
 		refVal = reflect.ValueOf(v)
 	}
 
-	destVal := reflect.ValueOf(ctx.ValPtr).Elem()
+	destPtrVal := reflect.ValueOf(ctx.ValPtr)
+	if !destPtrVal.IsValid() || destPtrVal.Kind() != reflect.Pointer {
+		// We have to go directly to the exec context as that is what formats. We cannot use ctx because it will try to catch the issue and this is an uncatchable issue
+		// since we cannot set the value as its not a pointer to slice
+		ctx.ExecCtx.AddIssue(ctx.IssueFromInvalidType("pointer to slice", ctx.ValPtr, "processing a slice schema"))
+		return
+	}
+	destVal := destPtrVal.Elem()
+	if !destVal.IsValid() || destVal.Kind() != reflect.Slice {
+		// We have to go directly to the exec context as that is what formats. We cannot use ctx because it will try to catch the issue and this is an uncatchable issue
+		// since we cannot set the value as its not a slice
+		ctx.ExecCtx.AddIssue(ctx.IssueFromInvalidType("slice", ctx.ValPtr, "processing a slice schema"))
+		return
+	}
 	destVal.Set(reflect.MakeSlice(destVal.Type(), refVal.Len(), refVal.Len()))
 
 	// 3.1 tests for slice items

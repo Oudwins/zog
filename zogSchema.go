@@ -115,7 +115,9 @@ func primitiveValidation[T p.ZogPrimitive](ctx *p.SchemaCtx, processors []p.ZPro
 
 	valPtr, ok := ctx.ValPtr.(*T)
 	if !ok {
-		ctx.Errors.Add(ctx.IssueFromInvalidType("pointer matching primitive schema type", ctx.ValPtr, "validating a primitive schema"))
+		// We have to go directly to the exec context as that is what formats. We cannot use ctx because it will try to catch the issue and this is an uncatchable issue
+		// since we cannot set the value as its not of type *T
+		ctx.ExecCtx.AddIssue(ctx.IssueFromInvalidType("pointer matching primitive schema type", ctx.ValPtr, "validating a primitive schema"))
 		return
 	}
 

@@ -88,11 +88,19 @@ func (v *StructSchema) process(ctx *p.SchemaCtx) {
 	// 3. Process / validate struct fields
 	structRefVal := reflect.ValueOf(ctx.ValPtr)
 	kind := structRefVal.Kind()
-	if kind != reflect.Pointer && kind != reflect.Interface {
-		ctx.AddIssue(ctx.IssueFromInvalidType("pointer to struct", ctx.ValPtr, "processing a struct schema"))
+	if !structRefVal.IsValid() || (kind != reflect.Pointer && kind != reflect.Interface) {
+		// We have to go directly to the exec context as that is what formats. We cannot use ctx because it will try to catch the issue and this is an uncatchable issue
+		// since we cannot set the value as its not a pointer to struct
+		ctx.ExecCtx.AddIssue(ctx.IssueFromInvalidType("pointer to struct", ctx.ValPtr, "processing a struct schema"))
 		return
 	}
 	structVal := structRefVal.Elem()
+	if !structVal.IsValid() || structVal.Kind() != reflect.Struct {
+		// We have to go directly to the exec context as that is what formats. We cannot use ctx because it will try to catch the issue and this is an uncatchable issue
+		// since we cannot set the value as its not a struct
+		ctx.ExecCtx.AddIssue(ctx.IssueFromInvalidType("struct", ctx.ValPtr, "processing a struct schema"))
+		return
+	}
 	subCtx := ctx.NewSchemaCtx(ctx.Data, ctx.ValPtr, ctx.Path, v.getType())
 	defer subCtx.Free()
 	for key, processor := range v.schema {
@@ -153,7 +161,20 @@ func (v *StructSchema) Validate(dataPtr any, options ...ExecOption) ZogIssueList
 
 // Internal function to validate the data
 func (v *StructSchema) validate(ctx *p.SchemaCtx) {
-	refVal := reflect.ValueOf(ctx.ValPtr).Elem()
+	structRefVal := reflect.ValueOf(ctx.ValPtr)
+	if !structRefVal.IsValid() || structRefVal.Kind() != reflect.Pointer {
+		// We have to go directly to the exec context as that is what formats. We cannot use ctx because it will try to catch the issue and this is an uncatchable issue
+		// since we cannot set the value as its not a pointer to struct
+		ctx.ExecCtx.AddIssue(ctx.IssueFromInvalidType("pointer to struct", ctx.ValPtr, "validating a struct schema"))
+		return
+	}
+	refVal := structRefVal.Elem()
+	if !refVal.IsValid() || refVal.Kind() != reflect.Struct {
+		// We have to go directly to the exec context as that is what formats. We cannot use ctx because it will try to catch the issue and this is an uncatchable issue
+		// since we cannot set the value as its not a struct
+		ctx.ExecCtx.AddIssue(ctx.IssueFromInvalidType("struct", ctx.ValPtr, "validating a struct schema"))
+		return
+	}
 
 	// 2. cast data to string & handle default/required
 

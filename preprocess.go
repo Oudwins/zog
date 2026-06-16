@@ -36,7 +36,9 @@ func (s *PreprocessSchema[F, T]) process(ctx *p.SchemaCtx) {
 func (s *PreprocessSchema[F, T]) validate(ctx *p.SchemaCtx) {
 	v, ok := ctx.ValPtr.(F)
 	if !ok {
-		ctx.AddIssue(ctx.IssueFromInvalidType("preprocess input type", ctx.ValPtr, "validating a preprocessed schema"))
+		// We have to go directly to the exec context as that is what formats. We cannot use ctx because it will try to catch the issue and this is an uncatchable issue
+		// since we cannot set the value as its not of preprocess input type
+		ctx.ExecCtx.AddIssue(ctx.IssueFromInvalidType("preprocess input type", ctx.ValPtr, "validating a preprocessed schema"))
 		return
 	}
 	out, err := s.fn(v, ctx)

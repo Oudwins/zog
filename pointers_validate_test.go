@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/Oudwins/zog/pkgs/internals/tutils"
+	"github.com/Oudwins/zog/zconst"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -18,9 +19,9 @@ func TestValidatePtrPrimitive(t *testing.T) {
 	errs = s.Validate(&out)
 	assert.Empty(t, errs)
 
-	assert.Panics(t, func() {
-		s.Validate(nil)
-	})
+	errs = s.Validate(nil)
+	assert.NotNil(t, errs)
+	assert.Equal(t, zconst.IssueCodeInvalidType, errs[0].Code)
 }
 
 func TestPtrValidateFormatter(t *testing.T) {

@@ -56,7 +56,10 @@ func (s *BoxedSchema[B, T]) Validate(dest *B, options ...ExecOption) ZogIssueLis
 func (s *BoxedSchema[B, T]) validate(ctx *p.SchemaCtx) {
 	boxPtr, ok := ctx.ValPtr.(*B)
 	if !ok {
-		p.Panicf("BoxedSchema[%T, %T]: Expected valPtr type to correspond with type defined in schema. But it does not. Expected type: %T, got: %T", new(B), new(T), new(*B), ctx.ValPtr)
+		// We have to go directly to the exec context as that is what formats. We cannot use ctx because it will try to catch the issue and this is an uncatchable issue
+		// since we cannot set the value as its not of type *B
+		ctx.ExecCtx.AddIssue(ctx.IssueFromInvalidType("pointer matching boxed schema type", ctx.ValPtr, "validating a boxed schema"))
+		return
 	}
 	unboxed, err := s.unbox(*boxPtr, ctx)
 	if err != nil {
@@ -81,7 +84,10 @@ func (s *BoxedSchema[B, T]) validate(ctx *p.SchemaCtx) {
 func (s *BoxedSchema[B, T]) process(ctx *p.SchemaCtx) {
 	boxPtr, ok := ctx.ValPtr.(*B)
 	if !ok {
-		p.Panicf("BoxedSchema[%T, %T]: Expected valPtr type to correspond with type defined in schema. But it does not. Expected type: %T, got: %T", new(B), new(T), new(*B), ctx.ValPtr)
+		// We have to go directly to the exec context as that is what formats. We cannot use ctx because it will try to catch the issue and this is an uncatchable issue
+		// since we cannot set the value as its not of type *B
+		ctx.ExecCtx.AddIssue(ctx.IssueFromInvalidType("pointer matching boxed schema type", ctx.ValPtr, "processing a boxed schema"))
+		return
 	}
 
 	// 1. Handle ctx.Data - could be B, *B, or raw data
