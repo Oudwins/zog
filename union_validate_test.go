@@ -46,3 +46,16 @@ func TestValidateUnionAllSchemasFail(t *testing.T) {
 	assert.Equal(t, "must be less than 0", errs[1].Message)
 	assert.Equal(t, 5, dest)
 }
+
+func TestValidateUnionStringOrInt(t *testing.T) {
+	validator := Union([]ZogSchema{
+		String().Required(),
+		Int().Required(),
+	})
+	dest := 15
+
+	errs := validator.Validate(&dest)
+
+	assert.Empty(t, errs)
+	assert.Equal(t, 15, dest)
+}
