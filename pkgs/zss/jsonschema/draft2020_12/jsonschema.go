@@ -8,6 +8,7 @@ import (
 
 	zsscore "github.com/Oudwins/zog/pkgs/zss/core"
 	"github.com/Oudwins/zog/pkgs/zss/jsonschema/shared"
+	"github.com/Oudwins/zog/pkgs/zss/regexconv"
 	"github.com/Oudwins/zog/zconst"
 )
 
@@ -254,7 +255,11 @@ func ConvertTest(out Schema, kind zconst.ZogType, test *zsscore.ZSSTest) error {
 	case zconst.IssueCodeIP:
 		out["format"] = "ip"
 	case zconst.IssueCodeMatch:
-		out["pattern"] = test.Params[zconst.IssueCodeMatch]
+		pattern, ok := test.Params[zconst.IssueCodeMatch].(string)
+		if !ok {
+			return fmt.Errorf("match test param must be a string")
+		}
+		out["pattern"] = regexconv.GoRE2ToECMA262(pattern)
 	case zconst.IssueCodeTrue:
 		out["const"] = true
 	case zconst.IssueCodeFalse:

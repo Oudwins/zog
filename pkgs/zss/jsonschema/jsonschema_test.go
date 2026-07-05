@@ -3,6 +3,7 @@ package zjsonschema_test
 import (
 	"encoding/json"
 	"errors"
+	"regexp"
 	"testing"
 
 	zsscore "github.com/Oudwins/zog/pkgs/zss/core"
@@ -195,6 +196,30 @@ func TestFromZSSConvertsCustomTestsWithOption(t *testing.T) {
 
 	assert.Equal(t, 2, schema["minLength"])
 	assert.Equal(t, "^z", schema["pattern"])
+}
+
+func TestFromZSSConvertsNamedGroupsInMatchPatterns(t *testing.T) {
+	doc := zsscore.ZSSDocument{Root: &zsscore.ZSSSchema{Kind: zconst.TypeString, Processors: []zsscore.ZSSProcessor{
+		testProcessor(zconst.IssueCodeMatch, map[string]any{zconst.IssueCodeMatch: regexp.MustCompile(`^(?P<id>[a-z]+)/(?P<version>[0-9]+)$`).String()}),
+	}}}
+
+	schema, err := zjsonschema.FromZSS(doc, zjsonschema.Options{})
+	require.NoError(t, err)
+	requireValidJSONSchema(t, schema)
+
+	assert.Equal(t, `^(?:[a-z]+)/(?:[0-9]+)$`, schema["pattern"])
+}
+
+func TestFromZSSReturnsErrorForNonStringMatchPattern(t *testing.T) {
+	doc := zsscore.ZSSDocument{Root: &zsscore.ZSSSchema{Kind: zconst.TypeString, Processors: []zsscore.ZSSProcessor{
+		testProcessor(zconst.IssueCodeMatch, map[string]any{zconst.IssueCodeMatch: 1}),
+	}}}
+
+	_, err := zjsonschema.FromZSS(doc, zjsonschema.Options{})
+
+	require.Error(t, err)
+	assert.ErrorContains(t, err, `convert test "match"`)
+	assert.ErrorContains(t, err, "match test param must be a string")
 }
 
 func TestFromZSSReturnsTestConverterErrors(t *testing.T) {
