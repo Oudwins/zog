@@ -104,17 +104,20 @@ func indirectType(t reflect.Type) reflect.Type {
 	return t
 }
 
+// returns field, found
 func fieldTypeForShapeKey(t reflect.Type, key string) (reflect.StructField, bool) {
 	t = indirectType(t)
 	if t == nil || t.Kind() != reflect.Struct {
 		return reflect.StructField{}, false
 	}
+	if key == "" {
+		return reflect.StructField{}, false
+	}
 	fieldName := key
 	if key[0] >= 'a' && key[0] <= 'z' {
-		var b [32]byte
-		copy(b[:], key)
+		b := []byte(key)
 		b[0] -= 32
-		fieldName = string(b[:len(key)])
+		fieldName = string(b)
 	}
 	return t.FieldByName(fieldName)
 }

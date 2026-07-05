@@ -232,7 +232,7 @@ func TestFromZSSUsesFieldMetaPropertyNames(t *testing.T) {
 	assert.Contains(t, properties, "full_name")
 	assert.Contains(t, properties, "email_address")
 	assert.NotContains(t, properties, "hidden")
-	assert.Equal(t, []string{"full_name", "email_address"}, schema["required"])
+	assert.Equal(t, []string{"email_address", "full_name"}, schema["required"])
 }
 
 func TestFromZSSReturnsErrors(t *testing.T) {

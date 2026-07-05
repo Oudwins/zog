@@ -3,6 +3,7 @@ package draft2020_12
 import (
 	"fmt"
 	"reflect"
+	"sort"
 	"strings"
 
 	zsscore "github.com/Oudwins/zog/pkgs/zss/core"
@@ -105,6 +106,9 @@ func (c converter) convertSchema(schema *zsscore.ZSSSchema) (Schema, error) {
 	if err != nil {
 		return nil, err
 	}
+	if out == nil {
+		out = Schema{}
+	}
 
 	if err := c.applyProcessors(out, schema); err != nil {
 		return nil, err
@@ -148,6 +152,7 @@ func (c converter) convertStruct(schema *zsscore.ZSSSchema) (Schema, error) {
 
 	out := Schema{"type": "object", "properties": properties}
 	if len(required) > 0 {
+		sort.Strings(required)
 		out["required"] = required
 	}
 	return out, nil
