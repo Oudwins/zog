@@ -26,7 +26,7 @@ func TestRunWritesSchemaToDefaultLocation(t *testing.T) {
 	assert.Empty(t, stdout.String())
 	assert.Empty(t, stderr.String())
 
-	data, err := os.ReadFile(filepath.Join(workdir, "schemas", "zss", "0.1.0-beta.1", "schema.json"))
+	data, err := os.ReadFile(filepath.Join(workdir, defaultOutputPath("0.1.0-beta.1")))
 	require.NoError(t, err)
 
 	var schema map[string]any
