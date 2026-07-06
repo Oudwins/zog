@@ -51,7 +51,7 @@ func (u *UnionSchema) Validate(dest any, options ...ExecOption) p.ZogIssueList {
 	defer path.Free()
 	sctx := ctx.NewSchemaCtx(dest, dest, path, u.getType())
 	defer sctx.Free()
-	u.process(sctx)
+	u.validate(sctx)
 	return errs.List
 }
 
