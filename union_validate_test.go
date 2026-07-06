@@ -257,9 +257,10 @@ func TestValidateUnionStructBranchesPreserveNestedErrors(t *testing.T) {
 
 	errs := validator.Validate(&dest)
 
-	assert.Len(t, errs, 2)
-	assert.Equal(t, "name required", errs[0].Message)
-	assert.Equal(t, "age too low", errs[1].Message)
+	assert.Len(t, errs, 3)
+	assert.Equal(t, zconst.IssueCodeInvalidType, errs[0].Code)
+	assert.Equal(t, "name required", errs[1].Message)
+	assert.Equal(t, "age too low", errs[2].Message)
 }
 
 func TestValidateUnionAnySchemaBranch(t *testing.T) {
