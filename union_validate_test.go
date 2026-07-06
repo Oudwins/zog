@@ -249,6 +249,7 @@ func TestValidateUnionStructBranchesPreserveNestedErrors(t *testing.T) {
 		Age  int
 	}
 	validator := Union([]ZogSchema{
+		String().Required().Min(3),
 		Struct(Shape{"name": String().Required(Message("name required"))}),
 		Struct(Shape{"age": Int().GT(18, Message("age too low"))}),
 	})
