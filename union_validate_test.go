@@ -50,6 +50,47 @@ func TestValidateUnionAllSchemasFail(t *testing.T) {
 	assert.Equal(t, 5, dest)
 }
 
+func TestValidateUnionDefaultBranchSucceeds(t *testing.T) {
+	validator := Union([]ZogSchema{
+		String().Required(),
+		Int().Default(42),
+	})
+	dest := 0
+
+	errs := validator.Validate(&dest)
+
+	assert.Empty(t, errs)
+	assert.Equal(t, 42, dest)
+}
+
+func TestValidateUnionCatchBranchSucceeds(t *testing.T) {
+	validator := Union([]ZogSchema{
+		String().Required(),
+		Int().GT(10, Message("must be greater than 10")).Catch(42),
+	})
+	dest := 5
+
+	errs := validator.Validate(&dest)
+
+	assert.Empty(t, errs)
+	assert.Equal(t, 42, dest)
+}
+
+func TestValidateUnionInvalidDestinationTypeAllSchemasFail(t *testing.T) {
+	validator := Union([]ZogSchema{
+		String().Required(),
+		Int().Required(),
+	})
+	dest := true
+
+	errs := validator.Validate(&dest)
+
+	assert.Len(t, errs, 2)
+	assert.Equal(t, zconst.IssueCodeInvalidType, errs[0].Code)
+	assert.Equal(t, zconst.IssueCodeInvalidType, errs[1].Code)
+	assert.True(t, dest)
+}
+
 func TestValidateUnionStringOrInt(t *testing.T) {
 	validator := Union([]ZogSchema{
 		String().Required(),
