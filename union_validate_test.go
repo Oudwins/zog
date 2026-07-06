@@ -2,7 +2,10 @@ package zog
 
 import (
 	"testing"
+	"time"
 
+	"github.com/Oudwins/zog/pkgs/internals/tutils"
+	"github.com/Oudwins/zog/zconst"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -58,4 +61,215 @@ func TestValidateUnionStringOrInt(t *testing.T) {
 
 	assert.Empty(t, errs)
 	assert.Equal(t, 15, dest)
+}
+
+func TestValidateUnionPrimitiveSchemaMatrix(t *testing.T) {
+	tests := []struct {
+		name string
+		dest any
+	}{
+		{name: "string", dest: tutils.PtrOf("hello")},
+		{name: "int", dest: tutils.PtrOf(42)},
+		{name: "float", dest: tutils.PtrOf(42.5)},
+		{name: "bool", dest: tutils.PtrOf(true)},
+		{name: "time", dest: tutils.PtrOf(time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC))},
+	}
+
+	validator := Union([]ZogSchema{
+		String().Required(),
+		Int().Required(),
+		Float().Required(),
+		Bool().Required(),
+		Time().Required(),
+	})
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			errs := validator.Validate(tt.dest)
+
+			assert.Empty(t, errs)
+		})
+	}
+}
+
+func TestValidateUnionContainerSchemaMatrix(t *testing.T) {
+	type unionContainerStruct struct {
+		Name string
+	}
+
+	tests := []struct {
+		name      string
+		validator *UnionSchema
+		dest      any
+	}{
+		{
+			name: "struct",
+			validator: Union([]ZogSchema{
+				Struct(Shape{"name": String().Required()}),
+				Slice(String()).Required(),
+			}),
+			dest: &unionContainerStruct{Name: "zog"},
+		},
+		{
+			name: "slice",
+			validator: Union([]ZogSchema{
+				Struct(Shape{"name": String().Required()}),
+				Slice(String()).Min(1),
+			}),
+			dest: &[]string{"zog"},
+		},
+		{
+			name: "map",
+			validator: Union([]ZogSchema{
+				Struct(Shape{"name": String().Required()}),
+				EXPERIMENTAL_MAP[string, int](String().Required(), Int()).Min(1),
+			}),
+			dest: &map[string]int{"zog": 1},
+		},
+		{
+			name: "pointer",
+			validator: Union([]ZogSchema{
+				String().Required(),
+				Ptr(Int()).NotNil(),
+			}),
+			dest: tutils.PtrOf(tutils.PtrOf(42)),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			errs := tt.validator.Validate(tt.dest)
+
+			assert.Empty(t, errs)
+		})
+	}
+}
+
+func TestValidateUnionMixedSchemaTypesAllFail(t *testing.T) {
+	validator := Union([]ZogSchema{
+		String().Min(3, Message("string too short")),
+		Int().GT(10, Message("int too small")),
+		Bool().Required(Message("bool required")),
+	})
+	dest := "no"
+
+	errs := validator.Validate(&dest)
+
+	assert.Len(t, errs, 3)
+	assert.Equal(t, "string too short", errs[0].Message)
+	assert.Equal(t, zconst.IssueCodeInvalidType, errs[1].Code)
+	assert.Equal(t, zconst.IssueCodeInvalidType, errs[2].Code)
+	assert.Equal(t, "no", dest)
+}
+
+func TestValidateUnionShortCircuitsAfterFirstSuccess(t *testing.T) {
+	firstCalls := 0
+	secondCalls := 0
+	validator := Union([]ZogSchema{
+		Int().TestFunc(func(val *int, ctx Ctx) bool {
+			firstCalls++
+			return true
+		}),
+		Int().TestFunc(func(val *int, ctx Ctx) bool {
+			secondCalls++
+			return true
+		}),
+	})
+	dest := 1
+
+	errs := validator.Validate(&dest)
+
+	assert.Empty(t, errs)
+	assert.Equal(t, 1, firstCalls)
+	assert.Equal(t, 0, secondCalls)
+}
+
+func TestValidateUnionRunsLaterSchemasAfterFailure(t *testing.T) {
+	firstCalls := 0
+	secondCalls := 0
+	validator := Union([]ZogSchema{
+		Int().TestFunc(func(val *int, ctx Ctx) bool {
+			firstCalls++
+			return false
+		}, Message("first failed")),
+		Int().TestFunc(func(val *int, ctx Ctx) bool {
+			secondCalls++
+			return true
+		}),
+	})
+	dest := 1
+
+	errs := validator.Validate(&dest)
+
+	assert.Empty(t, errs)
+	assert.Equal(t, 1, firstCalls)
+	assert.Equal(t, 1, secondCalls)
+}
+
+func TestValidateUnionEarlierFailingBranchMutationBehavior(t *testing.T) {
+	validator := Union([]ZogSchema{
+		String().Trim().Len(3, Message("trimmed string must have length 3")),
+		String().OneOf([]string{"x"}),
+	})
+	dest := " x "
+
+	errs := validator.Validate(&dest)
+
+	assert.Empty(t, errs)
+	assert.Equal(t, "x", dest)
+}
+
+func TestValidateUnionInStructField(t *testing.T) {
+	type testStruct struct {
+		Value string
+	}
+	validator := Struct(Shape{
+		"value": Union([]ZogSchema{
+			String().Len(3, Message("must have length 3")),
+			String().HasPrefix("z", Message("must start with z")),
+		}),
+	})
+
+	stringDest := testStruct{Value: "zog"}
+	errs := validator.Validate(&stringDest)
+	assert.Empty(t, errs)
+
+	laterBranchDest := testStruct{Value: "zod"}
+	errs = validator.Validate(&laterBranchDest)
+	assert.Empty(t, errs)
+
+	failingDest := testStruct{Value: "go"}
+	errs = validator.Validate(&failingDest)
+	assert.NotEmpty(t, errs)
+}
+
+func TestValidateUnionStructBranchesPreserveNestedErrors(t *testing.T) {
+	type user struct {
+		Name string
+		Age  int
+	}
+	validator := Union([]ZogSchema{
+		Struct(Shape{"name": String().Required(Message("name required"))}),
+		Struct(Shape{"age": Int().GT(18, Message("age too low"))}),
+	})
+	dest := user{Age: 10}
+
+	errs := validator.Validate(&dest)
+
+	assert.Len(t, errs, 2)
+	assert.Equal(t, "name required", errs[0].Message)
+	assert.Equal(t, "age too low", errs[1].Message)
+}
+
+func TestValidateUnionAnySchemaBranch(t *testing.T) {
+	validator := Union([]ZogSchema{
+		String().Len(10),
+		EXPERIMENTAL_ANY().Required(),
+	})
+	var dest any = 42
+
+	errs := validator.Validate(&dest)
+
+	assert.Empty(t, errs)
+	assert.Equal(t, any(42), dest)
 }

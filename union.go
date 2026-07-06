@@ -57,11 +57,12 @@ func (u *UnionSchema) Validate(dest any, options ...ExecOption) p.ZogIssueList {
 
 func (u *UnionSchema) process(ctx *p.SchemaCtx) {
 	// Wrap the context and only go to the next one on fail. Keeping all the errors and appending at the end
+	listStart := len(ctx.Errors.List)
 	for _, s := range u.schemas {
 		numIssues := len(ctx.Errors.List)
 		s.process(ctx)
 		if len(ctx.Errors.List) == numIssues {
-			ctx.Errors.List = ctx.Errors.List[:0]
+			ctx.Errors.List = ctx.Errors.List[:listStart]
 			return // success
 		}
 	}
@@ -69,11 +70,12 @@ func (u *UnionSchema) process(ctx *p.SchemaCtx) {
 
 func (u *UnionSchema) validate(ctx *p.SchemaCtx) {
 	// Wrap the context and only go to the next one on fail. Keeping all the errors and appending at the end
+	listStart := len(ctx.Errors.List)
 	for _, s := range u.schemas {
 		numIssues := len(ctx.Errors.List)
 		s.validate(ctx)
 		if len(ctx.Errors.List) == numIssues {
-			ctx.Errors.List = ctx.Errors.List[:0]
+			ctx.Errors.List = ctx.Errors.List[:listStart]
 			return // success
 		}
 	}
