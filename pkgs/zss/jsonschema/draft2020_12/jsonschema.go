@@ -91,6 +91,8 @@ func (c converter) convertSchema(schema *zsscore.ZSSSchema) (Schema, error) {
 		out, err = c.convertStruct(schema)
 	case zconst.TypePtr:
 		out, err = c.convertPtr(schema)
+	case zconst.TypeUnion:
+		out, err = c.convertUnion(schema)
 	case zconst.TypePreprocess, zconst.TypeBoxed:
 		out, err = c.convertSchema(schema.Element)
 	case zconst.TypeAny, zconst.TypeCustom:
@@ -185,6 +187,18 @@ func (c converter) convertPtr(schema *zsscore.ZSSSchema) (Schema, error) {
 		return inner, nil
 	}
 	return nullable(inner), nil
+}
+
+func (c converter) convertUnion(schema *zsscore.ZSSSchema) (Schema, error) {
+	children := make([]any, 0, len(schema.Children))
+	for i, child := range schema.Children {
+		converted, err := c.convertSchema(child)
+		if err != nil {
+			return nil, fmt.Errorf("convert union child %d: %w", i, err)
+		}
+		children = append(children, converted)
+	}
+	return Schema{"anyOf": children}, nil
 }
 
 func nullable(schema Schema) Schema {

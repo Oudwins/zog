@@ -84,6 +84,25 @@ func TestFromZSSConvertsContainers(t *testing.T) {
 	}, schema)
 }
 
+func TestFromZSSConvertsUnion(t *testing.T) {
+	doc := zsscore.ZSSDocument{Root: &zsscore.ZSSSchema{Kind: zconst.TypeUnion, Children: []*zsscore.ZSSSchema{
+		{Kind: zconst.TypeString},
+		{Kind: zconst.TypeNumber},
+	}}}
+
+	schema, err := zjsonschema.FromZSS(doc, zjsonschema.Options{})
+	require.NoError(t, err)
+	requireValidJSONSchema(t, schema)
+
+	assert.Equal(t, zjsonschema.Schema{
+		"$schema": string(zjsonschema.Draft2020_12),
+		"anyOf": []any{
+			zjsonschema.Schema{"type": "string"},
+			zjsonschema.Schema{"type": "number"},
+		},
+	}, schema)
+}
+
 func TestFromZSSConvertsPointerNullability(t *testing.T) {
 	optional, err := zjsonschema.FromZSS(zsscore.ZSSDocument{Root: &zsscore.ZSSSchema{Kind: zconst.TypePtr, Element: &zsscore.ZSSSchema{Kind: zconst.TypeString}}}, zjsonschema.Options{})
 	require.NoError(t, err)

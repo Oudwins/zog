@@ -45,6 +45,9 @@ func stripGoTypes(schema *zss.ZSSSchema) {
 	stripGoTypes(schema.Element)
 	stripGoTypes(schema.Key)
 	stripGoTypes(schema.Value)
+	for _, child := range schema.Children {
+		stripGoTypes(child)
+	}
 }
 
 func TestToJsonString(t *testing.T) {
@@ -210,6 +213,32 @@ func TestToJsonBool(t *testing.T) {
 	}`)
 
 	assert.Equal(t, normalize(expected), normalize(string(serialized)))
+}
+
+func TestToJsonUnion(t *testing.T) {
+	s := zog.Union([]zog.ZogSchema{
+		zog.String(),
+		zog.Int(),
+	})
+	d := zog.EXPERIMENTAL_TO_ZSS[any](s)
+	serialized, err := json.Marshal(withoutGoTypes(d))
+	assert.Nil(t, err)
+	assert.NotNil(t, serialized)
+
+	expected := baseZSSJson(`{
+		"kind": "union",
+		"children": [
+			{
+				"kind": "string"
+			},
+			{
+				"kind": "number"
+			}
+		]
+	}`)
+
+	assert.Equal(t, normalize(expected), normalize(string(serialized)))
+	assert.Nil(t, zssschema.ZSSDocumentSchema.Validate(&d))
 }
 
 func TestToJsonTime(t *testing.T) {

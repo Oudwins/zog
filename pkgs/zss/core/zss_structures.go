@@ -63,6 +63,7 @@ type ZSSSchema struct {
 	Element      *ZSSSchema              `json:"element,omitempty"`   // ptr, slice, preprocess, boxed
 	Key          *ZSSSchema              `json:"key,omitempty"`       // map only
 	Value        *ZSSSchema              `json:"value,omitempty"`     // map only
+	Children     []*ZSSSchema            `json:"children,omitempty"`  // union only
 	Required     *ZSSTest                `json:"required,omitempty"`
 	DefaultValue any                     `json:"defaultValue,omitempty"`
 	CatchValue   any                     `json:"catchValue,omitempty"`

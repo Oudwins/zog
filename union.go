@@ -85,6 +85,15 @@ func (u *UnionSchema) getType() zconst.ZogType {
 	return zconst.TypeUnion
 }
 func (u *UnionSchema) setCoercer(c CoercerFunc) {}
-func (u *UnionSchema) toZSS(*ZSSSerializeCtx) *zss.ZSSSchema {
-	return &zss.ZSSSchema{}
+
+func (u *UnionSchema) toZSS(ctx *ZSSSerializeCtx) *zss.ZSSSchema {
+	children := make([]*zss.ZSSSchema, 0, len(u.schemas))
+	for _, schema := range u.schemas {
+		children = append(children, schema.toZSS(ctx))
+	}
+
+	return &zss.ZSSSchema{
+		Kind:     zconst.TypeUnion,
+		Children: children,
+	}
 }

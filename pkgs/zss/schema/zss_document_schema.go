@@ -58,6 +58,7 @@ var ZSSSchemaSchema = z.EXPERIMENTAL_RECURSIVE(func(self z.RecursiveSchema[*z.St
 		"element":      z.Ptr(self()),
 		"key":          z.Ptr(self()),
 		"value":        z.Ptr(self()),
+		"children":     z.Slice(z.Ptr(self())),
 		"required":     z.Ptr(ZSSTestSchema),
 		"defaultValue": z.EXPERIMENTAL_ANY(),
 		"catchValue":   z.EXPERIMENTAL_ANY(),

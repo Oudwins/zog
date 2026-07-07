@@ -51,6 +51,7 @@ var ZogTypeValues = []ZogType{
 	TypePreprocess,
 	TypeBoxed,
 	TypeAny,
+	TypeUnion,
 }
 
 // Deprecated: This will be removed in the future. Use z.ZogIssueCode instead
