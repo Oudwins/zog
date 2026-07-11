@@ -97,7 +97,7 @@ var ZSSSchemaSchema = z.EXPERIMENTAL_RECURSIVE(func(self z.RecursiveSchema[*z.Un
 		"Kind":         zssKind(zconst.TypeSlice),
 		"processors":   z.Slice(ZSSProcessorSchema),
 		"goTypes":      z.Slice(ZSSGoTypeSchema),
-		"element":      z.Ptr(self()),
+		"element":      z.Ptr(self()).NotNil(),
 		"required":     z.Ptr(ZSSTestSchema),
 		"defaultValue": z.EXPERIMENTAL_ANY(),
 		"catchValue":   z.EXPERIMENTAL_ANY(),
@@ -107,8 +107,8 @@ var ZSSSchemaSchema = z.EXPERIMENTAL_RECURSIVE(func(self z.RecursiveSchema[*z.Un
 		"Kind":         zssKind(zconst.TypeMap),
 		"processors":   z.Slice(ZSSProcessorSchema),
 		"goTypes":      z.Slice(ZSSGoTypeSchema),
-		"key":          z.Ptr(self()),
-		"value":        z.Ptr(self()),
+		"key":          z.Ptr(self()).NotNil(),
+		"value":        z.Ptr(self()).NotNil(),
 		"required":     z.Ptr(ZSSTestSchema),
 		"defaultValue": z.EXPERIMENTAL_ANY(),
 		"catchValue":   z.EXPERIMENTAL_ANY(),
@@ -159,16 +159,16 @@ var ZSSSchemaSchema = z.EXPERIMENTAL_RECURSIVE(func(self z.RecursiveSchema[*z.Un
 
 	union := z.Struct(z.Shape{
 		"Kind":     zssKind(zconst.TypeUnion),
-		"children": z.Slice(z.Ptr(self())),
+		"children": z.Slice(z.Ptr(self())).Required().Min(2),
 	})
 
 	extended := z.Struct(z.Shape{
 		"Kind":      zssKind("extension"),
-		"Extension": ZSSExtensionSchema,
+		"Extension": z.Ptr(ZSSExtensionSchema).NotNil(),
 	})
 
 	return z.Union([]z.ZogSchema{
-		union, ref, str, num, bl, tm, list, mp, strct, ptr, custom, preprocess, boxed, anySchema,
+		union, ref, str, num, bl, tm, list, mp, strct, ptr, custom, preprocess, boxed, anySchema, extended,
 	})
 })
 
