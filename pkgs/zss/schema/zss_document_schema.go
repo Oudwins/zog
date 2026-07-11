@@ -125,37 +125,51 @@ var ZSSSchemaSchema = z.EXPERIMENTAL_RECURSIVE(func(self z.RecursiveSchema[*z.Un
 	})
 
 	ptr := z.Struct(z.Shape{
-		"Kind":     zssKind(zconst.TypeStruct),
+		"Kind":     zssKind(zconst.TypePtr),
 		"element":  z.Ptr(self()),
 		"goTypes":  z.Slice(ZSSGoTypeSchema),
 		"required": z.Ptr(ZSSTestSchema),
 	})
 
 	custom := z.Struct(z.Shape{
-		"Kind":       zssKind(zconst.TypeStruct),
+		"Kind":       zssKind(zconst.TypeCustom),
 		"goTypes":    z.Slice(ZSSGoTypeSchema),
 		"processors": z.Slice(ZSSProcessorSchema),
 	})
 
-	s := z.Struct(z.Shape{
-		"Ref":          z.Ptr(z.String()),
-		"kind":         z.StringLike[zconst.ZogType]().OneOf(zconst.ZogTypeValues),
-		"Extension":    z.Ptr(ZSSExtensionSchema),
-		"goTypes":      z.Slice(ZSSGoTypeSchema),
-		"format":       z.Ptr(z.String()),
+	preprocess := z.Struct(z.Shape{
+		"Kind":    zssKind(zconst.TypePreprocess),
+		"element": z.Ptr(self()),
+		"goTypes": z.Slice(ZSSGoTypeSchema),
+	})
+
+	boxed := z.Struct(z.Shape{
+		"Kind":    zssKind(zconst.TypeBoxed),
+		"element": z.Ptr(self()),
+		"goTypes": z.Slice(ZSSGoTypeSchema),
+	})
+
+	anySchema := z.Struct(z.Shape{
+		"Kind":         zssKind(zconst.TypeAny),
 		"processors":   z.Slice(ZSSProcessorSchema),
-		"fields":       z.EXPERIMENTAL_MAP[string, *zsscore.ZSSSchema](z.String(), z.Ptr(self())),
-		"fieldMeta":    z.EXPERIMENTAL_MAP[string, zsscore.ZSSFieldMeta](z.String(), ZSSFieldMetaSchema),
-		"element":      z.Ptr(self()),
-		"key":          z.Ptr(self()),
-		"value":        z.Ptr(self()),
-		"children":     z.Slice(z.Ptr(self())),
 		"required":     z.Ptr(ZSSTestSchema),
 		"defaultValue": z.EXPERIMENTAL_ANY(),
 		"catchValue":   z.EXPERIMENTAL_ANY(),
 	})
 
-	return z.Union([]z.ZogSchema{ref, str, num, bl, tm, list, mp, strct, ptr, custom})
+	union := z.Struct(z.Shape{
+		"Kind":     zssKind(zconst.TypeUnion),
+		"children": z.Slice(z.Ptr(self())),
+	})
+
+	extended := z.Struct(z.Shape{
+		"Kind":      zssKind("extension"),
+		"Extension": ZSSExtensionSchema,
+	})
+
+	return z.Union([]z.ZogSchema{
+		union, ref, str, num, bl, tm, list, mp, strct, ptr, custom, preprocess, boxed, anySchema,
+	})
 })
 
 var URISchema = z.String().Match(zsscore.ZSS_URI_REGEX).Required()

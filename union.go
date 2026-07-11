@@ -38,6 +38,9 @@ func (u *UnionSchema) Parse(data any, dest any, options ...ExecOption) p.ZogIssu
 	sctx := ctx.NewSchemaCtx(data, dest, path, u.getType())
 	defer sctx.Free()
 	u.process(sctx)
+	if len(errs.List) == 0 {
+		return nil
+	}
 	return errs.List
 }
 
@@ -54,6 +57,9 @@ func (u *UnionSchema) Validate(dest any, options ...ExecOption) p.ZogIssueList {
 	sctx := ctx.NewSchemaCtx(dest, dest, path, u.getType())
 	defer sctx.Free()
 	u.validate(sctx)
+	if len(errs.List) == 0 {
+		return nil
+	}
 	return errs.List
 }
 
@@ -67,7 +73,11 @@ func (u *UnionSchema) process(ctx *p.SchemaCtx) {
 		branchCtx.Free()
 		if len(ctx.Errors.List) == numIssues {
 			commit()
-			ctx.Errors.List = ctx.Errors.List[:listStart]
+			if listStart == 0 {
+				ctx.Errors.List = nil
+			} else {
+				ctx.Errors.List = ctx.Errors.List[:listStart]
+			}
 			return // success
 		}
 	}
@@ -84,7 +94,11 @@ func (u *UnionSchema) validate(ctx *p.SchemaCtx) {
 		branchCtx.Free()
 		if len(ctx.Errors.List) == numIssues {
 			commit()
-			ctx.Errors.List = ctx.Errors.List[:listStart]
+			if listStart == 0 {
+				ctx.Errors.List = nil
+			} else {
+				ctx.Errors.List = ctx.Errors.List[:listStart]
+			}
 			return // success
 		}
 	}
