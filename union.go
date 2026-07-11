@@ -15,7 +15,7 @@ type UnionSchema struct {
 	schemas []ZogSchema
 }
 
-func Union(schemas []ZogSchema, options ...SchemaOption) *UnionSchema {
+func EXPERIMENTAL_UNION(schemas []ZogSchema, options ...SchemaOption) *UnionSchema {
 	s := &UnionSchema{
 		schemas: schemas,
 	}

@@ -11,7 +11,7 @@ import (
 )
 
 func TestValidateUnionFirstSchemaSucceeds(t *testing.T) {
-	validator := Union([]ZogSchema{
+	validator := EXPERIMENTAL_UNION([]ZogSchema{
 		Int().GT(10, Message("must be greater than 10")),
 		Int().LT(0, Message("must be less than 0")),
 	})
@@ -24,7 +24,7 @@ func TestValidateUnionFirstSchemaSucceeds(t *testing.T) {
 }
 
 func TestValidateUnionLaterSchemaSucceeds(t *testing.T) {
-	validator := Union([]ZogSchema{
+	validator := EXPERIMENTAL_UNION([]ZogSchema{
 		Int().GT(10, Message("must be greater than 10")),
 		Int().LT(0, Message("must be less than 0")),
 	})
@@ -37,7 +37,7 @@ func TestValidateUnionLaterSchemaSucceeds(t *testing.T) {
 }
 
 func TestValidateUnionAllSchemasFail(t *testing.T) {
-	validator := Union([]ZogSchema{
+	validator := EXPERIMENTAL_UNION([]ZogSchema{
 		Int().GT(10, Message("must be greater than 10")),
 		Int().LT(0, Message("must be less than 0")),
 	})
@@ -52,7 +52,7 @@ func TestValidateUnionAllSchemasFail(t *testing.T) {
 }
 
 func TestValidateUnionDefaultBranchSucceeds(t *testing.T) {
-	validator := Union([]ZogSchema{
+	validator := EXPERIMENTAL_UNION([]ZogSchema{
 		String().Required(),
 		Int().Default(42),
 	})
@@ -65,7 +65,7 @@ func TestValidateUnionDefaultBranchSucceeds(t *testing.T) {
 }
 
 func TestValidateUnionCatchBranchSucceeds(t *testing.T) {
-	validator := Union([]ZogSchema{
+	validator := EXPERIMENTAL_UNION([]ZogSchema{
 		String().Required(),
 		Int().GT(10, Message("must be greater than 10")).Catch(42),
 	})
@@ -78,7 +78,7 @@ func TestValidateUnionCatchBranchSucceeds(t *testing.T) {
 }
 
 func TestValidateUnionInvalidDestinationTypeAllSchemasFail(t *testing.T) {
-	validator := Union([]ZogSchema{
+	validator := EXPERIMENTAL_UNION([]ZogSchema{
 		String().Required(),
 		Int().Required(),
 	})
@@ -93,7 +93,7 @@ func TestValidateUnionInvalidDestinationTypeAllSchemasFail(t *testing.T) {
 }
 
 func TestValidateUnionStringOrInt(t *testing.T) {
-	validator := Union([]ZogSchema{
+	validator := EXPERIMENTAL_UNION([]ZogSchema{
 		String().Required(),
 		Int().Required(),
 	})
@@ -117,7 +117,7 @@ func TestValidateUnionPrimitiveSchemaMatrix(t *testing.T) {
 		{name: "time", dest: tutils.PtrOf(time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC))},
 	}
 
-	validator := Union([]ZogSchema{
+	validator := EXPERIMENTAL_UNION([]ZogSchema{
 		String().Required(),
 		Int().Required(),
 		Float().Required(),
@@ -146,7 +146,7 @@ func TestValidateUnionContainerSchemaMatrix(t *testing.T) {
 	}{
 		{
 			name: "struct",
-			validator: Union([]ZogSchema{
+			validator: EXPERIMENTAL_UNION([]ZogSchema{
 				Struct(Shape{"name": String().Required()}),
 				Slice(String()).Required(),
 			}),
@@ -154,7 +154,7 @@ func TestValidateUnionContainerSchemaMatrix(t *testing.T) {
 		},
 		{
 			name: "slice",
-			validator: Union([]ZogSchema{
+			validator: EXPERIMENTAL_UNION([]ZogSchema{
 				Struct(Shape{"name": String().Required()}),
 				Slice(String()).Min(1),
 			}),
@@ -162,7 +162,7 @@ func TestValidateUnionContainerSchemaMatrix(t *testing.T) {
 		},
 		{
 			name: "map",
-			validator: Union([]ZogSchema{
+			validator: EXPERIMENTAL_UNION([]ZogSchema{
 				Struct(Shape{"name": String().Required()}),
 				EXPERIMENTAL_MAP[string, int](String().Required(), Int()).Min(1),
 			}),
@@ -170,7 +170,7 @@ func TestValidateUnionContainerSchemaMatrix(t *testing.T) {
 		},
 		{
 			name: "pointer",
-			validator: Union([]ZogSchema{
+			validator: EXPERIMENTAL_UNION([]ZogSchema{
 				String().Required(),
 				Ptr(Int()).NotNil(),
 			}),
@@ -188,7 +188,7 @@ func TestValidateUnionContainerSchemaMatrix(t *testing.T) {
 }
 
 func TestValidateUnionMixedSchemaTypesAllFail(t *testing.T) {
-	validator := Union([]ZogSchema{
+	validator := EXPERIMENTAL_UNION([]ZogSchema{
 		String().Min(3, Message("string too short")),
 		Int().GT(10, Message("int too small")),
 		Bool().Required(Message("bool required")),
@@ -207,7 +207,7 @@ func TestValidateUnionMixedSchemaTypesAllFail(t *testing.T) {
 func TestValidateUnionShortCircuitsAfterFirstSuccess(t *testing.T) {
 	firstCalls := 0
 	secondCalls := 0
-	validator := Union([]ZogSchema{
+	validator := EXPERIMENTAL_UNION([]ZogSchema{
 		Int().TestFunc(func(val *int, ctx Ctx) bool {
 			firstCalls++
 			return true
@@ -229,7 +229,7 @@ func TestValidateUnionShortCircuitsAfterFirstSuccess(t *testing.T) {
 func TestValidateUnionRunsLaterSchemasAfterFailure(t *testing.T) {
 	firstCalls := 0
 	secondCalls := 0
-	validator := Union([]ZogSchema{
+	validator := EXPERIMENTAL_UNION([]ZogSchema{
 		Int().TestFunc(func(val *int, ctx Ctx) bool {
 			firstCalls++
 			return false
@@ -249,7 +249,7 @@ func TestValidateUnionRunsLaterSchemasAfterFailure(t *testing.T) {
 }
 
 func TestValidateUnionDoesNotCommitFailedBranchMutation(t *testing.T) {
-	validator := Union([]ZogSchema{
+	validator := EXPERIMENTAL_UNION([]ZogSchema{
 		String().Trim().Len(3, Message("trimmed string must have length 3")),
 		String().OneOf([]string{"x"}),
 	})
@@ -262,7 +262,7 @@ func TestValidateUnionDoesNotCommitFailedBranchMutation(t *testing.T) {
 }
 
 func TestValidateUnionDoesNotCommitNestedFailedBranchMutation(t *testing.T) {
-	validator := Union([]ZogSchema{
+	validator := EXPERIMENTAL_UNION([]ZogSchema{
 		Slice(String().Trim().Len(2)),
 		Slice(String().OneOf([]string{"x"})),
 	})
@@ -275,7 +275,7 @@ func TestValidateUnionDoesNotCommitNestedFailedBranchMutation(t *testing.T) {
 }
 
 func TestValidateUnionPreservesUnchangedDestinationIdentity(t *testing.T) {
-	validator := Union([]ZogSchema{Slice(String().Required())})
+	validator := EXPERIMENTAL_UNION([]ZogSchema{Slice(String().Required())})
 	dest := []string{"zog"}
 	originalItem := &dest[0]
 
@@ -286,7 +286,7 @@ func TestValidateUnionPreservesUnchangedDestinationIdentity(t *testing.T) {
 }
 
 func TestValidateUnionUsesFreshContextForEachBranch(t *testing.T) {
-	validator := Union([]ZogSchema{
+	validator := EXPERIMENTAL_UNION([]ZogSchema{
 		String().Transform(func(val *string, ctx Ctx) error {
 			return errors.New("first branch failed")
 		}),
@@ -303,7 +303,7 @@ func TestValidateUnionUsesFreshContextForEachBranch(t *testing.T) {
 }
 
 func TestParseUnionUsesFreshContextForEachBranch(t *testing.T) {
-	validator := Union([]ZogSchema{
+	validator := EXPERIMENTAL_UNION([]ZogSchema{
 		String().Transform(func(val *string, ctx Ctx) error {
 			return errors.New("first branch failed")
 		}),
@@ -324,7 +324,7 @@ func TestValidateUnionInStructField(t *testing.T) {
 		Value string
 	}
 	validator := Struct(Shape{
-		"value": Union([]ZogSchema{
+		"value": EXPERIMENTAL_UNION([]ZogSchema{
 			String().Len(3, Message("must have length 3")),
 			String().HasPrefix("z", Message("must start with z")),
 		}),
@@ -348,7 +348,7 @@ func TestValidateUnionStructBranchesPreserveNestedErrors(t *testing.T) {
 		Name string
 		Age  int
 	}
-	validator := Union([]ZogSchema{
+	validator := EXPERIMENTAL_UNION([]ZogSchema{
 		String().Required().Min(3),
 		Struct(Shape{"name": String().Required(Message("name required"))}),
 		Struct(Shape{"age": Int().GT(18, Message("age too low"))}),
@@ -364,7 +364,7 @@ func TestValidateUnionStructBranchesPreserveNestedErrors(t *testing.T) {
 }
 
 func TestValidateUnionAnySchemaBranch(t *testing.T) {
-	validator := Union([]ZogSchema{
+	validator := EXPERIMENTAL_UNION([]ZogSchema{
 		String().Len(10),
 		EXPERIMENTAL_ANY().Required(),
 	})

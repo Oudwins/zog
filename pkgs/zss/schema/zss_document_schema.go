@@ -167,7 +167,7 @@ var ZSSSchemaSchema = z.EXPERIMENTAL_RECURSIVE(func(self z.RecursiveSchema[*z.Un
 		"Extension": z.Ptr(ZSSExtensionSchema).NotNil(),
 	})
 
-	return z.Union([]z.ZogSchema{
+	return z.EXPERIMENTAL_UNION([]z.ZogSchema{
 		union, ref, str, num, bl, tm, list, mp, strct, ptr, custom, preprocess, boxed, anySchema, extended,
 	})
 })

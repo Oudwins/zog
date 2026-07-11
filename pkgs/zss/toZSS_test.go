@@ -50,9 +50,15 @@ func stripGoTypes(schema *zss.ZSSSchema) {
 	}
 }
 
+func assertValidZSSDocument(t *testing.T, doc zss.ZSSDocument) {
+	t.Helper()
+	assert.Nil(t, zssschema.ZSSDocumentSchema.Validate(&doc))
+}
+
 func TestToJsonString(t *testing.T) {
 	s := zog.String().Required().Default("Testing!").Catch("Testing2!").Min(1)
 	d := zog.EXPERIMENTAL_TO_ZSS[string](s)
+	assertValidZSSDocument(t, d)
 	serialized, err := json.Marshal(withoutGoTypes(d))
 	assert.Nil(t, err)
 	assert.NotNil(t, serialized)
@@ -89,6 +95,7 @@ func TestToJsonString(t *testing.T) {
 func TestToJsonPtr(t *testing.T) {
 	s := zog.Ptr(zog.String().Required().Default("Testing!").Catch("Testing2!").Min(1))
 	d := zog.EXPERIMENTAL_TO_ZSS[*string](s)
+	assertValidZSSDocument(t, d)
 	serialized, err := json.Marshal(withoutGoTypes(d))
 	assert.Nil(t, err)
 	assert.NotNil(t, serialized)
@@ -136,6 +143,7 @@ func TestToJsonStructShape(t *testing.T) {
 		"age":  zog.Int().Optional(),
 	})
 	d := zog.EXPERIMENTAL_TO_ZSS[User](s)
+	assertValidZSSDocument(t, d)
 	serialized, err := json.Marshal(d)
 	assert.Nil(t, err)
 	assert.NotNil(t, serialized)
@@ -162,6 +170,7 @@ func TestToJsonStructShape(t *testing.T) {
 func TestToJsonNumber(t *testing.T) {
 	s := zog.Int().Required().Default(42).GT(0)
 	d := zog.EXPERIMENTAL_TO_ZSS[int](s)
+	assertValidZSSDocument(t, d)
 	serialized, err := json.Marshal(withoutGoTypes(d))
 	assert.Nil(t, err)
 	assert.NotNil(t, serialized)
@@ -197,6 +206,7 @@ func TestToJsonNumber(t *testing.T) {
 func TestToJsonBool(t *testing.T) {
 	s := zog.Bool().Required().Default(true)
 	d := zog.EXPERIMENTAL_TO_ZSS[bool](s)
+	assertValidZSSDocument(t, d)
 	serialized, err := json.Marshal(withoutGoTypes(d))
 	assert.Nil(t, err)
 	assert.NotNil(t, serialized)
@@ -216,11 +226,12 @@ func TestToJsonBool(t *testing.T) {
 }
 
 func TestToJsonUnion(t *testing.T) {
-	s := zog.Union([]zog.ZogSchema{
+	s := zog.EXPERIMENTAL_UNION([]zog.ZogSchema{
 		zog.String(),
 		zog.Int(),
 	})
 	d := zog.EXPERIMENTAL_TO_ZSS[any](s)
+	assertValidZSSDocument(t, d)
 	serialized, err := json.Marshal(withoutGoTypes(d))
 	assert.Nil(t, err)
 	assert.NotNil(t, serialized)
@@ -238,12 +249,12 @@ func TestToJsonUnion(t *testing.T) {
 	}`)
 
 	assert.Equal(t, normalize(expected), normalize(string(serialized)))
-	assert.Nil(t, zssschema.ZSSDocumentSchema.Validate(&d))
 }
 
 func TestToJsonTime(t *testing.T) {
 	s := zog.Time().Required()
 	d := zog.EXPERIMENTAL_TO_ZSS[time.Time](s)
+	assertValidZSSDocument(t, d)
 	serialized, err := json.Marshal(withoutGoTypes(d))
 	assert.Nil(t, err)
 	assert.NotNil(t, serialized)
@@ -264,6 +275,7 @@ func TestToJsonTime(t *testing.T) {
 func TestToJsonSlice(t *testing.T) {
 	s := zog.Slice(zog.String().Min(1)).Required().Min(1)
 	d := zog.EXPERIMENTAL_TO_ZSS[[]string](s)
+	assertValidZSSDocument(t, d)
 	serialized, err := json.Marshal(withoutGoTypes(d))
 	assert.Nil(t, err)
 	assert.NotNil(t, serialized)
@@ -322,6 +334,7 @@ func TestToJsonStruct(t *testing.T) {
 		"age":  zog.Int().Optional(),
 	})
 	d := zog.EXPERIMENTAL_TO_ZSS[User](s)
+	assertValidZSSDocument(t, d)
 	serialized, err := json.Marshal(withoutGoTypes(d))
 	assert.Nil(t, err)
 	assert.NotNil(t, serialized)
@@ -355,6 +368,7 @@ func TestToJsonPreprocess(t *testing.T) {
 		zog.String().Min(1),
 	)
 	d := zog.EXPERIMENTAL_TO_ZSS[string](s)
+	assertValidZSSDocument(t, d)
 	serialized, err := json.Marshal(withoutGoTypes(d))
 	assert.Nil(t, err)
 	assert.NotNil(t, serialized)
@@ -393,6 +407,7 @@ func TestToJsonBoxed(t *testing.T) {
 		func(s string, ctx zog.Ctx) (StringBox, error) { return StringBox{V: s}, nil },
 	)
 	d := zog.EXPERIMENTAL_TO_ZSS[StringBox](s)
+	assertValidZSSDocument(t, d)
 	serialized, err := json.Marshal(withoutGoTypes(d))
 	assert.Nil(t, err)
 	assert.NotNil(t, serialized)
@@ -424,6 +439,7 @@ func TestToJsonBoxed(t *testing.T) {
 func TestToJsonMap(t *testing.T) {
 	s := zog.EXPERIMENTAL_MAP[string, int](zog.String().Min(1), zog.Int().GT(0)).Required().Min(2)
 	d := zog.EXPERIMENTAL_TO_ZSS[map[string]int](s)
+	assertValidZSSDocument(t, d)
 	serialized, err := json.Marshal(withoutGoTypes(d))
 	assert.Nil(t, err)
 	assert.NotNil(t, serialized)
@@ -494,6 +510,7 @@ func TestToJsonCustom(t *testing.T) {
 		return *valPtr == "valid"
 	})
 	d := zog.EXPERIMENTAL_TO_ZSS[string](s)
+	assertValidZSSDocument(t, d)
 	serialized, err := json.Marshal(withoutGoTypes(d))
 	assert.Nil(t, err)
 	assert.NotNil(t, serialized)
@@ -530,6 +547,7 @@ func TestToJsonRecursiveUsesRefs(t *testing.T) {
 	})
 
 	d := zog.EXPERIMENTAL_TO_ZSS[*Node](s)
+	assertValidZSSDocument(t, d)
 	serialized, err := json.Marshal(withoutGoTypes(d))
 	assert.Nil(t, err)
 	assert.NotNil(t, serialized)
