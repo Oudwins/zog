@@ -1,6 +1,7 @@
 package zog
 
 import (
+	"errors"
 	"testing"
 	"time"
 
@@ -247,7 +248,7 @@ func TestValidateUnionRunsLaterSchemasAfterFailure(t *testing.T) {
 	assert.Equal(t, 1, secondCalls)
 }
 
-func TestValidateUnionEarlierFailingBranchMutationBehavior(t *testing.T) {
+func TestValidateUnionDoesNotCommitFailedBranchMutation(t *testing.T) {
 	validator := Union([]ZogSchema{
 		String().Trim().Len(3, Message("trimmed string must have length 3")),
 		String().OneOf([]string{"x"}),
@@ -256,8 +257,66 @@ func TestValidateUnionEarlierFailingBranchMutationBehavior(t *testing.T) {
 
 	errs := validator.Validate(&dest)
 
+	assert.Len(t, errs, 2)
+	assert.Equal(t, " x ", dest)
+}
+
+func TestValidateUnionDoesNotCommitNestedFailedBranchMutation(t *testing.T) {
+	validator := Union([]ZogSchema{
+		Slice(String().Trim().Len(2)),
+		Slice(String().OneOf([]string{"x"})),
+	})
+	dest := []string{" x "}
+
+	errs := validator.Validate(&dest)
+
+	assert.Len(t, errs, 2)
+	assert.Equal(t, []string{" x "}, dest)
+}
+
+func TestValidateUnionPreservesUnchangedDestinationIdentity(t *testing.T) {
+	validator := Union([]ZogSchema{Slice(String().Required())})
+	dest := []string{"zog"}
+	originalItem := &dest[0]
+
+	errs := validator.Validate(&dest)
+
 	assert.Empty(t, errs)
-	assert.Equal(t, "x", dest)
+	assert.Same(t, originalItem, &dest[0])
+}
+
+func TestValidateUnionUsesFreshContextForEachBranch(t *testing.T) {
+	validator := Union([]ZogSchema{
+		String().Transform(func(val *string, ctx Ctx) error {
+			return errors.New("first branch failed")
+		}),
+		String().Min(1).Len(3),
+	})
+	dest := "ab"
+
+	errs := validator.Validate(&dest)
+
+	assert.Len(t, errs, 2)
+	assert.Equal(t, zconst.TypeString, errs[1].Dtype)
+	assert.Equal(t, "string must be exactly 3 character(s)", errs[1].Message)
+	assert.Equal(t, "ab", dest)
+}
+
+func TestParseUnionUsesFreshContextForEachBranch(t *testing.T) {
+	validator := Union([]ZogSchema{
+		String().Transform(func(val *string, ctx Ctx) error {
+			return errors.New("first branch failed")
+		}),
+		String().Min(1).Len(3),
+	})
+	dest := "original"
+
+	errs := validator.Parse("ab", &dest)
+
+	assert.Len(t, errs, 2)
+	assert.Equal(t, zconst.TypeString, errs[1].Dtype)
+	assert.Equal(t, "string must be exactly 3 character(s)", errs[1].Message)
+	assert.Equal(t, "original", dest)
 }
 
 func TestValidateUnionInStructField(t *testing.T) {
