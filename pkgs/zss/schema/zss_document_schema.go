@@ -43,10 +43,101 @@ var ZSSExtensionSchema = z.Struct(z.Shape{
 	"Content": z.EXPERIMENTAL_ANY(),
 })
 
+var zssKind = func(k zconst.ZogType) *z.StringSchema[zconst.ZogType] {
+	return z.StringLike[zconst.ZogType]().OneOf([]zconst.ZogType{k})
+
+}
+
 // ZSSSchemaSchema defines the schema for ZSSSchema.
 // Note: defaultValue and catchValue are intentionally loose because ZSS allows arbitrary values.
-var ZSSSchemaSchema = z.EXPERIMENTAL_RECURSIVE(func(self z.RecursiveSchema[*z.StructSchema]) *z.StructSchema {
-	return z.Struct(z.Shape{
+var ZSSSchemaSchema = z.EXPERIMENTAL_RECURSIVE(func(self z.RecursiveSchema[*z.UnionSchema]) *z.UnionSchema {
+	ref := z.Struct(z.Shape{
+		"Ref": z.String().Required().Min(1),
+	})
+
+	str := z.Struct(z.Shape{
+		"Kind":         zssKind(zconst.TypeString),
+		"processors":   z.Slice(ZSSProcessorSchema),
+		"goTypes":      z.Slice(ZSSGoTypeSchema),
+		"required":     z.Ptr(ZSSTestSchema),
+		"defaultValue": z.EXPERIMENTAL_ANY(),
+		"catchValue":   z.EXPERIMENTAL_ANY(),
+	})
+
+	num := z.Struct(z.Shape{
+		"Kind":         zssKind(zconst.TypeNumber),
+		"processors":   z.Slice(ZSSProcessorSchema),
+		"goTypes":      z.Slice(ZSSGoTypeSchema),
+		"required":     z.Ptr(ZSSTestSchema),
+		"defaultValue": z.EXPERIMENTAL_ANY(),
+		"catchValue":   z.EXPERIMENTAL_ANY(),
+	})
+	// bool
+	bl := z.Struct(z.Shape{
+		"Kind":         zssKind(zconst.TypeBool),
+		"processors":   z.Slice(ZSSProcessorSchema),
+		"goTypes":      z.Slice(ZSSGoTypeSchema),
+		"required":     z.Ptr(ZSSTestSchema),
+		"defaultValue": z.EXPERIMENTAL_ANY(),
+		"catchValue":   z.EXPERIMENTAL_ANY(),
+	})
+
+	// time
+	tm := z.Struct(z.Shape{
+		"Kind":         zssKind(zconst.TypeTime),
+		"format":       z.Ptr(z.String()),
+		"processors":   z.Slice(ZSSProcessorSchema),
+		"goTypes":      z.Slice(ZSSGoTypeSchema),
+		"required":     z.Ptr(ZSSTestSchema),
+		"defaultValue": z.EXPERIMENTAL_ANY(),
+		"catchValue":   z.EXPERIMENTAL_ANY(),
+	})
+
+	list := z.Struct(z.Shape{
+		"Kind":         zssKind(zconst.TypeSlice),
+		"processors":   z.Slice(ZSSProcessorSchema),
+		"goTypes":      z.Slice(ZSSGoTypeSchema),
+		"element":      z.Ptr(self()),
+		"required":     z.Ptr(ZSSTestSchema),
+		"defaultValue": z.EXPERIMENTAL_ANY(),
+		"catchValue":   z.EXPERIMENTAL_ANY(),
+	})
+
+	mp := z.Struct(z.Shape{
+		"Kind":         zssKind(zconst.TypeMap),
+		"processors":   z.Slice(ZSSProcessorSchema),
+		"goTypes":      z.Slice(ZSSGoTypeSchema),
+		"key":          z.Ptr(self()),
+		"value":        z.Ptr(self()),
+		"required":     z.Ptr(ZSSTestSchema),
+		"defaultValue": z.EXPERIMENTAL_ANY(),
+		"catchValue":   z.EXPERIMENTAL_ANY(),
+	})
+
+	strct := z.Struct(z.Shape{
+		"Kind":         zssKind(zconst.TypeStruct),
+		"processors":   z.Slice(ZSSProcessorSchema),
+		"goTypes":      z.Slice(ZSSGoTypeSchema),
+		"required":     z.Ptr(ZSSTestSchema),
+		"defaultValue": z.EXPERIMENTAL_ANY(),
+		"fields":       z.EXPERIMENTAL_MAP[string, *zsscore.ZSSSchema](z.String(), z.Ptr(self())),
+		"fieldMeta":    z.EXPERIMENTAL_MAP[string, zsscore.ZSSFieldMeta](z.String(), ZSSFieldMetaSchema),
+	})
+
+	ptr := z.Struct(z.Shape{
+		"Kind":     zssKind(zconst.TypeStruct),
+		"element":  z.Ptr(self()),
+		"goTypes":  z.Slice(ZSSGoTypeSchema),
+		"required": z.Ptr(ZSSTestSchema),
+	})
+
+	custom := z.Struct(z.Shape{
+		"Kind":       zssKind(zconst.TypeStruct),
+		"goTypes":    z.Slice(ZSSGoTypeSchema),
+		"processors": z.Slice(ZSSProcessorSchema),
+	})
+
+	s := z.Struct(z.Shape{
 		"Ref":          z.Ptr(z.String()),
 		"kind":         z.StringLike[zconst.ZogType]().OneOf(zconst.ZogTypeValues),
 		"Extension":    z.Ptr(ZSSExtensionSchema),
@@ -63,6 +154,8 @@ var ZSSSchemaSchema = z.EXPERIMENTAL_RECURSIVE(func(self z.RecursiveSchema[*z.St
 		"defaultValue": z.EXPERIMENTAL_ANY(),
 		"catchValue":   z.EXPERIMENTAL_ANY(),
 	})
+
+	return z.Union([]z.ZogSchema{ref, str, num, bl, tm, list, mp, strct, ptr, custom})
 })
 
 var URISchema = z.String().Match(zsscore.ZSS_URI_REGEX).Required()
