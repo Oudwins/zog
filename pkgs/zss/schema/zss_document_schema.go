@@ -19,14 +19,14 @@ var ZSSFieldMetaSchema = z.Struct(z.Shape{
 
 // ZSSTransformerSchema defines the schema for ZSSTransformer
 var ZSSTransformerSchema = z.Struct(z.Shape{
-	"id": z.String().Required(),
+	"ID": z.String().Required(),
 })
 
 // ZSSTestSchema defines the schema for ZSSTest
 var ZSSTestSchema = z.Struct(z.Shape{
-	"id":        z.String().Required(),
+	"ID":        z.String().Required(),
 	"message":   z.String().Required(),
-	"issuePath": z.Slice(z.String()).Required(),
+	"issuePath": z.Slice(z.String()),
 	"params":    z.EXPERIMENTAL_MAP[string, any](z.String(), z.EXPERIMENTAL_ANY()),
 })
 
@@ -35,6 +35,18 @@ var ZSSProcessorSchema = z.Struct(z.Shape{
 	"kind":        z.String().Required(),
 	"test":        z.Ptr(ZSSTestSchema),
 	"transformer": z.Ptr(ZSSTransformerSchema),
+})
+
+var ZSSCustomTestSchema = z.Struct(z.Shape{
+	"ID":        z.String(),
+	"message":   z.String(),
+	"issuePath": z.Slice(z.String()),
+	"params":    z.EXPERIMENTAL_MAP[string, any](z.String(), z.EXPERIMENTAL_ANY()),
+})
+
+var ZSSCustomProcessorSchema = z.Struct(z.Shape{
+	"kind": z.StringLike[zconst.ZogProcessor]().OneOf([]zconst.ZogProcessor{zconst.ZogProcessorTest}),
+	"test": z.Ptr(ZSSCustomTestSchema).NotNil(),
 })
 
 // ZSSExtensionSchema defines the schema for ZSSExtension.
@@ -52,7 +64,7 @@ var zssKind = func(k zconst.ZogType) *z.StringSchema[zconst.ZogType] {
 // Note: defaultValue and catchValue are intentionally loose because ZSS allows arbitrary values.
 var ZSSSchemaSchema = z.EXPERIMENTAL_RECURSIVE(func(self z.RecursiveSchema[*z.UnionSchema]) *z.UnionSchema {
 	ref := z.Struct(z.Shape{
-		"Ref": z.String().Required().Min(1),
+		"Ref": z.Ptr(z.String().Required().Min(1)).NotNil(),
 	})
 
 	str := z.Struct(z.Shape{
@@ -134,7 +146,7 @@ var ZSSSchemaSchema = z.EXPERIMENTAL_RECURSIVE(func(self z.RecursiveSchema[*z.Un
 	custom := z.Struct(z.Shape{
 		"Kind":       zssKind(zconst.TypeCustom),
 		"goTypes":    z.Slice(ZSSGoTypeSchema),
-		"processors": z.Slice(ZSSProcessorSchema),
+		"processors": z.Slice(ZSSCustomProcessorSchema),
 	})
 
 	preprocess := z.Struct(z.Shape{
