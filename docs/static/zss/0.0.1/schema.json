@@ -8,218 +8,1262 @@
   "properties": {
     "$defs": {
       "additionalProperties": {
-        "properties": {
-          "$ref": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "catchValue": {},
-          "defaultValue": {},
-          "element": {
+        "anyOf": [
+          {
             "anyOf": [
               {
-                "$ref": "#/$defs/schema1"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "extension": {
-            "properties": {
-              "content": {},
-              "uri": {
-                "pattern": "^(?:https?://[A-Za-z0-9.-]+(?::[0-9]+)?(?:/[A-Za-z0-9._~!$\u0026'()*+,;=:@%-]+)+)/(?:(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)(?:-beta(?:\\.(?:0|[1-9][0-9]*))?)?)/schema\\.json$",
-                "type": "string"
-              }
-            },
-            "required": [
-              "uri"
-            ],
-            "type": [
-              "object",
-              "null"
-            ]
-          },
-          "fieldMeta": {
-            "additionalProperties": {
-              "properties": {
-                "tags": {
-                  "type": "string"
-                }
-              },
-              "type": "object"
-            },
-            "type": "object"
-          },
-          "fields": {
-            "additionalProperties": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/schema1"
-                },
-                {
-                  "type": "null"
-                }
-              ]
-            },
-            "type": "object"
-          },
-          "format": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "goTypes": {
-            "items": {
-              "properties": {
-                "display": {
-                  "type": "string"
-                },
-                "name": {
-                  "type": "string"
-                },
-                "pkgPath": {
-                  "type": "string"
-                }
-              },
-              "required": [
-                "display"
-              ],
-              "type": "object"
-            },
-            "type": "array"
-          },
-          "key": {
-            "anyOf": [
-              {
-                "$ref": "#/$defs/schema1"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "kind": {
-            "enum": [
-              "string",
-              "number",
-              "bool",
-              "time",
-              "slice",
-              "map",
-              "struct",
-              "ptr",
-              "custom",
-              "preprocess",
-              "boxed",
-              "any"
-            ],
-            "type": "string"
-          },
-          "processors": {
-            "items": {
-              "properties": {
-                "kind": {
-                  "type": "string"
-                },
-                "test": {
-                  "properties": {
-                    "id": {
-                      "type": "string"
+                "properties": {
+                  "children": {
+                    "items": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/schema1"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
                     },
-                    "issuePath": {
-                      "items": {
+                    "minItems": 2,
+                    "type": "array"
+                  },
+                  "kind": {
+                    "enum": [
+                      "union"
+                    ],
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "children"
+                ],
+                "type": "object"
+              },
+              {
+                "properties": {
+                  "$ref": {
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "$ref"
+                ],
+                "type": "object"
+              },
+              {
+                "properties": {
+                  "catchValue": {},
+                  "defaultValue": {},
+                  "goTypes": {
+                    "items": {
+                      "properties": {
+                        "display": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "pkgPath": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "display"
+                      ],
+                      "type": "object"
+                    },
+                    "type": "array"
+                  },
+                  "kind": {
+                    "enum": [
+                      "string"
+                    ],
+                    "type": "string"
+                  },
+                  "processors": {
+                    "items": {
+                      "properties": {
+                        "kind": {
+                          "type": "string"
+                        },
+                        "test": {
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "issuePath": {
+                              "items": {
+                                "type": "string"
+                              },
+                              "type": "array"
+                            },
+                            "message": {
+                              "type": "string"
+                            },
+                            "params": {
+                              "additionalProperties": {},
+                              "type": "object"
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "message"
+                          ],
+                          "type": [
+                            "object",
+                            "null"
+                          ]
+                        },
+                        "transformer": {
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "id"
+                          ],
+                          "type": [
+                            "object",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "kind"
+                      ],
+                      "type": "object"
+                    },
+                    "type": "array"
+                  },
+                  "required": {
+                    "properties": {
+                      "id": {
                         "type": "string"
                       },
-                      "type": "array"
+                      "issuePath": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "message": {
+                        "type": "string"
+                      },
+                      "params": {
+                        "additionalProperties": {},
+                        "type": "object"
+                      }
                     },
-                    "message": {
-                      "type": "string"
-                    },
-                    "params": {
-                      "additionalProperties": {},
+                    "required": [
+                      "id",
+                      "message"
+                    ],
+                    "type": [
+                      "object",
+                      "null"
+                    ]
+                  }
+                },
+                "type": "object"
+              },
+              {
+                "properties": {
+                  "catchValue": {},
+                  "defaultValue": {},
+                  "goTypes": {
+                    "items": {
+                      "properties": {
+                        "display": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "pkgPath": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "display"
+                      ],
                       "type": "object"
-                    }
+                    },
+                    "type": "array"
                   },
-                  "required": [
-                    "message",
-                    "issuePath",
-                    "id"
-                  ],
-                  "type": [
-                    "object",
-                    "null"
-                  ]
-                },
-                "transformer": {
-                  "properties": {
-                    "id": {
-                      "type": "string"
-                    }
+                  "kind": {
+                    "enum": [
+                      "number"
+                    ],
+                    "type": "string"
                   },
-                  "required": [
-                    "id"
-                  ],
-                  "type": [
-                    "object",
-                    "null"
-                  ]
-                }
-              },
-              "required": [
-                "kind"
-              ],
-              "type": "object"
-            },
-            "type": "array"
-          },
-          "required": {
-            "properties": {
-              "id": {
-                "type": "string"
-              },
-              "issuePath": {
-                "items": {
-                  "type": "string"
+                  "processors": {
+                    "items": {
+                      "properties": {
+                        "kind": {
+                          "type": "string"
+                        },
+                        "test": {
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "issuePath": {
+                              "items": {
+                                "type": "string"
+                              },
+                              "type": "array"
+                            },
+                            "message": {
+                              "type": "string"
+                            },
+                            "params": {
+                              "additionalProperties": {},
+                              "type": "object"
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "message"
+                          ],
+                          "type": [
+                            "object",
+                            "null"
+                          ]
+                        },
+                        "transformer": {
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "id"
+                          ],
+                          "type": [
+                            "object",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "kind"
+                      ],
+                      "type": "object"
+                    },
+                    "type": "array"
+                  },
+                  "required": {
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "issuePath": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "message": {
+                        "type": "string"
+                      },
+                      "params": {
+                        "additionalProperties": {},
+                        "type": "object"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "message"
+                    ],
+                    "type": [
+                      "object",
+                      "null"
+                    ]
+                  }
                 },
-                "type": "array"
+                "type": "object"
               },
-              "message": {
-                "type": "string"
+              {
+                "properties": {
+                  "catchValue": {},
+                  "defaultValue": {},
+                  "goTypes": {
+                    "items": {
+                      "properties": {
+                        "display": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "pkgPath": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "display"
+                      ],
+                      "type": "object"
+                    },
+                    "type": "array"
+                  },
+                  "kind": {
+                    "enum": [
+                      "bool"
+                    ],
+                    "type": "string"
+                  },
+                  "processors": {
+                    "items": {
+                      "properties": {
+                        "kind": {
+                          "type": "string"
+                        },
+                        "test": {
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "issuePath": {
+                              "items": {
+                                "type": "string"
+                              },
+                              "type": "array"
+                            },
+                            "message": {
+                              "type": "string"
+                            },
+                            "params": {
+                              "additionalProperties": {},
+                              "type": "object"
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "message"
+                          ],
+                          "type": [
+                            "object",
+                            "null"
+                          ]
+                        },
+                        "transformer": {
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "id"
+                          ],
+                          "type": [
+                            "object",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "kind"
+                      ],
+                      "type": "object"
+                    },
+                    "type": "array"
+                  },
+                  "required": {
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "issuePath": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "message": {
+                        "type": "string"
+                      },
+                      "params": {
+                        "additionalProperties": {},
+                        "type": "object"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "message"
+                    ],
+                    "type": [
+                      "object",
+                      "null"
+                    ]
+                  }
+                },
+                "type": "object"
               },
-              "params": {
-                "additionalProperties": {},
+              {
+                "properties": {
+                  "catchValue": {},
+                  "defaultValue": {},
+                  "format": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "goTypes": {
+                    "items": {
+                      "properties": {
+                        "display": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "pkgPath": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "display"
+                      ],
+                      "type": "object"
+                    },
+                    "type": "array"
+                  },
+                  "kind": {
+                    "enum": [
+                      "time"
+                    ],
+                    "type": "string"
+                  },
+                  "processors": {
+                    "items": {
+                      "properties": {
+                        "kind": {
+                          "type": "string"
+                        },
+                        "test": {
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "issuePath": {
+                              "items": {
+                                "type": "string"
+                              },
+                              "type": "array"
+                            },
+                            "message": {
+                              "type": "string"
+                            },
+                            "params": {
+                              "additionalProperties": {},
+                              "type": "object"
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "message"
+                          ],
+                          "type": [
+                            "object",
+                            "null"
+                          ]
+                        },
+                        "transformer": {
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "id"
+                          ],
+                          "type": [
+                            "object",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "kind"
+                      ],
+                      "type": "object"
+                    },
+                    "type": "array"
+                  },
+                  "required": {
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "issuePath": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "message": {
+                        "type": "string"
+                      },
+                      "params": {
+                        "additionalProperties": {},
+                        "type": "object"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "message"
+                    ],
+                    "type": [
+                      "object",
+                      "null"
+                    ]
+                  }
+                },
+                "type": "object"
+              },
+              {
+                "properties": {
+                  "catchValue": {},
+                  "defaultValue": {},
+                  "element": {
+                    "$ref": "#/$defs/schema1"
+                  },
+                  "goTypes": {
+                    "items": {
+                      "properties": {
+                        "display": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "pkgPath": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "display"
+                      ],
+                      "type": "object"
+                    },
+                    "type": "array"
+                  },
+                  "kind": {
+                    "enum": [
+                      "slice"
+                    ],
+                    "type": "string"
+                  },
+                  "processors": {
+                    "items": {
+                      "properties": {
+                        "kind": {
+                          "type": "string"
+                        },
+                        "test": {
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "issuePath": {
+                              "items": {
+                                "type": "string"
+                              },
+                              "type": "array"
+                            },
+                            "message": {
+                              "type": "string"
+                            },
+                            "params": {
+                              "additionalProperties": {},
+                              "type": "object"
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "message"
+                          ],
+                          "type": [
+                            "object",
+                            "null"
+                          ]
+                        },
+                        "transformer": {
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "id"
+                          ],
+                          "type": [
+                            "object",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "kind"
+                      ],
+                      "type": "object"
+                    },
+                    "type": "array"
+                  },
+                  "required": {
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "issuePath": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "message": {
+                        "type": "string"
+                      },
+                      "params": {
+                        "additionalProperties": {},
+                        "type": "object"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "message"
+                    ],
+                    "type": [
+                      "object",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "element"
+                ],
+                "type": "object"
+              },
+              {
+                "properties": {
+                  "catchValue": {},
+                  "defaultValue": {},
+                  "goTypes": {
+                    "items": {
+                      "properties": {
+                        "display": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "pkgPath": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "display"
+                      ],
+                      "type": "object"
+                    },
+                    "type": "array"
+                  },
+                  "key": {
+                    "$ref": "#/$defs/schema1"
+                  },
+                  "kind": {
+                    "enum": [
+                      "map"
+                    ],
+                    "type": "string"
+                  },
+                  "processors": {
+                    "items": {
+                      "properties": {
+                        "kind": {
+                          "type": "string"
+                        },
+                        "test": {
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "issuePath": {
+                              "items": {
+                                "type": "string"
+                              },
+                              "type": "array"
+                            },
+                            "message": {
+                              "type": "string"
+                            },
+                            "params": {
+                              "additionalProperties": {},
+                              "type": "object"
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "message"
+                          ],
+                          "type": [
+                            "object",
+                            "null"
+                          ]
+                        },
+                        "transformer": {
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "id"
+                          ],
+                          "type": [
+                            "object",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "kind"
+                      ],
+                      "type": "object"
+                    },
+                    "type": "array"
+                  },
+                  "required": {
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "issuePath": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "message": {
+                        "type": "string"
+                      },
+                      "params": {
+                        "additionalProperties": {},
+                        "type": "object"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "message"
+                    ],
+                    "type": [
+                      "object",
+                      "null"
+                    ]
+                  },
+                  "value": {
+                    "$ref": "#/$defs/schema1"
+                  }
+                },
+                "required": [
+                  "key",
+                  "value"
+                ],
+                "type": "object"
+              },
+              {
+                "properties": {
+                  "defaultValue": {},
+                  "fieldMeta": {
+                    "additionalProperties": {
+                      "properties": {
+                        "tags": {
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "type": "object"
+                  },
+                  "fields": {
+                    "additionalProperties": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/schema1"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "type": "object"
+                  },
+                  "goTypes": {
+                    "items": {
+                      "properties": {
+                        "display": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "pkgPath": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "display"
+                      ],
+                      "type": "object"
+                    },
+                    "type": "array"
+                  },
+                  "kind": {
+                    "enum": [
+                      "struct"
+                    ],
+                    "type": "string"
+                  },
+                  "processors": {
+                    "items": {
+                      "properties": {
+                        "kind": {
+                          "type": "string"
+                        },
+                        "test": {
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "issuePath": {
+                              "items": {
+                                "type": "string"
+                              },
+                              "type": "array"
+                            },
+                            "message": {
+                              "type": "string"
+                            },
+                            "params": {
+                              "additionalProperties": {},
+                              "type": "object"
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "message"
+                          ],
+                          "type": [
+                            "object",
+                            "null"
+                          ]
+                        },
+                        "transformer": {
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "id"
+                          ],
+                          "type": [
+                            "object",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "kind"
+                      ],
+                      "type": "object"
+                    },
+                    "type": "array"
+                  },
+                  "required": {
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "issuePath": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "message": {
+                        "type": "string"
+                      },
+                      "params": {
+                        "additionalProperties": {},
+                        "type": "object"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "message"
+                    ],
+                    "type": [
+                      "object",
+                      "null"
+                    ]
+                  }
+                },
+                "type": "object"
+              },
+              {
+                "properties": {
+                  "element": {
+                    "anyOf": [
+                      {
+                        "$ref": "#/$defs/schema1"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "goTypes": {
+                    "items": {
+                      "properties": {
+                        "display": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "pkgPath": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "display"
+                      ],
+                      "type": "object"
+                    },
+                    "type": "array"
+                  },
+                  "kind": {
+                    "enum": [
+                      "ptr"
+                    ],
+                    "type": "string"
+                  },
+                  "required": {
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "issuePath": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "message": {
+                        "type": "string"
+                      },
+                      "params": {
+                        "additionalProperties": {},
+                        "type": "object"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "message"
+                    ],
+                    "type": [
+                      "object",
+                      "null"
+                    ]
+                  }
+                },
+                "type": "object"
+              },
+              {
+                "properties": {
+                  "goTypes": {
+                    "items": {
+                      "properties": {
+                        "display": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "pkgPath": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "display"
+                      ],
+                      "type": "object"
+                    },
+                    "type": "array"
+                  },
+                  "kind": {
+                    "enum": [
+                      "custom"
+                    ],
+                    "type": "string"
+                  },
+                  "processors": {
+                    "items": {
+                      "properties": {
+                        "kind": {
+                          "enum": [
+                            "test"
+                          ],
+                          "type": "string"
+                        },
+                        "test": {
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "issuePath": {
+                              "items": {
+                                "type": "string"
+                              },
+                              "type": "array"
+                            },
+                            "message": {
+                              "type": "string"
+                            },
+                            "params": {
+                              "additionalProperties": {},
+                              "type": "object"
+                            }
+                          },
+                          "type": "object"
+                        }
+                      },
+                      "required": [
+                        "test"
+                      ],
+                      "type": "object"
+                    },
+                    "type": "array"
+                  }
+                },
+                "type": "object"
+              },
+              {
+                "properties": {
+                  "element": {
+                    "anyOf": [
+                      {
+                        "$ref": "#/$defs/schema1"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "goTypes": {
+                    "items": {
+                      "properties": {
+                        "display": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "pkgPath": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "display"
+                      ],
+                      "type": "object"
+                    },
+                    "type": "array"
+                  },
+                  "kind": {
+                    "enum": [
+                      "preprocess"
+                    ],
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              {
+                "properties": {
+                  "element": {
+                    "anyOf": [
+                      {
+                        "$ref": "#/$defs/schema1"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "goTypes": {
+                    "items": {
+                      "properties": {
+                        "display": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "pkgPath": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "display"
+                      ],
+                      "type": "object"
+                    },
+                    "type": "array"
+                  },
+                  "kind": {
+                    "enum": [
+                      "boxed"
+                    ],
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              {
+                "properties": {
+                  "catchValue": {},
+                  "defaultValue": {},
+                  "kind": {
+                    "enum": [
+                      "any"
+                    ],
+                    "type": "string"
+                  },
+                  "processors": {
+                    "items": {
+                      "properties": {
+                        "kind": {
+                          "type": "string"
+                        },
+                        "test": {
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "issuePath": {
+                              "items": {
+                                "type": "string"
+                              },
+                              "type": "array"
+                            },
+                            "message": {
+                              "type": "string"
+                            },
+                            "params": {
+                              "additionalProperties": {},
+                              "type": "object"
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "message"
+                          ],
+                          "type": [
+                            "object",
+                            "null"
+                          ]
+                        },
+                        "transformer": {
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "id"
+                          ],
+                          "type": [
+                            "object",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "kind"
+                      ],
+                      "type": "object"
+                    },
+                    "type": "array"
+                  },
+                  "required": {
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "issuePath": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "message": {
+                        "type": "string"
+                      },
+                      "params": {
+                        "additionalProperties": {},
+                        "type": "object"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "message"
+                    ],
+                    "type": [
+                      "object",
+                      "null"
+                    ]
+                  }
+                },
+                "type": "object"
+              },
+              {
+                "properties": {
+                  "extension": {
+                    "properties": {
+                      "content": {},
+                      "uri": {
+                        "pattern": "^(?:https?://[A-Za-z0-9.-]+(?::[0-9]+)?(?:/[A-Za-z0-9._~!$\u0026'()*+,;=:@%-]+)+)/(?:(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)(?:-beta(?:\\.(?:0|[1-9][0-9]*))?)?)/schema\\.json$",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "uri"
+                    ],
+                    "type": "object"
+                  },
+                  "kind": {
+                    "enum": [
+                      "extension"
+                    ],
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "extension"
+                ],
                 "type": "object"
               }
-            },
-            "required": [
-              "id",
-              "message",
-              "issuePath"
-            ],
-            "type": [
-              "object",
-              "null"
             ]
           },
-          "value": {
-            "anyOf": [
-              {
-                "$ref": "#/$defs/schema1"
-              },
-              {
-                "type": "null"
-              }
-            ]
+          {
+            "type": "null"
           }
-        },
-        "type": [
-          "object",
-          "null"
         ]
       },
       "type": "object"
@@ -229,216 +1273,1256 @@
       "type": "string"
     },
     "root": {
-      "properties": {
-        "$ref": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "catchValue": {},
-        "defaultValue": {},
-        "element": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/schema1"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "extension": {
+      "anyOf": [
+        {
           "properties": {
-            "content": {},
-            "uri": {
-              "pattern": "^(?:https?://[A-Za-z0-9.-]+(?::[0-9]+)?(?:/[A-Za-z0-9._~!$\u0026'()*+,;=:@%-]+)+)/(?:(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)(?:-beta(?:\\.(?:0|[1-9][0-9]*))?)?)/schema\\.json$",
+            "children": {
+              "items": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/schema1"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "minItems": 2,
+              "type": "array"
+            },
+            "kind": {
+              "enum": [
+                "union"
+              ],
               "type": "string"
             }
           },
           "required": [
-            "uri"
+            "children"
           ],
-          "type": [
-            "object",
-            "null"
-          ]
+          "type": "object"
         },
-        "fieldMeta": {
-          "additionalProperties": {
-            "properties": {
-              "tags": {
-                "type": "string"
-              }
+        {
+          "properties": {
+            "$ref": {
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          "required": [
+            "$ref"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "catchValue": {},
+            "defaultValue": {},
+            "goTypes": {
+              "items": {
+                "properties": {
+                  "display": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "pkgPath": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "display"
+                ],
+                "type": "object"
+              },
+              "type": "array"
             },
-            "type": "object"
+            "kind": {
+              "enum": [
+                "string"
+              ],
+              "type": "string"
+            },
+            "processors": {
+              "items": {
+                "properties": {
+                  "kind": {
+                    "type": "string"
+                  },
+                  "test": {
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "issuePath": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "message": {
+                        "type": "string"
+                      },
+                      "params": {
+                        "additionalProperties": {},
+                        "type": "object"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "message"
+                    ],
+                    "type": [
+                      "object",
+                      "null"
+                    ]
+                  },
+                  "transformer": {
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "id"
+                    ],
+                    "type": [
+                      "object",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "kind"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "required": {
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "issuePath": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "message": {
+                  "type": "string"
+                },
+                "params": {
+                  "additionalProperties": {},
+                  "type": "object"
+                }
+              },
+              "required": [
+                "id",
+                "message"
+              ],
+              "type": [
+                "object",
+                "null"
+              ]
+            }
           },
           "type": "object"
         },
-        "fields": {
-          "additionalProperties": {
-            "anyOf": [
-              {
-                "$ref": "#/$defs/schema1"
+        {
+          "properties": {
+            "catchValue": {},
+            "defaultValue": {},
+            "goTypes": {
+              "items": {
+                "properties": {
+                  "display": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "pkgPath": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "display"
+                ],
+                "type": "object"
               },
-              {
-                "type": "null"
-              }
-            ]
+              "type": "array"
+            },
+            "kind": {
+              "enum": [
+                "number"
+              ],
+              "type": "string"
+            },
+            "processors": {
+              "items": {
+                "properties": {
+                  "kind": {
+                    "type": "string"
+                  },
+                  "test": {
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "issuePath": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "message": {
+                        "type": "string"
+                      },
+                      "params": {
+                        "additionalProperties": {},
+                        "type": "object"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "message"
+                    ],
+                    "type": [
+                      "object",
+                      "null"
+                    ]
+                  },
+                  "transformer": {
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "id"
+                    ],
+                    "type": [
+                      "object",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "kind"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "required": {
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "issuePath": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "message": {
+                  "type": "string"
+                },
+                "params": {
+                  "additionalProperties": {},
+                  "type": "object"
+                }
+              },
+              "required": [
+                "id",
+                "message"
+              ],
+              "type": [
+                "object",
+                "null"
+              ]
+            }
           },
           "type": "object"
         },
-        "format": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "goTypes": {
-          "items": {
-            "properties": {
-              "display": {
-                "type": "string"
+        {
+          "properties": {
+            "catchValue": {},
+            "defaultValue": {},
+            "goTypes": {
+              "items": {
+                "properties": {
+                  "display": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "pkgPath": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "display"
+                ],
+                "type": "object"
               },
-              "name": {
-                "type": "string"
-              },
-              "pkgPath": {
-                "type": "string"
-              }
+              "type": "array"
             },
-            "required": [
-              "display"
-            ],
-            "type": "object"
+            "kind": {
+              "enum": [
+                "bool"
+              ],
+              "type": "string"
+            },
+            "processors": {
+              "items": {
+                "properties": {
+                  "kind": {
+                    "type": "string"
+                  },
+                  "test": {
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "issuePath": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "message": {
+                        "type": "string"
+                      },
+                      "params": {
+                        "additionalProperties": {},
+                        "type": "object"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "message"
+                    ],
+                    "type": [
+                      "object",
+                      "null"
+                    ]
+                  },
+                  "transformer": {
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "id"
+                    ],
+                    "type": [
+                      "object",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "kind"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "required": {
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "issuePath": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "message": {
+                  "type": "string"
+                },
+                "params": {
+                  "additionalProperties": {},
+                  "type": "object"
+                }
+              },
+              "required": [
+                "id",
+                "message"
+              ],
+              "type": [
+                "object",
+                "null"
+              ]
+            }
           },
-          "type": "array"
+          "type": "object"
         },
-        "key": {
-          "anyOf": [
-            {
+        {
+          "properties": {
+            "catchValue": {},
+            "defaultValue": {},
+            "format": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "goTypes": {
+              "items": {
+                "properties": {
+                  "display": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "pkgPath": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "display"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "kind": {
+              "enum": [
+                "time"
+              ],
+              "type": "string"
+            },
+            "processors": {
+              "items": {
+                "properties": {
+                  "kind": {
+                    "type": "string"
+                  },
+                  "test": {
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "issuePath": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "message": {
+                        "type": "string"
+                      },
+                      "params": {
+                        "additionalProperties": {},
+                        "type": "object"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "message"
+                    ],
+                    "type": [
+                      "object",
+                      "null"
+                    ]
+                  },
+                  "transformer": {
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "id"
+                    ],
+                    "type": [
+                      "object",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "kind"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "required": {
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "issuePath": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "message": {
+                  "type": "string"
+                },
+                "params": {
+                  "additionalProperties": {},
+                  "type": "object"
+                }
+              },
+              "required": [
+                "id",
+                "message"
+              ],
+              "type": [
+                "object",
+                "null"
+              ]
+            }
+          },
+          "type": "object"
+        },
+        {
+          "properties": {
+            "catchValue": {},
+            "defaultValue": {},
+            "element": {
               "$ref": "#/$defs/schema1"
             },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "kind": {
-          "enum": [
-            "string",
-            "number",
-            "bool",
-            "time",
-            "slice",
-            "map",
-            "struct",
-            "ptr",
-            "custom",
-            "preprocess",
-            "boxed",
-            "any"
-          ],
-          "type": "string"
-        },
-        "processors": {
-          "items": {
-            "properties": {
-              "kind": {
-                "type": "string"
-              },
-              "test": {
+            "goTypes": {
+              "items": {
                 "properties": {
-                  "id": {
+                  "display": {
                     "type": "string"
                   },
-                  "issuePath": {
-                    "items": {
-                      "type": "string"
+                  "name": {
+                    "type": "string"
+                  },
+                  "pkgPath": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "display"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "kind": {
+              "enum": [
+                "slice"
+              ],
+              "type": "string"
+            },
+            "processors": {
+              "items": {
+                "properties": {
+                  "kind": {
+                    "type": "string"
+                  },
+                  "test": {
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "issuePath": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "message": {
+                        "type": "string"
+                      },
+                      "params": {
+                        "additionalProperties": {},
+                        "type": "object"
+                      }
                     },
-                    "type": "array"
+                    "required": [
+                      "id",
+                      "message"
+                    ],
+                    "type": [
+                      "object",
+                      "null"
+                    ]
                   },
-                  "message": {
+                  "transformer": {
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "id"
+                    ],
+                    "type": [
+                      "object",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "kind"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "required": {
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "issuePath": {
+                  "items": {
                     "type": "string"
                   },
-                  "params": {
-                    "additionalProperties": {},
+                  "type": "array"
+                },
+                "message": {
+                  "type": "string"
+                },
+                "params": {
+                  "additionalProperties": {},
+                  "type": "object"
+                }
+              },
+              "required": [
+                "id",
+                "message"
+              ],
+              "type": [
+                "object",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "element"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "catchValue": {},
+            "defaultValue": {},
+            "goTypes": {
+              "items": {
+                "properties": {
+                  "display": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "pkgPath": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "display"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "key": {
+              "$ref": "#/$defs/schema1"
+            },
+            "kind": {
+              "enum": [
+                "map"
+              ],
+              "type": "string"
+            },
+            "processors": {
+              "items": {
+                "properties": {
+                  "kind": {
+                    "type": "string"
+                  },
+                  "test": {
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "issuePath": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "message": {
+                        "type": "string"
+                      },
+                      "params": {
+                        "additionalProperties": {},
+                        "type": "object"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "message"
+                    ],
+                    "type": [
+                      "object",
+                      "null"
+                    ]
+                  },
+                  "transformer": {
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "id"
+                    ],
+                    "type": [
+                      "object",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "kind"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "required": {
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "issuePath": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "message": {
+                  "type": "string"
+                },
+                "params": {
+                  "additionalProperties": {},
+                  "type": "object"
+                }
+              },
+              "required": [
+                "id",
+                "message"
+              ],
+              "type": [
+                "object",
+                "null"
+              ]
+            },
+            "value": {
+              "$ref": "#/$defs/schema1"
+            }
+          },
+          "required": [
+            "key",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "defaultValue": {},
+            "fieldMeta": {
+              "additionalProperties": {
+                "properties": {
+                  "tags": {
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              "type": "object"
+            },
+            "fields": {
+              "additionalProperties": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/schema1"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "type": "object"
+            },
+            "goTypes": {
+              "items": {
+                "properties": {
+                  "display": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "pkgPath": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "display"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "kind": {
+              "enum": [
+                "struct"
+              ],
+              "type": "string"
+            },
+            "processors": {
+              "items": {
+                "properties": {
+                  "kind": {
+                    "type": "string"
+                  },
+                  "test": {
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "issuePath": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "message": {
+                        "type": "string"
+                      },
+                      "params": {
+                        "additionalProperties": {},
+                        "type": "object"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "message"
+                    ],
+                    "type": [
+                      "object",
+                      "null"
+                    ]
+                  },
+                  "transformer": {
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "id"
+                    ],
+                    "type": [
+                      "object",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "kind"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "required": {
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "issuePath": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "message": {
+                  "type": "string"
+                },
+                "params": {
+                  "additionalProperties": {},
+                  "type": "object"
+                }
+              },
+              "required": [
+                "id",
+                "message"
+              ],
+              "type": [
+                "object",
+                "null"
+              ]
+            }
+          },
+          "type": "object"
+        },
+        {
+          "properties": {
+            "element": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/schema1"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "goTypes": {
+              "items": {
+                "properties": {
+                  "display": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "pkgPath": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "display"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "kind": {
+              "enum": [
+                "ptr"
+              ],
+              "type": "string"
+            },
+            "required": {
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "issuePath": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "message": {
+                  "type": "string"
+                },
+                "params": {
+                  "additionalProperties": {},
+                  "type": "object"
+                }
+              },
+              "required": [
+                "id",
+                "message"
+              ],
+              "type": [
+                "object",
+                "null"
+              ]
+            }
+          },
+          "type": "object"
+        },
+        {
+          "properties": {
+            "goTypes": {
+              "items": {
+                "properties": {
+                  "display": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "pkgPath": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "display"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "kind": {
+              "enum": [
+                "custom"
+              ],
+              "type": "string"
+            },
+            "processors": {
+              "items": {
+                "properties": {
+                  "kind": {
+                    "enum": [
+                      "test"
+                    ],
+                    "type": "string"
+                  },
+                  "test": {
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "issuePath": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "message": {
+                        "type": "string"
+                      },
+                      "params": {
+                        "additionalProperties": {},
+                        "type": "object"
+                      }
+                    },
                     "type": "object"
                   }
                 },
                 "required": [
-                  "id",
-                  "message",
-                  "issuePath"
+                  "test"
                 ],
-                "type": [
-                  "object",
-                  "null"
-                ]
+                "type": "object"
               },
-              "transformer": {
+              "type": "array"
+            }
+          },
+          "type": "object"
+        },
+        {
+          "properties": {
+            "element": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/schema1"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "goTypes": {
+              "items": {
                 "properties": {
-                  "id": {
+                  "display": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "pkgPath": {
                     "type": "string"
                   }
                 },
                 "required": [
-                  "id"
+                  "display"
                 ],
-                "type": [
-                  "object",
-                  "null"
-                ]
-              }
-            },
-            "required": [
-              "kind"
-            ],
-            "type": "object"
-          },
-          "type": "array"
-        },
-        "required": {
-          "properties": {
-            "id": {
-              "type": "string"
-            },
-            "issuePath": {
-              "items": {
-                "type": "string"
+                "type": "object"
               },
               "type": "array"
             },
-            "message": {
+            "kind": {
+              "enum": [
+                "preprocess"
+              ],
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        {
+          "properties": {
+            "element": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/schema1"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "goTypes": {
+              "items": {
+                "properties": {
+                  "display": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "pkgPath": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "display"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "kind": {
+              "enum": [
+                "boxed"
+              ],
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        {
+          "properties": {
+            "catchValue": {},
+            "defaultValue": {},
+            "kind": {
+              "enum": [
+                "any"
+              ],
               "type": "string"
             },
-            "params": {
-              "additionalProperties": {},
+            "processors": {
+              "items": {
+                "properties": {
+                  "kind": {
+                    "type": "string"
+                  },
+                  "test": {
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "issuePath": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "message": {
+                        "type": "string"
+                      },
+                      "params": {
+                        "additionalProperties": {},
+                        "type": "object"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "message"
+                    ],
+                    "type": [
+                      "object",
+                      "null"
+                    ]
+                  },
+                  "transformer": {
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "id"
+                    ],
+                    "type": [
+                      "object",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "kind"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "required": {
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "issuePath": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "message": {
+                  "type": "string"
+                },
+                "params": {
+                  "additionalProperties": {},
+                  "type": "object"
+                }
+              },
+              "required": [
+                "id",
+                "message"
+              ],
+              "type": [
+                "object",
+                "null"
+              ]
+            }
+          },
+          "type": "object"
+        },
+        {
+          "properties": {
+            "extension": {
+              "properties": {
+                "content": {},
+                "uri": {
+                  "pattern": "^(?:https?://[A-Za-z0-9.-]+(?::[0-9]+)?(?:/[A-Za-z0-9._~!$\u0026'()*+,;=:@%-]+)+)/(?:(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)(?:-beta(?:\\.(?:0|[1-9][0-9]*))?)?)/schema\\.json$",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "uri"
+              ],
               "type": "object"
+            },
+            "kind": {
+              "enum": [
+                "extension"
+              ],
+              "type": "string"
             }
           },
           "required": [
-            "id",
-            "message",
-            "issuePath"
+            "extension"
           ],
-          "type": [
-            "object",
-            "null"
-          ]
-        },
-        "value": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/schema1"
-            },
-            {
-              "type": "null"
-            }
-          ]
+          "type": "object"
         }
-      },
-      "type": "object"
+      ]
     }
   },
   "required": [
@@ -447,216 +2531,1256 @@
   ],
   "$defs": {
     "schema1": {
-      "properties": {
-        "$ref": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "catchValue": {},
-        "defaultValue": {},
-        "element": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/schema1"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "extension": {
+      "anyOf": [
+        {
           "properties": {
-            "content": {},
-            "uri": {
-              "pattern": "^(?:https?://[A-Za-z0-9.-]+(?::[0-9]+)?(?:/[A-Za-z0-9._~!$\u0026'()*+,;=:@%-]+)+)/(?:(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)(?:-beta(?:\\.(?:0|[1-9][0-9]*))?)?)/schema\\.json$",
+            "children": {
+              "items": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/schema1"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "minItems": 2,
+              "type": "array"
+            },
+            "kind": {
+              "enum": [
+                "union"
+              ],
               "type": "string"
             }
           },
           "required": [
-            "uri"
+            "children"
           ],
-          "type": [
-            "object",
-            "null"
-          ]
+          "type": "object"
         },
-        "fieldMeta": {
-          "additionalProperties": {
-            "properties": {
-              "tags": {
-                "type": "string"
-              }
+        {
+          "properties": {
+            "$ref": {
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          "required": [
+            "$ref"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "catchValue": {},
+            "defaultValue": {},
+            "goTypes": {
+              "items": {
+                "properties": {
+                  "display": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "pkgPath": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "display"
+                ],
+                "type": "object"
+              },
+              "type": "array"
             },
-            "type": "object"
+            "kind": {
+              "enum": [
+                "string"
+              ],
+              "type": "string"
+            },
+            "processors": {
+              "items": {
+                "properties": {
+                  "kind": {
+                    "type": "string"
+                  },
+                  "test": {
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "issuePath": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "message": {
+                        "type": "string"
+                      },
+                      "params": {
+                        "additionalProperties": {},
+                        "type": "object"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "message"
+                    ],
+                    "type": [
+                      "object",
+                      "null"
+                    ]
+                  },
+                  "transformer": {
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "id"
+                    ],
+                    "type": [
+                      "object",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "kind"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "required": {
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "issuePath": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "message": {
+                  "type": "string"
+                },
+                "params": {
+                  "additionalProperties": {},
+                  "type": "object"
+                }
+              },
+              "required": [
+                "id",
+                "message"
+              ],
+              "type": [
+                "object",
+                "null"
+              ]
+            }
           },
           "type": "object"
         },
-        "fields": {
-          "additionalProperties": {
-            "anyOf": [
-              {
-                "$ref": "#/$defs/schema1"
+        {
+          "properties": {
+            "catchValue": {},
+            "defaultValue": {},
+            "goTypes": {
+              "items": {
+                "properties": {
+                  "display": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "pkgPath": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "display"
+                ],
+                "type": "object"
               },
-              {
-                "type": "null"
-              }
-            ]
+              "type": "array"
+            },
+            "kind": {
+              "enum": [
+                "number"
+              ],
+              "type": "string"
+            },
+            "processors": {
+              "items": {
+                "properties": {
+                  "kind": {
+                    "type": "string"
+                  },
+                  "test": {
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "issuePath": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "message": {
+                        "type": "string"
+                      },
+                      "params": {
+                        "additionalProperties": {},
+                        "type": "object"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "message"
+                    ],
+                    "type": [
+                      "object",
+                      "null"
+                    ]
+                  },
+                  "transformer": {
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "id"
+                    ],
+                    "type": [
+                      "object",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "kind"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "required": {
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "issuePath": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "message": {
+                  "type": "string"
+                },
+                "params": {
+                  "additionalProperties": {},
+                  "type": "object"
+                }
+              },
+              "required": [
+                "id",
+                "message"
+              ],
+              "type": [
+                "object",
+                "null"
+              ]
+            }
           },
           "type": "object"
         },
-        "format": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "goTypes": {
-          "items": {
-            "properties": {
-              "display": {
-                "type": "string"
+        {
+          "properties": {
+            "catchValue": {},
+            "defaultValue": {},
+            "goTypes": {
+              "items": {
+                "properties": {
+                  "display": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "pkgPath": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "display"
+                ],
+                "type": "object"
               },
-              "name": {
-                "type": "string"
-              },
-              "pkgPath": {
-                "type": "string"
-              }
+              "type": "array"
             },
-            "required": [
-              "display"
-            ],
-            "type": "object"
+            "kind": {
+              "enum": [
+                "bool"
+              ],
+              "type": "string"
+            },
+            "processors": {
+              "items": {
+                "properties": {
+                  "kind": {
+                    "type": "string"
+                  },
+                  "test": {
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "issuePath": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "message": {
+                        "type": "string"
+                      },
+                      "params": {
+                        "additionalProperties": {},
+                        "type": "object"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "message"
+                    ],
+                    "type": [
+                      "object",
+                      "null"
+                    ]
+                  },
+                  "transformer": {
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "id"
+                    ],
+                    "type": [
+                      "object",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "kind"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "required": {
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "issuePath": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "message": {
+                  "type": "string"
+                },
+                "params": {
+                  "additionalProperties": {},
+                  "type": "object"
+                }
+              },
+              "required": [
+                "id",
+                "message"
+              ],
+              "type": [
+                "object",
+                "null"
+              ]
+            }
           },
-          "type": "array"
+          "type": "object"
         },
-        "key": {
-          "anyOf": [
-            {
+        {
+          "properties": {
+            "catchValue": {},
+            "defaultValue": {},
+            "format": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "goTypes": {
+              "items": {
+                "properties": {
+                  "display": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "pkgPath": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "display"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "kind": {
+              "enum": [
+                "time"
+              ],
+              "type": "string"
+            },
+            "processors": {
+              "items": {
+                "properties": {
+                  "kind": {
+                    "type": "string"
+                  },
+                  "test": {
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "issuePath": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "message": {
+                        "type": "string"
+                      },
+                      "params": {
+                        "additionalProperties": {},
+                        "type": "object"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "message"
+                    ],
+                    "type": [
+                      "object",
+                      "null"
+                    ]
+                  },
+                  "transformer": {
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "id"
+                    ],
+                    "type": [
+                      "object",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "kind"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "required": {
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "issuePath": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "message": {
+                  "type": "string"
+                },
+                "params": {
+                  "additionalProperties": {},
+                  "type": "object"
+                }
+              },
+              "required": [
+                "id",
+                "message"
+              ],
+              "type": [
+                "object",
+                "null"
+              ]
+            }
+          },
+          "type": "object"
+        },
+        {
+          "properties": {
+            "catchValue": {},
+            "defaultValue": {},
+            "element": {
               "$ref": "#/$defs/schema1"
             },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "kind": {
-          "enum": [
-            "string",
-            "number",
-            "bool",
-            "time",
-            "slice",
-            "map",
-            "struct",
-            "ptr",
-            "custom",
-            "preprocess",
-            "boxed",
-            "any"
-          ],
-          "type": "string"
-        },
-        "processors": {
-          "items": {
-            "properties": {
-              "kind": {
-                "type": "string"
-              },
-              "test": {
+            "goTypes": {
+              "items": {
                 "properties": {
-                  "id": {
+                  "display": {
                     "type": "string"
                   },
-                  "issuePath": {
-                    "items": {
-                      "type": "string"
+                  "name": {
+                    "type": "string"
+                  },
+                  "pkgPath": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "display"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "kind": {
+              "enum": [
+                "slice"
+              ],
+              "type": "string"
+            },
+            "processors": {
+              "items": {
+                "properties": {
+                  "kind": {
+                    "type": "string"
+                  },
+                  "test": {
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "issuePath": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "message": {
+                        "type": "string"
+                      },
+                      "params": {
+                        "additionalProperties": {},
+                        "type": "object"
+                      }
                     },
-                    "type": "array"
+                    "required": [
+                      "id",
+                      "message"
+                    ],
+                    "type": [
+                      "object",
+                      "null"
+                    ]
                   },
-                  "message": {
+                  "transformer": {
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "id"
+                    ],
+                    "type": [
+                      "object",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "kind"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "required": {
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "issuePath": {
+                  "items": {
                     "type": "string"
                   },
-                  "params": {
-                    "additionalProperties": {},
+                  "type": "array"
+                },
+                "message": {
+                  "type": "string"
+                },
+                "params": {
+                  "additionalProperties": {},
+                  "type": "object"
+                }
+              },
+              "required": [
+                "id",
+                "message"
+              ],
+              "type": [
+                "object",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "element"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "catchValue": {},
+            "defaultValue": {},
+            "goTypes": {
+              "items": {
+                "properties": {
+                  "display": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "pkgPath": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "display"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "key": {
+              "$ref": "#/$defs/schema1"
+            },
+            "kind": {
+              "enum": [
+                "map"
+              ],
+              "type": "string"
+            },
+            "processors": {
+              "items": {
+                "properties": {
+                  "kind": {
+                    "type": "string"
+                  },
+                  "test": {
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "issuePath": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "message": {
+                        "type": "string"
+                      },
+                      "params": {
+                        "additionalProperties": {},
+                        "type": "object"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "message"
+                    ],
+                    "type": [
+                      "object",
+                      "null"
+                    ]
+                  },
+                  "transformer": {
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "id"
+                    ],
+                    "type": [
+                      "object",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "kind"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "required": {
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "issuePath": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "message": {
+                  "type": "string"
+                },
+                "params": {
+                  "additionalProperties": {},
+                  "type": "object"
+                }
+              },
+              "required": [
+                "id",
+                "message"
+              ],
+              "type": [
+                "object",
+                "null"
+              ]
+            },
+            "value": {
+              "$ref": "#/$defs/schema1"
+            }
+          },
+          "required": [
+            "key",
+            "value"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "defaultValue": {},
+            "fieldMeta": {
+              "additionalProperties": {
+                "properties": {
+                  "tags": {
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              "type": "object"
+            },
+            "fields": {
+              "additionalProperties": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/schema1"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "type": "object"
+            },
+            "goTypes": {
+              "items": {
+                "properties": {
+                  "display": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "pkgPath": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "display"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "kind": {
+              "enum": [
+                "struct"
+              ],
+              "type": "string"
+            },
+            "processors": {
+              "items": {
+                "properties": {
+                  "kind": {
+                    "type": "string"
+                  },
+                  "test": {
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "issuePath": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "message": {
+                        "type": "string"
+                      },
+                      "params": {
+                        "additionalProperties": {},
+                        "type": "object"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "message"
+                    ],
+                    "type": [
+                      "object",
+                      "null"
+                    ]
+                  },
+                  "transformer": {
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "id"
+                    ],
+                    "type": [
+                      "object",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "kind"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "required": {
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "issuePath": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "message": {
+                  "type": "string"
+                },
+                "params": {
+                  "additionalProperties": {},
+                  "type": "object"
+                }
+              },
+              "required": [
+                "id",
+                "message"
+              ],
+              "type": [
+                "object",
+                "null"
+              ]
+            }
+          },
+          "type": "object"
+        },
+        {
+          "properties": {
+            "element": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/schema1"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "goTypes": {
+              "items": {
+                "properties": {
+                  "display": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "pkgPath": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "display"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "kind": {
+              "enum": [
+                "ptr"
+              ],
+              "type": "string"
+            },
+            "required": {
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "issuePath": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "message": {
+                  "type": "string"
+                },
+                "params": {
+                  "additionalProperties": {},
+                  "type": "object"
+                }
+              },
+              "required": [
+                "id",
+                "message"
+              ],
+              "type": [
+                "object",
+                "null"
+              ]
+            }
+          },
+          "type": "object"
+        },
+        {
+          "properties": {
+            "goTypes": {
+              "items": {
+                "properties": {
+                  "display": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "pkgPath": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "display"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "kind": {
+              "enum": [
+                "custom"
+              ],
+              "type": "string"
+            },
+            "processors": {
+              "items": {
+                "properties": {
+                  "kind": {
+                    "enum": [
+                      "test"
+                    ],
+                    "type": "string"
+                  },
+                  "test": {
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "issuePath": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "message": {
+                        "type": "string"
+                      },
+                      "params": {
+                        "additionalProperties": {},
+                        "type": "object"
+                      }
+                    },
                     "type": "object"
                   }
                 },
                 "required": [
-                  "id",
-                  "message",
-                  "issuePath"
+                  "test"
                 ],
-                "type": [
-                  "object",
-                  "null"
-                ]
+                "type": "object"
               },
-              "transformer": {
+              "type": "array"
+            }
+          },
+          "type": "object"
+        },
+        {
+          "properties": {
+            "element": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/schema1"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "goTypes": {
+              "items": {
                 "properties": {
-                  "id": {
+                  "display": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "pkgPath": {
                     "type": "string"
                   }
                 },
                 "required": [
-                  "id"
+                  "display"
                 ],
-                "type": [
-                  "object",
-                  "null"
-                ]
-              }
-            },
-            "required": [
-              "kind"
-            ],
-            "type": "object"
-          },
-          "type": "array"
-        },
-        "required": {
-          "properties": {
-            "id": {
-              "type": "string"
-            },
-            "issuePath": {
-              "items": {
-                "type": "string"
+                "type": "object"
               },
               "type": "array"
             },
-            "message": {
+            "kind": {
+              "enum": [
+                "preprocess"
+              ],
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        {
+          "properties": {
+            "element": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/schema1"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "goTypes": {
+              "items": {
+                "properties": {
+                  "display": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "pkgPath": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "display"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "kind": {
+              "enum": [
+                "boxed"
+              ],
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        {
+          "properties": {
+            "catchValue": {},
+            "defaultValue": {},
+            "kind": {
+              "enum": [
+                "any"
+              ],
               "type": "string"
             },
-            "params": {
-              "additionalProperties": {},
+            "processors": {
+              "items": {
+                "properties": {
+                  "kind": {
+                    "type": "string"
+                  },
+                  "test": {
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "issuePath": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "message": {
+                        "type": "string"
+                      },
+                      "params": {
+                        "additionalProperties": {},
+                        "type": "object"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "message"
+                    ],
+                    "type": [
+                      "object",
+                      "null"
+                    ]
+                  },
+                  "transformer": {
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "id"
+                    ],
+                    "type": [
+                      "object",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "kind"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "required": {
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "issuePath": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "message": {
+                  "type": "string"
+                },
+                "params": {
+                  "additionalProperties": {},
+                  "type": "object"
+                }
+              },
+              "required": [
+                "id",
+                "message"
+              ],
+              "type": [
+                "object",
+                "null"
+              ]
+            }
+          },
+          "type": "object"
+        },
+        {
+          "properties": {
+            "extension": {
+              "properties": {
+                "content": {},
+                "uri": {
+                  "pattern": "^(?:https?://[A-Za-z0-9.-]+(?::[0-9]+)?(?:/[A-Za-z0-9._~!$\u0026'()*+,;=:@%-]+)+)/(?:(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)(?:-beta(?:\\.(?:0|[1-9][0-9]*))?)?)/schema\\.json$",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "uri"
+              ],
               "type": "object"
+            },
+            "kind": {
+              "enum": [
+                "extension"
+              ],
+              "type": "string"
             }
           },
           "required": [
-            "issuePath",
-            "id",
-            "message"
+            "extension"
           ],
-          "type": [
-            "object",
-            "null"
-          ]
-        },
-        "value": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/schema1"
-            },
-            {
-              "type": "null"
-            }
-          ]
+          "type": "object"
         }
-      },
-      "type": "object"
+      ]
     }
   }
 }
