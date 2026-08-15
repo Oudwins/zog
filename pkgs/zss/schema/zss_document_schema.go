@@ -132,13 +132,13 @@ var ZSSSchemaSchema = z.EXPERIMENTAL_RECURSIVE(func(self z.RecursiveSchema[*z.Un
 		"goTypes":      z.Slice(ZSSGoTypeSchema),
 		"required":     z.Ptr(ZSSTestSchema),
 		"defaultValue": z.EXPERIMENTAL_ANY(),
-		"fields":       z.EXPERIMENTAL_MAP[string, *zsscore.ZSSSchema](z.String(), z.Ptr(self())),
+		"fields":       z.EXPERIMENTAL_MAP[string, *zsscore.ZSSSchema](z.String(), z.Ptr(self()).NotNil()),
 		"fieldMeta":    z.EXPERIMENTAL_MAP[string, zsscore.ZSSFieldMeta](z.String(), ZSSFieldMetaSchema),
 	})
 
 	ptr := z.Struct(z.Shape{
 		"Kind":     zssKind(zconst.TypePtr),
-		"element":  z.Ptr(self()),
+		"element":  z.Ptr(self()).NotNil(),
 		"goTypes":  z.Slice(ZSSGoTypeSchema),
 		"required": z.Ptr(ZSSTestSchema),
 	})
@@ -151,13 +151,13 @@ var ZSSSchemaSchema = z.EXPERIMENTAL_RECURSIVE(func(self z.RecursiveSchema[*z.Un
 
 	preprocess := z.Struct(z.Shape{
 		"Kind":    zssKind(zconst.TypePreprocess),
-		"element": z.Ptr(self()),
+		"element": z.Ptr(self()).NotNil(),
 		"goTypes": z.Slice(ZSSGoTypeSchema),
 	})
 
 	boxed := z.Struct(z.Shape{
 		"Kind":    zssKind(zconst.TypeBoxed),
-		"element": z.Ptr(self()),
+		"element": z.Ptr(self()).NotNil(),
 		"goTypes": z.Slice(ZSSGoTypeSchema),
 	})
 
@@ -171,7 +171,7 @@ var ZSSSchemaSchema = z.EXPERIMENTAL_RECURSIVE(func(self z.RecursiveSchema[*z.Un
 
 	union := z.Struct(z.Shape{
 		"Kind":     zssKind(zconst.TypeUnion),
-		"children": z.Slice(z.Ptr(self())).Required().Min(2),
+		"children": z.Slice(z.Ptr(self()).NotNil()).Required().Min(2),
 	})
 
 	extended := z.Struct(z.Shape{
