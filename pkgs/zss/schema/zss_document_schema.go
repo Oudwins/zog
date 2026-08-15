@@ -170,8 +170,9 @@ var ZSSSchemaSchema = z.EXPERIMENTAL_RECURSIVE(func(self z.RecursiveSchema[*z.Un
 	})
 
 	union := z.Struct(z.Shape{
-		"Kind":     zssKind(zconst.TypeUnion),
-		"children": z.Slice(z.Ptr(self()).NotNil()).Required().Min(2),
+		"Kind": zssKind(zconst.TypeUnion),
+		// removed min 2 from here because we can't enforce it nicely via api and not an issue (beyond performance if people use it for a 1 or 0 schema union)
+		"children": z.Slice(z.Ptr(self()).NotNil()).Required(),
 	})
 
 	extended := z.Struct(z.Shape{
