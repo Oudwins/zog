@@ -235,3 +235,9 @@ func ErrorInvalidTypeMessage(expected string, received any, path string, dtype Z
 func ErrorMissingStructField(fieldName string, path string, dtype ZogType, value any) error {
 	return fmt.Errorf("[missing structure field] zog expected struct to match schema but it did not. Provided struct is missing expected schema key. If you are not using union schema it means you have made a mistake in your schema definition.\nPath: %q\nSchema type: %s\nMissing field: %s\nValue: %v\nFor more information see: https://zog.dev/panics#schema-definition-errors", path, dtype, fieldName, value)
 }
+
+type ZogMetaKey = string
+
+const (
+	MetaKeyDescription ZogMetaKey = "description"
+)
