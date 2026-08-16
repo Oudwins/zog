@@ -66,13 +66,15 @@ func (u *UnionSchema) Validate(dest any, options ...ExecOption) p.ZogIssueList {
 func (u *UnionSchema) process(ctx *p.SchemaCtx) {
 	// Wrap the context and only go to the next one on fail. Keeping all the errors and appending at the end
 	listStart := len(ctx.Errors.List)
+	values := newUnionBranchValues(ctx.Data, ctx.ValPtr, false)
 	for _, s := range u.schemas {
 		numIssues := len(ctx.Errors.List)
-		branchCtx, commit := newUnionBranchCtx(ctx, s, ctx.Data)
+		data, dest := values.next()
+		branchCtx := ctx.NewSchemaCtx(data, dest, ctx.Path, s.getType())
 		s.process(branchCtx)
 		branchCtx.Free()
 		if len(ctx.Errors.List) == numIssues {
-			commit()
+			values.commit()
 			if listStart == 0 {
 				ctx.Errors.List = nil
 			} else {
@@ -80,20 +82,23 @@ func (u *UnionSchema) process(ctx *p.SchemaCtx) {
 			}
 			return // success
 		}
+		snapshotUnionIssueValues(ctx.Errors.List[numIssues:])
+		values.rollback()
 	}
 }
 
 func (u *UnionSchema) validate(ctx *p.SchemaCtx) {
 	// Wrap the context and only go to the next one on fail. Keeping all the errors and appending at the end
 	listStart := len(ctx.Errors.List)
+	values := newUnionBranchValues(nil, ctx.ValPtr, true)
 	for _, s := range u.schemas {
 		numIssues := len(ctx.Errors.List)
-		branchCtx, commit := newUnionBranchCtx(ctx, s, nil)
-		branchCtx.Data = branchCtx.ValPtr
+		data, dest := values.next()
+		branchCtx := ctx.NewSchemaCtx(data, dest, ctx.Path, s.getType())
 		s.validate(branchCtx)
 		branchCtx.Free()
 		if len(ctx.Errors.List) == numIssues {
-			commit()
+			values.commit()
 			if listStart == 0 {
 				ctx.Errors.List = nil
 			} else {
@@ -101,23 +106,92 @@ func (u *UnionSchema) validate(ctx *p.SchemaCtx) {
 			}
 			return // success
 		}
+		snapshotUnionIssueValues(ctx.Errors.List[numIssues:])
+		values.rollback()
 	}
 
 }
 
-func newUnionBranchCtx(ctx *p.SchemaCtx, schema ZogSchema, data any) (*p.SchemaCtx, func()) {
-	dest := reflect.ValueOf(ctx.ValPtr)
-	if !dest.IsValid() || dest.Kind() != reflect.Pointer || dest.IsNil() {
-		return ctx.NewSchemaCtx(data, ctx.ValPtr, ctx.Path, schema.getType()), func() {}
-	}
+type unionBranchValues struct {
+	input      unionValue
+	output     unionValue
+	validating bool
+}
 
-	branchDest := cloneUnionValue(dest, make(map[unionCloneVisit]reflect.Value))
-	commit := func() {
-		if !reflect.DeepEqual(dest.Interface(), branchDest.Interface()) {
-			dest.Elem().Set(branchDest.Elem())
-		}
+func newUnionBranchValues(input, output any, validating bool) unionBranchValues {
+	return unionBranchValues{
+		input:      newUnionValue(input),
+		output:     newUnionValue(output),
+		validating: validating,
 	}
-	return ctx.NewSchemaCtx(data, branchDest.Interface(), ctx.Path, schema.getType()), commit
+}
+
+func (v *unionBranchValues) next() (any, any) {
+	output := v.output.next()
+	if v.validating {
+		return output, output
+	}
+	return v.input.next(), output
+}
+
+func (v *unionBranchValues) rollback() {
+	if !v.validating {
+		v.input.rollback()
+	}
+	v.output.rollback()
+}
+
+func (v *unionBranchValues) commit() {
+	v.output.commit()
+}
+
+type unionValue struct {
+	original   reflect.Value
+	working    reflect.Value
+	hasWorking bool
+}
+
+func newUnionValue(value any) unionValue {
+	return unionValue{original: reflect.ValueOf(value)}
+}
+
+func (v *unionValue) next() any {
+	if !v.hasWorking {
+		v.working = cloneUnionValue(v.original, make(map[unionCloneVisit]reflect.Value))
+		v.hasWorking = true
+	}
+	return unionValueInterface(v.working)
+}
+
+func (v *unionValue) rollback() {
+	if reflect.DeepEqual(unionValueInterface(v.original), unionValueInterface(v.working)) {
+		return
+	}
+	v.working = reflect.Value{}
+	v.hasWorking = false
+}
+
+func (v *unionValue) commit() {
+	if !v.original.IsValid() || v.original.Kind() != reflect.Pointer || v.original.IsNil() {
+		return
+	}
+	if !reflect.DeepEqual(v.original.Interface(), v.working.Interface()) {
+		v.original.Elem().Set(v.working.Elem())
+	}
+}
+
+func unionValueInterface(value reflect.Value) any {
+	if !value.IsValid() {
+		return nil
+	}
+	return value.Interface()
+}
+
+func snapshotUnionIssueValues(issues p.ZogIssueList) {
+	for _, issue := range issues {
+		value := cloneUnionValue(reflect.ValueOf(issue.Value), make(map[unionCloneVisit]reflect.Value))
+		issue.Value = unionValueInterface(value)
+	}
 }
 
 type unionCloneVisit struct {

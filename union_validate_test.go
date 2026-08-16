@@ -319,6 +319,95 @@ func TestParseUnionUsesFreshContextForEachBranch(t *testing.T) {
 	assert.Equal(t, "original", dest)
 }
 
+func TestParseUnionIsolatesMutableInputBetweenBranches(t *testing.T) {
+	validator := EXPERIMENTAL_UNION([]ZogSchema{
+		Preprocess(func(data map[string]int, ctx Ctx) (int, error) {
+			data["value"] = 2
+			return 0, errors.New("first branch failed")
+		}, Int()),
+		Preprocess(func(data map[string]int, ctx Ctx) (int, error) {
+			return data["value"], nil
+		}, Int().OneOf([]int{1})),
+	})
+	input := map[string]int{"value": 1}
+	dest := 0
+
+	errs := validator.Parse(input, &dest)
+
+	assert.Empty(t, errs)
+	assert.Equal(t, 1, dest)
+	assert.Equal(t, map[string]int{"value": 1}, input)
+}
+
+func TestParseUnionReusesUnchangedInputClone(t *testing.T) {
+	type input struct {
+		Value int
+	}
+	var firstInput *input
+	var secondInput *input
+	validator := EXPERIMENTAL_UNION([]ZogSchema{
+		Preprocess(func(data *input, ctx Ctx) (int, error) {
+			firstInput = data
+			return 0, errors.New("first branch failed")
+		}, Int()),
+		Preprocess(func(data *input, ctx Ctx) (int, error) {
+			secondInput = data
+			return data.Value, nil
+		}, Int()),
+	})
+	originalInput := &input{Value: 1}
+	dest := 0
+
+	errs := validator.Parse(originalInput, &dest)
+
+	assert.Empty(t, errs)
+	assert.NotSame(t, originalInput, firstInput)
+	assert.Same(t, firstInput, secondInput)
+}
+
+func TestValidateUnionReusesUnchangedOutputClone(t *testing.T) {
+	var firstOutput *int
+	var secondOutput *int
+	validator := EXPERIMENTAL_UNION([]ZogSchema{
+		Int().TestFunc(func(val *int, ctx Ctx) bool {
+			firstOutput = val
+			return false
+		}),
+		Int().TestFunc(func(val *int, ctx Ctx) bool {
+			secondOutput = val
+			return true
+		}),
+	})
+	dest := 1
+
+	errs := validator.Validate(&dest)
+
+	assert.Empty(t, errs)
+	assert.NotSame(t, &dest, firstOutput)
+	assert.Same(t, firstOutput, secondOutput)
+}
+
+func TestValidateUnionPreservesIssueValuesWhenReusingClone(t *testing.T) {
+	validator := EXPERIMENTAL_UNION([]ZogSchema{
+		CustomFunc(func(val *int, ctx Ctx) bool {
+			ctx.AddIssue(ctx.Issue().SetMessage("first branch failed"))
+			return true
+		}),
+		CustomFunc(func(val *int, ctx Ctx) bool {
+			*val = 2
+			ctx.AddIssue(ctx.Issue().SetMessage("second branch failed"))
+			return true
+		}),
+	})
+	dest := 1
+
+	errs := validator.Validate(&dest)
+
+	assert.Len(t, errs, 2)
+	assert.Equal(t, 1, *errs[0].Value.(*int))
+	assert.Equal(t, 1, dest)
+}
+
 func TestValidateUnionInStructField(t *testing.T) {
 	type testStruct struct {
 		Value string
