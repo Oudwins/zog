@@ -1,5 +1,7 @@
 package zog
 
+//go:generate go run ./cmd/gen/metadata
+
 import (
 	"maps"
 	"sync"
@@ -15,6 +17,8 @@ type ZogMetaRegistry interface {
 
 type SchemaMetadata = map[string]any
 
+var GlobalMetaRegistry ZogMetaRegistry = NewMetaRegistry()
+
 var _ ZogMetaRegistry = &DefaultZogMetaRegistry{}
 
 func NewMetaRegistry() ZogMetaRegistry {
@@ -29,10 +33,20 @@ type DefaultZogMetaRegistry struct {
 	mux sync.RWMutex
 }
 
+func (r *DefaultZogMetaRegistry) metadataFor(s ZogSchema) SchemaMetadata {
+	if r.m == nil {
+		r.m = map[any]SchemaMetadata{}
+	}
+	if r.m[s] == nil {
+		r.m[s] = SchemaMetadata{}
+	}
+	return r.m[s]
+}
+
 func (r *DefaultZogMetaRegistry) Set(s ZogSchema, k zconst.ZogMetaKey, v any) error {
 	r.mux.Lock()
 	defer r.mux.Unlock()
-	r.m[s][k] = v
+	r.metadataFor(s)[k] = v
 	return nil
 }
 
@@ -45,6 +59,6 @@ func (r *DefaultZogMetaRegistry) Get(s ZogSchema, k zconst.ZogMetaKey) (any, err
 func (r *DefaultZogMetaRegistry) SetCopy(s ZogSchema, m SchemaMetadata) error {
 	r.mux.Lock()
 	defer r.mux.Unlock()
-	maps.Copy(r.m[s], m)
+	maps.Copy(r.metadataFor(s), m)
 	return nil
 }

@@ -16,5 +16,7 @@ docs-dev:
 	cd ./docs && npm start
 
 schema-gen:
-	go run ./cmd/zssschema-gen/main.go
+	go run ./cmd/gen/zssschema
 
+metadata-gen:
+	go generate meta.go

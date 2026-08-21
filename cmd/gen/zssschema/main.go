@@ -2,9 +2,9 @@ package main
 
 // Usage:
 //
-//	go run ./cmd/zssschema-gen -version 0.0.1
-//	go run ./cmd/zssschema-gen -version 0.0.1 -inline
-//	go run ./cmd/zssschema-gen -version 0.0.1 -out /tmp/schema.json
+//	go run ./cmd/gen/zssschema -version 0.0.1
+//	go run ./cmd/gen/zssschema -version 0.0.1 -inline
+//	go run ./cmd/gen/zssschema -version 0.0.1 -out /tmp/schema.json
 
 import (
 	"bytes"
