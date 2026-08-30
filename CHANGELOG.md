@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.23.0](https://github.com/Oudwins/zog/compare/v0.22.2...v0.23.0) (2026-08-30)
+
+
+### ⚠ BREAKING CHANGES
+
+* removing field key and invalid type schema panics as this is required change to support union schema ([#229](https://github.com/Oudwins/zog/issues/229))
+
+### Features
+
+* *.md files in docs ([57b08ec](https://github.com/Oudwins/zog/commit/57b08eccc00a4a44911810ac39e08050900c0a07))
+* removing field key and invalid type schema panics as this is required change to support union schema ([#229](https://github.com/Oudwins/zog/issues/229)) ([9d196f8](https://github.com/Oudwins/zog/commit/9d196f864418d70c6b0fd3c943d997f64c72132c))
+* union schema ([#228](https://github.com/Oudwins/zog/issues/228)) ([46a0728](https://github.com/Oudwins/zog/commit/46a07289bcc967fe56346830772c10e4472399bc))
+* zog best practices skill ([7b01b63](https://github.com/Oudwins/zog/commit/7b01b6381dca4c9811047537fc1c6562de164dc6))
+* zss, zss to json schema and json schema for zss ([#226](https://github.com/Oudwins/zog/issues/226)) ([b486cb1](https://github.com/Oudwins/zog/commit/b486cb1a558b297e1c44e8e755b3175ea9215e3f))
+
+
+### Bug Fixes
+
+* EmptyDataProvider ignores the field's tag when reporting its key ([#232](https://github.com/Oudwins/zog/issues/232)) ([e7cd346](https://github.com/Oudwins/zog/commit/e7cd3465eb3b143c11cc16812d2aa75e548501d1))
+* test for 1.23.x ([#227](https://github.com/Oudwins/zog/issues/227)) ([c32cea0](https://github.com/Oudwins/zog/commit/c32cea0894a1885900f093c1911f86e40018e31e))
+
 ## [0.22.2](https://github.com/Oudwins/zog/compare/v0.22.1...v0.22.2) (2026-04-25)
 
 
