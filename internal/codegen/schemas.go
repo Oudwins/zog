@@ -3,87 +3,69 @@ package codegen
 import (
 	"fmt"
 	"go/ast"
-	"go/parser"
-	"go/token"
-	"io/fs"
+	"go/types"
 	"sort"
 	"strings"
+
+	"golang.org/x/tools/go/packages"
 )
 
 // ZogSchemas returns the concrete schema receiver types declared in dir.
 func ZogSchemas(dir string) ([]string, error) {
-	packages, err := parser.ParseDir(token.NewFileSet(), dir, func(info fs.FileInfo) bool {
-		return !strings.HasSuffix(info.Name(), "_test.go")
-	}, 0)
+	loaded, err := packages.Load(&packages.Config{Mode: packages.LoadSyntax, Dir: dir}, ".")
 	if err != nil {
-		return nil, fmt.Errorf("parse package: %w", err)
+		return nil, fmt.Errorf("load package: %w", err)
 	}
-
-	pkg, ok := packages["zog"]
-	if !ok {
+	if len(loaded) != 1 || loaded[0].Name != "zog" {
 		return nil, fmt.Errorf("package zog not found in %s", dir)
 	}
+	pkg := loaded[0]
+	if len(pkg.Errors) > 0 {
+		return nil, fmt.Errorf("load package: %s", pkg.Errors[0])
+	}
 
-	requiredMethods := map[string]bool{}
-	types := map[string][]string{}
-	methods := map[string]map[string]bool{}
+	structs := map[string][]string{}
 
-	for _, file := range pkg.Files {
+	for _, file := range pkg.Syntax {
 		for _, declaration := range file.Decls {
-			switch declaration := declaration.(type) {
-			case *ast.GenDecl:
-				for _, spec := range declaration.Specs {
-					typeSpec, ok := spec.(*ast.TypeSpec)
-					if !ok {
-						continue
-					}
-					if typeSpec.Name.Name == "ZogSchema" {
-						interfaceType, ok := typeSpec.Type.(*ast.InterfaceType)
-						if !ok {
-							return nil, fmt.Errorf("ZogSchema is not an interface")
-						}
-						for _, method := range interfaceType.Methods.List {
-							for _, name := range method.Names {
-								requiredMethods[name.Name] = true
-							}
-						}
-					}
-					if _, ok := typeSpec.Type.(*ast.StructType); !ok {
-						continue
-					}
-					var typeParams []string
-					if typeSpec.TypeParams != nil {
-						for _, field := range typeSpec.TypeParams.List {
-							for _, name := range field.Names {
-								typeParams = append(typeParams, name.Name)
-							}
-						}
-					}
-					types[typeSpec.Name.Name] = typeParams
-				}
-			case *ast.FuncDecl:
-				if declaration.Recv == nil || len(declaration.Recv.List) == 0 {
+			declaration, ok := declaration.(*ast.GenDecl)
+			if !ok {
+				continue
+			}
+			for _, spec := range declaration.Specs {
+				typeSpec, ok := spec.(*ast.TypeSpec)
+				if !ok {
 					continue
 				}
-				typeName := receiverTypeName(declaration.Recv.List[0].Type)
-				if typeName == "" {
+				if _, ok := typeSpec.Type.(*ast.StructType); !ok {
 					continue
 				}
-				if methods[typeName] == nil {
-					methods[typeName] = map[string]bool{}
+				var typeParams []string
+				if typeSpec.TypeParams != nil {
+					for _, field := range typeSpec.TypeParams.List {
+						for _, name := range field.Names {
+							typeParams = append(typeParams, name.Name)
+						}
+					}
 				}
-				methods[typeName][declaration.Name.Name] = true
+				structs[typeSpec.Name.Name] = typeParams
 			}
 		}
 	}
 
-	if len(requiredMethods) == 0 {
-		return nil, fmt.Errorf("ZogSchema has no methods")
+	zogSchemaObject := pkg.Types.Scope().Lookup("ZogSchema")
+	if zogSchemaObject == nil {
+		return nil, fmt.Errorf("ZogSchema not found")
+	}
+	zogSchema, ok := zogSchemaObject.Type().Underlying().(*types.Interface)
+	if !ok {
+		return nil, fmt.Errorf("ZogSchema is not an interface")
 	}
 
 	var schemas []string
-	for typeName, typeParams := range types {
-		if !hasAllMethods(methods[typeName], requiredMethods) {
+	for typeName, typeParams := range structs {
+		named, ok := pkg.Types.Scope().Lookup(typeName).Type().(*types.Named)
+		if !ok || !types.Implements(types.NewPointer(named), zogSchema) {
 			continue
 		}
 		if len(typeParams) > 0 {
@@ -93,28 +75,4 @@ func ZogSchemas(dir string) ([]string, error) {
 	}
 	sort.Strings(schemas)
 	return schemas, nil
-}
-
-func receiverTypeName(expr ast.Expr) string {
-	switch expr := expr.(type) {
-	case *ast.Ident:
-		return expr.Name
-	case *ast.StarExpr:
-		return receiverTypeName(expr.X)
-	case *ast.IndexExpr:
-		return receiverTypeName(expr.X)
-	case *ast.IndexListExpr:
-		return receiverTypeName(expr.X)
-	default:
-		return ""
-	}
-}
-
-func hasAllMethods(methods, requiredMethods map[string]bool) bool {
-	for method := range requiredMethods {
-		if !methods[method] {
-			return false
-		}
-	}
-	return true
 }
