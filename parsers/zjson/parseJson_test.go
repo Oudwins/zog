@@ -79,3 +79,18 @@ func TestDecodeNonEmptyBodyUsesTaggedIssuePaths(t *testing.T) {
 		})
 	}
 }
+
+func TestDecodeEmptyBodyRespectsJSONTag(t *testing.T) {
+	type User struct {
+		Name string `json:"full_name"`
+	}
+
+	schema := z.Struct(z.Shape{
+		"name": z.String().Min(2).Required(),
+	})
+
+	var u User
+	errs := schema.Parse(Decode(strings.NewReader(`{}`)), &u)
+	assert.NotEmpty(t, errs)
+	assert.Equal(t, []string{"full_name"}, errs[0].Path)
+}

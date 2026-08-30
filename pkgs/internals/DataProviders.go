@@ -100,7 +100,7 @@ func (m *MapDataProvider[T]) GetUnderlying() any {
 
 func NewMapDataProvider[T any](m map[string]T, tag *string) DataProvider {
 	if len(m) == 0 {
-		return &EmptyDataProvider{}
+		return &EmptyDataProvider{tag: tag}
 	}
 	return &MapDataProvider[T]{
 		M:   m,
@@ -117,6 +117,7 @@ func NewSafeMapDataProvider[T any](m map[string]T) DataProvider {
 
 type EmptyDataProvider struct {
 	Underlying any
+	tag        *string
 }
 
 func (e *EmptyDataProvider) Get(key string) any {
@@ -124,7 +125,7 @@ func (e *EmptyDataProvider) Get(key string) any {
 }
 
 func (e *EmptyDataProvider) GetByField(field reflect.StructField, fallback string) (any, string) {
-	return nil, fallback
+	return nil, GetKeyFromField(field, fallback, e.tag)
 }
 
 func (e *EmptyDataProvider) GetNestedProvider(key string) DataProvider {
