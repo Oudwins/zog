@@ -66,6 +66,7 @@ func (v *PointerSchema) process(ctx *p.SchemaCtx) {
 		}
 		ctx.Data = val
 	}
+
 	_, isEmptyStruct := ctx.Data.(*p.EmptyDataProvider)
 	// End of messy code
 
@@ -73,7 +74,20 @@ func (v *PointerSchema) process(ctx *p.SchemaCtx) {
 	if isZero {
 		if v.required != nil {
 			// We set the destination type to the schema type because pointer doesn't have any issue messages. They pass through to the schema type
-			ctx.AddIssue(ctx.IssueFromTest(v.required, ctx.Data).SetDType(v.schema.getType()))
+			issueVal := ctx.Data
+			if p.IsExplicitNull(issueVal) {
+				// Sentinel is internal surface nil to callers.
+				issueVal = nil
+			}
+			ctx.AddIssue(ctx.IssueFromTest(v.required, issueVal).SetDType(v.schema.getType()))
+			return
+		}
+		// Explicit null clears the destination pointer bare nil is treated as "key
+		// absent" and leaves the existing value in place.
+		if p.IsExplicitNull(ctx.Data) {
+			rv := reflect.ValueOf(ctx.ValPtr)
+			destPtr := rv.Elem()
+			destPtr.Set(reflect.Zero(destPtr.Type()))
 		}
 		return
 	}

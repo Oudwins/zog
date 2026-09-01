@@ -80,6 +80,17 @@ func (m *MapDataProvider[T]) Get(key string) any {
 	if !ok {
 		return nil
 	}
+	// Present with nil emits the sentinel so pointer schemas can distinguish it
+	// from an absent key.
+	if any(v) == nil {
+		return ExplicitNullMarker()
+	}
+	// A typed nil pointer inside an interface like (*string) is not == nil but is
+	// still semantically an explicit null. Other nillable kinds are excluded, a
+	// nil slice is accepted as empty input by non-pointer schemas today.
+	if rv := reflect.ValueOf(v); rv.Kind() == reflect.Pointer && rv.IsNil() {
+		return ExplicitNullMarker()
+	}
 	return v
 }
 
@@ -141,7 +152,9 @@ func TryNewAnyDataProvider(val any) (DataProvider, error) {
 	if ok {
 		return dp, nil
 	}
-	if val == nil {
+	// Here we treat the sentinel and a nil (absence) as the same because we are
+	// at the top level, for individual fields we do a different behavior.
+	if IsExplicitNull(val) || val == nil {
 		return &EmptyDataProvider{Underlying: val}, nil
 	}
 	x := reflect.ValueOf(val)
